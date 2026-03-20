@@ -77,7 +77,7 @@ function AdvanceItemsPanel({ advanceId }: { advanceId: string }) {
                                             ? "warning"
                                             : "ghost"
                                 }
-                                className="text-[10px]"
+                                className="density-caption"
                             >
                                 {status}
                             </Badge>
@@ -143,7 +143,7 @@ export function FulfillmentPageClient() {
     const contentSlot = (
         <div className="density-gap-page">
             {/* Pipeline stats */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 density-gap-card sm:grid-cols-3">
                 <Card>
                     <CardContent className="pt-4">
                         <div className="mb-1 flex items-center gap-2 text-muted-foreground">
@@ -191,7 +191,7 @@ export function FulfillmentPageClient() {
             {/* List */}
             {isLoading ? (
                 <div className="flex items-center justify-center py-16">
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    <div className="h-6 w-6 motion-safe:animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </div>
             ) : filtered.length === 0 ? (
                 <EmptyState
@@ -200,7 +200,7 @@ export function FulfillmentPageClient() {
                     description="Approved advances will appear here for fulfillment tracking"
                 />
             ) : (
-                <div className="space-y-4">
+                <div className="density-gap-section">
                     {filtered.map((advance) => {
                         const id = advance.id as string;
                         const isExpanded = expandedId === id;

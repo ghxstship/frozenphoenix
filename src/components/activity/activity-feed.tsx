@@ -134,7 +134,7 @@ export function ActivityFeed({ items, className, maxItems, compact = false }: Ac
                                     </p>
                                 )}
                                 <time
-                                    className="text-[10px] text-muted-foreground/60 mt-1 block"
+                                    className="density-caption text-muted-foreground/60 mt-1 block"
                                     dateTime={item.createdAt}
                                 >
                                     {formatRelativeTime(item.createdAt)}

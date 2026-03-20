@@ -210,7 +210,7 @@ export function VendorCompliancePageClient() {
                                                 <td className="p-3">
                                                     <StatusBadge
                                                         status={doc.status}
-                                                        className="text-[10px]"
+                                                        className="density-caption"
                                                     />
                                                 </td>
                                                 <td className="p-3">
@@ -288,7 +288,10 @@ export function VendorCompliancePageClient() {
                                     <div className="flex items-start justify-between mb-1">
                                         <h4 className="text-sm font-medium">{req.name}</h4>
                                         {req.isRequired && (
-                                            <Badge variant="destructive" className="text-[9px]">
+                                            <Badge
+                                                variant="destructive"
+                                                className="density-caption"
+                                            >
                                                 Required
                                             </Badge>
                                         )}
@@ -300,13 +303,13 @@ export function VendorCompliancePageClient() {
                                         {req.appliesToVendorTypes.map((vt) => (
                                             <span
                                                 key={vt}
-                                                className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
+                                                className="density-caption px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
                                             >
-                                                {vt.replace("_", " ")}
+                                                {vt.replaceAll("_", " ")}
                                             </span>
                                         ))}
                                     </div>
-                                    <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
+                                    <div className="flex items-center gap-3 mt-2 density-caption text-muted-foreground">
                                         {req.hasExpiry && (
                                             <span>Expires · {req.expiryWarningDays}d warning</span>
                                         )}

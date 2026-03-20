@@ -131,6 +131,21 @@ export const SHELLS_STRINGS = {
     cookie_analytics_desc: "Usage data to improve the product",
     cookie_privacy: "Privacy Policy",
 
+    // ─── WizardShell ────────────────────────────────────────────
+    wizard_continue: "Continue",
+    wizard_back: "Back",
+    wizard_complete: "Complete",
+    wizard_skip: "Skip",
+    wizard_cancel: "Cancel",
+    wizard_validation_default: "Please complete this step before continuing.",
+    wizard_progress_label: "Wizard progress",
+    wizard_step_of: "Step {current} of {total}",
+
+    // ─── OperationalDashboardShell ────────────────────────────
+    dashboard_no_data: "No data",
+    dashboard_no_data_desc: "No records found matching your criteria.",
+    dashboard_search_placeholder: "Search...",
+
     // ─── Confirm Dialog ─────────────────────────────────────────
     confirm_cancel: "Cancel",
     confirm_ok: "Confirm",

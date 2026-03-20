@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
 import { ConversationList } from "@/components/messaging/conversation-list";
 import { ChatView } from "@/components/messaging/chat-view";
 import { ThreadPanel } from "@/components/messaging/thread-panel";
@@ -19,7 +19,6 @@ import {
     useMessages,
     useOrgMembers,
     usePinMessage,
-    usePinnedMessages,
     useSendMessage,
     useSendVoiceMessage,
     useToggleReaction,
@@ -39,7 +38,8 @@ import {
     useTypingIndicator,
 } from "@/lib/supabase/hooks-messaging-realtime";
 import type { MessageWithSender } from "@/types/messaging";
-import { PermissionGate } from "@/components/permission-guard";
+import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
+import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 
 export function MessagesPageClient() {
     const searchParams = useSearchParams();
@@ -105,6 +105,7 @@ export function MessagesPageClient() {
 
     const sendMessage = useSendMessage();
     const sendVoiceMessage = useSendVoiceMessage();
+    const updateConversation = useUpdateConversation(activeConversationId ?? "");
     const aiSummary = useAISummary(activeConversationId ?? undefined);
     const toggleReaction = useToggleReaction();
     const pinMessage = usePinMessage();
@@ -112,8 +113,6 @@ export function MessagesPageClient() {
     const deleteMessage = useDeleteMessage();
     const translateMessage = useTranslateMessage();
     const markRead = useMarkRead();
-    const { data: _pinnedMessages } = usePinnedMessages(activeConversationId ?? undefined);
-    const _updateConversation = useUpdateConversation(activeConversationId ?? "");
 
     // Mark last message as read when conversation is opened
     const lastMessageId = messages[0]?.id;
@@ -252,26 +251,76 @@ export function MessagesPageClient() {
         });
     }, []);
 
-    const voiceRecorderSlot = voiceEnabled ? (
-        <>
-            <VoiceMessageRecorder onSend={handleSendVoice} />
-            <PushToTalkButton channelName={activeConversation?.name ?? undefined} />
-        </>
-    ) : null;
+    const voiceRecorderSlot = React.useMemo(
+        () =>
+            voiceEnabled ? (
+                <>
+                    <VoiceMessageRecorder onSend={handleSendVoice} />
+                    <PushToTalkButton channelName={activeConversation?.name ?? undefined} />
+                </>
+            ) : null,
+        [voiceEnabled, handleSendVoice, activeConversation?.name]
+    );
 
-    const aiSummarySlot = aiSummaryEnabled ? (
-        <AISummaryPanel
-            conversationId={activeConversationId ?? undefined}
-            onGenerate={handleGenerateSummary}
-            isGenerating={aiSummary.isPending}
-            result={summaryResult}
-            error={summaryError}
-            onDismiss={() => {
-                setSummaryResult(null);
-                setSummaryError(null);
-            }}
-        />
-    ) : null;
+    const handleArchiveConversation = React.useCallback(() => {
+        if (!activeConversationId || !activeConversation) return;
+        if (
+            window.confirm(
+                `Archive conversation "${activeConversation.name ?? "this conversation"}"?`
+            )
+        ) {
+            updateConversation.mutate({ is_archived: true } as Parameters<
+                typeof updateConversation.mutate
+            >[0]);
+            setActiveConversation(null);
+        }
+    }, [activeConversationId, activeConversation, updateConversation, setActiveConversation]);
+
+    const archiveButton = React.useMemo(
+        () =>
+            activeConversation ? (
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleArchiveConversation}
+                    disabled={updateConversation.isPending}
+                    aria-label="Archive conversation"
+                >
+                    Archive
+                </Button>
+            ) : null,
+        [activeConversation, handleArchiveConversation, updateConversation.isPending]
+    );
+
+    const aiSummarySlot = React.useMemo(
+        () => (
+            <>
+                {aiSummaryEnabled && (
+                    <AISummaryPanel
+                        conversationId={activeConversationId ?? undefined}
+                        onGenerate={handleGenerateSummary}
+                        isGenerating={aiSummary.isPending}
+                        result={summaryResult}
+                        error={summaryError}
+                        onDismiss={() => {
+                            setSummaryResult(null);
+                            setSummaryError(null);
+                        }}
+                    />
+                )}
+                {archiveButton}
+            </>
+        ),
+        [
+            aiSummaryEnabled,
+            activeConversationId,
+            handleGenerateSummary,
+            aiSummary.isPending,
+            summaryResult,
+            summaryError,
+            archiveButton,
+        ]
+    );
 
     const handleConversationCreated = React.useCallback(
         (conversationId: string) => {
@@ -291,89 +340,60 @@ export function MessagesPageClient() {
         [setActiveConversation]
     );
 
-    return (
-        <PermissionGate resource="messaging">
-            <div className="space-y-6 motion-safe:animate-fade-in h-[calc(100vh-4rem)]">
-                <PageHeader
-                    title="Messages"
-                    description="Conversations, channels, and direct messages"
-                />
-                <div className="flex-1 flex border border-border rounded-xl overflow-hidden bg-background mt-4">
-                    {/* Conversation sidebar — always visible on desktop, hidden when in chat on mobile */}
-                    <div
-                        className={cn(
-                            "w-80 border-r border-border shrink-0",
-                            showChatOrThread ? "hidden lg:block" : "block"
-                        )}
-                    >
-                        <ConversationList
-                            conversations={conversations}
-                            activeId={activeConversationId}
-                            searchQuery={searchQuery}
-                            onSearchChange={setSearchQuery}
-                            onSelect={(id) => setActiveConversation(id)}
-                            onCompose={() => setComposing(true)}
-                            isLoading={convLoading}
-                            className="h-full"
-                        />
-                    </div>
-
-                    {/* Main content area */}
-                    <div
-                        className={cn(
-                            "flex-1 flex",
-                            !showChatOrThread && !showSearch && "hidden lg:flex"
-                        )}
-                    >
-                        {showSearch && (
-                            <MessageSearch
-                                onSelectResult={handleSearchResultSelect}
-                                className="flex-1"
+    const config: DashboardPageConfig = React.useMemo(
+        () => ({
+            resource: "messaging",
+            action: "read",
+            title: "Messages",
+            description: "Conversations, channels, and direct messages",
+            searchable: false,
+            contentSlot: (
+                <div className="h-[calc(100vh-12rem)]">
+                    <div className="flex-1 flex border border-border rounded-xl overflow-hidden bg-background h-full">
+                        {/* Conversation sidebar — always visible on desktop, hidden when in chat on mobile */}
+                        <div
+                            className={cn(
+                                "w-80 border-r border-border shrink-0",
+                                showChatOrThread ? "hidden lg:block" : "block"
+                            )}
+                        >
+                            <ConversationList
+                                conversations={conversations}
+                                activeId={activeConversationId}
+                                searchQuery={searchQuery}
+                                onSearchChange={setSearchQuery}
+                                onSelect={(id) => setActiveConversation(id)}
+                                onCompose={() => setComposing(true)}
+                                isLoading={convLoading}
+                                className="h-full"
                             />
-                        )}
+                        </div>
 
-                        {!showSearch && !activeConversationId && (
-                            <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                                <div className="text-center">
-                                    <p className="text-sm">
-                                        Select a conversation to start messaging
-                                    </p>
+                        {/* Main content area */}
+                        <div
+                            className={cn(
+                                "flex-1 flex",
+                                !showChatOrThread && !showSearch && "hidden lg:flex"
+                            )}
+                        >
+                            {showSearch && (
+                                <MessageSearch
+                                    onSelectResult={handleSearchResultSelect}
+                                    className="flex-1"
+                                />
+                            )}
+
+                            {!showSearch && !activeConversationId && (
+                                <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                                    <div className="text-center">
+                                        <p className="text-sm">
+                                            Select a conversation to start messaging
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {activeConversationId && view !== "thread" && (
-                            <ChatView
-                                conversation={activeConversation}
-                                messages={messages}
-                                currentUserId={currentUserId}
-                                isLoading={msgLoading}
-                                hasMore={hasNextPage}
-                                onLoadMore={() => fetchNextPage()}
-                                onSend={handleSend}
-                                onReact={handleReact}
-                                onPin={handlePin}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                                onThreadOpen={handleThreadOpen}
-                                onReply={handleReply}
-                                onBack={handleBack}
-                                replyTo={replyTo}
-                                onCancelReply={() => setReplyTo(null)}
-                                draft={drafts[draftKey] ?? ""}
-                                onDraftChange={(text) => setDraft(draftKey, text)}
-                                composerExtraActions={voiceRecorderSlot}
-                                headerExtraContent={aiSummarySlot}
-                                onTranslate={handleTranslate}
-                                translatingMessageId={translatingMessageId}
-                                translatedTexts={translatedTexts}
-                                onClearTranslation={handleClearTranslation}
-                                className="flex-1"
-                            />
-                        )}
-
-                        {view === "thread" && (
-                            <div className="flex flex-1">
+                            {activeConversationId && view !== "thread" && (
                                 <ChatView
                                     conversation={activeConversation}
                                     messages={messages}
@@ -401,24 +421,106 @@ export function MessagesPageClient() {
                                     onClearTranslation={handleClearTranslation}
                                     className="flex-1"
                                 />
-                                <div className="w-80 border-l border-border shrink-0">
-                                    <ThreadPanel
-                                        parentMessage={threadParentMessage}
-                                        className="h-full"
-                                    />
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                            )}
 
-                <NewConversationDialog
-                    open={isComposing}
-                    onClose={() => setComposing(false)}
-                    onCreated={handleConversationCreated}
-                    members={orgMembers}
-                />
-            </div>
-        </PermissionGate>
+                            {view === "thread" && (
+                                <div className="flex flex-1">
+                                    <ChatView
+                                        conversation={activeConversation}
+                                        messages={messages}
+                                        currentUserId={currentUserId}
+                                        isLoading={msgLoading}
+                                        hasMore={hasNextPage}
+                                        onLoadMore={() => fetchNextPage()}
+                                        onSend={handleSend}
+                                        onReact={handleReact}
+                                        onPin={handlePin}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDelete}
+                                        onThreadOpen={handleThreadOpen}
+                                        onReply={handleReply}
+                                        onBack={handleBack}
+                                        replyTo={replyTo}
+                                        onCancelReply={() => setReplyTo(null)}
+                                        draft={drafts[draftKey] ?? ""}
+                                        onDraftChange={(text) => setDraft(draftKey, text)}
+                                        composerExtraActions={voiceRecorderSlot}
+                                        headerExtraContent={aiSummarySlot}
+                                        onTranslate={handleTranslate}
+                                        translatingMessageId={translatingMessageId}
+                                        translatedTexts={translatedTexts}
+                                        onClearTranslation={handleClearTranslation}
+                                        className="flex-1"
+                                    />
+                                    <div className="w-80 border-l border-border shrink-0">
+                                        <ThreadPanel
+                                            parentMessage={threadParentMessage}
+                                            className="h-full"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <NewConversationDialog
+                        open={isComposing}
+                        onClose={() => setComposing(false)}
+                        onCreated={handleConversationCreated}
+                        members={orgMembers}
+                    />
+                </div>
+            ),
+        }),
+        [
+            showChatOrThread,
+            showSearch,
+            conversations,
+            activeConversationId,
+            searchQuery,
+            setSearchQuery,
+            setActiveConversation,
+            isComposing,
+            setComposing,
+            convLoading,
+            handleSearchResultSelect,
+            activeConversation,
+            messages,
+            currentUserId,
+            msgLoading,
+            hasNextPage,
+            fetchNextPage,
+            handleSend,
+            handleReact,
+            handlePin,
+            handleEdit,
+            handleDelete,
+            handleThreadOpen,
+            handleReply,
+            handleBack,
+            replyTo,
+            setReplyTo,
+            drafts,
+            draftKey,
+            setDraft,
+            voiceRecorderSlot,
+            aiSummarySlot,
+            handleTranslate,
+            translatingMessageId,
+            translatedTexts,
+            handleClearTranslation,
+            view,
+            threadParentMessage,
+            handleConversationCreated,
+            orgMembers,
+        ]
+    );
+
+    return (
+        <OperationalDashboardShell
+            config={config}
+            data={conversations as unknown as Record<string, unknown>[]}
+            isLoading={convLoading}
+        />
     );
 }

@@ -124,27 +124,23 @@ export function DashboardPageClient() {
             <StaggerContainer
                 stagger="tight"
                 animation="slide-up"
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 density-gap-card"
             >
                 <StatCard
                     title="Pipeline Value"
                     value={formatCurrency(pipelineValue)}
-                    change={12}
                     description="vs last quarter"
                     icon={TrendingUp}
                 />
                 <StatCard
                     title="Revenue Won"
                     value={formatCurrency(wonValue)}
-                    change={8}
                     description="this quarter"
                     icon={DollarSign}
                 />
                 <StatCard
                     title="Active Projects"
                     value={activeProjects.length}
-                    change={2}
-                    changeSuffix=""
                     description="new this month"
                     icon={FolderKanban}
                 />
@@ -155,15 +151,13 @@ export function DashboardPageClient() {
                             (c) => c.status === "active" || c.status === "on_project"
                         ).length
                     }
-                    change={-1}
-                    changeSuffix=""
                     description="vs last week"
                     icon={Users}
                 />
             </StaggerContainer>
 
             <ScrollReveal animation="fade-up">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 density-gap-card">
                     {/* Active Projects */}
                     <div className="lg:col-span-2">
                         <Card>
@@ -181,7 +175,10 @@ export function DashboardPageClient() {
                             <CardContent className="space-y-3">
                                 {activeProjects.map((project, i) => (
                                     <StaggerItem key={project.id} index={i} stagger="relaxed">
-                                        <div className="flex items-center gap-4 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer">
+                                        <Link
+                                            href={`/projects/${project.id}`}
+                                            className="flex items-center gap-4 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
+                                        >
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2">
                                                     <p className="text-sm font-semibold truncate">
@@ -193,9 +190,9 @@ export function DashboardPageClient() {
                                                                 ? "success"
                                                                 : "ghost"
                                                         }
-                                                        className="text-[10px]"
+                                                        className="density-caption"
                                                     >
-                                                        {project.currentPhase.replace("_", " ")}
+                                                        {project.currentPhase.replaceAll("_", " ")}
                                                     </Badge>
                                                 </div>
                                                 <p className="text-xs text-muted-foreground mt-0.5">
@@ -218,11 +215,11 @@ export function DashboardPageClient() {
                                                 <p className="text-xs font-medium">
                                                     {formatCurrency(project.budgetActual)}
                                                 </p>
-                                                <p className="text-[10px] text-muted-foreground">
+                                                <p className="density-caption text-muted-foreground">
                                                     of {formatCurrency(project.budgetPlanned)}
                                                 </p>
                                             </div>
-                                        </div>
+                                        </Link>
                                     </StaggerItem>
                                 ))}
                             </CardContent>
@@ -230,7 +227,7 @@ export function DashboardPageClient() {
                     </div>
 
                     {/* Right Column */}
-                    <div className="space-y-6">
+                    <div className="density-gap-page">
                         {/* Overdue Approvals */}
                         {overdueApprovals.length > 0 && (
                             <Card className="border-warning/30 bg-warning/5">
@@ -251,7 +248,7 @@ export function DashboardPageClient() {
                                             <p className="text-xs font-medium">
                                                 {approval.milestoneName}
                                             </p>
-                                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                                            <p className="density-caption text-muted-foreground mt-0.5">
                                                 {approval.timelineImpactDays && (
                                                     <span className="text-destructive font-medium">
                                                         +{approval.timelineImpactDays}d impact
@@ -275,7 +272,7 @@ export function DashboardPageClient() {
                                         {(myTaskCounts?.overdue ?? 0) > 0 && (
                                             <Badge
                                                 variant="destructive"
-                                                className="ml-2 text-[9px]"
+                                                className="ml-2 density-caption"
                                             >
                                                 {myTaskCounts?.overdue} overdue
                                             </Badge>
@@ -336,7 +333,7 @@ export function DashboardPageClient() {
                                             <p className="text-xs font-medium truncate">
                                                 {(d.title as string) ?? "Untitled"}
                                             </p>
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="density-caption text-muted-foreground">
                                                 {DOCUMENT_TYPE_MAP[
                                                     ((d.document_type as string) ??
                                                         "doc") as DocumentType
@@ -376,7 +373,7 @@ export function DashboardPageClient() {
                                             <p className="text-xs font-medium truncate">
                                                 {notif.title}
                                             </p>
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="density-caption text-muted-foreground">
                                                 {formatRelativeTime(
                                                     notif.createdAt ?? new Date().toISOString()
                                                 )}

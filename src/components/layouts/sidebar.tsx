@@ -116,7 +116,7 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
                                 {item.title}
                             </span>
                             {item.badge && (
-                                <span className="text-[10px] font-bold bg-sidebar-primary/20 text-sidebar-primary px-1.5 py-0.5 rounded-full transition-[opacity,transform] duration-200 motion-reduce:transition-none">
+                                <span className="density-caption font-bold bg-sidebar-primary/20 text-sidebar-primary px-1.5 py-0.5 rounded-full transition-[opacity,transform] duration-200 motion-reduce:transition-none">
                                     {item.badge}
                                 </span>
                             )}
@@ -480,7 +480,7 @@ export function Sidebar() {
                                 <X className="h-3 w-3" />
                             </button>
                         ) : (
-                            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-sidebar-foreground/25 bg-sidebar-accent px-1 py-0.5 rounded font-mono">
+                            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 density-caption text-sidebar-foreground/25 bg-sidebar-accent px-1 py-0.5 rounded font-mono">
                                 /
                             </kbd>
                         )}
@@ -497,7 +497,7 @@ export function Sidebar() {
                     {pinnedItems.length > 0 && !isFiltering && (
                         <div className="mb-2">
                             {(!collapsed || isMobile) && (
-                                <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-sidebar-primary/60">
+                                <div className="flex items-center gap-1.5 px-2 py-1 density-caption font-semibold uppercase tracking-wider text-sidebar-primary/60">
                                     <Star className="h-3 w-3" />
                                     Favorites
                                 </div>
@@ -540,7 +540,7 @@ export function Sidebar() {
                             {!collapsed || isMobile ? (
                                 <button
                                     onClick={() => toggleSection(section.title)}
-                                    className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/35 hover:text-sidebar-foreground/55 transition-colors"
+                                    className="flex w-full items-center justify-between rounded-md px-2 py-1.5 density-caption font-semibold uppercase tracking-wider text-sidebar-foreground/35 hover:text-sidebar-foreground/55 transition-colors"
                                     aria-expanded={isSectionExpanded(section.title)}
                                 >
                                     <span>{section.title}</span>
@@ -648,7 +648,7 @@ export function Sidebar() {
                                 <p className="text-xs font-medium truncate">
                                     {authLoading ? "Loading..." : profile?.display_name || "Guest"}
                                 </p>
-                                <p className="text-[10px] text-sidebar-foreground/40 truncate capitalize">
+                                <p className="density-caption text-sidebar-foreground/40 truncate capitalize">
                                     {activeOrg?.role || "Not signed in"}
                                 </p>
                             </div>
@@ -661,7 +661,7 @@ export function Sidebar() {
                                     aria-label="Sign out"
                                 >
                                     {signingOut ? (
-                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" />
                                     ) : (
                                         <LogOut className="h-3.5 w-3.5" />
                                     )}

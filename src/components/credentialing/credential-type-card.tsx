@@ -44,30 +44,30 @@ export function CredentialTypeCard({
                         )}
                         <div>
                             <p className="text-sm font-semibold leading-tight">{name}</p>
-                            <p className="text-[10px] text-muted-foreground capitalize">
+                            <p className="density-caption text-muted-foreground capitalize">
                                 {category.replace("_", " ")} · {format}
                             </p>
                         </div>
                     </div>
-                    <Badge variant={isActive ? "success" : "ghost"} className="text-[9px]">
+                    <Badge variant={isActive ? "success" : "ghost"} className="density-caption">
                         {isActive ? "Active" : "Inactive"}
                     </Badge>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px]">
+                <div className="flex items-center justify-between density-caption">
                     <span className="text-muted-foreground">Tier {tierLevel}</span>
                     <div className="flex flex-wrap gap-1">
                         {defaultZoneAccess.length === 0 ? (
                             <span className="text-muted-foreground">All zones</span>
                         ) : (
                             defaultZoneAccess.slice(0, 3).map((z) => (
-                                <Badge key={z} variant="ghost" className="text-[9px]">
+                                <Badge key={z} variant="ghost" className="density-caption">
                                     {z}
                                 </Badge>
                             ))
                         )}
                         {defaultZoneAccess.length > 3 && (
-                            <Badge variant="ghost" className="text-[9px]">
+                            <Badge variant="ghost" className="density-caption">
                                 +{defaultZoneAccess.length - 3}
                             </Badge>
                         )}

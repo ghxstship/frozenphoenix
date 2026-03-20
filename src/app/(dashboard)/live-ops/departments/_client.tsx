@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -54,19 +55,19 @@ const CONFIG: DashboardPageConfig = {
                 <CardContent className="py-4">
                     <div className="flex items-center justify-between mb-2">
                         <h3 className="text-sm font-semibold">{item.department as string}</h3>
-                        <StatusBadge status={item.status as string} className="text-[10px]" />
+                        <StatusBadge status={item.status as string} className="density-caption" />
                     </div>
-                    <p className="text-[11px] text-muted-foreground mb-2">
+                    <p className="density-caption text-muted-foreground mb-2">
                         Lead: {(item.department_lead_id as string) ?? "—"}
                     </p>
                     <div className="flex items-center gap-2 mb-1">
                         <ProgressBar value={pct} size="xs" className="flex-1" />
-                        <span className="text-[10px] font-medium">
+                        <span className="density-caption font-medium">
                             {crewIn}/{crewTotal}
                         </span>
                     </div>
                     {typeof item.issues === "string" && item.issues && (
-                        <p className="text-[10px] text-warning mt-2 flex items-center gap-1">
+                        <p className="density-caption text-warning mt-2 flex items-center gap-1">
                             <AlertTriangle className="h-3 w-3 shrink-0" />
                             {item.issues}
                         </p>
@@ -84,12 +85,83 @@ const CONFIG: DashboardPageConfig = {
 
 export function DepartmentStatusPageClient() {
     const { data, isLoading } = useDepartmentStatuses();
-    const _createDeptStatus = useCreateDepartmentStatus();
-    const _updateDeptStatus = useUpdateDepartmentStatus();
+    const createDeptStatus = useCreateDepartmentStatus();
+    const updateDeptStatus = useUpdateDepartmentStatus();
+
+    const configWithActions: DashboardPageConfig = {
+        ...CONFIG,
+        headerActions: (
+            <Button
+                size="sm"
+                disabled={createDeptStatus.isPending}
+                onClick={() => {
+                    const dept = window.prompt("Department name:");
+                    if (dept) {
+                        createDeptStatus.mutate({
+                            department: dept,
+                            status: "standby",
+                        } as Parameters<typeof createDeptStatus.mutate>[0]);
+                    }
+                }}
+            >
+                Add Department
+            </Button>
+        ),
+        cardRenderer: (item: Row) => {
+            const crewTotal = Number(item.crew_count) || 0;
+            const crewIn = Number(item.crew_checked_in) || 0;
+            const pct = crewTotal > 0 ? Math.round((crewIn / crewTotal) * 100) : 0;
+            const isReady = item.status === "ready" || item.status === "active";
+            return (
+                <Card className="hover:shadow-sm transition-all">
+                    <CardContent className="py-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-sm font-semibold">{item.department as string}</h3>
+                            <StatusBadge
+                                status={item.status as string}
+                                className="density-caption"
+                            />
+                        </div>
+                        <p className="density-caption text-muted-foreground mb-2">
+                            Lead: {(item.department_lead_id as string) ?? "—"}
+                        </p>
+                        <div className="flex items-center gap-2 mb-1">
+                            <ProgressBar value={pct} size="xs" className="flex-1" />
+                            <span className="density-caption font-medium">
+                                {crewIn}/{crewTotal}
+                            </span>
+                        </div>
+                        {typeof item.issues === "string" && item.issues && (
+                            <p className="density-caption text-warning mt-2 flex items-center gap-1">
+                                <AlertTriangle className="h-3 w-3 shrink-0" />
+                                {item.issues}
+                            </p>
+                        )}
+                        <div className="flex gap-1 mt-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={updateDeptStatus.isPending}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateDeptStatus.mutate({
+                                        id: item.id as string,
+                                        status: isReady ? "standby" : "ready",
+                                    } as Parameters<typeof updateDeptStatus.mutate>[0]);
+                                }}
+                            >
+                                {isReady ? "Stand Down" : "Mark Ready"}
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            );
+        },
+    };
 
     return (
         <OperationalDashboardShell
-            config={CONFIG}
+            config={configWithActions}
             data={data as Row[] | null}
             isLoading={isLoading}
         />

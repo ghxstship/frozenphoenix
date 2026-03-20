@@ -222,7 +222,7 @@ export function ContextSwitcherPopover({
                                 <X className="h-3 w-3" />
                             </button>
                         )}
-                        <kbd className="text-[9px] text-muted-foreground/30 bg-muted px-1 py-0.5 rounded font-mono">
+                        <kbd className="density-caption text-muted-foreground/30 bg-muted px-1 py-0.5 rounded font-mono">
                             Esc
                         </kbd>
                     </div>
@@ -237,7 +237,7 @@ export function ContextSwitcherPopover({
                     >
                         {isLoading ? (
                             <div className="flex items-center justify-center py-6">
-                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                <Loader2 className="h-4 w-4 motion-safe:animate-spin text-muted-foreground" />
                                 <span className="ml-2 text-xs text-muted-foreground">
                                     {CONTEXT_SWITCHER_STRINGS.shared.loading}
                                 </span>

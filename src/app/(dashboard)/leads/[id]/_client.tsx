@@ -44,7 +44,7 @@ function LeadPipelineStatsTab() {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -112,7 +112,7 @@ function ConvertLeadAction({ leadId }: { leadId: string }) {
     return (
         <Button size="sm" disabled={convertLead.isPending} onClick={handleConvert}>
             {convertLead.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                <Loader2 className="h-4 w-4 motion-safe:animate-spin mr-1" />
             ) : (
                 <Plus className="h-4 w-4 mr-1" />
             )}
@@ -264,7 +264,7 @@ export function LeadDetailClient({
     ) : undefined;
 
     const overviewSlot = lead ? (
-        <div className="space-y-6">
+        <div className="density-gap-page">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base">Contact Information</CardTitle>
@@ -340,7 +340,7 @@ export function LeadDetailClient({
                         <CardHeader>
                             <CardTitle className="text-base">Convert Lead</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="density-gap-section">
                             <p className="text-sm text-muted-foreground">
                                 Convert this lead into a deal to begin the sales pipeline.
                             </p>
@@ -358,7 +358,7 @@ export function LeadDetailClient({
                             <CardTitle className="text-base">Activity Timeline</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-4">
+                            <div className="density-gap-section">
                                 {activityItems.map((item) => (
                                     <div key={item.id} className="flex items-start gap-4">
                                         <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />

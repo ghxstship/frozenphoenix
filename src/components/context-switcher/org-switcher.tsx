@@ -41,7 +41,7 @@ export function OrgSwitcher({ collapsed = false, isMobile = false }: OrgSwitcher
                 showLabel ? "px-2 py-1.5 w-full" : "justify-center p-1.5"
             )}
         >
-            <div className="h-7 w-7 rounded-md bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0">
+            <div className="h-7 w-7 rounded-md bg-primary/10 text-primary density-caption font-bold flex items-center justify-center shrink-0">
                 {orgInitials !== "??" ? orgInitials : <Building2 className="h-3.5 w-3.5" />}
             </div>
             {showLabel && (
@@ -65,7 +65,7 @@ export function OrgSwitcher({ collapsed = false, isMobile = false }: OrgSwitcher
                     )}
                     aria-label={orgName}
                 >
-                    <div className="h-7 w-7 rounded-md bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0">
+                    <div className="h-7 w-7 rounded-md bg-primary/10 text-primary density-caption font-bold flex items-center justify-center shrink-0">
                         {orgInitials !== "??" ? orgInitials : <Building2 className="h-3.5 w-3.5" />}
                     </div>
                     {showLabel && (

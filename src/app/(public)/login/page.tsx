@@ -212,7 +212,7 @@ function LoginForm() {
 
     return (
         <AuthLayout title="Welcome back" subtitle="Sign in to your account to continue">
-            <form onSubmit={handleLogin} className="space-y-4" noValidate>
+            <form onSubmit={handleLogin} className="density-gap-section" noValidate>
                 {error && (
                     <div
                         className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
@@ -272,7 +272,10 @@ function LoginForm() {
                 <Button type="submit" className="w-full" disabled={isDisabled} aria-busy={loading}>
                     {loading ? (
                         <>
-                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            <Loader2
+                                className="h-4 w-4 motion-safe:animate-spin"
+                                aria-hidden="true"
+                            />
                             Signing in…
                         </>
                     ) : isLocked ? (
@@ -308,7 +311,10 @@ function LoginForm() {
                         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
                     >
                         {magicLinkLoading ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                            <Loader2
+                                className="h-3.5 w-3.5 motion-safe:animate-spin"
+                                aria-hidden="true"
+                            />
                         ) : (
                             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                         )}
@@ -332,7 +338,7 @@ export default function LoginPage() {
         <Suspense
             fallback={
                 <div className="min-h-screen flex items-center justify-center bg-background">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <Loader2 className="h-8 w-8 motion-safe:animate-spin text-primary" />
                 </div>
             }
         >

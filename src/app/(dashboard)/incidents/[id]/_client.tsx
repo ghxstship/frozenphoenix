@@ -198,7 +198,7 @@ export function IncidentDetailClient({
         ) : undefined;
 
     const overviewSlot = incident ? (
-        <div className="space-y-6">
+        <div className="density-gap-page">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base">Description</CardTitle>
@@ -267,7 +267,7 @@ export function IncidentDetailClient({
                 id: "investigation",
                 label: "Investigation",
                 content: incident ? (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-base">Root Cause Analysis</CardTitle>
@@ -293,7 +293,7 @@ export function IncidentDetailClient({
                 id: "resolution",
                 label: "Resolution",
                 content: incident ? (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-base">Resolution</CardTitle>

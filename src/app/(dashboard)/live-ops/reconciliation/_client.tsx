@@ -63,10 +63,10 @@ const CONFIG: DashboardPageConfig = {
                                 </h3>
                                 <StatusBadge
                                     status={item.status as string}
-                                    className="text-[10px] shrink-0"
+                                    className="density-caption shrink-0"
                                 />
                             </div>
-                            <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
+                            <div className="flex items-center gap-3 density-caption text-muted-foreground mt-0.5">
                                 {typeof item.department === "string" && item.department && (
                                     <span>{item.department}</span>
                                 )}
@@ -76,20 +76,20 @@ const CONFIG: DashboardPageConfig = {
                                     <span className="text-destructive">Missing: {missing}</span>
                                 )}
                             </div>
-                            <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-0.5">
+                            <div className="flex items-center gap-3 density-caption text-muted-foreground mt-0.5">
                                 {typeof item.condition_on_arrival === "string" &&
                                     item.condition_on_arrival && (
                                         <span>
                                             Arrival:{" "}
                                             <StatusBadge
                                                 status={item.condition_on_arrival}
-                                                className="text-[9px]"
+                                                className="density-caption"
                                             />
                                         </span>
                                     )}
                             </div>
                             {typeof item.condition_notes === "string" && item.condition_notes && (
-                                <p className="text-[10px] text-muted-foreground mt-1">
+                                <p className="density-caption text-muted-foreground mt-1">
                                     {item.condition_notes}
                                 </p>
                             )}

@@ -142,7 +142,11 @@ export function MessageSearch({ onSelectResult, className }: MessageSearchProps)
                                 className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-muted/40 transition-colors"
                                 onClick={() => onSelectResult?.(result)}
                             >
-                                <Avatar name={result.sender_name} size="sm" className="mt-0.5 shrink-0" />
+                                <Avatar
+                                    name={result.sender_name}
+                                    size="sm"
+                                    className="mt-0.5 shrink-0"
+                                />
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-0.5">
                                         <span className="font-medium text-foreground">
@@ -157,7 +161,7 @@ export function MessageSearch({ onSelectResult, className }: MessageSearchProps)
                                     <p className="text-sm text-foreground line-clamp-2">
                                         {highlightMatch(result.body, query)}
                                     </p>
-                                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                                    <p className="density-caption text-muted-foreground mt-0.5">
                                         {formatRelativeTime(result.created_at)}
                                     </p>
                                 </div>

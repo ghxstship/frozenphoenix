@@ -161,7 +161,7 @@ export function ComplianceDashboardPageClient() {
             )}
 
             {/* Score Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 density-gap-card">
                 <Card>
                     <CardContent className="pt-6 text-center">
                         <div
@@ -221,7 +221,7 @@ export function ComplianceDashboardPageClient() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Badge variant="outline" className="text-[10px]">
+                                    <Badge variant="outline" className="density-caption">
                                         {check.soc2Control}
                                     </Badge>
                                     {check.status === "pass" ? (
@@ -259,7 +259,7 @@ export function ComplianceDashboardPageClient() {
                         <CardTitle className="flex items-center gap-2 text-base">
                             <Activity className="h-4 w-4" aria-hidden="true" />
                             Configuration Drift Report
-                            <Badge variant="outline" className="ml-2 text-[10px]">
+                            <Badge variant="outline" className="ml-2 density-caption">
                                 {driftReport.drift_count} items
                             </Badge>
                         </CardTitle>
@@ -290,10 +290,16 @@ export function ComplianceDashboardPageClient() {
                                                 <p className={`text-sm font-medium ${style.text}`}>
                                                     {item.setting_key}
                                                 </p>
-                                                <Badge variant="outline" className="text-[10px]">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="density-caption"
+                                                >
                                                     {item.drift_type}
                                                 </Badge>
-                                                <Badge variant="outline" className="text-[10px]">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="density-caption"
+                                                >
                                                     {item.category}
                                                 </Badge>
                                             </div>
@@ -341,7 +347,7 @@ export function ComplianceDashboardPageClient() {
                 disabled={refreshing}
             >
                 {refreshing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />
                 ) : (
                     <RefreshCw className="h-4 w-4" aria-hidden="true" />
                 )}

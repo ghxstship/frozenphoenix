@@ -43,7 +43,7 @@ export function SMSFallbackToggle({
                 </div>
                 <div className="min-w-0">
                     <p className="text-xs font-medium">{ms("sms_fallback_label")}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">
+                    <p className="density-caption text-muted-foreground truncate">
                         {ms("sms_fallback_description")}
                     </p>
                 </div>
@@ -51,7 +51,7 @@ export function SMSFallbackToggle({
 
             <div className="flex items-center gap-2 shrink-0">
                 {enabled && (
-                    <Badge variant="success" className="text-[9px]">
+                    <Badge variant="success" className="density-caption">
                         {ms("sms_fallback_enabled")}
                     </Badge>
                 )}

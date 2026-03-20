@@ -90,7 +90,7 @@ export function OnboardingPageClient() {
                 />
             </div>
 
-            <div className="space-y-4">
+            <div className="density-gap-section">
                 {filtered.map((run, i) => {
                     const isOnboarding = tab === "onboarding";
                     const typedRun = isOnboarding ? (run as (typeof onboardingRuns)[0]) : run;
@@ -122,7 +122,7 @@ export function OnboardingPageClient() {
                                                     {isOnboarding &&
                                                         (typedRun as (typeof onboardingRuns)[0])
                                                             .classification && (
-                                                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                                                            <span className="density-caption px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
                                                                 {{
                                                                     new_hire: "New Hire",
                                                                     rehire: "Rehire",
@@ -150,7 +150,7 @@ export function OnboardingPageClient() {
                                                                   ? "info"
                                                                   : "default"
                                                         }
-                                                        className="text-[10px]"
+                                                        className="density-caption"
                                                     >
                                                         {run.status.replace(/_/g, " ")}
                                                     </Badge>
@@ -205,17 +205,17 @@ export function OnboardingPageClient() {
                                                             <div className="flex items-center gap-2 shrink-0">
                                                                 {step.assignedToName &&
                                                                     step.status !== "completed" && (
-                                                                        <span className="text-[10px] text-muted-foreground">
+                                                                        <span className="density-caption text-muted-foreground">
                                                                             {step.assignedToName}
                                                                         </span>
                                                                     )}
                                                                 {step.dueDate && (
-                                                                    <span className="text-[10px] text-muted-foreground">
+                                                                    <span className="density-caption text-muted-foreground">
                                                                         Due {step.dueDate}
                                                                     </span>
                                                                 )}
                                                                 {step.completedAt && (
-                                                                    <span className="text-[10px] text-success">
+                                                                    <span className="density-caption text-success">
                                                                         {new Date(
                                                                             step.completedAt
                                                                         ).toLocaleDateString()}

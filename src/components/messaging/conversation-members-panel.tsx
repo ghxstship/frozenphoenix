@@ -141,7 +141,7 @@ export function ConversationMembersPanel({
                                     </div>
                                     <Badge
                                         variant="outline"
-                                        className="text-[10px] px-1 py-0 h-4 capitalize"
+                                        className="density-caption px-1 py-0 h-4 capitalize"
                                     >
                                         {member.role}
                                     </Badge>

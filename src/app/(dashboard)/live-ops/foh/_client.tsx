@@ -119,15 +119,15 @@ export function FohPageClient() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                            <Badge variant="success" className="text-[10px]">
+                            <Badge variant="success" className="density-caption">
                                 {credCheckedIn}
                             </Badge>
                             <span className="text-xs text-muted-foreground">Checked In</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Badge variant="info" className="text-[10px]">
+                            <Badge variant="info" className="density-caption">
                                 {credIssued}
                             </Badge>
                             <span className="text-xs text-muted-foreground">
@@ -135,7 +135,7 @@ export function FohPageClient() {
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="text-[10px]">
+                            <Badge variant="secondary" className="density-caption">
                                 {credRows.length}
                             </Badge>
                             <span className="text-xs text-muted-foreground">Total Active</span>
@@ -144,7 +144,7 @@ export function FohPageClient() {
                 </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 density-gap-card">
                 {zoneViews.map((zone, i) => {
                     const utilPct =
                         zone.capacity > 0 ? Math.round((zone.occupancy / zone.capacity) * 100) : 0;
@@ -156,7 +156,7 @@ export function FohPageClient() {
                                         <h3 className="text-sm font-semibold">{zone.name}</h3>
                                         <StatusBadge
                                             status={zone.zoneType}
-                                            className="text-[10px]"
+                                            className="density-caption"
                                         />
                                     </div>
                                     <div className="mb-3">
@@ -168,7 +168,7 @@ export function FohPageClient() {
                                         </div>
                                         <ProgressBar value={utilPct} size="sm" />
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 density-caption">
                                         <div>
                                             <p className="text-muted-foreground">Queue</p>
                                             <p className="font-medium">{zone.queueLength}</p>
@@ -187,7 +187,7 @@ export function FohPageClient() {
                                         </div>
                                     </div>
                                     {zone.incidents > 0 && (
-                                        <p className="text-[10px] text-warning mt-2">
+                                        <p className="density-caption text-warning mt-2">
                                             {zone.incidents} active incident
                                             {zone.incidents > 1 ? "s" : ""}
                                         </p>

@@ -71,7 +71,6 @@ export function PermitDetailClient({
     };
 
     const tags = (rec?.tags ?? []) as string[];
-    const _documentUrl = "";
     const jurisdiction = (rec?.jurisdiction as string) ?? "";
     const totalCost = rec?.total_cost as number | null;
     const blocksEntity = (rec?.blocks_entity as boolean) ?? false;

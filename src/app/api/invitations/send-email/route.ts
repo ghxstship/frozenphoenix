@@ -3,15 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ApiErrors, parseAndValidate } from "@/lib/api-utils";
 import { sendEmailSchema } from "@/lib/validation/api-schemas";
 import { withApiHandler } from "@/lib/api/with-api-handler";
-
-const ROLE_LABELS: Record<string, string> = {
-    exec: "Executive",
-    director: "Director",
-    pm: "Project Manager",
-    member: "Team Member",
-    client: "Client",
-    collaborator: "Collaborator",
-};
+import { ROLE_LABELS } from "@/config/rbac";
 
 /**
  * Internal-only endpoint called by the invitations API to deliver

@@ -1,20 +1,22 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BackLink } from "@/components/ui/back-link";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { TabBar } from "@/components/ui/tab-bar";
 import type { TabBarItem } from "@/components/ui/tab-bar";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
-import { ChevronLeft, MoreHorizontal } from "lucide-react";
-import { Tooltip } from "@/components/ui/tooltip";
+import { MoreHorizontal } from "lucide-react";
 import { MessagingButton } from "@/components/messaging/messaging-button";
 import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
-
-/** @deprecated Use TabBarItem from '@/components/ui/tab-bar' directly */
-export type DetailTabConfig = TabBarItem;
 
 export interface DetailLayoutProps {
     backHref: string;
@@ -56,79 +58,13 @@ export function DetailLayout({
     children,
 }: DetailLayoutProps) {
     const { messagingEnabled } = useMessagingEnabled();
-    const [menuOpen, setMenuOpen] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
-    const menuButtonRef = useRef<HTMLButtonElement>(null);
     const tabIdPrefix = `detail-layout-${React.useId().replace(/:/g, "")}`;
     const resolvedActiveTab = activeTab ?? tabs?.[0]?.id;
-
-    // Keyboard handling for overflow menu (Escape, ArrowUp/Down, Home/End)
-    useEffect(() => {
-        if (!menuOpen) return;
-
-        // Auto-focus first menu item on open
-        requestAnimationFrame(() => {
-            const firstItem = menuRef.current?.querySelector(
-                '[role="menuitem"]'
-            ) as HTMLElement | null;
-            firstItem?.focus();
-        });
-
-        const handleKey = (e: KeyboardEvent) => {
-            const items = Array.from(
-                menuRef.current?.querySelectorAll('[role="menuitem"]') ?? []
-            ) as HTMLElement[];
-            const currentIndex = items.indexOf(document.activeElement as HTMLElement);
-
-            switch (e.key) {
-                case "Escape":
-                    setMenuOpen(false);
-                    menuButtonRef.current?.focus();
-                    break;
-                case "ArrowDown":
-                    e.preventDefault();
-                    items[currentIndex + 1 < items.length ? currentIndex + 1 : 0]?.focus();
-                    break;
-                case "ArrowUp":
-                    e.preventDefault();
-                    items[currentIndex - 1 >= 0 ? currentIndex - 1 : items.length - 1]?.focus();
-                    break;
-                case "Home":
-                    e.preventDefault();
-                    items[0]?.focus();
-                    break;
-                case "End":
-                    e.preventDefault();
-                    items[items.length - 1]?.focus();
-                    break;
-            }
-        };
-        document.addEventListener("keydown", handleKey);
-        return () => document.removeEventListener("keydown", handleKey);
-    }, [menuOpen]);
-
-    // Click-outside to close menu
-    useEffect(() => {
-        if (!menuOpen) return;
-        const handleClick = (e: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-                setMenuOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClick);
-        return () => document.removeEventListener("mousedown", handleClick);
-    }, [menuOpen]);
 
     return (
         <div className={cn("motion-safe:animate-fade-in", className)}>
             {/* Back Link */}
-            <Link
-                href={backHref}
-                className="group inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
-            >
-                <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-                {backLabel}
-            </Link>
+            <BackLink href={backHref} label={backLabel} />
 
             {/* Header */}
             <div
@@ -158,48 +94,28 @@ export function DetailLayout({
                     )}
                     {actions}
                     {menuItems && menuItems.length > 0 && (
-                        <div className="relative" ref={menuRef}>
-                            <Tooltip content="More actions" side="bottom">
-                                <Button
-                                    ref={menuButtonRef}
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setMenuOpen(!menuOpen)}
-                                    aria-expanded={menuOpen}
-                                    aria-haspopup="true"
-                                    aria-label="More actions"
-                                >
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" aria-label="More actions">
                                     <MoreHorizontal className="h-4 w-4" />
                                 </Button>
-                            </Tooltip>
-                            {menuOpen && (
-                                <div
-                                    className="absolute right-0 top-full mt-1 z-50 min-w-[160px] rounded-lg border border-border bg-popover p-1 shadow-lg animate-scale-in origin-top-right"
-                                    role="menu"
-                                    aria-label="More actions"
-                                >
-                                    {menuItems.map((item, i) => (
-                                        <button
-                                            key={i}
-                                            role="menuitem"
-                                            tabIndex={-1}
-                                            onClick={() => {
-                                                item.onClick();
-                                                setMenuOpen(false);
-                                            }}
-                                            className={cn(
-                                                "w-full text-left px-3 py-2 text-sm rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                                                item.variant === "destructive"
-                                                    ? "text-destructive hover:bg-destructive/10"
-                                                    : "hover:bg-secondary"
-                                            )}
-                                        >
-                                            {item.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                {menuItems.map((item, i) => (
+                                    <DropdownMenuItem
+                                        key={i}
+                                        onClick={item.onClick}
+                                        className={
+                                            item.variant === "destructive"
+                                                ? "text-destructive"
+                                                : undefined
+                                        }
+                                    >
+                                        {item.label}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     )}
                 </div>
             </div>
@@ -220,10 +136,7 @@ export function DetailLayout({
 
             {/* Content — responsive sidebar */}
             {sidebar ? (
-                <div
-                    className="flex flex-col lg:flex-row"
-                    style={{ gap: "var(--density-page-gap)" }}
-                >
+                <div className="flex flex-col lg:flex-row density-gap-page">
                     <div
                         className="flex-1 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         role={resolvedActiveTab ? "tabpanel" : undefined}

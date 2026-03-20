@@ -47,7 +47,7 @@ function ProposalItemsTab({ proposalId }: { proposalId: string }) {
         return (
             <Card>
                 <CardContent className="py-8 flex justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-5 w-5 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -324,7 +324,7 @@ export function ProposalDetailPageClient() {
     }, [shareLink]);
 
     const sidebarSlot = (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Proposal Info</CardTitle>
@@ -390,13 +390,13 @@ export function ProposalDetailPageClient() {
     );
 
     const overviewSlot = (
-        <div className="space-y-6">
+        <div className="density-gap-page">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base">Proposal Details</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CardContent className="density-gap-section">
+                    <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Title</label>
                             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -552,7 +552,7 @@ export function ProposalDetailPageClient() {
                 Add Section
             </Button>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base">Terms & Conditions</CardTitle>
@@ -735,7 +735,7 @@ export function ProposalDetailPageClient() {
                             <CardTitle className="text-base">Proposal Activity</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-4">
+                            <div className="density-gap-section">
                                 {activity.map((event, i) => (
                                     <div key={i} className="flex items-start gap-3">
                                         <div className="mt-0.5 h-8 w-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
@@ -839,7 +839,7 @@ export function ProposalDetailPageClient() {
                             Share Proposal Link
                         </DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4 py-2">
+                    <div className="density-gap-section py-2">
                         <p className="text-sm text-muted-foreground">
                             Anyone with this link can view the proposal. The link does not expire
                             but can be revoked.
@@ -908,7 +908,7 @@ export function ProposalDetailPageClient() {
                             Request E-Signature
                         </DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4 py-2">
+                    <div className="density-gap-section py-2">
                         <p className="text-sm text-muted-foreground">
                             Send this proposal to the client for electronic signature. They will
                             receive an email with a secure link.

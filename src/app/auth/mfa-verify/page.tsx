@@ -166,7 +166,10 @@ function MfaVerifyForm() {
                 >
                     {loading ? (
                         <>
-                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            <Loader2
+                                className="h-4 w-4 motion-safe:animate-spin"
+                                aria-hidden="true"
+                            />
                             Verifying…
                         </>
                     ) : (
@@ -224,7 +227,7 @@ export default function MfaVerifyPage() {
         <Suspense
             fallback={
                 <div className="min-h-screen flex items-center justify-center bg-background">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <Loader2 className="h-8 w-8 motion-safe:animate-spin text-primary" />
                 </div>
             }
         >

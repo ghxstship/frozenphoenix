@@ -3,11 +3,8 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-    ShieldAlert,
-    ShieldCheck,
-    XCircle,
-} from "lucide-react";
+import { humanizeSnakeCase } from "@/lib/utils";
+import { ShieldAlert, ShieldCheck, XCircle } from "lucide-react";
 
 interface ScanResultDisplayProps {
     result: string;
@@ -18,11 +15,14 @@ interface ScanResultDisplayProps {
     barcodeValue?: string;
 }
 
-const RESULT_CONFIG: Record<string, {
-    icon: typeof ShieldCheck;
-    colorClass: string;
-    borderClass: string;
-}> = {
+const RESULT_CONFIG: Record<
+    string,
+    {
+        icon: typeof ShieldCheck;
+        colorClass: string;
+        borderClass: string;
+    }
+> = {
     valid: {
         icon: ShieldCheck,
         colorClass: "text-success",
@@ -71,9 +71,7 @@ export function ScanResultDisplay({
             <CardContent className="pt-6">
                 <div className="flex flex-col items-center text-center space-y-3">
                     <Icon className={`h-16 w-16 ${config.colorClass}`} />
-                    <h2 className="text-xl font-bold capitalize">
-                        {result.replace("_", " ")}
-                    </h2>
+                    <h2 className="text-xl font-bold capitalize">{result.replace("_", " ")}</h2>
                     <p className="text-sm text-muted-foreground">{message}</p>
 
                     {assigneeName && (
@@ -93,7 +91,7 @@ export function ScanResultDisplay({
                                 </div>
                             )}
                             {barcodeValue && (
-                                <p className="text-[10px] font-mono text-muted-foreground mt-1">
+                                <p className="density-caption font-mono text-muted-foreground mt-1">
                                     {barcodeValue}
                                 </p>
                             )}
@@ -101,10 +99,16 @@ export function ScanResultDisplay({
                     )}
 
                     <Badge
-                        variant={result === "valid" ? "success" : result === "zone_denied" ? "warning" : "destructive"}
-                        className="text-[10px]"
+                        variant={
+                            result === "valid"
+                                ? "success"
+                                : result === "zone_denied"
+                                  ? "warning"
+                                  : "destructive"
+                        }
+                        className="density-caption"
                     >
-                        {result.replace("_", " ").toUpperCase()}
+                        {humanizeSnakeCase(result)}
                     </Badge>
                 </div>
             </CardContent>

@@ -117,7 +117,7 @@ export function EmailIntegrationPageClient() {
 
     const inboxContent = (
         <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <StatCard title="Unread" value={unreadCount} icon={Mail} />
                 <StatCard title="Linked to Records" value={linkedCount} icon={Link2} />
                 <StatCard title="Inbound Today" value={inboundToday} icon={ArrowDownRight} />
@@ -159,7 +159,7 @@ export function EmailIntegrationPageClient() {
                                                     : `To: ${email.to}`}
                                             </span>
                                             {email.hasAttachments && (
-                                                <Badge variant="ghost" className="text-[9px]">
+                                                <Badge variant="ghost" className="density-caption">
                                                     Attachment
                                                 </Badge>
                                             )}
@@ -172,7 +172,7 @@ export function EmailIntegrationPageClient() {
                                                 <Link2 className="h-3 w-3 text-primary" />
                                                 <Badge
                                                     variant="info"
-                                                    className="text-[10px] flex items-center gap-1"
+                                                    className="density-caption flex items-center gap-1"
                                                 >
                                                     {ENTITY_ICONS[email.linkedEntityType || ""]}
                                                     {email.linkedEntity}
@@ -181,7 +181,7 @@ export function EmailIntegrationPageClient() {
                                         )}
                                     </div>
                                 </div>
-                                <span className="text-[10px] text-muted-foreground shrink-0 ml-3">
+                                <span className="density-caption text-muted-foreground shrink-0 ml-3">
                                     {formatDate(email.receivedAt)}
                                 </span>
                             </div>
@@ -193,7 +193,7 @@ export function EmailIntegrationPageClient() {
     );
 
     const linkedContent = (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             {Object.entries(
                 emails
                     .filter((e) => e.linkedEntity)
@@ -211,10 +211,10 @@ export function EmailIntegrationPageClient() {
                             <div className="flex items-center gap-2">
                                 {ENTITY_ICONS[first.linkedEntityType || ""]}
                                 <CardTitle className="text-sm">{first.linkedEntity}</CardTitle>
-                                <Badge variant="ghost" className="text-[10px] capitalize">
+                                <Badge variant="ghost" className="density-caption capitalize">
                                     {first.linkedEntityType}
                                 </Badge>
-                                <Badge variant="info" className="text-[10px]">
+                                <Badge variant="info" className="density-caption">
                                     {emails.length} emails
                                 </Badge>
                             </div>
@@ -248,7 +248,7 @@ export function EmailIntegrationPageClient() {
     );
 
     const accountsContent = (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold">Connected Accounts</h3>
                 <Button size="sm" onClick={openCreate}>
@@ -278,7 +278,7 @@ export function EmailIntegrationPageClient() {
                                                       ? "destructive"
                                                       : "ghost"
                                             }
-                                            className="text-[10px]"
+                                            className="density-caption"
                                         >
                                             {account.status === "connected" ? (
                                                 <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -294,7 +294,7 @@ export function EmailIntegrationPageClient() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] text-muted-foreground">
+                                <span className="density-caption text-muted-foreground">
                                     Last sync: {formatDate(account.lastSyncAt)}
                                 </span>
                                 <Button

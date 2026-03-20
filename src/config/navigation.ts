@@ -117,6 +117,8 @@ import type { PermissionLevel } from "@/types";
 
 export interface NavItem {
     title: string;
+    /** i18n key for title — when provided, resolved at runtime via t() */
+    titleKey?: string;
     path: string;
     icon: LucideIcon;
     badge?: string | number;
@@ -128,6 +130,8 @@ export interface NavItem {
 
 export interface NavSection {
     title: string;
+    /** i18n key for section title — when provided, resolved at runtime via t() */
+    titleKey?: string;
     items: NavItem[];
     defaultExpanded?: boolean;
     /** Section only appears when a live event is in-progress */

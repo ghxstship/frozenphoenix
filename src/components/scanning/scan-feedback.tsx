@@ -128,7 +128,7 @@ export function ScanFeedback({
             <div
                 ref={flashRef}
                 className={cn(
-                    "fixed inset-0 z-[100] pointer-events-none transition-opacity duration-300",
+                    "fixed inset-0 z-[var(--z-overlay)] pointer-events-none transition-opacity duration-300",
                     config.flash
                 )}
                 style={{ opacity: 0 }}

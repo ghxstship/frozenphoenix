@@ -86,7 +86,12 @@ export function StrengthMeter({ password }: { password: string }) {
                         />
                     ))}
                 </div>
-                <span className={cn("text-[11px] font-medium", STRENGTH_TEXT_COLORS[strength.score])}>
+                <span
+                    className={cn(
+                        "density-caption font-medium",
+                        STRENGTH_TEXT_COLORS[strength.score]
+                    )}
+                >
                     {strength.label}
                 </span>
             </div>
@@ -95,7 +100,7 @@ export function StrengthMeter({ password }: { password: string }) {
                     <li
                         key={r.key}
                         className={cn(
-                            "text-[11px] flex items-center gap-1 transition-colors",
+                            "density-caption flex items-center gap-1 transition-colors",
                             r.met ? "text-success" : "text-muted-foreground"
                         )}
                     >
@@ -109,14 +114,21 @@ export function StrengthMeter({ password }: { password: string }) {
 }
 
 // ─── Password Input ────────────────────────────────────────────
-export interface PasswordInputProps
-    extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
+export interface PasswordInputProps extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    "type"
+> {
     showStrengthMeter?: boolean;
     showIcon?: boolean;
     error?: string;
 }
 
-function generateDescribedBy(id: string | undefined, error: string | undefined, showStrength: boolean, password: string): string | undefined {
+function generateDescribedBy(
+    id: string | undefined,
+    error: string | undefined,
+    showStrength: boolean,
+    password: string
+): string | undefined {
     const ids: string[] = [];
     if (error && id) ids.push(`${id}-error`);
     if (showStrength && password && id) ids.push(`${id}-strength`);
@@ -124,7 +136,20 @@ function generateDescribedBy(id: string | undefined, error: string | undefined, 
 }
 
 export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
-    ({ className, showStrengthMeter = false, showIcon = true, error, value, id, "aria-required": ariaRequired, required, ...props }, ref) => {
+    (
+        {
+            className,
+            showStrengthMeter = false,
+            showIcon = true,
+            error,
+            value,
+            id,
+            "aria-required": ariaRequired,
+            required,
+            ...props
+        },
+        ref
+    ) => {
         const [visible, setVisible] = React.useState(false);
         const passwordValue = typeof value === "string" ? value : "";
         const describedBy = generateDescribedBy(id, error, showStrengthMeter, passwordValue);

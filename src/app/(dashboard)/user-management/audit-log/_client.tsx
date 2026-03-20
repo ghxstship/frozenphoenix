@@ -250,12 +250,12 @@ export function AuditLogPageClient() {
                                         </span>
                                         <Badge
                                             variant={event.success ? "success" : "destructive"}
-                                            className="text-[10px]"
+                                            className="density-caption"
                                         >
                                             {label}
                                         </Badge>
                                     </div>
-                                    <div className="flex items-center gap-3 mt-0.5 text-[10px] text-muted-foreground">
+                                    <div className="flex items-center gap-3 mt-0.5 density-caption text-muted-foreground">
                                         {event.authMethod && (
                                             <span>{getStatusLabel(event.authMethod)}</span>
                                         )}
@@ -347,12 +347,12 @@ export function AuditLogPageClient() {
                                         </span>
                                         <Badge
                                             variant={isNegative ? "destructive" : "info"}
-                                            className="text-[10px]"
+                                            className="density-caption"
                                         >
                                             {label}
                                         </Badge>
                                     </div>
-                                    <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
+                                    <div className="flex items-center gap-2 mt-0.5 density-caption text-muted-foreground">
                                         {change.oldValue && change.newValue && (
                                             <span>
                                                 {getStatusLabel(change.oldValue)} →{" "}
@@ -374,7 +374,7 @@ export function AuditLogPageClient() {
                                     <p className="text-xs text-muted-foreground">
                                         by {change.changedByName}
                                     </p>
-                                    <p className="text-[10px] text-muted-foreground">
+                                    <p className="density-caption text-muted-foreground">
                                         {formatTime(change.createdAt)}
                                     </p>
                                 </div>

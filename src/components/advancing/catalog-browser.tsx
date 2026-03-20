@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import { ChevronRight, Filter, Package, Search } from "lucide-react";
 import {
     useCatalogCategories,
@@ -196,7 +197,7 @@ export function CatalogBrowser({ onAddItem, className }: CatalogBrowserProps) {
             {/* Loading state */}
             {(categoriesLoading || isLoadingItems) && (
                 <div className="flex items-center justify-center py-12">
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    <div className="h-6 w-6 motion-safe:animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </div>
             )}
 
@@ -231,8 +232,8 @@ export function CatalogBrowser({ onAddItem, className }: CatalogBrowserProps) {
                         <Package className="h-10 w-10" />
                         <p className="text-sm">
                             {isSearching
-                                ? "No items match your search"
-                                : "No items in this category"}
+                                ? COMMON_STRINGS.empty_search_no_match
+                                : COMMON_STRINGS.empty_no_items_in.replace("{entity}", "category")}
                         </p>
                     </div>
                 )}

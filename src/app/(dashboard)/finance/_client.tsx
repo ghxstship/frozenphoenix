@@ -82,7 +82,7 @@ const matchColumns: ColumnDef<MatchRow>[] = [
                         ? "info"
                         : "warning";
             return (
-                <Badge variant={variant} className="text-[10px]">
+                <Badge variant={variant} className="density-caption">
                     {v}
                 </Badge>
             );
@@ -127,7 +127,7 @@ const poColumns: ColumnDef<PurchaseOrder>[] = [
             const v = String(value);
             const variant = v === "received" ? "success" : v === "issued" ? "info" : "ghost";
             return (
-                <Badge variant={variant} className="text-[10px]">
+                <Badge variant={variant} className="density-caption">
                     {v}
                 </Badge>
             );
@@ -199,7 +199,7 @@ export function FinancePageClient() {
 
     const contentSlot = (
         <div className="density-gap-page">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <StatCard title="Total PO Value" value={formatCurrency(totalPO)} icon={Receipt} />
                 <StatCard
                     title="Total Invoiced"
@@ -210,7 +210,6 @@ export function FinancePageClient() {
                 <StatCard
                     title="Match Rate"
                     value="85%"
-                    change={5}
                     description="vs last month"
                     icon={CheckCircle2}
                 />

@@ -137,7 +137,7 @@ export function CommentsSection({
     );
 
     return (
-        <div className={cn("space-y-4", className)}>
+        <div className={cn("density-gap-section", className)}>
             {/* Comment Input */}
             {onAddComment && (
                 <div className="flex gap-3">
@@ -152,9 +152,11 @@ export function CommentsSection({
                             aria-label="New comment"
                         />
                         <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-muted-foreground/50">
-                                <kbd className="bg-muted px-1 py-0.5 rounded text-[9px]">⌘↵</kbd> to
-                                send
+                            <span className="density-caption text-muted-foreground/50">
+                                <kbd className="bg-muted px-1 py-0.5 rounded density-caption">
+                                    ⌘↵
+                                </kbd>{" "}
+                                to send
                             </span>
                             <Button
                                 size="sm"
@@ -195,7 +197,7 @@ export function CommentsSection({
                                                     {comment.authorName}
                                                 </span>
                                                 <time
-                                                    className="text-[10px] text-muted-foreground"
+                                                    className="density-caption text-muted-foreground"
                                                     dateTime={comment.createdAt}
                                                 >
                                                     {formatRelativeTime(comment.createdAt)}
@@ -274,12 +276,12 @@ export function CommentsSection({
                                                     autoFocus
                                                 />
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-[10px] text-muted-foreground/50">
-                                                        <kbd className="bg-muted px-1 py-0.5 rounded text-[9px]">
+                                                    <span className="density-caption text-muted-foreground/50">
+                                                        <kbd className="bg-muted px-1 py-0.5 rounded density-caption">
                                                             esc
                                                         </kbd>{" "}
                                                         cancel ·{" "}
-                                                        <kbd className="bg-muted px-1 py-0.5 rounded text-[9px]">
+                                                        <kbd className="bg-muted px-1 py-0.5 rounded density-caption">
                                                             ⌘↵
                                                         </kbd>{" "}
                                                         save

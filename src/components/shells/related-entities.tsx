@@ -10,37 +10,19 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { apiList } from "@/lib/api/client";
-import { getEntityConfig } from "@/lib/api/entity-config";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
+import { DataTable } from "@/components/data-view/data-table";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { ChevronRight, LayoutList } from "lucide-react";
 import type { RelatedEntityDef } from "@/types/detail-page-config";
-import type { ListColumnDef } from "@/types/list-page-config";
-
-type EntityRecord = Record<string, unknown>;
-
-function toDataTableColumn(col: ListColumnDef): ColumnDef<EntityRecord> {
-    return {
-        id: col.id,
-        header: col.header,
-        accessorKey: col.accessorKey as keyof EntityRecord | undefined,
-        accessorFn: col.accessorFn,
-        fieldType: col.fieldType,
-        fieldConfig: col.fieldConfig,
-        render: col.render,
-        sortable: col.sortable,
-        width: col.width,
-        minWidth: col.minWidth,
-        align: col.align,
-        hidden: col.hidden,
-        sticky: col.sticky,
-    };
-}
+import { toDataTableColumn } from "@/lib/record-utils";
+import { useEntityMeta } from "@/hooks/use-entity-meta";
+import type { EntityRecord } from "@/types/entity";
 
 interface RelatedEntitiesSectionProps {
     def: RelatedEntityDef;
@@ -49,8 +31,8 @@ interface RelatedEntitiesSectionProps {
 }
 
 export function RelatedEntitiesSection({ def, parentId, className }: RelatedEntitiesSectionProps) {
-    const entityConfig = getEntityConfig(def.entityKey);
-    const basePath = entityConfig?.basePath ?? `/api/${def.entityKey.replace(/_/g, "-")}`;
+    const router = useRouter();
+    const { basePath, slug } = useEntityMeta(def.entityKey);
     const Icon = def.icon ?? LayoutList;
     const limit = def.limit ?? 10;
 
@@ -70,8 +52,6 @@ export function RelatedEntitiesSection({ def, parentId, className }: RelatedEnti
     }, [rawData, parentId, def.foreignKey, limit]);
 
     const dtColumns = React.useMemo(() => def.columns.map(toDataTableColumn), [def.columns]);
-
-    const slug = entityConfig?.slug ?? def.entityKey.replace(/_/g, "-");
 
     if (isLoading) {
         return <LoadingState variant="card" />;
@@ -124,7 +104,7 @@ export function RelatedEntitiesSection({ def, parentId, className }: RelatedEnti
                                           "{id}",
                                           String(row.id ?? "")
                                       );
-                                      window.location.href = href;
+                                      router.push(href);
                                   }
                                 : undefined
                         }

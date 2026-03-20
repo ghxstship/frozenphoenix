@@ -35,6 +35,8 @@ export const COMMON_STRINGS = {
     action_view_details: "View Details",
     action_download: "Download",
     action_upload: "Upload",
+    action_submit: "Submit",
+    action_submitting: "Submitting…",
     action_copy: "Copy",
     action_share: "Share",
 
@@ -51,6 +53,8 @@ export const COMMON_STRINGS = {
     empty_no_data: "No data available",
     empty_search_no_match: "No items match your search",
     empty_filter_no_match: "No items match the selected filters",
+    empty_no_items_added: "No items added yet",
+    empty_no_items_in: "No items in this {entity}",
     empty_try_different: "Try adjusting your search or filters",
 
     // ─── Pagination ────────────────────────────────────────────

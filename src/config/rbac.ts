@@ -5,6 +5,17 @@ export interface Permission {
     actions: ("read" | "write" | "delete" | "manage")[];
 }
 
+// ─── Canonical Role Labels ──────────────────────────────────
+
+export const ROLE_LABELS: Record<string, string> = {
+    exec: "Executive",
+    director: "Director",
+    pm: "Project Manager",
+    member: "Team Member",
+    client: "Client",
+    collaborator: "Collaborator",
+};
+
 /**
  * Six-Tier Permissions Matrix
  *

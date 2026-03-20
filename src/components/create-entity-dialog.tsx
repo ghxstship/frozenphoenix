@@ -166,7 +166,7 @@ export function CreateEntityDialog({ config, open, onClose, onSubmit }: CreateEn
                         )}
                     </DialogHeader>
 
-                    <div className="grid gap-4 py-4">
+                    <div className="grid density-gap-card py-4">
                         {config.fields.map((field) => (
                             <FormField
                                 key={field.key}
@@ -251,7 +251,9 @@ export function CreateEntityDialog({ config, open, onClose, onSubmit }: CreateEn
                             Cancel
                         </Button>
                         <Button type="submit" disabled={submitting}>
-                            {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            {submitting && (
+                                <Loader2 className="h-4 w-4 mr-2 motion-safe:animate-spin" />
+                            )}
                             Create {config.entityName}
                         </Button>
                     </DialogFooter>

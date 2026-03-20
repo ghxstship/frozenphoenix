@@ -66,7 +66,7 @@ function ProjectAssignmentsTab({ projectId }: { projectId: string }) {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -141,7 +141,7 @@ function StakeholderProjectsTab({ projectId }: { projectId: string }) {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -219,7 +219,7 @@ function CommTemplatesTab({ projectId }: { projectId: string }) {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -411,7 +411,7 @@ export function ProjectDetailPageClient() {
 
     const sidebarSlot =
         project && phaseConfig ? (
-            <div className="space-y-4">
+            <div className="density-gap-section">
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-sm">Project Details</CardTitle>
@@ -458,8 +458,8 @@ export function ProjectDetailPageClient() {
         ) : undefined;
 
     const overviewSlot = project ? (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="density-gap-page">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <Card>
                     <CardContent className="pt-4">
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -533,9 +533,12 @@ export function ProjectDetailPageClient() {
                                     <div className="flex items-center gap-2">
                                         <PriorityBadge
                                             priority={task.priority}
-                                            className="text-[10px]"
+                                            className="density-caption"
                                         />
-                                        <StatusBadge status={task.status} className="text-[10px]" />
+                                        <StatusBadge
+                                            status={task.status}
+                                            className="density-caption"
+                                        />
                                     </div>
                                 </div>
                             ))}
@@ -604,11 +607,11 @@ export function ProjectDetailPageClient() {
                                             <div className="flex items-center gap-2">
                                                 <PriorityBadge
                                                     priority={task.priority}
-                                                    className="text-[10px]"
+                                                    className="density-caption"
                                                 />
                                                 <StatusBadge
                                                     status={task.status}
-                                                    className="text-[10px]"
+                                                    className="density-caption"
                                                 />
                                             </div>
                                         </div>
@@ -803,8 +806,8 @@ export function ProjectDetailPageClient() {
                 id: "budget",
                 label: "Budget",
                 content: project ? (
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="density-gap-section">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 density-gap-card">
                             <StatCard
                                 title="Planned Budget"
                                 value={formatCurrency(project.budget_planned)}
@@ -1016,7 +1019,9 @@ export function ProjectDetailPageClient() {
                             onClick={handleAddTask}
                             disabled={!taskTitle.trim() || createTask.isPending}
                         >
-                            {createTask.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                            {createTask.isPending && (
+                                <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
+                            )}
                             Add Task
                         </Button>
                     </DialogFooter>

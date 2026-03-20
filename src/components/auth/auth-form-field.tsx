@@ -5,8 +5,10 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import type { LucideIcon } from "lucide-react";
 
-export interface AuthFormFieldProps
-    extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "id"> {
+export interface AuthFormFieldProps extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    "id"
+> {
     fieldId: string;
     label: string;
     icon?: LucideIcon;
@@ -22,13 +24,12 @@ export const AuthFormField = React.forwardRef<HTMLInputElement, AuthFormFieldPro
 
         return (
             <div className="space-y-2">
-                <label
-                    htmlFor={fieldId}
-                    className="text-sm font-medium leading-none"
-                >
+                <label htmlFor={fieldId} className="text-sm font-medium leading-none">
                     {label}
                     {required && (
-                        <span className="text-destructive ml-1" aria-hidden="true">*</span>
+                        <span className="text-destructive ml-1" aria-hidden="true">
+                            *
+                        </span>
                     )}
                 </label>
                 <div className="relative">
@@ -58,7 +59,7 @@ export const AuthFormField = React.forwardRef<HTMLInputElement, AuthFormFieldPro
                     />
                 </div>
                 {description && !hasError && (
-                    <p id={descId} className="text-[11px] text-muted-foreground">
+                    <p id={descId} className="density-caption text-muted-foreground">
                         {description}
                     </p>
                 )}

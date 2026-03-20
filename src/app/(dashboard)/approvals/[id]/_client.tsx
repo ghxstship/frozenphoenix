@@ -58,12 +58,15 @@ export function ApprovalDetailClient({
         useDeleteHook: useDeleteApproval,
     });
 
+    const initiateApproval = useInitiateApproval();
     const approvalDecision = useApprovalDecision();
     const escalateApproval = useEscalateApproval();
     const cancelApproval = useCancelApproval();
-    const _initiateApproval = useInitiateApproval();
     const isBusy =
-        approvalDecision.isPending || escalateApproval.isPending || cancelApproval.isPending;
+        initiateApproval.isPending ||
+        approvalDecision.isPending ||
+        escalateApproval.isPending ||
+        cancelApproval.isPending;
 
     const rec = (approval ?? initialRecord) as Record<string, unknown> | null;
     const status = rec?.status as string | undefined;
@@ -105,7 +108,29 @@ export function ApprovalDetailClient({
                 </div>
             }
             actions={
-                status === "pending" ? (
+                status === "pending" && !instanceId ? (
+                    <div className="flex gap-2">
+                        <Button
+                            size="sm"
+                            disabled={isBusy}
+                            onClick={() =>
+                                initiateApproval.mutate({
+                                    workflowId: (rec?.workflow_id as string) ?? "",
+                                    entityId: id,
+                                    entityType: "approval",
+                                    entityName: (rec?.milestone_name as string) ?? "",
+                                })
+                            }
+                        >
+                            {initiateApproval.isPending ? (
+                                <Loader2 className="h-4 w-4 mr-1 motion-safe:animate-spin" />
+                            ) : (
+                                <ArrowUpRight className="h-4 w-4 mr-1" />
+                            )}
+                            Initiate Workflow
+                        </Button>
+                    </div>
+                ) : status === "pending" && instanceId ? (
                     <div className="flex gap-2">
                         <Button
                             size="sm"
@@ -119,7 +144,7 @@ export function ApprovalDetailClient({
                             }
                         >
                             {approvalDecision.isPending ? (
-                                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                <Loader2 className="h-4 w-4 mr-1 motion-safe:animate-spin" />
                             ) : (
                                 <CheckCircle2 className="h-4 w-4 mr-1" />
                             )}

@@ -55,7 +55,7 @@ function InvoiceLineItemsTab({ invoiceId }: { invoiceId: string }) {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -121,7 +121,7 @@ function InvoiceTimeEntriesTab({ invoiceId }: { invoiceId: string }) {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -191,7 +191,7 @@ function InvoiceAgingTab() {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -352,7 +352,7 @@ export function InvoiceDetailClient({
 
     const sidebarSlot = (
         <Card>
-            <CardContent className="py-4 space-y-4">
+            <CardContent className="py-4 density-gap-section">
                 <div className="text-center">
                     <p className="text-xs text-muted-foreground">Balance Due</p>
                     <p className="text-3xl font-bold mt-1">{formatCurrency(balance)}</p>
@@ -371,7 +371,7 @@ export function InvoiceDetailClient({
     );
 
     const overviewSlot = (
-        <div className="space-y-6">
+        <div className="density-gap-page">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
@@ -380,7 +380,7 @@ export function InvoiceDetailClient({
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 density-gap-card">
                         <div>
                             <p className="text-xs text-muted-foreground font-medium mb-1">
                                 Bill To

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { enumLabel, SCAN_RESULT_LABELS } from "@/lib/enum-labels";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -57,7 +58,7 @@ export function LiveOpsCredentialsPageClient() {
 
     return (
         <OperationalDashboardShell config={config} data={rows} isLoading={isLoading}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 density-gap-card">
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-sm">
@@ -83,16 +84,19 @@ export function LiveOpsCredentialsPageClient() {
                                                 <p className="text-sm font-medium">
                                                     {r.assignee_name as string}
                                                 </p>
-                                                <p className="text-[10px] text-muted-foreground font-mono">
+                                                <p className="density-caption text-muted-foreground font-mono">
                                                     {r.barcode_value as string}
                                                 </p>
                                             </div>
                                             <div className="text-right">
-                                                <Badge variant="success" className="text-[9px]">
+                                                <Badge
+                                                    variant="success"
+                                                    className="density-caption"
+                                                >
                                                     IN
                                                 </Badge>
                                                 {typeof r.checked_in_at === "string" && (
-                                                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                                                    <p className="density-caption text-muted-foreground mt-0.5">
                                                         {new Date(
                                                             r.checked_in_at
                                                         ).toLocaleTimeString()}
@@ -135,15 +139,15 @@ export function LiveOpsCredentialsPageClient() {
                                             <div>
                                                 <Badge
                                                     variant={isValid ? "success" : "destructive"}
-                                                    className="text-[9px]"
+                                                    className="density-caption"
                                                 >
-                                                    {result.replace("_", " ").toUpperCase()}
+                                                    {enumLabel(result, SCAN_RESULT_LABELS)}
                                                 </Badge>
-                                                <p className="text-[10px] text-muted-foreground mt-0.5">
-                                                    {(s.scan_type as string).replace("_", " ")}
+                                                <p className="density-caption text-muted-foreground mt-0.5">
+                                                    {(s.scan_type as string).replaceAll("_", " ")}
                                                 </p>
                                             </div>
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="density-caption text-muted-foreground">
                                                 {new Date(
                                                     s.scanned_at as string
                                                 ).toLocaleTimeString()}

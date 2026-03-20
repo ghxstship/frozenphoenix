@@ -79,8 +79,12 @@ export interface SettingsPageConfig {
     // ─── Header ───
     /** Page title */
     title: string;
+    /** i18n key for title — when provided, resolved at runtime via t() */
+    titleKey?: string;
     /** Page description */
     description?: string;
+    /** i18n key for description */
+    descriptionKey?: string;
     /** Page icon */
     icon?: LucideIcon;
     /** Header action buttons */

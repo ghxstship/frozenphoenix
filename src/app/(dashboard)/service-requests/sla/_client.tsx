@@ -11,7 +11,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { formatDate } from "@/lib/utils";
+import { capitalize, formatDate } from "@/lib/utils";
 import {
     AlertTriangle,
     CheckCircle2,
@@ -150,7 +150,7 @@ export function SlaPageClient() {
 
     const contentSlot = (
         <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <StatCard title="SLA Compliance" value={`${complianceRate}%`} icon={Target} />
                 <StatCard title="Breached" value={breached} icon={AlertTriangle} />
                 <StatCard title="At Risk" value={atRisk} icon={Clock} />
@@ -203,18 +203,18 @@ export function SlaPageClient() {
                                         <div className="flex items-start justify-between mb-3">
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] font-mono text-muted-foreground">
+                                                    <span className="density-caption font-mono text-muted-foreground">
                                                         {sla.ticketNumber}
                                                     </span>
                                                     <Badge
                                                         variant={PRIORITY_BADGE[sla.priority]}
-                                                        className="text-[10px]"
+                                                        className="density-caption"
                                                     >
                                                         {sla.priority}
                                                     </Badge>
                                                     <Badge
                                                         variant={STATUS_BADGE[sla.status]}
-                                                        className="text-[10px]"
+                                                        className="density-caption"
                                                     >
                                                         {sla.status.replace(/_/g, " ")}
                                                     </Badge>
@@ -234,12 +234,12 @@ export function SlaPageClient() {
                                                         ? "BREACHED"
                                                         : formatMinutes(sla.timeRemainingMinutes)}
                                                 </p>
-                                                <p className="text-[10px] text-muted-foreground">
+                                                <p className="density-caption text-muted-foreground">
                                                     remaining
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3 text-xs">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 density-gap-card mb-3 text-xs">
                                             <div>
                                                 <p className="text-muted-foreground">
                                                     Response Deadline
@@ -266,7 +266,7 @@ export function SlaPageClient() {
             </TabPanel>
 
             <TabPanel value="policies" activeValue={activeTab}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                     {policies.map((policy) => (
                         <Card key={policy.id}>
                             <CardContent className="p-4 space-y-3">
@@ -274,7 +274,7 @@ export function SlaPageClient() {
                                     <div className="flex items-center gap-2">
                                         <Badge
                                             variant={PRIORITY_BADGE[policy.priority]}
-                                            className="text-[10px]"
+                                            className="density-caption"
                                         >
                                             {policy.priority}
                                         </Badge>
@@ -282,7 +282,7 @@ export function SlaPageClient() {
                                     </div>
                                     <Badge
                                         variant={policy.isActive ? "success" : "ghost"}
-                                        className="text-[10px]"
+                                        className="density-caption"
                                     >
                                         {policy.isActive ? "Active" : "Disabled"}
                                     </Badge>
@@ -292,7 +292,7 @@ export function SlaPageClient() {
                                         <p className="text-sm font-bold">
                                             {formatMinutes(policy.responseTimeMinutes)}
                                         </p>
-                                        <p className="text-[10px] text-muted-foreground">
+                                        <p className="density-caption text-muted-foreground">
                                             Response
                                         </p>
                                     </div>
@@ -300,7 +300,7 @@ export function SlaPageClient() {
                                         <p className="text-sm font-bold">
                                             {formatMinutes(policy.resolutionTimeMinutes)}
                                         </p>
-                                        <p className="text-[10px] text-muted-foreground">
+                                        <p className="density-caption text-muted-foreground">
                                             Resolution
                                         </p>
                                     </div>
@@ -308,7 +308,7 @@ export function SlaPageClient() {
                                         <p className="text-sm font-bold">
                                             {formatMinutes(policy.escalationAfterMinutes)}
                                         </p>
-                                        <p className="text-[10px] text-muted-foreground">
+                                        <p className="density-caption text-muted-foreground">
                                             Escalation
                                         </p>
                                     </div>
@@ -327,7 +327,11 @@ export function SlaPageClient() {
                                             </>
                                         )}
                                     </div>
-                                    <Button size="sm" variant="ghost" className="h-6 text-[10px]">
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 density-caption"
+                                    >
                                         Edit
                                     </Button>
                                 </div>
@@ -338,7 +342,7 @@ export function SlaPageClient() {
             </TabPanel>
 
             <TabPanel value="metrics" activeValue={activeTab}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2">
@@ -346,7 +350,7 @@ export function SlaPageClient() {
                                 Compliance by Priority
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="density-gap-section">
                             {(["critical", "high", "medium", "low"] as const)
                                 .map((p) => {
                                     const matching = activeSlas.filter((s) => s.priority === p);
@@ -359,7 +363,7 @@ export function SlaPageClient() {
                                             ? Math.round(((total - breachedCount) / total) * 100)
                                             : 100;
                                     return {
-                                        priority: p.charAt(0).toUpperCase() + p.slice(1),
+                                        priority: capitalize(p),
                                         rate,
                                         total,
                                         breached: breachedCount,

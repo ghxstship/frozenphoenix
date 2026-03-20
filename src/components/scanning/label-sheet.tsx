@@ -91,7 +91,7 @@ export function LabelSheet({
     }
 
     return (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             {showPrintButton && (
                 <div className="flex justify-end">
                     <Button size="sm" variant="outline" onClick={handlePrint}>
@@ -114,7 +114,7 @@ export function LabelSheet({
                         className="border border-dashed border-border rounded-lg p-3 flex flex-col items-center text-center"
                     >
                         <QRDisplay value={item.qrValue} size={qrSize} />
-                        <p className="text-[10px] font-semibold mt-1 leading-tight truncate max-w-full">
+                        <p className="density-caption font-semibold mt-1 leading-tight truncate max-w-full">
                             {item.name}
                         </p>
                         {item.subtitle && (

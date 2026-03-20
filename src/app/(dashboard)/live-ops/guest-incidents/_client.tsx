@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { AlertTriangle, CheckCircle2, Clock } from "lucide-react";
@@ -55,12 +56,18 @@ const CONFIG: DashboardPageConfig = {
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                            <StatusBadge status={item.type as string} className="text-[10px]" />
-                            <StatusBadge status={item.severity as string} className="text-[10px]" />
-                            <StatusBadge status={item.status as string} className="text-[10px]" />
+                            <StatusBadge status={item.type as string} className="density-caption" />
+                            <StatusBadge
+                                status={item.severity as string}
+                                className="density-caption"
+                            />
+                            <StatusBadge
+                                status={item.status as string}
+                                className="density-caption"
+                            />
                         </div>
                         <p className="text-sm mt-1">{item.description as string}</p>
-                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-1">
+                        <div className="flex items-center gap-3 density-caption text-muted-foreground mt-1">
                             {typeof item.foh_zone_id === "string" && item.foh_zone_id && (
                                 <span>{item.foh_zone_id}</span>
                             )}
@@ -80,7 +87,7 @@ const CONFIG: DashboardPageConfig = {
                             )}
                         </div>
                         {typeof item.resolution === "string" && item.resolution && (
-                            <p className="text-[11px] text-success mt-1">
+                            <p className="density-caption text-success mt-1">
                                 Resolution: {item.resolution}
                             </p>
                         )}
@@ -98,12 +105,116 @@ const CONFIG: DashboardPageConfig = {
 
 export function GuestIncidentsPageClient() {
     const { data, isLoading } = useGuestIncidents();
-    const _createIncident = useCreateGuestIncident();
-    const _updateIncident = useUpdateGuestIncident();
+    const createIncident = useCreateGuestIncident();
+    const updateIncident = useUpdateGuestIncident();
+
+    const configWithActions: DashboardPageConfig = {
+        ...CONFIG,
+        headerActions: (
+            <Button
+                size="sm"
+                disabled={createIncident.isPending}
+                onClick={() => {
+                    const desc = window.prompt("Describe the incident:");
+                    if (desc) {
+                        createIncident.mutate({
+                            description: desc,
+                            type: "complaint",
+                            severity: "minor",
+                            status: "open",
+                        } as Parameters<typeof createIncident.mutate>[0]);
+                    }
+                }}
+            >
+                Report Incident
+            </Button>
+        ),
+        cardRenderer: (item: Row) => {
+            const isOpen = item.status !== "resolved" && item.status !== "closed";
+            return (
+                <Card
+                    className={`hover:shadow-sm transition-all border-l-2 ${SEVERITY_BORDERS[item.severity as string] ?? ""}`}
+                >
+                    <CardContent className="py-3">
+                        <div className="flex items-start gap-3">
+                            <div className="shrink-0 mt-0.5">
+                                <span className="text-xs font-mono font-bold bg-secondary px-1.5 py-0.5 rounded">
+                                    {String(item.id).slice(0, 8)}
+                                </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <StatusBadge
+                                        status={item.type as string}
+                                        className="density-caption"
+                                    />
+                                    <StatusBadge
+                                        status={item.severity as string}
+                                        className="density-caption"
+                                    />
+                                    <StatusBadge
+                                        status={item.status as string}
+                                        className="density-caption"
+                                    />
+                                </div>
+                                <p className="text-sm mt-1">{item.description as string}</p>
+                                <div className="flex items-center gap-3 density-caption text-muted-foreground mt-1">
+                                    {typeof item.foh_zone_id === "string" && item.foh_zone_id && (
+                                        <span>{item.foh_zone_id}</span>
+                                    )}
+                                    {typeof item.reported_at === "string" && (
+                                        <span>
+                                            {new Date(item.reported_at).toLocaleTimeString([], {
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                            })}
+                                        </span>
+                                    )}
+                                    {typeof item.guest_name === "string" && item.guest_name && (
+                                        <span>Guest: {item.guest_name}</span>
+                                    )}
+                                    {typeof item.assigned_to_id === "string" &&
+                                        item.assigned_to_id && (
+                                            <span>Assigned: {item.assigned_to_id}</span>
+                                        )}
+                                </div>
+                                {typeof item.resolution === "string" && item.resolution && (
+                                    <p className="density-caption text-success mt-1">
+                                        Resolution: {item.resolution}
+                                    </p>
+                                )}
+                                {isOpen && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="mt-2"
+                                        disabled={updateIncident.isPending}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            const resolution = window.prompt("Resolution notes:");
+                                            if (resolution) {
+                                                updateIncident.mutate({
+                                                    id: item.id as string,
+                                                    status: "resolved",
+                                                    resolution,
+                                                } as Parameters<typeof updateIncident.mutate>[0]);
+                                            }
+                                        }}
+                                    >
+                                        <CheckCircle2 className="mr-1 h-3 w-3" /> Resolve
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            );
+        },
+    };
 
     return (
         <OperationalDashboardShell
-            config={CONFIG}
+            config={configWithActions}
             data={data as Row[] | null}
             isLoading={isLoading}
         />

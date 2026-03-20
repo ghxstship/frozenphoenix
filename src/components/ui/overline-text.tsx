@@ -24,13 +24,12 @@ export function OverlineText({
     visualCaps = true,
     className,
 }: OverlineTextProps) {
-    const ariaLabel =
-        visualCaps && typeof children === "string" ? children : undefined;
+    const ariaLabel = visualCaps && typeof children === "string" ? children : undefined;
 
     return (
         <Tag
             className={cn(
-                "text-[10px] font-semibold tracking-wide text-muted-foreground",
+                "density-caption font-semibold tracking-wide text-muted-foreground",
                 visualCaps && "uppercase",
                 className
             )}

@@ -302,7 +302,7 @@ export function CommandBar({ className }: CommandBarProps) {
                                 aria-activedescendant={filteredCommands[selectedIndex]?.id}
                             />
                             {query && (
-                                <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full tabular-nums">
+                                <span className="density-caption text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full tabular-nums">
                                     {filteredCommands.length}
                                 </span>
                             )}
@@ -339,7 +339,7 @@ export function CommandBar({ className }: CommandBarProps) {
                             ) : (
                                 groupedResults.map((group) => (
                                     <div key={group.section} className="mb-1">
-                                        <div className="flex items-center gap-2 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+                                        <div className="flex items-center gap-2 px-4 py-1.5 density-caption font-semibold uppercase tracking-wider text-muted-foreground/50">
                                             {group.section === "Recent" && (
                                                 <Clock className="h-3 w-3" />
                                             )}
@@ -386,22 +386,22 @@ export function CommandBar({ className }: CommandBarProps) {
                         </div>
 
                         {/* Footer */}
-                        <div className="flex items-center justify-between px-4 py-2 border-t border-border bg-muted/30 text-[11px] text-muted-foreground">
+                        <div className="flex items-center justify-between px-4 py-2 border-t border-border bg-muted/30 density-caption text-muted-foreground">
                             <div className="flex items-center gap-3">
                                 <span className="flex items-center gap-1">
-                                    <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">
+                                    <kbd className="bg-muted px-1 py-0.5 rounded density-caption">
                                         ↑↓
                                     </kbd>{" "}
                                     navigate
                                 </span>
                                 <span className="flex items-center gap-1">
-                                    <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">
+                                    <kbd className="bg-muted px-1 py-0.5 rounded density-caption">
                                         ↵
                                     </kbd>{" "}
                                     open
                                 </span>
                                 <span className="flex items-center gap-1">
-                                    <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">
+                                    <kbd className="bg-muted px-1 py-0.5 rounded density-caption">
                                         esc
                                     </kbd>{" "}
                                     close

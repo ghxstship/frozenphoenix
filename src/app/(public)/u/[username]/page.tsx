@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { CopyLinkButton } from "@/components/ui/copy-link-button";
+import { getInitials } from "@/lib/utils";
 
 interface ProfileData {
     id: string;
@@ -80,12 +81,7 @@ export default async function PublicUserProfilePage({
     }
 
     const { profile, memberships } = data;
-    const initials = profile.display_name
-        .split(" ")
-        .map((n: string) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
+    const initials = getInitials(profile.display_name);
 
     return (
         <div className="min-h-screen bg-background">
@@ -239,7 +235,6 @@ export default async function PublicUserProfilePage({
         </div>
     );
 }
-
 
 export function generateMetadata({ params }: { params: { username: string } }) {
     return {

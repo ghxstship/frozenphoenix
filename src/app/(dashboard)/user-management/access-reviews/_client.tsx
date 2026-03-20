@@ -25,12 +25,7 @@ import {
     Users,
 } from "lucide-react";
 import type { PermissionLevel } from "@/types";
-
-const RISK_COLORS: Record<string, string> = {
-    low: "bg-success/10 text-success",
-    medium: "bg-warning/10 text-warning",
-    high: "bg-destructive/10 text-destructive",
-};
+import { RISK_BG_CLASSES } from "@/config/ui-variants";
 
 export function AccessReviewsPageClient() {
     const [search, setSearch] = useState("");
@@ -223,7 +218,7 @@ export function AccessReviewsPageClient() {
                                                     <p className="font-medium text-xs">
                                                         {review.userName}
                                                     </p>
-                                                    <p className="text-[10px] text-muted-foreground">
+                                                    <p className="density-caption text-muted-foreground">
                                                         {review.email}
                                                     </p>
                                                 </div>
@@ -232,7 +227,7 @@ export function AccessReviewsPageClient() {
                                                 {roleConfig && (
                                                     <Badge
                                                         variant={roleConfig.variant}
-                                                        className="text-[10px]"
+                                                        className="density-caption"
                                                     >
                                                         {roleConfig.label}
                                                     </Badge>
@@ -257,7 +252,7 @@ export function AccessReviewsPageClient() {
                                             </td>
                                             <td className="py-2.5 px-3 text-center">
                                                 <span
-                                                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${RISK_COLORS[review.riskLevel]}`}
+                                                    className={`inline-flex items-center px-2 py-0.5 rounded-full density-caption font-medium ${RISK_BG_CLASSES[review.riskLevel]}`}
                                                 >
                                                     {review.riskLevel === "high"
                                                         ? "High"

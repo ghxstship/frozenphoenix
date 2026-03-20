@@ -141,7 +141,7 @@ export function TasksHomePageClient() {
 
             {/* Time Horizon Groups */}
             {statusFilter !== "completed" ? (
-                <div className="space-y-4">
+                <div className="density-gap-section">
                     <TimeHorizonGroup label="Overdue" variant="overdue" count={overdue.length}>
                         {overdue.map((t) => (
                             <TaskRow key={t.id} task={t} />
@@ -247,7 +247,7 @@ function KpiCard({
                 <Icon className={`h-5 w-5 ${colorClass}`} />
                 <div>
                     <p className={`text-2xl font-bold tabular-nums ${colorClass}`}>{value}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                    <p className="density-caption text-muted-foreground uppercase tracking-wider">
                         {label}
                     </p>
                 </div>

@@ -125,7 +125,7 @@ export function NfcWriter({
 
             {status === "waiting" && (
                 <Badge variant="warning" className="text-xs">
-                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                    <Loader2 className="h-3 w-3 motion-safe:animate-spin mr-1" />
                     Tap NFC tag to write...
                 </Badge>
             )}
@@ -150,7 +150,7 @@ export function NfcWriter({
             >
                 {status === "waiting" ? (
                     <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                        <Loader2 className="h-4 w-4 motion-safe:animate-spin mr-1" />
                         Waiting for tag...
                     </>
                 ) : status === "success" ? (

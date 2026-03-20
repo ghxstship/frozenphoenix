@@ -18,7 +18,6 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { apiGet } from "@/lib/api/client";
-import { getEntityConfig } from "@/lib/api/entity-config";
 import { SlidePanel } from "@/components/ui/slide-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,12 +26,11 @@ import { FieldGrid } from "@/components/shells/field-grid";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { ChevronDown, ChevronUp, ExternalLink, Pencil } from "lucide-react";
-import type { DetailStatDef, QuickViewConfig } from "@/types/detail-page-config";
+import type { QuickViewConfig } from "@/types/detail-page-config";
 import type { ListRowActionDef } from "@/types/list-page-config";
-
-// ─── Types ───────────────────────────────────────────────────
-
-type EntityRecord = Record<string, unknown>;
+import { computeStatValue, getNestedValue } from "@/lib/record-utils";
+import { useEntityMeta } from "@/hooks/use-entity-meta";
+import type { EntityRecord } from "@/types/entity";
 
 export interface QuickViewPanelProps {
     /** Whether the panel is open */
@@ -67,27 +65,6 @@ export interface QuickViewPanelProps {
     icon?: React.ComponentType<{ className?: string }>;
 }
 
-// ─── Helpers ─────────────────────────────────────────────────
-
-function getNestedValue(record: EntityRecord, key: string): unknown {
-    const parts = key.split(".");
-    let current: unknown = record;
-    for (const part of parts) {
-        if (current == null || typeof current !== "object") return undefined;
-        current = (current as EntityRecord)[part];
-    }
-    return current;
-}
-
-function computeStatValue(stat: DetailStatDef, record: EntityRecord): string | number {
-    if (stat.compute) return stat.compute(record);
-    if (stat.accessorKey) {
-        const val = getNestedValue(record, stat.accessorKey);
-        return val != null ? String(val) : "—";
-    }
-    return "—";
-}
-
 // ─── Component ───────────────────────────────────────────────
 
 export function QuickViewPanel({
@@ -108,9 +85,7 @@ export function QuickViewPanel({
     icon: Icon,
 }: QuickViewPanelProps) {
     const router = useRouter();
-    const entityConfig = getEntityConfig(entityKey);
-    const basePath = entityConfig?.basePath ?? `/api/${entityKey.replace(/_/g, "-")}`;
-    const slug = entityConfig?.slug ?? entityKey.replace(/_/g, "-");
+    const { basePath, slug } = useEntityMeta(entityKey);
 
     // Fetch the record
     const { data: rawData, isLoading } = useQuery({
@@ -255,7 +230,7 @@ export function QuickViewPanel({
                                     <ChevronUp className="h-3.5 w-3.5 mr-1" />
                                     Prev
                                 </Button>
-                                <span className="text-[10px] text-muted-foreground tabular-nums">
+                                <span className="density-caption text-muted-foreground tabular-nums">
                                     {currentIndex + 1} / {recordIds.length}
                                 </span>
                                 <Button
@@ -276,7 +251,7 @@ export function QuickViewPanel({
                     <Separator />
 
                     {/* Scrollable content */}
-                    <div className="flex-1 overflow-y-auto py-4 space-y-4">
+                    <div className="flex-1 overflow-y-auto py-4 density-gap-section">
                         {/* Compact Stats */}
                         {statValues && statValues.length > 0 && (
                             <div className="grid grid-cols-2 gap-3">
@@ -291,7 +266,7 @@ export function QuickViewPanel({
                                                 {StatIcon && (
                                                     <StatIcon className="h-3.5 w-3.5 text-muted-foreground" />
                                                 )}
-                                                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                                                <span className="density-caption font-medium text-muted-foreground uppercase tracking-wider">
                                                     {s.label}
                                                 </span>
                                             </div>

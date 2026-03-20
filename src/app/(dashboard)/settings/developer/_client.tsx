@@ -82,7 +82,7 @@ export function DeveloperPortalPageClient() {
     const activeKeys = apiKeys.filter((k) => k.is_active);
 
     const apiKeysContent = (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Create API Key</CardTitle>
@@ -171,12 +171,12 @@ export function DeveloperPortalPageClient() {
                                                     <Badge
                                                         key={s}
                                                         variant="ghost"
-                                                        className="text-[10px]"
+                                                        className="density-caption"
                                                     >
                                                         {s}
                                                     </Badge>
                                                 ))}
-                                                <span className="text-[10px] text-muted-foreground">
+                                                <span className="density-caption text-muted-foreground">
                                                     {key.rate_limit_rpm} req/min
                                                 </span>
                                             </div>
@@ -246,7 +246,7 @@ export function DeveloperPortalPageClient() {
             <CardHeader>
                 <CardTitle className="text-sm">API Documentation</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="density-gap-section">
                 <div className="rounded-lg bg-muted/50 p-4">
                     <h4 className="font-semibold text-sm mb-2">Base URL</h4>
                     <code className="text-xs font-mono bg-background px-2 py-1 rounded">
@@ -310,7 +310,7 @@ export function DeveloperPortalPageClient() {
                             <div key={i} className="flex items-center gap-2">
                                 <Badge
                                     variant={ep.method === "GET" ? "success" : ("info" as "ghost")}
-                                    className="text-[10px] w-12 justify-center"
+                                    className="density-caption w-12 justify-center"
                                 >
                                     {ep.method}
                                 </Badge>

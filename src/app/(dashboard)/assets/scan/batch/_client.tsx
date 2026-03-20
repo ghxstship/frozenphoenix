@@ -5,8 +5,7 @@
    bulk operations. Accumulates scans then submits as a batch.
    ═══════════════════════════════════════════════════════════════ */
 
-import React, { useCallback, useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import React, { useCallback, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,8 +17,9 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { CheckCircle2, Download, Layers, Loader2, Package, Trash2, XCircle } from "lucide-react";
-import { PermissionGate } from "@/components/permission-guard";
 import { ScanFeedback, ScanInput } from "@/components/scanning";
+import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
+import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import type { ScanFeedbackResult, ScanMethod } from "@/components/scanning";
 import {
     type AssetScanAction,
@@ -124,9 +124,9 @@ export function BatchAssetScannerPageClient() {
         });
     }, [entries, scanAction, assetScan]);
 
-    const handleClear = () => setEntries([]);
+    const handleClear = useCallback(() => setEntries([]), []);
 
-    const handleExportCsv = () => {
+    const handleExportCsv = useCallback(() => {
         const rows = entries.map((e) => ({
             identifier: e.identifier,
             status: e.status,
@@ -150,201 +150,231 @@ export function BatchAssetScannerPageClient() {
         a.download = `batch-scan-${scanAction}-${new Date().toISOString().slice(0, 10)}.csv`;
         a.click();
         URL.revokeObjectURL(url);
-    };
+    }, [entries, scanAction]);
 
     const pendingCount = entries.filter((e) => e.status === "pending").length;
     const successCount = entries.filter((e) => e.status === "success").length;
     const errorCount = entries.filter((e) => e.status === "error").length;
 
-    return (
-        <PermissionGate resource="assets" action="read">
-            <div className="space-y-6 motion-safe:animate-fade-in">
-                <PageHeader title={S.batchTitle} description={S.batchSubtitle} />
-                <ScanFeedback
-                    result={feedback.result}
-                    message={feedback.message}
-                    visible={feedback.visible}
-                    onDismiss={() => setFeedback((f) => ({ ...f, visible: false }))}
-                />
+    const config: DashboardPageConfig = useMemo(
+        () => ({
+            resource: "assets",
+            action: "read",
+            title: S.batchTitle,
+            description: S.batchSubtitle,
+            searchable: false,
+            contentSlot: (
+                <>
+                    <ScanFeedback
+                        result={feedback.result}
+                        message={feedback.message}
+                        visible={feedback.visible}
+                        onDismiss={() => setFeedback((f) => ({ ...f, visible: false }))}
+                    />
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 space-y-6">
-                        <Card>
-                            <CardContent className="pt-6 space-y-4">
-                                <div className="w-full max-w-md mx-auto">
-                                    <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2 block">
-                                        {S.scanType}
-                                    </label>
-                                    <Select
-                                        value={scanAction}
-                                        onValueChange={(v) => setScanAction(v as AssetScanAction)}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {SCAN_ACTIONS.map((a) => (
-                                                <SelectItem key={a.value} value={a.value}>
-                                                    {a.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <div className="w-full max-w-md mx-auto">
-                                    <ScanInput
-                                        onScan={handleScan}
-                                        placeholder={SCANNING_STRINGS.input.assetPlaceholder}
-                                        disabled={isSubmitting}
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Batch list */}
-                        {entries.length > 0 && (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 density-gap-card">
+                        <div className="lg:col-span-2 density-gap-page">
                             <Card>
-                                <CardHeader>
-                                    <div className="flex items-center justify-between">
-                                        <CardTitle className="flex items-center gap-2 text-sm">
-                                            <Layers className="h-4 w-4" />
-                                            Batch ({entries.length})
-                                        </CardTitle>
-                                        <div className="flex items-center gap-2">
-                                            {entries.length > 0 && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={handleExportCsv}
-                                                    disabled={isSubmitting}
-                                                >
-                                                    <Download className="h-3 w-3 mr-1" />
-                                                    {S.batchExport}
-                                                </Button>
-                                            )}
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                onClick={handleClear}
-                                                disabled={isSubmitting}
-                                            >
-                                                <Trash2 className="h-3 w-3 mr-1" />
-                                                {S.batchClear}
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                                        {entries.map((entry, i) => (
-                                            <div
-                                                key={i}
-                                                className={`flex items-center justify-between p-2 rounded-lg border ${
-                                                    entry.status === "success"
-                                                        ? "border-success/20 bg-success/5"
-                                                        : entry.status === "error"
-                                                          ? "border-destructive/20 bg-destructive/5"
-                                                          : "border-border"
-                                                }`}
-                                            >
-                                                <div className="flex items-center gap-2 min-w-0">
-                                                    {entry.status === "success" && (
-                                                        <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
-                                                    )}
-                                                    {entry.status === "error" && (
-                                                        <XCircle className="h-4 w-4 text-destructive shrink-0" />
-                                                    )}
-                                                    {entry.status === "pending" && (
-                                                        <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-                                                    )}
-                                                    <div className="min-w-0">
-                                                        <p className="text-xs font-mono truncate">
-                                                            {entry.identifier}
-                                                        </p>
-                                                        {entry.result?.asset && (
-                                                            <p className="text-[10px] text-muted-foreground truncate">
-                                                                {String(
-                                                                    entry.result.asset.name ?? ""
-                                                                )}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <Badge
-                                                    variant={
-                                                        entry.status === "success"
-                                                            ? "success"
-                                                            : entry.status === "error"
-                                                              ? "destructive"
-                                                              : "secondary"
-                                                    }
-                                                    className="text-[9px] shrink-0"
-                                                >
-                                                    {entry.status}
-                                                </Badge>
-                                            </div>
-                                        ))}
+                                <CardContent className="pt-6 density-gap-section">
+                                    <div className="w-full max-w-md mx-auto">
+                                        <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2 block">
+                                            {S.scanType}
+                                        </label>
+                                        <Select
+                                            value={scanAction}
+                                            onValueChange={(v) =>
+                                                setScanAction(v as AssetScanAction)
+                                            }
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {SCAN_ACTIONS.map((a) => (
+                                                    <SelectItem key={a.value} value={a.value}>
+                                                        {a.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
 
-                                    {pendingCount > 0 && (
-                                        <Button
-                                            className="w-full mt-4"
-                                            onClick={handleSubmitAll}
+                                    <div className="w-full max-w-md mx-auto">
+                                        <ScanInput
+                                            onScan={handleScan}
+                                            placeholder={SCANNING_STRINGS.input.assetPlaceholder}
                                             disabled={isSubmitting}
-                                        >
-                                            {isSubmitting ? (
-                                                <>
-                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                    Processing...
-                                                </>
-                                            ) : (
-                                                S.batchSubmit.replace(
-                                                    "{count}",
-                                                    String(pendingCount)
-                                                )
-                                            )}
-                                        </Button>
-                                    )}
+                                        />
+                                    </div>
                                 </CardContent>
                             </Card>
-                        )}
-                    </div>
 
-                    {/* Stats sidebar */}
-                    <div className="space-y-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-sm">Batch Summary</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Total</span>
-                                    <span className="font-medium">{entries.length}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Pending</span>
-                                    <Badge variant="secondary" className="text-[10px]">
-                                        {pendingCount}
-                                    </Badge>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Success</span>
-                                    <Badge variant="success" className="text-[10px]">
-                                        {successCount}
-                                    </Badge>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Errors</span>
-                                    <Badge variant="destructive" className="text-[10px]">
-                                        {errorCount}
-                                    </Badge>
-                                </div>
-                            </CardContent>
-                        </Card>
+                            {/* Batch list */}
+                            {entries.length > 0 && (
+                                <Card>
+                                    <CardHeader>
+                                        <div className="flex items-center justify-between">
+                                            <CardTitle className="flex items-center gap-2 text-sm">
+                                                <Layers className="h-4 w-4" />
+                                                Batch ({entries.length})
+                                            </CardTitle>
+                                            <div className="flex items-center gap-2">
+                                                {entries.length > 0 && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={handleExportCsv}
+                                                        disabled={isSubmitting}
+                                                    >
+                                                        <Download className="h-3 w-3 mr-1" />
+                                                        {S.batchExport}
+                                                    </Button>
+                                                )}
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={handleClear}
+                                                    disabled={isSubmitting}
+                                                >
+                                                    <Trash2 className="h-3 w-3 mr-1" />
+                                                    {S.batchClear}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                                            {entries.map((entry, i) => (
+                                                <div
+                                                    key={i}
+                                                    className={`flex items-center justify-between p-2 rounded-lg border ${
+                                                        entry.status === "success"
+                                                            ? "border-success/20 bg-success/5"
+                                                            : entry.status === "error"
+                                                              ? "border-destructive/20 bg-destructive/5"
+                                                              : "border-border"
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        {entry.status === "success" && (
+                                                            <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+                                                        )}
+                                                        {entry.status === "error" && (
+                                                            <XCircle className="h-4 w-4 text-destructive shrink-0" />
+                                                        )}
+                                                        {entry.status === "pending" && (
+                                                            <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                                                        )}
+                                                        <div className="min-w-0">
+                                                            <p className="text-xs font-mono truncate">
+                                                                {entry.identifier}
+                                                            </p>
+                                                            {entry.result?.asset && (
+                                                                <p className="density-caption text-muted-foreground truncate">
+                                                                    {String(
+                                                                        entry.result.asset.name ??
+                                                                            ""
+                                                                    )}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <Badge
+                                                        variant={
+                                                            entry.status === "success"
+                                                                ? "success"
+                                                                : entry.status === "error"
+                                                                  ? "destructive"
+                                                                  : "secondary"
+                                                        }
+                                                        className="density-caption shrink-0"
+                                                    >
+                                                        {entry.status}
+                                                    </Badge>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {pendingCount > 0 && (
+                                            <Button
+                                                className="w-full mt-4"
+                                                onClick={handleSubmitAll}
+                                                disabled={isSubmitting}
+                                            >
+                                                {isSubmitting ? (
+                                                    <>
+                                                        <Loader2 className="h-4 w-4 mr-2 motion-safe:animate-spin" />
+                                                        Processing...
+                                                    </>
+                                                ) : (
+                                                    S.batchSubmit.replace(
+                                                        "{count}",
+                                                        String(pendingCount)
+                                                    )
+                                                )}
+                                            </Button>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
+
+                        {/* Stats sidebar */}
+                        <div className="density-gap-section">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-sm">Batch Summary</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Total</span>
+                                        <span className="font-medium">{entries.length}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Pending</span>
+                                        <Badge variant="secondary" className="density-caption">
+                                            {pendingCount}
+                                        </Badge>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Success</span>
+                                        <Badge variant="success" className="density-caption">
+                                            {successCount}
+                                        </Badge>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Errors</span>
+                                        <Badge variant="destructive" className="density-caption">
+                                            {errorCount}
+                                        </Badge>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </PermissionGate>
+                </>
+            ),
+        }),
+        [
+            feedback,
+            scanAction,
+            handleScan,
+            isSubmitting,
+            entries,
+            pendingCount,
+            successCount,
+            errorCount,
+            handleSubmitAll,
+            handleClear,
+            handleExportCsv,
+        ]
+    );
+
+    return (
+        <OperationalDashboardShell
+            config={config}
+            data={entries as unknown as Record<string, unknown>[]}
+            isLoading={false}
+        />
     );
 }

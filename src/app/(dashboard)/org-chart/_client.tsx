@@ -12,13 +12,12 @@ import {
     useSensor,
     useSensors,
 } from "@dnd-kit/core";
-import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GripVertical, User } from "lucide-react";
-import { PermissionGate } from "@/components/permission-guard";
 import { useCrewMembers, useProjects, useUpdateCrewMember } from "@/lib/supabase";
-import { LoadingState } from "@/components/layouts/loading-state";
+import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
+import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 
 // ─── Types ───
 
@@ -132,7 +131,7 @@ function OrgNodeCard({
                 >
                     {node.crew.name}
                 </p>
-                <Badge variant="ghost" className="text-[9px] mt-1">
+                <Badge variant="ghost" className="density-caption mt-1">
                     {node.crew.role}
                 </Badge>
             </div>
@@ -141,7 +140,7 @@ function OrgNodeCard({
             {node.children.length > 0 && (
                 <>
                     <div className="w-px h-4 bg-border" />
-                    <div className="flex gap-6 flex-wrap justify-center">
+                    <div className="flex density-gap-card flex-wrap justify-center">
                         {node.children.map((child) => (
                             <OrgNodeCard key={child.crew.id} node={child} depth={depth + 1} />
                         ))}
@@ -193,7 +192,7 @@ function DraggableChip({ crew }: { crew: CrewRow }) {
         >
             <GripVertical className="h-3 w-3 text-muted-foreground/40" />
             <span className="font-medium">{crew.name}</span>
-            <Badge variant="ghost" className="text-[8px]">
+            <Badge variant="ghost" className="density-micro">
                 {crew.role}
             </Badge>
         </div>
@@ -263,37 +262,34 @@ export function OrgChartPageClient() {
 
     const activeDragCrew = activeDragId ? crewRows.find((c) => c.id === activeDragId) : null;
 
-    if (loadingProjects || loadingCrew) {
-        return <LoadingState />;
-    }
-
     // Crew members whose supervisor_id references someone not in the dataset
     const crewIdSet = new Set(crewRows.map((c) => c.id));
     const unassigned = crewRows.filter(
         (c) => c.supervisor_id !== null && !crewIdSet.has(c.supervisor_id)
     );
 
-    return (
-        <PermissionGate resource="org_chart" action="read">
-            <div className="space-y-6 motion-safe:animate-fade-in">
-                <PageHeader
-                    title="Org Chart"
-                    description="Drag crew members to reorganize the reporting hierarchy"
-                >
-                    <select className="h-8 rounded-lg border border-input bg-background px-2 text-xs">
-                        {projects.map((p) => (
-                            <option key={String(p.id)} value={String(p.id)}>
-                                {String(p.name ?? "")}
-                            </option>
-                        ))}
-                    </select>
-                </PageHeader>
+    const config: DashboardPageConfig = useMemo(
+        () => ({
+            resource: "org_chart",
+            action: "read",
+            title: "Org Chart",
+            description: "Drag crew members to reorganize the reporting hierarchy",
+            searchable: false,
+            headerActions: (
+                <select className="h-8 rounded-lg border border-input bg-background px-2 text-xs">
+                    {projects.map((p) => (
+                        <option key={String(p.id)} value={String(p.id)}>
+                            {String(p.name ?? "")}
+                        </option>
+                    ))}
+                </select>
+            ),
+            contentSlot: (
                 <DndContext
                     sensors={sensors}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                 >
-                    {/* Visual Org Chart */}
                     <Card>
                         <CardContent className="py-8 overflow-x-auto">
                             <div className="flex flex-col items-center space-y-2 min-w-fit">
@@ -312,23 +308,30 @@ export function OrgChartPageClient() {
                         </CardContent>
                     </Card>
 
-                    {/* Unassigned members */}
                     <UnassignedZone unassigned={unassigned} />
 
-                    {/* Drag overlay */}
                     <DragOverlay dropAnimation={null}>
                         {activeDragCrew ? (
                             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-card shadow-xl ring-2 ring-primary text-xs">
                                 <User className="h-3 w-3 text-primary" />
                                 <span className="font-medium">{activeDragCrew.name}</span>
-                                <Badge variant="ghost" className="text-[8px]">
+                                <Badge variant="ghost" className="density-micro">
                                     {activeDragCrew.role}
                                 </Badge>
                             </div>
                         ) : null}
                     </DragOverlay>
                 </DndContext>
-            </div>
-        </PermissionGate>
+            ),
+        }),
+        [projects, sensors, handleDragStart, handleDragEnd, tree, unassigned, activeDragCrew]
+    );
+
+    return (
+        <OperationalDashboardShell
+            config={config}
+            data={crewRows as unknown as Record<string, unknown>[]}
+            isLoading={loadingProjects || loadingCrew}
+        />
     );
 }

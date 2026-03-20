@@ -119,7 +119,7 @@ export function ActivationDetailClient({
         ? (sbEvents ?? []).filter((e: Record<string, unknown>) => e.activation_id === id)
         : [];
 
-    const _typeConfig = activation
+    const typeConfig = activation
         ? ACTIVATION_TYPE_CONFIG[activation.type as keyof typeof ACTIVATION_TYPE_CONFIG]
         : null;
     const components =
@@ -157,7 +157,7 @@ export function ActivationDetailClient({
 
     const config: DetailPageConfig = {
         ...BASE_CONFIG,
-        subtitleFn: () => location?.name ?? "",
+        subtitleFn: () => [typeConfig?.label, location?.name].filter(Boolean).join(" · ") || "",
         sidebarSlot,
         stats: [
             {
@@ -285,7 +285,7 @@ export function ActivationDetailClient({
                             <CardTitle className="text-base">Timeline</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-4">
+                            <div className="density-gap-section">
                                 {[
                                     {
                                         label: "Install Date",

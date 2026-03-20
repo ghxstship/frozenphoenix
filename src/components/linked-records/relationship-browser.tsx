@@ -61,10 +61,10 @@ export function RelationshipBrowser({
                     Relationships
                 </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="density-gap-section">
                 {parentRecords.length > 0 && (
                     <div className="space-y-1">
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                        <p className="density-caption uppercase tracking-wider text-muted-foreground font-medium">
                             Parent Records
                         </p>
                         <div className="flex flex-wrap items-center gap-1 text-sm">
@@ -95,7 +95,7 @@ export function RelationshipBrowser({
                     <div className="space-y-2">
                         <button
                             onClick={() => toggleGroup("children")}
-                            className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium hover:text-foreground transition-colors w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                            className="flex items-center gap-1 density-caption uppercase tracking-wider text-muted-foreground font-medium hover:text-foreground transition-colors w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                             aria-expanded={expandedGroups.has("children")}
                         >
                             <ChevronRight
@@ -125,7 +125,7 @@ export function RelationshipBrowser({
                     <div className="space-y-2">
                         <button
                             onClick={() => toggleGroup("related")}
-                            className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium hover:text-foreground transition-colors w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                            className="flex items-center gap-1 density-caption uppercase tracking-wider text-muted-foreground font-medium hover:text-foreground transition-colors w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                             aria-expanded={expandedGroups.has("related")}
                         >
                             <ChevronRight
@@ -165,7 +165,7 @@ function RelationshipGroupSection({ group }: { group: RelationshipGroup }) {
                 <div className="flex items-center gap-1.5 text-xs font-medium">
                     <config.icon className="h-3.5 w-3.5 text-muted-foreground" />
                     {group.label}
-                    <Badge variant="secondary" className="text-[10px] h-4 px-1">
+                    <Badge variant="secondary" className="density-caption h-4 px-1">
                         {group.records.length}
                     </Badge>
                 </div>
@@ -186,7 +186,7 @@ function RelationshipGroupSection({ group }: { group: RelationshipGroup }) {
             </div>
 
             {group.records.length === 0 ? (
-                <p className="text-[11px] text-muted-foreground pl-5">None</p>
+                <p className="density-caption text-muted-foreground pl-5">None</p>
             ) : (
                 <div className="space-y-0.5 pl-5">
                     {group.records.slice(0, 5).map((record) => (
@@ -199,7 +199,10 @@ function RelationshipGroupSection({ group }: { group: RelationshipGroup }) {
                                 {record.name}
                             </span>
                             {record.status && (
-                                <Badge variant="outline" className="text-[9px] h-4 px-1 shrink-0">
+                                <Badge
+                                    variant="outline"
+                                    className="density-caption h-4 px-1 shrink-0"
+                                >
                                     {record.status}
                                 </Badge>
                             )}
@@ -208,7 +211,7 @@ function RelationshipGroupSection({ group }: { group: RelationshipGroup }) {
                     {group.records.length > 5 && (
                         <Link
                             href={`${config.path}?filter=${group.entityType}`}
-                            className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary pl-2"
+                            className="flex items-center gap-1 density-caption text-muted-foreground hover:text-primary pl-2"
                         >
                             +{group.records.length - 5} more
                             <ExternalLink className="h-2.5 w-2.5" />

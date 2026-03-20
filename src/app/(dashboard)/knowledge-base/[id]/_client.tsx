@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
     useCreateRecordComment,
     useDeleteKBArticle,
@@ -56,7 +55,7 @@ function RelatedArticlesTab({ category }: { category: string }) {
         return (
             <Card>
                 <CardContent className="py-8 flex justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-5 w-5 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -91,7 +90,7 @@ function RelatedArticlesTab({ category }: { category: string }) {
                                     v{String(a.version ?? 1)} · {String(a.status ?? "draft")}
                                 </p>
                             </div>
-                            <Badge variant="outline" className="text-[10px] shrink-0 ml-2">
+                            <Badge variant="outline" className="density-caption shrink-0 ml-2">
                                 {String(a.category ?? "")}
                             </Badge>
                         </div>
@@ -109,7 +108,7 @@ function ArticleLinksTab({ articleId }: { articleId: string }) {
         return (
             <Card>
                 <CardContent className="py-8 flex justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-5 w-5 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -169,7 +168,7 @@ function ArticleLinksTab({ articleId }: { articleId: string }) {
                                     {link.entity_type} · {link.entity_id.slice(0, 8)}
                                 </p>
                             </div>
-                            <Badge variant="ghost" className="text-[10px]">
+                            <Badge variant="ghost" className="density-caption">
                                 linked
                             </Badge>
                         </div>
@@ -207,7 +206,6 @@ export function KBArticleDetailClient({
     id: string;
     initialRecord: Record<string, unknown> | null;
 }) {
-    const _router = useRouter();
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
         entityId: id,
         entityLabel: "Article",
@@ -275,7 +273,7 @@ export function KBArticleDetailClient({
     const CategoryIcon = article ? (CATEGORY_ICONS[article.category] ?? BookOpen) : BookOpen;
 
     const sidebarSlot = article ? (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Author</CardTitle>
@@ -386,7 +384,7 @@ export function KBArticleDetailClient({
                                 </div>
                             </div>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="density-gap-section">
                             <div>
                                 <label className="text-sm font-medium block mb-1.5">Title</label>
                                 <Input
@@ -441,7 +439,7 @@ export function KBArticleDetailClient({
                 label: "Linked Records",
                 count: 0,
                 content: (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <Card>
                             <CardHeader>
                                 <div className="flex items-center justify-between">

@@ -27,7 +27,10 @@ const PROVIDER_ICONS: Record<string, string> = {
     stripe: "💵",
 };
 
-const STATUS_CONFIG: Record<string, { variant: "success" | "warning" | "destructive" | "ghost"; label: string }> = {
+const STATUS_CONFIG: Record<
+    string,
+    { variant: "success" | "warning" | "destructive" | "ghost"; label: string }
+> = {
     active: { variant: "success", label: "Active" },
     paused: { variant: "warning", label: "Paused" },
     error: { variant: "destructive", label: "Error" },
@@ -56,33 +59,29 @@ export function ProviderConnectionCard({
                     <div className="flex items-center gap-2">
                         <span className="text-xl">{icon}</span>
                         <div>
-                            <CardTitle className="text-sm">
-                                {displayName || providerName}
-                            </CardTitle>
-                            <p className="text-[10px] text-muted-foreground capitalize">
+                            <CardTitle className="text-sm">{displayName || providerName}</CardTitle>
+                            <p className="density-caption text-muted-foreground capitalize">
                                 {providerType.replace("_", " ")}
                             </p>
                         </div>
                     </div>
-                    <Badge variant={cfg.variant} className="text-[10px]">
+                    <Badge variant={cfg.variant} className="density-caption">
                         {cfg.label}
                     </Badge>
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="space-y-2 text-[11px]">
+                <div className="space-y-2 density-caption">
                     <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Last Sync</span>
                         <span className="font-medium">
-                            {lastSyncAt
-                                ? new Date(lastSyncAt).toLocaleString()
-                                : "Never"}
+                            {lastSyncAt ? new Date(lastSyncAt).toLocaleString() : "Never"}
                         </span>
                     </div>
                     {errorCount > 0 && (
                         <div className="flex items-center justify-between">
                             <span className="text-muted-foreground">Errors</span>
-                            <Badge variant="destructive" className="text-[9px]">
+                            <Badge variant="destructive" className="density-caption">
                                 {errorCount}
                             </Badge>
                         </div>
@@ -104,12 +103,7 @@ export function ProviderConnectionCard({
                         <RefreshCw className="h-3 w-3" />
                         Sync Now
                     </Button>
-                    <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-xs h-7"
-                        onClick={onConfigure}
-                    >
+                    <Button size="sm" variant="ghost" className="text-xs h-7" onClick={onConfigure}>
                         Configure
                     </Button>
                 </div>

@@ -82,7 +82,7 @@ export function ApprovalFlow({
                                     className={cn(
                                         "h-4 w-4",
                                         config.color,
-                                        step.status === "in_progress" && "animate-spin"
+                                        step.status === "in_progress" && "motion-safe:animate-spin"
                                     )}
                                 />
                             </div>
@@ -91,7 +91,7 @@ export function ApprovalFlow({
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm font-medium">{step.label}</span>
-                                    <Badge variant="ghost" className="text-[10px]">
+                                    <Badge variant="ghost" className="density-caption">
                                         {config.label}
                                     </Badge>
                                 </div>
@@ -101,7 +101,7 @@ export function ApprovalFlow({
                                         {step.assigneeName}
                                     </span>
                                     {step.completedAt && (
-                                        <span className="text-[10px] text-muted-foreground/60">
+                                        <span className="density-caption text-muted-foreground/60">
                                             {new Date(step.completedAt).toLocaleDateString()}
                                         </span>
                                     )}

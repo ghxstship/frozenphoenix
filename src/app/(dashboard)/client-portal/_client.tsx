@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { EmptyRow } from "@/components/ui/empty-row";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import {
     Building2,
@@ -22,7 +23,6 @@ import {
     FileSignature,
     FileText,
     FolderKanban,
-    Inbox,
     MessageSquare,
     Plus,
     ShieldCheck,
@@ -39,15 +39,6 @@ const EST_STATUS_BADGE: Record<string, "default" | "info" | "warning" | "success
         rejected: "destructive",
         expired: "destructive",
     };
-
-function EmptyRow({ message }: { message: string }) {
-    return (
-        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-            <Inbox className="h-8 w-8 mb-2 opacity-50" />
-            <p className="text-sm">{message}</p>
-        </div>
-    );
-}
 
 export function ClientPortalPageClient() {
     const [createOpen, openCreate, closeCreate] = useCreateAction();
@@ -136,7 +127,7 @@ export function ClientPortalPageClient() {
 
     const contentSlot = (
         <div className="density-gap-page">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 density-gap-card">
                 <StatCard
                     title="Active Projects"
                     value={
@@ -163,7 +154,7 @@ export function ClientPortalPageClient() {
                         Your Projects
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="density-gap-section">
                     {projects.length === 0 && <EmptyRow message="No projects found" />}
                     {projects.map((project) => (
                         <div
@@ -213,7 +204,7 @@ export function ClientPortalPageClient() {
                 </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 density-gap-card">
                 {/* Estimates */}
                 <Card>
                     <CardHeader>
@@ -232,12 +223,12 @@ export function ClientPortalPageClient() {
                                 <div className="flex items-start justify-between mb-1">
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-mono text-muted-foreground">
+                                            <span className="density-caption font-mono text-muted-foreground">
                                                 {est.number}
                                             </span>
                                             <Badge
                                                 variant={EST_STATUS_BADGE[est.status] || "default"}
-                                                className="text-[10px]"
+                                                className="density-caption"
                                             >
                                                 {est.status}
                                             </Badge>
@@ -280,7 +271,7 @@ export function ClientPortalPageClient() {
                                 <div>
                                     <h4 className="text-sm font-semibold">{approval.title}</h4>
                                     <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                                        <Badge variant="ghost" className="text-[10px]">
+                                        <Badge variant="ghost" className="density-caption">
                                             {approval.type}
                                         </Badge>
                                         <span className="flex items-center gap-1">

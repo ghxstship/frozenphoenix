@@ -77,7 +77,11 @@ function ResetPasswordForm() {
                 title="Password updated"
                 subtitle="Your account is secured with your new password"
             >
-                <div className="text-center space-y-4 py-4" role="status" aria-live="polite">
+                <div
+                    className="text-center density-gap-section py-4"
+                    role="status"
+                    aria-live="polite"
+                >
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10">
                         <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
                     </div>
@@ -99,7 +103,7 @@ function ResetPasswordForm() {
 
     return (
         <AuthLayout title="Set a new password" subtitle="Choose a strong password for your account">
-            <form onSubmit={handleUpdatePassword} className="space-y-4" noValidate>
+            <form onSubmit={handleUpdatePassword} className="density-gap-section" noValidate>
                 {error && (
                     <div
                         className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
@@ -162,7 +166,10 @@ function ResetPasswordForm() {
                 <Button type="submit" className="w-full" disabled={loading} aria-busy={loading}>
                     {loading ? (
                         <>
-                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            <Loader2
+                                className="h-4 w-4 motion-safe:animate-spin"
+                                aria-hidden="true"
+                            />
                             Updating…
                         </>
                     ) : (
@@ -189,7 +196,7 @@ export default function ResetPasswordPage() {
         <Suspense
             fallback={
                 <div className="min-h-screen flex items-center justify-center bg-background">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <Loader2 className="h-8 w-8 motion-safe:animate-spin text-primary" />
                 </div>
             }
         >

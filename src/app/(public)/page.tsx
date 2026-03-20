@@ -1,6 +1,7 @@
 "use client";
 
 import { logger } from "@/lib/logger";
+import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,7 +88,7 @@ export default function LandingPage() {
             {/* Skip navigation */}
             <a
                 href="#contact"
-                className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[60] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-primary-foreground focus:text-sm focus:font-medium"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[var(--z-overlay)] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-primary-foreground focus:text-sm focus:font-medium"
             >
                 Skip to contact form
             </a>
@@ -167,7 +168,7 @@ export default function LandingPage() {
                                 </p>
                             </div>
                         ) : (
-                            <div className="spatial-card p-6 space-y-4">
+                            <div className="spatial-card p-6 density-gap-section">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <Input
                                         placeholder="Your name"
@@ -248,11 +249,13 @@ export default function LandingPage() {
                                     }
                                 >
                                     {createLead.isPending ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
                                     ) : (
                                         <Send className="h-4 w-4" />
                                     )}
-                                    {createLead.isPending ? "Submitting..." : "Start Your Project"}
+                                    {createLead.isPending
+                                        ? COMMON_STRINGS.action_submitting
+                                        : "Start Your Project"}
                                 </Button>
                             </div>
                         )}

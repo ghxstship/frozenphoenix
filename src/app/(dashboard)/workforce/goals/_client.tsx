@@ -93,8 +93,8 @@ export function GoalsPageClient() {
     const [expandedId, setExpandedId] = useState<string | null>(null);
 
     const [createOpen, openCreate, closeCreate] = useCreateAction();
+    const createGoal = useCreateGoal();
     const updateGoal = useUpdateGoal();
-    const _createGoal = useCreateGoal();
 
     const { data: sbGoals, isLoading } = useGoals();
 
@@ -194,12 +194,15 @@ export function GoalsPageClient() {
                                                 </CardTitle>
                                                 <StatusBadge
                                                     status={goal.status}
-                                                    className="text-[10px]"
+                                                    className="density-caption"
                                                 />
-                                                <Badge variant="ghost" className="text-[10px]">
+                                                <Badge variant="ghost" className="density-caption">
                                                     {CATEGORY_LABELS[goal.category]}
                                                 </Badge>
-                                                <Badge variant="outline" className="text-[10px]">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="density-caption"
+                                                >
                                                     {PERIOD_LABELS[goal.period]}
                                                 </Badge>
                                             </div>
@@ -230,7 +233,7 @@ export function GoalsPageClient() {
                                 </CardHeader>
 
                                 {isExpanded && (
-                                    <CardContent className="pt-0 space-y-4">
+                                    <CardContent className="pt-0 density-gap-section">
                                         <p className="text-sm text-muted-foreground">
                                             {goal.description}
                                         </p>
@@ -343,6 +346,11 @@ export function GoalsPageClient() {
                 config={CREATE_GOAL_CONFIG}
                 open={createOpen}
                 onClose={closeCreate}
+                onSubmit={async (values) => {
+                    await createGoal.mutateAsync(
+                        values as Parameters<typeof createGoal.mutateAsync>[0]
+                    );
+                }}
             />
         </div>
     );

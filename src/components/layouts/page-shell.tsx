@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * @deprecated This entire module is deprecated. Zero consumers remain.
+ * New pages should use one of the purpose-built shells:
+ * - ListPageShell, DetailPageShell, OperationalDashboardShell,
+ *   SettingsPageShell, WizardShell, FormPageShell
+ */
+
 import React from "react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/ui/page-header";
@@ -53,10 +60,7 @@ export function PageShell({
     const resolvedActiveTab = activeTab ?? tabs?.[0]?.id;
 
     return (
-        <div
-            className={cn("motion-safe:animate-fade-in", className)}
-            style={{ display: "flex", flexDirection: "column", gap: "var(--density-page-gap)" }}
-        >
+        <div className={cn("density-gap-page motion-safe:animate-fade-in", className)}>
             <PageHeader title={title} description={description}>
                 {actions}
             </PageHeader>

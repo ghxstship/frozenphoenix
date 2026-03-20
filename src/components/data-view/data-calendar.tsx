@@ -148,7 +148,7 @@ export function DataCalendar({ data, className, actions, onItemClick }: DataCale
                     {WEEKDAYS.map((day) => (
                         <div
                             key={day}
-                            className="p-2 text-center text-[10px] font-semibold text-muted-foreground"
+                            className="p-2 text-center density-caption font-semibold text-muted-foreground"
                         >
                             {day}
                         </div>
@@ -180,7 +180,7 @@ export function DataCalendar({ data, className, actions, onItemClick }: DataCale
                             >
                                 <span
                                     className={cn(
-                                        "inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-medium",
+                                        "inline-flex h-5 w-5 items-center justify-center rounded-full density-caption font-medium",
                                         isToday && "bg-primary text-primary-foreground"
                                     )}
                                 >
@@ -189,7 +189,7 @@ export function DataCalendar({ data, className, actions, onItemClick }: DataCale
                                 <div className="mt-1 space-y-0.5">
                                     {dayItems.slice(0, 3).map((item, i) => {
                                         const chipClass = cn(
-                                            "w-full text-left rounded px-1 py-0.5 text-[9px] font-medium truncate transition-colors",
+                                            "w-full text-left rounded px-1 py-0.5 density-caption font-medium truncate transition-colors",
                                             item.color ??
                                                 DEFAULT_DOT_COLORS[i % DEFAULT_DOT_COLORS.length],
                                             "text-white",
@@ -222,7 +222,7 @@ export function DataCalendar({ data, className, actions, onItemClick }: DataCale
                                                         <DropdownMenuLabel className="font-medium">
                                                             {item.title}
                                                         </DropdownMenuLabel>
-                                                        <p className="px-2 pb-1.5 text-[10px] text-muted-foreground">
+                                                        <p className="px-2 pb-1.5 density-caption text-muted-foreground">
                                                             {dateLabel}
                                                         </p>
                                                         <DropdownMenuSeparator />
@@ -246,7 +246,7 @@ export function DataCalendar({ data, className, actions, onItemClick }: DataCale
                                         );
                                     })}
                                     {dayItems.length > 3 && (
-                                        <span className="text-[9px] text-muted-foreground pl-1">
+                                        <span className="density-caption text-muted-foreground pl-1">
                                             +{dayItems.length - 3} more
                                         </span>
                                     )}
@@ -333,7 +333,7 @@ function MobileAgendaView({
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium truncate">{item.title}</p>
                                     {item.endDate && (
-                                        <p className="text-[10px] text-muted-foreground">
+                                        <p className="density-caption text-muted-foreground">
                                             {new Date(item.date).toLocaleDateString(undefined, {
                                                 month: "short",
                                                 day: "numeric",
@@ -346,7 +346,7 @@ function MobileAgendaView({
                                         </p>
                                     )}
                                 </div>
-                                <Badge variant="secondary" className="text-[9px] shrink-0">
+                                <Badge variant="secondary" className="density-caption shrink-0">
                                     {new Date(item.date).toLocaleTimeString(undefined, {
                                         hour: "numeric",
                                         minute: "2-digit",

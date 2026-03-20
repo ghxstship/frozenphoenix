@@ -92,17 +92,17 @@ export function GanttChart({
                                 </div>
                                 <Badge
                                     variant={task.hasConflict ? "destructive" : "secondary"}
-                                    className="text-[9px] shrink-0"
+                                    className="density-caption shrink-0"
                                 >
                                     {durationDays}d
                                 </Badge>
                             </div>
                             {task.sublabel && (
-                                <p className="text-[10px] text-muted-foreground truncate">
+                                <p className="density-caption text-muted-foreground truncate">
                                     {task.sublabel}
                                 </p>
                             )}
-                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                            <div className="flex items-center gap-2 density-caption text-muted-foreground">
                                 <span>{formatShortDate(task.startDate)}</span>
                                 <span>\u2013</span>
                                 <span>{formatShortDate(task.endDate)}</span>
@@ -143,7 +143,7 @@ export function GanttChart({
                                 <div
                                     key={col}
                                     className={cn(
-                                        "shrink-0 text-center text-[10px] py-2 border-r border-border/30",
+                                        "shrink-0 text-center density-caption py-2 border-r border-border/30",
                                         isToday && "bg-primary/5 font-bold text-primary"
                                     )}
                                     style={{ width: colWidth }}
@@ -184,7 +184,7 @@ export function GanttChart({
                                         {task.sublabel && (
                                             <TruncatedText
                                                 as="p"
-                                                className="text-[10px] text-muted-foreground"
+                                                className="density-caption text-muted-foreground"
                                             >
                                                 {task.sublabel}
                                             </TruncatedText>
@@ -271,7 +271,7 @@ export function GanttChart({
                                             )}
                                             style={{ width: `${progress}%` }}
                                         />
-                                        <span className="relative z-10 text-[9px] font-medium px-1.5 truncate block leading-6">
+                                        <span className="relative z-10 density-caption font-medium px-1.5 truncate block leading-6">
                                             {task.label}
                                         </span>
                                     </button>

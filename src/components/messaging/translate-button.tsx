@@ -54,7 +54,7 @@ export function TranslateButton({
                 </p>
                 <button
                     onClick={onShowOriginal}
-                    className="text-[10px] text-primary hover:underline"
+                    className="density-caption text-primary hover:underline"
                 >
                     {ms("translate_show_original")}
                 </button>
@@ -65,8 +65,8 @@ export function TranslateButton({
     if (isTranslating) {
         return (
             <div className={cn("flex items-center gap-1 mt-1", className)}>
-                <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-                <span className="text-[10px] text-muted-foreground">
+                <Loader2 className="h-3 w-3 motion-safe:animate-spin text-muted-foreground" />
+                <span className="density-caption text-muted-foreground">
                     {ms("translate_translating")}
                 </span>
             </div>
@@ -79,7 +79,7 @@ export function TranslateButton({
                 <Tooltip content={ms("translate_button")} side="top">
                     <button
                         className={cn(
-                            "inline-flex items-center gap-1 mt-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors",
+                            "inline-flex items-center gap-1 mt-1 density-caption text-muted-foreground hover:text-foreground transition-colors",
                             className
                         )}
                         aria-label={ms("translate_button")}

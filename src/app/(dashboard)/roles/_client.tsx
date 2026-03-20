@@ -144,11 +144,11 @@ export function RolesPageClient() {
         <div className="density-gap-page">
             {dbLoading ? (
                 <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </div>
             ) : (
                 <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 density-gap-card">
                         <StatCard title="Roles Defined" value={roles.length} icon={Shield} />
                         <StatCard
                             title="Resources"
@@ -168,7 +168,7 @@ export function RolesPageClient() {
                     </div>
 
                     {/* Role Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 density-gap-card">
                         {roles
                             .sort((a, b) => b.priority - a.priority)
                             .map((role) => {
@@ -190,7 +190,10 @@ export function RolesPageClient() {
                                                     {role.label}
                                                 </h3>
                                                 {role.isSystem && (
-                                                    <Badge variant="ghost" className="text-[10px]">
+                                                    <Badge
+                                                        variant="ghost"
+                                                        className="density-caption"
+                                                    >
                                                         system
                                                     </Badge>
                                                 )}
@@ -339,7 +342,7 @@ export function RolesPageClient() {
                     {/* Legend */}
                     <Card>
                         <CardContent className="py-3">
-                            <div className="flex items-center gap-6 text-xs text-muted-foreground flex-wrap">
+                            <div className="flex items-center density-gap-card text-xs text-muted-foreground flex-wrap">
                                 <span className="font-medium">Permission Actions:</span>
                                 {Object.entries(ACTION_ICONS).map(([action, Icon]) => (
                                     <span key={action} className="flex items-center gap-1">

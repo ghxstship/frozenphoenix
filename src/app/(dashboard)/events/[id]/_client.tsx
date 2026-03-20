@@ -183,7 +183,7 @@ export function EventDetailClient({
         ) : undefined;
 
     const overviewSlot = event ? (
-        <div className="space-y-6">
+        <div className="density-gap-page">
             {event.description && (
                 <Card>
                     <CardHeader>
@@ -358,7 +358,7 @@ export function EventDetailClient({
                 id: "logistics",
                 label: "Logistics",
                 content: event ? (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-base">Venue Information</CardTitle>

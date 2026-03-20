@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DetailPageShell } from "@/components/shells";
 import {
@@ -35,7 +36,7 @@ function StepApprovalsTab({ instanceId }: { instanceId: string }) {
         return (
             <Card>
                 <CardContent className="py-8 flex justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-5 w-5 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -100,9 +101,9 @@ export function ApprovalWorkflowDetailClient({
     const { data: workflowData, isLoading: wfLoading } = useApprovalWorkflow(id);
     const { data: stepsData, isLoading: stepsLoading } = useApprovalSteps(id);
     const { data: instancesData, isLoading: instLoading } = useWorkflowInstances();
-    const _createStep = useCreateApprovalStep();
-    const _createInstance = useCreateWorkflowInstance();
-    const _updateInstance = useUpdateWorkflowInstance();
+    const createStep = useCreateApprovalStep();
+    const createInstance = useCreateWorkflowInstance();
+    const updateInstance = useUpdateWorkflowInstance();
 
     const isLoading = wfLoading || stepsLoading || instLoading;
     const workflow = (workflowData ?? initialRecord) as Record<string, unknown> | null;
@@ -191,11 +192,31 @@ export function ApprovalWorkflowDetailClient({
                 count: activeInstances.length,
                 content:
                     instances.length === 0 ? (
-                        <EmptyState
-                            icon={GitBranch}
-                            title="No workflow instances"
-                            description="Instances will appear here when the workflow is initiated for an entity."
-                        />
+                        <div className="density-gap-section">
+                            <EmptyState
+                                icon={GitBranch}
+                                title="No workflow instances"
+                                description="Instances will appear here when the workflow is initiated for an entity."
+                            />
+                            <div className="flex justify-center">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={createInstance.isPending || steps.length === 0}
+                                    onClick={() => {
+                                        createInstance.mutate({
+                                            workflow_id: id,
+                                            entity_type: (workflow?.entity_type as string) ?? "",
+                                            entity_id: "",
+                                            status: "pending",
+                                        } as Parameters<typeof createInstance.mutate>[0]);
+                                    }}
+                                >
+                                    <GitBranch className="mr-2 h-4 w-4" />
+                                    Initiate Workflow
+                                </Button>
+                            </div>
+                        </div>
                     ) : (
                         <div className="space-y-3">
                             {instances.map((inst) => {
@@ -234,6 +255,31 @@ export function ApprovalWorkflowDetailClient({
                                                             Completed{" "}
                                                             {formatDate(inst.completed_at)}
                                                         </p>
+                                                    )}
+                                                    {(inst.status === "in_progress" ||
+                                                        inst.status === "pending") && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="mt-1"
+                                                            disabled={updateInstance.isPending}
+                                                            onClick={() => {
+                                                                if (
+                                                                    window.confirm(
+                                                                        `Cancel workflow instance for "${inst.entity_name}"?`
+                                                                    )
+                                                                ) {
+                                                                    updateInstance.mutate({
+                                                                        id: inst.id,
+                                                                        status: "cancelled",
+                                                                    } as Parameters<
+                                                                        typeof updateInstance.mutate
+                                                                    >[0]);
+                                                                }
+                                                            }}
+                                                        >
+                                                            Cancel
+                                                        </Button>
                                                     )}
                                                 </div>
                                             </div>
@@ -321,6 +367,22 @@ export function ApprovalWorkflowDetailClient({
                                 description="Add steps to define the approval flow."
                             />
                         )}
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={createStep.isPending}
+                            onClick={() => {
+                                createStep.mutate({
+                                    workflow_id: id,
+                                    name: `Step ${steps.length + 1}`,
+                                    step_order: steps.length + 1,
+                                    step_type: "single",
+                                } as Parameters<typeof createStep.mutate>[0]);
+                            }}
+                        >
+                            <Activity className="mr-2 h-4 w-4" />
+                            Add Step
+                        </Button>
                     </div>
                 ),
             },
@@ -383,7 +445,7 @@ export function ApprovalWorkflowDetailClient({
                 icon: ShieldCheck,
                 content:
                     activeInstances.length > 0 ? (
-                        <div className="space-y-4">
+                        <div className="density-gap-section">
                             {activeInstances.map((inst) => (
                                 <div key={inst.id}>
                                     <p className="text-xs font-medium text-muted-foreground mb-2">

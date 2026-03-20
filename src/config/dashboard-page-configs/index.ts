@@ -9,4 +9,10 @@
             Filter bar → Card list/grid → Empty state
    ═══════════════════════════════════════════════════════════════ */
 
-// Barrel re-exports — add configs here as they are created
+// Barrel re-exports
+export {
+    DASHBOARD_PAGE_GROUPS,
+    DASHBOARD_PAGE_KEYS,
+    DASHBOARD_PAGE_ROUTES,
+    type DashboardPageConfigKey,
+} from "./registry";

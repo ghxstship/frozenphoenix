@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { ListPageShell } from "@/components/shells";
 import { useActivations, useLocations, useProjects } from "@/lib/supabase";
-import { useCreateActivation } from "@/lib/supabase/hooks-core";
 import { ACTIVATIONS_PAGE } from "@/config/list-page-configs/primary";
 import { DollarSign, Sparkles, Users } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
@@ -56,7 +55,6 @@ export function ActivationsPageClient() {
     const { data: sbActivations, isLoading: loadingActivations } = useActivations();
     const { data: sbLocations } = useLocations();
     const { data: sbProjects } = useProjects();
-    const _createActivation = useCreateActivation();
 
     const data = useMemo(() => {
         const locations = new Map((sbLocations ?? []).map((l) => [l.id, l.name]));

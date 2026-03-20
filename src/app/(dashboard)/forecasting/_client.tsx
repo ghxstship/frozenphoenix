@@ -216,13 +216,12 @@ export function ForecastingPageClient() {
     const contentSlot = (
         <>
             {/* KPI Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <StatCard
                     title="H1 Revenue Forecast"
                     value={formatCurrency(totalForecastedRevenue)}
                     description={`target: ${formatCurrency(totalTarget)}`}
                     icon={TrendingUp}
-                    change={8}
                 />
                 <StatCard
                     title="At-Risk Projects"
@@ -270,7 +269,7 @@ export function ForecastingPageClient() {
 
             {/* Revenue Forecast */}
             {view === "revenue" && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 density-gap-card">
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">
@@ -322,7 +321,7 @@ export function ForecastingPageClient() {
                             <CardTitle className="text-base">Pipeline Revenue Projection</CardTitle>
                             <CardDescription>Based on deal probability weights</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="density-gap-section">
                             {pipelineProjection.map((s) => (
                                 <div key={s.stage} className="flex items-center gap-4">
                                     <div className="w-32 text-xs font-medium">{s.stage}</div>
@@ -334,7 +333,7 @@ export function ForecastingPageClient() {
                                                 minWidth: "60px",
                                             }}
                                         >
-                                            <span className="text-[10px] text-info-foreground font-medium">
+                                            <span className="density-caption text-info-foreground font-medium">
                                                 {s.probability}%
                                             </span>
                                         </div>
@@ -385,7 +384,7 @@ export function ForecastingPageClient() {
                                                     variant={
                                                         BUDGET_STATUS_CONFIG[b.status]?.variant
                                                     }
-                                                    className="text-[10px]"
+                                                    className="density-caption"
                                                 >
                                                     {BUDGET_STATUS_CONFIG[b.status]?.label}
                                                 </Badge>
@@ -417,7 +416,7 @@ export function ForecastingPageClient() {
                                             style={{ width: `${Math.min(forecastPct, 100)}%` }}
                                         />
                                     </div>
-                                    <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                                    <div className="flex justify-between density-caption text-muted-foreground mt-1">
                                         <span>{Math.round(spentPct)}% spent</span>
                                         <span>{Math.round(forecastPct)}% forecasted</span>
                                     </div>
@@ -437,7 +436,7 @@ export function ForecastingPageClient() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
+                        <div className="density-gap-section">
                             {utilizationForecasts.map((u) => {
                                 const overTarget = u.forecastedUtil > u.target + 10;
                                 return (
@@ -451,7 +450,10 @@ export function ForecastingPageClient() {
                                                     {u.headcount} people
                                                 </span>
                                                 {u.openRoles > 0 && (
-                                                    <Badge variant="warning" className="text-[9px]">
+                                                    <Badge
+                                                        variant="warning"
+                                                        className="density-caption"
+                                                    >
                                                         {u.openRoles} open
                                                     </Badge>
                                                 )}
@@ -512,7 +514,7 @@ export function ForecastingPageClient() {
                                         <p className="text-sm font-semibold">{h.role}</p>
                                         <Badge
                                             variant={URGENCY_CONFIG[h.urgency]?.variant}
-                                            className="text-[10px]"
+                                            className="density-caption"
                                         >
                                             {URGENCY_CONFIG[h.urgency]?.label}
                                         </Badge>
@@ -525,7 +527,7 @@ export function ForecastingPageClient() {
                                     <p className="text-sm font-medium">
                                         {formatCurrency(h.estimatedCost)}/yr
                                     </p>
-                                    <p className="text-[10px] text-muted-foreground">
+                                    <p className="density-caption text-muted-foreground">
                                         Start by {h.forecastedStartDate}
                                     </p>
                                 </div>

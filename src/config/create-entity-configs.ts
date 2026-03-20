@@ -3168,3 +3168,59 @@ export const CREATE_EMAIL_ACCOUNT_CONFIG: CreateEntityConfig = {
         },
     ],
 };
+
+export const CREATE_LIVE_EVENT_INSTANCE_CONFIG: CreateEntityConfig = {
+    entityName: "Live Event Instance",
+    description: "Create a new live event instance for real-time operations tracking.",
+    fields: [
+        {
+            key: "event_id",
+            label: "Event",
+            type: "entity-lookup",
+            placeholder: "Select linked event",
+            required: true,
+            lookupConfig: FK_LOOKUP_CONFIGS.event_id,
+        },
+        {
+            key: "project_id",
+            label: "Project",
+            type: "entity-lookup",
+            placeholder: "Select linked project",
+            required: true,
+            lookupConfig: FK_LOOKUP_CONFIGS.project_id,
+        },
+        {
+            key: "permitted_capacity",
+            label: "Permitted Capacity",
+            type: "number",
+            placeholder: "e.g. 5000",
+        },
+        {
+            key: "venue_capacity",
+            label: "Venue Capacity",
+            type: "number",
+            placeholder: "e.g. 8000",
+        },
+        {
+            key: "scheduled_load_in",
+            label: "Scheduled Load-In",
+            type: "datetime-local",
+        },
+        {
+            key: "scheduled_doors",
+            label: "Scheduled Doors",
+            type: "datetime-local",
+        },
+        {
+            key: "scheduled_show_start",
+            label: "Scheduled Show Start",
+            type: "datetime-local",
+        },
+        {
+            key: "notes",
+            label: "Notes",
+            type: "textarea",
+            placeholder: "Operational notes for this event instance...",
+        },
+    ],
+};

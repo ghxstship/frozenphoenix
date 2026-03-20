@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatDate } from "@/lib/utils";
+import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 
 type PortalData = {
     project: Record<string, unknown> | null;
@@ -219,7 +220,7 @@ export default function CollaboratorPortalPage() {
     if (loading) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-background">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <Loader2 className="h-8 w-8 motion-safe:animate-spin text-muted-foreground" />
             </div>
         );
     }
@@ -310,7 +311,7 @@ export default function CollaboratorPortalPage() {
             </header>
 
             {/* Content */}
-            <main className="mx-auto max-w-4xl px-4 py-8 sm:px-8 space-y-6">
+            <main className="mx-auto max-w-4xl px-4 py-8 sm:px-8 density-gap-page">
                 {/* Error Banner */}
                 {actionError && (
                     <Card className="border-destructive/50 bg-destructive/5">
@@ -390,7 +391,10 @@ export default function CollaboratorPortalPage() {
                                                     {req.label}
                                                 </span>
                                                 {req.is_blocking && (
-                                                    <Badge variant="ghost" className="text-[10px]">
+                                                    <Badge
+                                                        variant="ghost"
+                                                        className="density-caption"
+                                                    >
                                                         Required
                                                     </Badge>
                                                 )}
@@ -445,7 +449,7 @@ export default function CollaboratorPortalPage() {
                                         <div className="flex flex-col items-end gap-2">
                                             <Badge
                                                 variant={statusConf?.variant ?? "ghost"}
-                                                className="text-[10px]"
+                                                className="density-caption"
                                             >
                                                 {statusConf?.label ?? req.status}
                                             </Badge>
@@ -461,13 +465,13 @@ export default function CollaboratorPortalPage() {
                                                         }
                                                     >
                                                         {submittingReq === req.id ? (
-                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                            <Loader2 className="h-3 w-3 motion-safe:animate-spin" />
                                                         ) : (
                                                             <Upload className="h-3 w-3" />
                                                         )}
                                                         {submittingReq === req.id
-                                                            ? "Submitting..."
-                                                            : "Submit"}
+                                                            ? COMMON_STRINGS.action_submitting
+                                                            : COMMON_STRINGS.action_submit}
                                                     </Button>
                                                 )}
                                         </div>
@@ -494,7 +498,7 @@ export default function CollaboratorPortalPage() {
                                         onClick={handleConfirmManifest}
                                     >
                                         {confirmingManifest ? (
-                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                            <Loader2 className="h-3 w-3 motion-safe:animate-spin" />
                                         ) : (
                                             <CheckCircle2 className="h-3 w-3" />
                                         )}
@@ -537,7 +541,7 @@ export default function CollaboratorPortalPage() {
                                                       ? "warning"
                                                       : "ghost"
                                             }
-                                            className="text-[10px]"
+                                            className="density-caption"
                                         >
                                             {isConfirmed
                                                 ? "Confirmed"
@@ -590,7 +594,7 @@ export default function CollaboratorPortalPage() {
                                               ? "destructive"
                                               : "info"
                                     }
-                                    className="text-[10px]"
+                                    className="density-caption"
                                 >
                                     {String(crew.status ?? "submitted")}
                                 </Badge>
@@ -666,11 +670,13 @@ export default function CollaboratorPortalPage() {
                                     onClick={handleSubmitCrew}
                                 >
                                     {submittingCrew ? (
-                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                        <Loader2 className="h-3 w-3 motion-safe:animate-spin" />
                                     ) : (
                                         <Upload className="h-3 w-3" />
                                     )}
-                                    {submittingCrew ? "Submitting..." : "Submit Roster"}
+                                    {submittingCrew
+                                        ? COMMON_STRINGS.action_submitting
+                                        : "Submit Roster"}
                                 </Button>
                             </div>
                         )}

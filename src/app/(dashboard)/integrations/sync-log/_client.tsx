@@ -61,7 +61,7 @@ const syncColumns: ColumnDef<SyncEventRow>[] = [
         sortable: true,
         filterable: true,
         render: (v) => (
-            <Badge variant="secondary" className="text-[10px] capitalize">
+            <Badge variant="secondary" className="density-caption capitalize">
                 {String(v)}
             </Badge>
         ),
@@ -72,7 +72,7 @@ const syncColumns: ColumnDef<SyncEventRow>[] = [
         accessorKey: "entity_type",
         sortable: true,
         filterable: true,
-        render: (v) => <span className="text-xs capitalize">{String(v).replace("_", " ")}</span>,
+        render: (v) => <span className="text-xs capitalize">{String(v).replaceAll("_", " ")}</span>,
     },
     {
         id: "status",
@@ -84,8 +84,8 @@ const syncColumns: ColumnDef<SyncEventRow>[] = [
             const s = String(v);
             const cfg = SYNC_STATUS[s] ?? { variant: "ghost" as const };
             return (
-                <Badge variant={cfg.variant} className="text-[10px] capitalize">
-                    {s.replace("_", " ")}
+                <Badge variant={cfg.variant} className="density-caption capitalize">
+                    {s.replaceAll("_", " ")}
                 </Badge>
             );
         },
@@ -100,7 +100,7 @@ const syncColumns: ColumnDef<SyncEventRow>[] = [
             <div className="text-right">
                 <span className="text-xs font-medium">{row.records_processed}</span>
                 {row.records_failed > 0 && (
-                    <span className="text-[10px] text-destructive ml-1">
+                    <span className="density-caption text-destructive ml-1">
                         ({row.records_failed} failed)
                     </span>
                 )}
@@ -162,7 +162,7 @@ const webhookColumns: ColumnDef<WebhookEventRow>[] = [
                         ? "ghost"
                         : "info";
             return (
-                <Badge variant={variant} className="text-[10px] capitalize">
+                <Badge variant={variant} className="density-caption capitalize">
                     {s}
                 </Badge>
             );

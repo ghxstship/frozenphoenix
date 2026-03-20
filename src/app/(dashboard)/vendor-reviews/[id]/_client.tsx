@@ -16,7 +16,7 @@ function ReviewCyclesTab() {
         return (
             <Card>
                 <CardContent className="py-8 flex justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-5 w-5 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -68,7 +68,7 @@ function ReviewFeedbackTab() {
         return (
             <Card>
                 <CardContent className="py-8 flex justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-5 w-5 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );

@@ -20,6 +20,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, ChevronLeft, ChevronRight, SkipForward } from "lucide-react";
+import { SHELLS_STRINGS } from "@/lib/i18n/shells-strings";
 import type { WizardConfig, WizardStepDef } from "@/types/wizard-config";
 
 // ─── Types ───────────────────────────────────────────────────
@@ -48,7 +49,7 @@ function StepIndicator({
     const visibleSteps = steps.filter((s) => !s.hidden);
 
     return (
-        <nav aria-label="Wizard progress" className="w-full">
+        <nav aria-label={SHELLS_STRINGS.wizard_progress_label} className="w-full">
             <ol className="flex items-center gap-2">
                 {visibleSteps.map((step, i) => {
                     const originalIndex = steps.indexOf(step);
@@ -98,7 +99,7 @@ function StepIndicator({
                                         {step.label}
                                     </span>
                                     {step.description && (
-                                        <span className="block text-[10px] text-muted-foreground/70 leading-tight mt-0.5">
+                                        <span className="block density-caption text-muted-foreground/70 leading-tight mt-0.5">
                                             {step.description}
                                         </span>
                                     )}
@@ -145,10 +146,10 @@ export function WizardShell({
     const showProgress = config.showProgress !== false;
     const allowBack = config.allowBack !== false;
 
-    const nextLabel = config.nextLabel ?? "Continue";
-    const backLabel = config.backLabel ?? "Back";
-    const submitLabel = config.submitLabel ?? "Complete";
-    const skipLabel = config.skipLabel ?? "Skip";
+    const nextLabel = config.nextLabel ?? SHELLS_STRINGS.wizard_continue;
+    const backLabel = config.backLabel ?? SHELLS_STRINGS.wizard_back;
+    const submitLabel = config.submitLabel ?? SHELLS_STRINGS.wizard_complete;
+    const skipLabel = config.skipLabel ?? SHELLS_STRINGS.wizard_skip;
 
     const handleNext = useCallback(async () => {
         setValidationError(null);
@@ -156,7 +157,7 @@ export function WizardShell({
         if (currentStep?.validate) {
             const result = currentStep.validate();
             if (result === false) {
-                setValidationError("Please complete this step before continuing.");
+                setValidationError(SHELLS_STRINGS.wizard_validation_default);
                 return;
             }
             if (typeof result === "string") {
@@ -203,7 +204,7 @@ export function WizardShell({
     );
 
     const content = (
-        <div className="space-y-6 motion-safe:animate-fade-in">
+        <div className="density-gap-page motion-safe:animate-fade-in">
             <PageHeader title={config.title} description={config.description} />
 
             {/* Step indicator */}
@@ -254,7 +255,7 @@ export function WizardShell({
                     )}
                     {config.onCancel && isFirstStep && (
                         <Button variant="ghost" onClick={config.onCancel} disabled={isSubmitting}>
-                            Cancel
+                            {SHELLS_STRINGS.wizard_cancel}
                         </Button>
                     )}
                 </div>
@@ -267,7 +268,11 @@ export function WizardShell({
                         </Button>
                     )}
                     <Button onClick={handleNext} disabled={isSubmitting}>
-                        {isSubmitting ? "Saving..." : isLastStep ? submitLabel : nextLabel}
+                        {isSubmitting
+                            ? SHELLS_STRINGS.form_saving
+                            : isLastStep
+                              ? submitLabel
+                              : nextLabel}
                         {!isLastStep && !isSubmitting && <ChevronRight className="h-4 w-4 ml-1" />}
                     </Button>
                 </div>

@@ -128,7 +128,7 @@ function OutcomeBar({
                     style={{ width: `${projPct}%` }}
                 />
                 <div className="absolute inset-0 flex items-center px-2">
-                    <span className="text-[10px] text-muted-foreground tabular-nums">
+                    <span className="density-caption text-muted-foreground tabular-nums">
                         Base: {fmt(base)}
                     </span>
                 </div>
@@ -157,7 +157,7 @@ function VariableSlider({
             <div className="flex items-center justify-between">
                 <div>
                     <p className="text-xs font-medium">{variable.name}</p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="density-caption text-muted-foreground">
                         {{
                             budget: "Budget",
                             revenue: "Revenue",
@@ -179,7 +179,7 @@ function VariableSlider({
                             </span>
                         </>
                     )}
-                    <span className="text-[9px] text-muted-foreground">
+                    <span className="density-caption text-muted-foreground">
                         {variable.unit === "USD" ? "" : variable.unit}
                     </span>
                 </div>
@@ -194,7 +194,7 @@ function VariableSlider({
                 className="w-full h-1.5 bg-muted rounded-full appearance-none cursor-pointer accent-primary"
                 aria-label={`Adjust ${variable.name}`}
             />
-            <div className="flex justify-between text-[9px] text-muted-foreground tabular-nums">
+            <div className="flex justify-between density-caption text-muted-foreground tabular-nums">
                 <span>{fmt(min)}</span>
                 <span>{fmt(max)}</span>
             </div>
@@ -203,9 +203,9 @@ function VariableSlider({
 }
 
 export function ScenariosPageClient() {
-    const _createScenario = useCreateScenario();
-    const _updateScenario = useUpdateScenario();
-    const _deleteScenario = useDeleteScenario();
+    const createScenario = useCreateScenario();
+    const updateScenario = useUpdateScenario();
+    const deleteScenario = useDeleteScenario();
     const [search, setSearch] = useState("");
     const [createOpen, openCreate, closeCreate] = useCreateAction();
     const TYPE_FILTERS = [
@@ -299,7 +299,7 @@ export function ScenariosPageClient() {
 
     const contentSlot = (
         <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <StatCard
                     title="Active Scenarios"
                     value={scenarios.filter((s) => s.status === "active").length}
@@ -311,7 +311,6 @@ export function ScenariosPageClient() {
                     value={formatCurrency(bestProfit)}
                     description="across all scenarios"
                     icon={TrendingUp}
-                    change={12}
                 />
                 <StatCard
                     title="Best Margin"
@@ -387,10 +386,10 @@ export function ScenariosPageClient() {
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="density-gap-page">
                         {/* Comparison Header */}
                         <div
-                            className="grid gap-4"
+                            className="grid density-gap-card"
                             style={{
                                 gridTemplateColumns: `200px repeat(${activeScenarios.length}, 1fr)`,
                             }}
@@ -399,7 +398,7 @@ export function ScenariosPageClient() {
                             {activeScenarios.map((s) => (
                                 <div key={s.id} className="text-center">
                                     <p className="text-sm font-semibold">{s.name}</p>
-                                    <Badge variant="ghost" className="text-[10px]">
+                                    <Badge variant="ghost" className="density-caption">
                                         {TYPE_LABELS[s.scenarioType]}
                                     </Badge>
                                 </div>
@@ -416,7 +415,7 @@ export function ScenariosPageClient() {
                             return allMetrics.map((metric) => (
                                 <div
                                     key={metric}
-                                    className="grid gap-4 py-2 border-b border-border/30 last:border-0"
+                                    className="grid density-gap-card py-2 border-b border-border/30 last:border-0"
                                     style={{
                                         gridTemplateColumns: `200px repeat(${activeScenarios.length}, 1fr)`,
                                     }}
@@ -453,7 +452,7 @@ export function ScenariosPageClient() {
                                                 >
                                                     {fmt(outcome.projectedValue)}
                                                 </p>
-                                                <p className="text-[10px] text-muted-foreground tabular-nums">
+                                                <p className="density-caption text-muted-foreground tabular-nums">
                                                     {variance > 0 ? "+" : ""}
                                                     {fmt(variance)} from base
                                                 </p>
@@ -506,7 +505,7 @@ export function ScenariosPageClient() {
                     description={search ? "Try adjusting your search" : "No scenarios created yet"}
                 />
             ) : (
-                <div className="space-y-4">
+                <div className="density-gap-section">
                     {filtered.map((scenario) => {
                         const isExpanded = expandedId === scenario.id;
                         return (
@@ -523,16 +522,16 @@ export function ScenariosPageClient() {
                                                 </CardTitle>
                                                 <StatusBadge
                                                     status={scenario.status}
-                                                    className="text-[10px]"
+                                                    className="density-caption"
                                                 />
-                                                <Badge variant="ghost" className="text-[10px]">
+                                                <Badge variant="ghost" className="density-caption">
                                                     {TYPE_LABELS[scenario.scenarioType]}
                                                 </Badge>
                                             </div>
                                             <CardDescription>
                                                 {scenario.description}
                                             </CardDescription>
-                                            <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
+                                            <div className="flex items-center gap-3 mt-1.5 density-caption text-muted-foreground">
                                                 {scenario.projectName && (
                                                     <span>{scenario.projectName}</span>
                                                 )}
@@ -542,7 +541,7 @@ export function ScenariosPageClient() {
                                                     <Badge
                                                         key={t}
                                                         variant="ghost"
-                                                        className="text-[8px] px-1"
+                                                        className="density-micro px-1"
                                                     >
                                                         {t}
                                                     </Badge>
@@ -554,7 +553,20 @@ export function ScenariosPageClient() {
                                                 variant="ghost"
                                                 size="sm"
                                                 className="h-7 w-7 p-0"
-                                                onClick={(e) => e.stopPropagation()}
+                                                aria-label={`Duplicate scenario: ${scenario.name}`}
+                                                disabled={createScenario.isPending}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    createScenario.mutate({
+                                                        name: `${scenario.name} (Copy)`,
+                                                        description: scenario.description,
+                                                        scenario_type: scenario.scenarioType,
+                                                        status: "draft",
+                                                        tags: scenario.tags,
+                                                    } as Parameters<
+                                                        typeof createScenario.mutate
+                                                    >[0]);
+                                                }}
                                             >
                                                 <Copy className="h-3.5 w-3.5" />
                                             </Button>
@@ -562,7 +574,16 @@ export function ScenariosPageClient() {
                                                 variant="ghost"
                                                 size="sm"
                                                 className="h-7 w-7 p-0 text-destructive"
-                                                onClick={(e) => e.stopPropagation()}
+                                                aria-label={`Delete scenario: ${scenario.name}`}
+                                                disabled={deleteScenario.isPending}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    deleteScenario.mutate(
+                                                        scenario.id as Parameters<
+                                                            typeof deleteScenario.mutate
+                                                        >[0]
+                                                    );
+                                                }}
                                             >
                                                 <Trash2 className="h-3.5 w-3.5" />
                                             </Button>
@@ -574,7 +595,7 @@ export function ScenariosPageClient() {
                                     (() => {
                                         const adjusted = getAdjustedScenario(scenario);
                                         return (
-                                            <CardContent className="pt-0 space-y-6">
+                                            <CardContent className="pt-0 density-gap-page">
                                                 {/* Interactive Variables */}
                                                 <div>
                                                     <OverlineText
@@ -713,7 +734,7 @@ export function ScenariosPageClient() {
                                                                                 {fmt(variance)}
                                                                                 {o.baseValue !==
                                                                                     0 && (
-                                                                                    <span className="text-[10px] ml-1">
+                                                                                    <span className="density-caption ml-1">
                                                                                         (
                                                                                         {variancePct >
                                                                                         0
@@ -737,12 +758,39 @@ export function ScenariosPageClient() {
                                                 {/* Action Buttons */}
                                                 <div className="flex items-center gap-2 pt-2 border-t">
                                                     {scenario.status === "active" && (
-                                                        <Button size="sm">
+                                                        <Button
+                                                            size="sm"
+                                                            disabled={updateScenario.isPending}
+                                                            onClick={() =>
+                                                                updateScenario.mutate({
+                                                                    id: scenario.id,
+                                                                    status: "selected",
+                                                                } as Parameters<
+                                                                    typeof updateScenario.mutate
+                                                                >[0])
+                                                            }
+                                                        >
                                                             <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />{" "}
                                                             Select This Scenario
                                                         </Button>
                                                     )}
-                                                    <Button variant="outline" size="sm">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        disabled={createScenario.isPending}
+                                                        onClick={() =>
+                                                            createScenario.mutate({
+                                                                name: `${scenario.name} (Copy)`,
+                                                                description: scenario.description,
+                                                                scenario_type:
+                                                                    scenario.scenarioType,
+                                                                status: "draft",
+                                                                tags: scenario.tags,
+                                                            } as Parameters<
+                                                                typeof createScenario.mutate
+                                                            >[0])
+                                                        }
+                                                    >
                                                         <Copy className="mr-1.5 h-3.5 w-3.5" />{" "}
                                                         Duplicate & Adjust
                                                     </Button>
@@ -759,6 +807,11 @@ export function ScenariosPageClient() {
                 config={CREATE_SCENARIO_CONFIG}
                 open={createOpen}
                 onClose={closeCreate}
+                onSubmit={async (values) => {
+                    await createScenario.mutateAsync(
+                        values as Parameters<typeof createScenario.mutateAsync>[0]
+                    );
+                }}
             />
         </>
     );

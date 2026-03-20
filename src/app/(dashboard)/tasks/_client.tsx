@@ -289,14 +289,14 @@ function TasksContent({ tasks, projects }: { tasks: Task[]; projects: Project[] 
                                     return (
                                         <tr
                                             key={task.id}
-                                            className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer"
+                                            className="border-b border-border/50 hover:bg-secondary/30 transition-colors"
                                         >
                                             <td className="px-4 py-3">
                                                 <div>
                                                     <p className="text-sm font-medium">
                                                         {task.title}
                                                     </p>
-                                                    <p className="text-[11px] text-muted-foreground">
+                                                    <p className="density-caption text-muted-foreground">
                                                         {project?.name}
                                                     </p>
                                                 </div>
@@ -306,7 +306,7 @@ function TasksContent({ tasks, projects }: { tasks: Task[]; projects: Project[] 
                                                     variant={
                                                         TASK_STATUS_CONFIG[task.status].variant
                                                     }
-                                                    className="text-[10px]"
+                                                    className="density-caption"
                                                 >
                                                     {TASK_STATUS_CONFIG[task.status].label}
                                                 </Badge>
@@ -316,7 +316,7 @@ function TasksContent({ tasks, projects }: { tasks: Task[]; projects: Project[] 
                                                     variant={
                                                         TASK_PRIORITY_CONFIG[task.priority].variant
                                                     }
-                                                    className="text-[10px]"
+                                                    className="density-caption"
                                                 >
                                                     {TASK_PRIORITY_CONFIG[task.priority].label}
                                                 </Badge>
@@ -349,7 +349,7 @@ function TasksContent({ tasks, projects }: { tasks: Task[]; projects: Project[] 
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3 hidden xl:table-cell">
-                                                <span className="text-[10px] text-muted-foreground">
+                                                <span className="density-caption text-muted-foreground">
                                                     {task.dependencies.length > 0
                                                         ? `${task.dependencies.length} deps`
                                                         : "none"}

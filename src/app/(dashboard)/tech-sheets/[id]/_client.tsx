@@ -297,7 +297,7 @@ export function TechSheetDetailClient({
                                                 </span>
                                                 <Badge
                                                     variant={getStatusVariant(item.status)}
-                                                    className="text-[10px]"
+                                                    className="density-caption"
                                                 >
                                                     {getStatusLabel(item.status)}
                                                 </Badge>
@@ -346,7 +346,7 @@ export function TechSheetDetailClient({
                                             </td>
                                             <td className="py-2.5 text-right">{circuit.phase}</td>
                                             <td className="py-2.5 text-right">
-                                                <Badge variant="ghost" className="text-[10px]">
+                                                <Badge variant="ghost" className="density-caption">
                                                     {circuit.department}
                                                 </Badge>
                                             </td>

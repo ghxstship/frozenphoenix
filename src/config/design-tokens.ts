@@ -245,7 +245,7 @@ export type IconSizeToken = keyof typeof ICON_SIZES;
 
 // ─── Avatar Sizes ───
 export const AVATAR_SIZES = {
-    xs: { container: "h-6 w-6", text: "text-[10px]" },
+    xs: { container: "h-6 w-6", text: "density-caption" },
     sm: { container: "h-8 w-8", text: "text-xs" },
     md: { container: "h-10 w-10", text: "text-sm" },
     lg: { container: "h-12 w-12", text: "text-base" },
@@ -408,7 +408,7 @@ export type ComponentSizeToken = keyof typeof COMPONENT_SIZES;
 // Standardized text rendering variants for casing control
 export const TEXT_VARIANTS = {
     overline: {
-        fontSize: "text-[10px]",
+        fontSize: "density-caption",
         fontWeight: "font-semibold",
         letterSpacing: "tracking-wide",
         textTransform: "uppercase" as const,

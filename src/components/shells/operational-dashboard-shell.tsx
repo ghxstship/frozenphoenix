@@ -19,23 +19,31 @@ import { cn } from "@/lib/utils";
 import { PermissionGate } from "@/components/permission-guard";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
+import { StatsGrid } from "@/components/ui/stats-grid";
+import { AlertBanner } from "@/components/ui/alert-banner";
 import { SearchInput } from "@/components/ui/search-input";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+    Select as DSSelect,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { AlertTriangle, Inbox } from "lucide-react";
-import type {
-    DashboardFilterDef,
-    DashboardPageConfig,
-    DashboardStatDef,
-} from "@/types/dashboard-page-config";
+import { Inbox } from "lucide-react";
+import { SHELLS_STRINGS } from "@/lib/i18n/shells-strings";
+import type { DashboardFilterDef, DashboardPageConfig } from "@/types/dashboard-page-config";
+import { computeStatValue, matchesSearch } from "@/lib/record-utils";
+import type { EntityRecord } from "@/types/entity";
 
 // ─── Types ───────────────────────────────────────────────────
 
-type DataRow = Record<string, unknown>;
+type DataRow = EntityRecord;
 
 export interface OperationalDashboardShellProps {
     config: DashboardPageConfig;
@@ -45,33 +53,6 @@ export interface OperationalDashboardShellProps {
     isLoading?: boolean;
     /** Children override — when provided, replaces the card list entirely */
     children?: React.ReactNode;
-}
-
-// ─── Helpers ─────────────────────────────────────────────────
-
-function getNestedValue(record: DataRow, key: string): unknown {
-    const parts = key.split(".");
-    let current: unknown = record;
-    for (const part of parts) {
-        if (current == null || typeof current !== "object") return undefined;
-        current = (current as DataRow)[part];
-    }
-    return current;
-}
-
-function computeStatValue(stat: DashboardStatDef, data: DataRow[]): string | number {
-    if (stat.compute) return stat.compute(data);
-    if (stat.value != null) return stat.value;
-    return "—";
-}
-
-function matchesSearch(item: DataRow, query: string, keys: string[]): boolean {
-    if (!query) return true;
-    const q = query.toLowerCase();
-    return keys.some((key) => {
-        const val = getNestedValue(item, key);
-        return val != null && String(val).toLowerCase().includes(q);
-    });
 }
 
 // ─── Main Component ─────────────────────────────────────────
@@ -110,7 +91,9 @@ export function OperationalDashboardShell({
 
         // Apply search
         if (search && searchKeys.length > 0) {
-            result = result.filter((item) => matchesSearch(item, search, searchKeys));
+            result = result.filter((item) =>
+                matchesSearch(item as EntityRecord, search, searchKeys)
+            );
         }
 
         // Apply filters
@@ -152,9 +135,9 @@ export function OperationalDashboardShell({
 
     // Empty state
     const EmptyIcon = config.emptyState?.icon ?? Inbox;
-    const emptyTitle = config.emptyState?.title ?? "No data";
+    const emptyTitle = config.emptyState?.title ?? SHELLS_STRINGS.dashboard_no_data;
     const emptyDescription =
-        config.emptyState?.description ?? "No records found matching your criteria.";
+        config.emptyState?.description ?? SHELLS_STRINGS.dashboard_no_data_desc;
 
     // Loading state — must be after all hooks
     if (isLoading) return <LoadingState />;
@@ -164,7 +147,7 @@ export function OperationalDashboardShell({
             resource={config.resource}
             action={config.action as "read" | "write" | "delete" | "manage" | undefined}
         >
-            <div className="space-y-6 motion-safe:animate-fade-in">
+            <div className="density-gap-page motion-safe:animate-fade-in">
                 {/* Header */}
                 <PageHeader title={config.title} description={config.description}>
                     {config.headerActions}
@@ -172,59 +155,24 @@ export function OperationalDashboardShell({
 
                 {/* Stats */}
                 {statValues && statValues.length > 0 && (
-                    <div
-                        className={cn(
-                            "grid gap-4",
-                            statValues.length <= 2
-                                ? "grid-cols-1 sm:grid-cols-2"
-                                : statValues.length === 3
-                                  ? "grid-cols-1 sm:grid-cols-3"
-                                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
-                        )}
-                    >
+                    <StatsGrid>
                         {statValues.map((s) => (
                             <StatCard key={s.label} title={s.label} value={s.value} icon={s.icon} />
                         ))}
-                    </div>
+                    </StatsGrid>
                 )}
 
                 {/* Alerts */}
                 {activeAlerts.map((alert, i) => {
-                    const AlertIcon = alert.icon ?? AlertTriangle;
-                    const severity = alert.severity ?? "warning";
                     const message =
                         typeof alert.message === "function" ? alert.message(data) : alert.message;
                     return (
-                        <Card
+                        <AlertBanner
                             key={i}
-                            className={cn(
-                                severity === "warning" && "border-warning/30 bg-warning/5",
-                                severity === "destructive" &&
-                                    "border-destructive/30 bg-destructive/5",
-                                severity === "info" && "border-info/30 bg-info/5"
-                            )}
-                        >
-                            <CardContent className="py-3 flex items-center gap-3">
-                                <AlertIcon
-                                    className={cn(
-                                        "h-5 w-5 shrink-0",
-                                        severity === "warning" && "text-warning",
-                                        severity === "destructive" && "text-destructive",
-                                        severity === "info" && "text-info"
-                                    )}
-                                />
-                                <p
-                                    className={cn(
-                                        "text-sm font-medium",
-                                        severity === "warning" && "text-warning",
-                                        severity === "destructive" && "text-destructive",
-                                        severity === "info" && "text-info"
-                                    )}
-                                >
-                                    {message}
-                                </p>
-                            </CardContent>
-                        </Card>
+                            message={message}
+                            severity={alert.severity ?? "warning"}
+                            icon={alert.icon}
+                        />
                     );
                 })}
 
@@ -243,7 +191,10 @@ export function OperationalDashboardShell({
                                     <SearchInput
                                         value={search}
                                         onValueChange={setSearch}
-                                        placeholder={config.searchPlaceholder ?? "Search..."}
+                                        placeholder={
+                                            config.searchPlaceholder ??
+                                            SHELLS_STRINGS.dashboard_search_placeholder
+                                        }
                                         className="max-w-sm"
                                     />
                                 )}
@@ -289,8 +240,8 @@ export function OperationalDashboardShell({
                                             className={cn(
                                                 config.cardLayout === "grid"
                                                     ? (config.gridCols ??
-                                                          "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4")
-                                                    : "space-y-2"
+                                                          "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 density-gap-card")
+                                                    : "density-gap-section"
                                             )}
                                         >
                                             {filtered.map((item, i) => (
@@ -361,17 +312,17 @@ function FilterControl({
 
     // select
     return (
-        <select
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-            aria-label={filter.label}
-        >
-            {filter.options.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                </option>
-            ))}
-        </select>
+        <DSSelect value={value} onValueChange={onChange}>
+            <SelectTrigger className="h-9 min-w-[140px]" aria-label={filter.label}>
+                <SelectValue placeholder={filter.label} />
+            </SelectTrigger>
+            <SelectContent>
+                {filter.options.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </DSSelect>
     );
 }

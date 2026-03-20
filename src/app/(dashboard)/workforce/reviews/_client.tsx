@@ -41,7 +41,7 @@ function RatingRow({ label, value }: { label: string; value?: number }) {
             <span className="text-muted-foreground">{label}</span>
             <div className="flex items-center gap-1">
                 <Stars rating={value} />
-                <span className="text-[10px] w-4 text-right">{value}</span>
+                <span className="density-caption w-4 text-right">{value}</span>
             </div>
         </div>
     );
@@ -117,10 +117,10 @@ export function ReviewsPageClient() {
                                 <div>
                                     <h3 className="text-sm font-bold">{review.workerName}</h3>
                                     <div className="flex items-center gap-2 mt-0.5">
-                                        <Badge variant="default" className="text-[10px]">
+                                        <Badge variant="default" className="density-caption">
                                             {TARGET_LABELS[review.targetType]}
                                         </Badge>
-                                        <span className="text-[10px] text-muted-foreground">
+                                        <span className="density-caption text-muted-foreground">
                                             {{
                                                 annual: "Annual",
                                                 quarterly: "Quarterly",
@@ -132,7 +132,7 @@ export function ReviewsPageClient() {
                                                 review.reviewType.replace(/_/g, " ")}
                                         </span>
                                         {review.projectName && (
-                                            <span className="text-[10px] text-muted-foreground">
+                                            <span className="density-caption text-muted-foreground">
                                                 • {review.projectName}
                                             </span>
                                         )}
@@ -140,7 +140,7 @@ export function ReviewsPageClient() {
                                 </div>
                                 <div className="text-right">
                                     <Stars rating={review.overallRating} />
-                                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                                    <p className="density-caption text-muted-foreground mt-0.5">
                                         {new Date(review.reviewDate).toLocaleDateString()}
                                     </p>
                                 </div>
@@ -163,7 +163,7 @@ export function ReviewsPageClient() {
 
                             {review.strengths && (
                                 <div className="mb-2">
-                                    <p className="text-[10px] font-medium text-muted-foreground mb-0.5">
+                                    <p className="density-caption font-medium text-muted-foreground mb-0.5">
                                         Strengths
                                     </p>
                                     <p className="text-xs line-clamp-2">{review.strengths}</p>
@@ -171,7 +171,7 @@ export function ReviewsPageClient() {
                             )}
                             {review.areasForImprovement && (
                                 <div className="mb-2">
-                                    <p className="text-[10px] font-medium text-muted-foreground mb-0.5">
+                                    <p className="density-caption font-medium text-muted-foreground mb-0.5">
                                         Areas for Improvement
                                     </p>
                                     <p className="text-xs line-clamp-2">
@@ -181,7 +181,7 @@ export function ReviewsPageClient() {
                             )}
                             {review.goals && (
                                 <div className="mb-2">
-                                    <p className="text-[10px] font-medium text-muted-foreground mb-0.5">
+                                    <p className="density-caption font-medium text-muted-foreground mb-0.5">
                                         Goals
                                     </p>
                                     <p className="text-xs line-clamp-2">{review.goals}</p>
@@ -189,7 +189,7 @@ export function ReviewsPageClient() {
                             )}
 
                             <div className="flex items-center justify-between mt-3 pt-2 border-t">
-                                <span className="text-[10px] text-muted-foreground">
+                                <span className="density-caption text-muted-foreground">
                                     By {review.reviewerName}
                                 </span>
                                 <div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ export function ReviewsPageClient() {
                                             variant={
                                                 review.wouldReengage ? "success" : "destructive"
                                             }
-                                            className="text-[10px]"
+                                            className="density-caption"
                                         >
                                             {review.wouldReengage
                                                 ? "Would Re-engage"
@@ -206,11 +206,11 @@ export function ReviewsPageClient() {
                                         </Badge>
                                     )}
                                     {review.acknowledgedAt ? (
-                                        <span className="text-[10px] text-success">
+                                        <span className="density-caption text-success">
                                             Acknowledged
                                         </span>
                                     ) : (
-                                        <span className="text-[10px] text-warning">
+                                        <span className="density-caption text-warning">
                                             Pending Ack
                                         </span>
                                     )}

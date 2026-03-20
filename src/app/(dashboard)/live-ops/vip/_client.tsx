@@ -7,15 +7,9 @@ import { CheckCircle2, Crown, Users } from "lucide-react";
 import { useVipGuests } from "@/lib/supabase";
 import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { TIER_BORDER_CLASSES } from "@/config/ui-variants";
 
 type Row = Record<string, unknown>;
-
-const TIER_COLORS: Record<string, string> = {
-    platinum: "border-l-info",
-    gold: "border-l-warning",
-    silver: "border-l-secondary",
-    bronze: "",
-};
 
 const CONFIG: DashboardPageConfig = {
     resource: "live_ops",
@@ -58,7 +52,7 @@ const CONFIG: DashboardPageConfig = {
         const zones = Array.isArray(vip.zone_access) ? (vip.zone_access as string[]) : [];
         return (
             <Card
-                className={`hover:shadow-sm transition-all border-l-2 ${TIER_COLORS[vip.tier as string] ?? ""}`}
+                className={`hover:shadow-sm transition-all border-l-2 ${TIER_BORDER_CLASSES[vip.tier as string] ?? ""}`}
             >
                 <CardContent className="py-3">
                     <div className="flex items-center gap-4">
@@ -73,14 +67,14 @@ const CONFIG: DashboardPageConfig = {
                                 <h3 className="text-sm font-semibold truncate">{name}</h3>
                                 <StatusBadge
                                     status={vip.tier as string}
-                                    className="text-[10px] shrink-0"
+                                    className="density-caption shrink-0"
                                 />
                                 <StatusBadge
                                     status={vip.status as string}
-                                    className="text-[10px] shrink-0"
+                                    className="density-caption shrink-0"
                                 />
                             </div>
-                            <p className="text-[11px] text-muted-foreground mt-0.5">
+                            <p className="density-caption text-muted-foreground mt-0.5">
                                 {(vip.affiliation as string) ?? ""}
                             </p>
                             <div className="flex flex-wrap gap-1 mt-1">
@@ -93,18 +87,18 @@ const CONFIG: DashboardPageConfig = {
                         </div>
                         <div className="text-right text-sm shrink-0">
                             <p className="font-medium">{arrivalDisplay}</p>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="density-caption text-muted-foreground">
                                 {actualArrival ? "arrived" : "expected"}
                             </p>
                             {typeof vip.escort_id === "string" && vip.escort_id && (
-                                <p className="text-[10px] text-muted-foreground mt-0.5">
+                                <p className="density-caption text-muted-foreground mt-0.5">
                                     Escort: {vip.escort_id}
                                 </p>
                             )}
                         </div>
                     </div>
                     {typeof vip.special_requests === "string" && vip.special_requests && (
-                        <p className="text-[10px] text-muted-foreground mt-1 ml-14">
+                        <p className="density-caption text-muted-foreground mt-1 ml-14">
                             Note: {vip.special_requests}
                         </p>
                     )}

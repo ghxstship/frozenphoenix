@@ -1,13 +1,11 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { csrfHeaders } from "@/lib/csrf";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/supabase/auth-context";
-import { Button } from "@/components/ui/button";
 import { AuthFormField } from "@/components/auth";
 import {
-    ArrowRight,
     Briefcase,
     Building2,
     CheckCircle2,
@@ -18,7 +16,8 @@ import {
     UserCheck,
     Users,
 } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
+import { WizardShell } from "@/components/shells/wizard-shell";
+import type { WizardConfig } from "@/types/wizard-config";
 
 const TIMEZONES = [
     "America/New_York",
@@ -165,209 +164,189 @@ export function OrgSetupPageClient() {
         router.push("/onboarding/invite-team");
     }, [router]);
 
-    if (success) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-background p-4">
-                <div
-                    className="w-full max-w-lg text-center space-y-4"
-                    role="status"
-                    aria-live="polite"
-                >
-                    <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10">
-                        <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
-                    </div>
-                    <h2 className="text-xl font-bold">Organization created!</h2>
-                    <p className="text-sm text-muted-foreground">Taking you to invite your team…</p>
-                    <Loader2 className="h-5 w-5 animate-spin text-primary mx-auto" />
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <div className="w-full max-w-lg space-y-8">
-                {/* Progress indicator */}
-                <div
-                    className="flex items-center gap-2 justify-center"
-                    role="progressbar"
-                    aria-valuenow={1}
-                    aria-valuemin={1}
-                    aria-valuemax={3}
-                    aria-label="Onboarding step 1 of 3"
-                >
-                    <div className="h-2 w-12 rounded-full bg-primary" />
-                    <div className="h-2 w-12 rounded-full bg-muted" />
-                    <div className="h-2 w-12 rounded-full bg-muted" />
-                </div>
-
-                <PageHeader
-                    centered
-                    icon={Building2}
-                    title="Set up your organization"
-                    description={`Welcome${profile?.display_name ? `, ${profile.display_name}` : ""}! Let's get your workspace configured.`}
-                />
-
-                <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-                    {error && (
+    const wizardConfig: WizardConfig = useMemo(
+        () => ({
+            title: "Set up your organization",
+            description: `Welcome${profile?.display_name ? `, ${profile.display_name}` : ""}! Let's get your workspace configured.`,
+            icon: Building2,
+            showProgress: false,
+            submitLabel: "Continue",
+            onCancel: handleSkip,
+            onComplete: handleSubmit as unknown as () => Promise<void>,
+            steps: [
+                {
+                    id: "org-setup",
+                    label: "Organization",
+                    icon: Building2,
+                    validate: () => (orgName.trim() ? true : "Organization name is required."),
+                    content: success ? (
                         <div
-                            className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
-                            role="alert"
-                            aria-live="assertive"
+                            className="w-full text-center density-gap-section"
+                            role="status"
+                            aria-live="polite"
                         >
-                            {error}
+                            <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10">
+                                <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
+                            </div>
+                            <h2 className="text-xl font-bold">Organization created!</h2>
+                            <p className="text-sm text-muted-foreground">
+                                Taking you to invite your team…
+                            </p>
+                            <Loader2 className="h-5 w-5 motion-safe:animate-spin text-primary mx-auto" />
                         </div>
-                    )}
+                    ) : (
+                        <div className="space-y-5">
+                            {error && (
+                                <div
+                                    className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                                    role="alert"
+                                    aria-live="assertive"
+                                >
+                                    {error}
+                                </div>
+                            )}
 
-                    <AuthFormField
-                        fieldId="org-name"
-                        label="Organization Name"
-                        type="text"
-                        icon={Building2}
-                        placeholder="Acme Productions"
-                        value={orgName}
-                        onChange={(e) => setOrgName(e.target.value)}
-                        required
-                        disabled={loading}
-                    />
+                            <AuthFormField
+                                fieldId="org-name"
+                                label="Organization Name"
+                                type="text"
+                                icon={Building2}
+                                placeholder="Acme Productions"
+                                value={orgName}
+                                onChange={(e) => setOrgName(e.target.value)}
+                                required
+                                disabled={loading}
+                            />
 
-                    <fieldset className="space-y-2" disabled={loading}>
-                        <legend className="text-sm font-medium leading-none">
-                            What best describes your role?
-                        </legend>
-                        <div className="grid gap-2">
-                            {ROLE_OPTIONS.map((opt) => {
-                                const Icon = opt.icon;
-                                const isSelected = role === opt.value;
-                                return (
-                                    <label
-                                        key={opt.value}
-                                        className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
-                                            isSelected
-                                                ? "border-primary bg-primary/5 ring-1 ring-primary"
-                                                : "border-input hover:border-muted-foreground/30"
-                                        }`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="role"
-                                            value={opt.value}
-                                            checked={isSelected}
-                                            onChange={() => setRole(opt.value)}
-                                            className="sr-only"
-                                        />
-                                        <Icon
-                                            className={`h-5 w-5 mt-0.5 shrink-0 ${
-                                                isSelected
-                                                    ? "text-primary"
-                                                    : "text-muted-foreground"
-                                            }`}
-                                            aria-hidden="true"
-                                        />
-                                        <div className="space-y-0.5">
-                                            <span
-                                                className={`text-sm font-medium ${
-                                                    isSelected ? "text-primary" : ""
+                            <fieldset className="space-y-2" disabled={loading}>
+                                <legend className="text-sm font-medium leading-none">
+                                    What best describes your role?
+                                </legend>
+                                <div className="grid gap-2">
+                                    {ROLE_OPTIONS.map((opt) => {
+                                        const Icon = opt.icon;
+                                        const isSelected = role === opt.value;
+                                        return (
+                                            <label
+                                                key={opt.value}
+                                                className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
+                                                    isSelected
+                                                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                                                        : "border-input hover:border-muted-foreground/30"
                                                 }`}
                                             >
-                                                {opt.label}
-                                            </span>
-                                            <p className="text-xs text-muted-foreground">
-                                                {opt.description}
-                                            </p>
-                                        </div>
-                                    </label>
-                                );
-                            })}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                            You can change this later. As the organization creator, you&apos;ll have
-                            full admin access regardless of role.
-                        </p>
-                    </fieldset>
+                                                <input
+                                                    type="radio"
+                                                    name="role"
+                                                    value={opt.value}
+                                                    checked={isSelected}
+                                                    onChange={() => setRole(opt.value)}
+                                                    className="sr-only"
+                                                />
+                                                <Icon
+                                                    className={`h-5 w-5 mt-0.5 shrink-0 ${
+                                                        isSelected
+                                                            ? "text-primary"
+                                                            : "text-muted-foreground"
+                                                    }`}
+                                                    aria-hidden="true"
+                                                />
+                                                <div className="space-y-0.5">
+                                                    <span
+                                                        className={`text-sm font-medium ${
+                                                            isSelected ? "text-primary" : ""
+                                                        }`}
+                                                    >
+                                                        {opt.label}
+                                                    </span>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {opt.description}
+                                                    </p>
+                                                </div>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    You can change this later. As the organization creator,
+                                    you&apos;ll have full admin access regardless of role.
+                                </p>
+                            </fieldset>
 
-                    <div className="space-y-2">
-                        <label htmlFor="org-industry" className="text-sm font-medium leading-none">
-                            Industry
-                        </label>
-                        <div className="relative">
-                            <Globe
-                                className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
-                                aria-hidden="true"
-                            />
-                            <select
-                                id="org-industry"
-                                value={industry}
-                                onChange={(e) => setIndustry(e.target.value)}
-                                className="flex h-9 w-full rounded-lg border border-input bg-transparent pl-10 pr-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
-                                disabled={loading}
-                            >
-                                <option value="">Select your industry…</option>
-                                {INDUSTRIES.map((ind) => (
-                                    <option key={ind} value={ind}>
-                                        {ind}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
+                            <div className="space-y-2">
+                                <label
+                                    htmlFor="org-industry"
+                                    className="text-sm font-medium leading-none"
+                                >
+                                    Industry
+                                </label>
+                                <div className="relative">
+                                    <Globe
+                                        className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
+                                        aria-hidden="true"
+                                    />
+                                    <select
+                                        id="org-industry"
+                                        value={industry}
+                                        onChange={(e) => setIndustry(e.target.value)}
+                                        className="flex h-9 w-full rounded-lg border border-input bg-transparent pl-10 pr-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
+                                        disabled={loading}
+                                    >
+                                        <option value="">Select your industry…</option>
+                                        {INDUSTRIES.map((ind) => (
+                                            <option key={ind} value={ind}>
+                                                {ind}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
 
-                    <div className="space-y-2">
-                        <label htmlFor="org-timezone" className="text-sm font-medium leading-none">
-                            Default Timezone
-                        </label>
-                        <div className="relative">
-                            <Clock
-                                className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
-                                aria-hidden="true"
-                            />
-                            <select
-                                id="org-timezone"
-                                value={timezone}
-                                onChange={(e) => setTimezone(e.target.value)}
-                                className="flex h-9 w-full rounded-lg border border-input bg-transparent pl-10 pr-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
-                                disabled={loading}
-                            >
-                                {TIMEZONES.map((tz) => (
-                                    <option key={tz} value={tz}>
-                                        {tz.replace(/_/g, " ")}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="space-y-2">
+                                <label
+                                    htmlFor="org-timezone"
+                                    className="text-sm font-medium leading-none"
+                                >
+                                    Default Timezone
+                                </label>
+                                <div className="relative">
+                                    <Clock
+                                        className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
+                                        aria-hidden="true"
+                                    />
+                                    <select
+                                        id="org-timezone"
+                                        value={timezone}
+                                        onChange={(e) => setTimezone(e.target.value)}
+                                        className="flex h-9 w-full rounded-lg border border-input bg-transparent pl-10 pr-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
+                                        disabled={loading}
+                                    >
+                                        {TIMEZONES.map((tz) => (
+                                            <option key={tz} value={tz}>
+                                                {tz.replace(/_/g, " ")}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-
-                    <div className="flex gap-3 pt-2">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={handleSkip}
-                            disabled={loading}
-                            className="flex-1"
-                        >
-                            Skip for now
-                        </Button>
-                        <Button
-                            type="submit"
-                            disabled={loading}
-                            className="flex-1"
-                            aria-busy={loading}
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                                    Creating…
-                                </>
-                            ) : (
-                                <>
-                                    Continue
-                                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                                </>
-                            )}
-                        </Button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                    ),
+                },
+            ],
+        }),
+        [
+            profile?.display_name,
+            handleSkip,
+            handleSubmit,
+            orgName,
+            success,
+            error,
+            loading,
+            role,
+            industry,
+            timezone,
+        ]
     );
+
+    return <WizardShell config={wizardConfig} isSubmitting={loading} />;
 }

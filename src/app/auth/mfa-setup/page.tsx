@@ -177,7 +177,7 @@ function MfaSetupForm() {
                     title="Save your recovery codes"
                     subtitle="These codes can be used if you lose access to your authenticator"
                 >
-                    <div className="space-y-4 py-2">
+                    <div className="density-gap-section py-2">
                         <div className="flex items-center gap-2 p-3 rounded-lg bg-warning/10 text-warning text-sm">
                             <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
                             <span>Save these codes now. They won&apos;t be shown again.</span>
@@ -228,7 +228,11 @@ function MfaSetupForm() {
 
         return (
             <AuthLayout title="MFA enabled" subtitle="Your account is now more secure">
-                <div className="text-center space-y-4 py-4" role="status" aria-live="polite">
+                <div
+                    className="text-center density-gap-section py-4"
+                    role="status"
+                    aria-live="polite"
+                >
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10">
                         <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
                     </div>
@@ -254,7 +258,7 @@ function MfaSetupForm() {
             title="Set up two-factor authentication"
             subtitle="Add an extra layer of security to your account"
         >
-            <div className="space-y-6">
+            <div className="density-gap-page">
                 {error && (
                     <div
                         className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
@@ -268,7 +272,7 @@ function MfaSetupForm() {
 
                 {loading ? (
                     <div className="flex justify-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <Loader2 className="h-8 w-8 motion-safe:animate-spin text-primary" />
                     </div>
                 ) : enrollment ? (
                     <>
@@ -365,7 +369,7 @@ function MfaSetupForm() {
                                 >
                                     {verifying ? (
                                         <Loader2
-                                            className="h-4 w-4 animate-spin"
+                                            className="h-4 w-4 motion-safe:animate-spin"
                                             aria-hidden="true"
                                         />
                                     ) : (
@@ -394,7 +398,7 @@ export default function MfaSetupPage() {
         <Suspense
             fallback={
                 <div className="min-h-screen flex items-center justify-center bg-background">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <Loader2 className="h-8 w-8 motion-safe:animate-spin text-primary" />
                 </div>
             }
         >

@@ -32,7 +32,7 @@ export function TimeHorizonGroup({ label, variant, count, children }: TimeHorizo
             <OverlineText as="h3" className={`flex items-center gap-1.5 ${cfg.className}`}>
                 <Icon className="h-3 w-3" />
                 {label}
-                <span className="text-[10px] font-normal ml-1">({count})</span>
+                <span className="density-caption font-normal ml-1">({count})</span>
             </OverlineText>
             <div className="space-y-0.5">{children}</div>
         </div>

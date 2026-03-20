@@ -149,7 +149,7 @@ export function TimeTrackingCompliancePageClient() {
 
     const contentSlot = (
         <div className="density-gap-page">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <StatCard title="Active Violations" value={totalViolations} icon={AlertTriangle} />
                 <StatCard
                     title="Compliant Workers"
@@ -169,7 +169,7 @@ export function TimeTrackingCompliancePageClient() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 density-gap-card">
                         {policies
                             .filter((p) => p.isActive)
                             .map((policy) => (
@@ -179,7 +179,7 @@ export function TimeTrackingCompliancePageClient() {
                                 >
                                     <div className="flex items-center justify-between">
                                         <h4 className="text-sm font-semibold">{policy.name}</h4>
-                                        <Badge variant="success" className="text-[10px]">
+                                        <Badge variant="success" className="density-caption">
                                             Active
                                         </Badge>
                                     </div>
@@ -207,7 +207,7 @@ export function TimeTrackingCompliancePageClient() {
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                    <div className="flex items-center gap-1 density-caption text-muted-foreground">
                                         {policy.requiresApproval ? (
                                             <>
                                                 <CheckCircle2 className="h-3 w-3 text-success" />
@@ -253,18 +253,18 @@ export function TimeTrackingCompliancePageClient() {
                                             </h4>
                                             <Badge
                                                 variant={SEVERITY_BADGE[violation.severity]}
-                                                className="text-[10px]"
+                                                className="density-caption"
                                             >
                                                 {violation.severity}
                                             </Badge>
-                                            <Badge variant="ghost" className="text-[10px]">
+                                            <Badge variant="ghost" className="density-caption">
                                                 {violation.violationType.replace(/_/g, " ")}
                                             </Badge>
                                         </div>
                                         <p className="text-xs text-muted-foreground mt-0.5">
                                             {violation.description}
                                         </p>
-                                        <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                                        <p className="density-caption text-muted-foreground mt-1 flex items-center gap-1">
                                             <Calendar className="h-3 w-3" />
                                             {formatDate(violation.date)}
                                         </p>
@@ -304,9 +304,9 @@ export function TimeTrackingCompliancePageClient() {
                                             <h4 className="text-sm font-semibold">{worker.name}</h4>
                                             <Badge
                                                 variant={STATUS_BADGE[worker.status]}
-                                                className="text-[10px]"
+                                                className="density-caption"
                                             >
-                                                {worker.status.replace("_", " ")}
+                                                {worker.status.replaceAll("_", " ")}
                                             </Badge>
                                         </div>
                                         <p className="text-xs text-muted-foreground">

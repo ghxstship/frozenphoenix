@@ -78,7 +78,7 @@ function BriefTemplatesTab() {
         return (
             <Card>
                 <CardContent className="py-8 flex justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-5 w-5 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -115,7 +115,7 @@ function BriefTemplatesTab() {
                                     )}
                                 </p>
                             </div>
-                            <Badge variant="outline" className="text-[10px] shrink-0 ml-2">
+                            <Badge variant="outline" className="density-caption shrink-0 ml-2">
                                 template
                             </Badge>
                         </div>
@@ -400,7 +400,7 @@ export function BriefDetailClient({
                                                 {Boolean(del.channel) && (
                                                     <Badge
                                                         variant="outline"
-                                                        className="mt-1 text-[10px]"
+                                                        className="mt-1 density-caption"
                                                     >
                                                         {String(del.channel)}
                                                     </Badge>
@@ -456,7 +456,7 @@ export function BriefDetailClient({
                                                 </span>
                                             </div>
                                             <ProgressBar value={pct} size="sm" />
-                                            <p className="text-[10px] text-muted-foreground mt-1">
+                                            <p className="density-caption text-muted-foreground mt-1">
                                                 {pct}% of total budget
                                             </p>
                                         </div>

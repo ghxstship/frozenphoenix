@@ -148,7 +148,7 @@ export function FieldGroup({ category, fields, columns = 2, className }: FieldGr
                 <Icon className={cn("h-4 w-4", config.color)} />
                 <h4 className="text-sm font-semibold">{config.label}</h4>
             </div>
-            <div className={cn("grid gap-4", gridCols[columns])}>
+            <div className={cn("grid density-gap-card", gridCols[columns])}>
                 {fields.map((field) => (
                     <FieldDisplay
                         key={field.label}

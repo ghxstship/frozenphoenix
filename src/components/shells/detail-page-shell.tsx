@@ -17,45 +17,23 @@
 import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/api/client";
-import { getEntityConfig } from "@/lib/api/entity-config";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { SkeletonCrossfade } from "@/components/ui/skeleton-crossfade";
 import { DetailLayout } from "@/components/layouts/detail-layout";
 import type { DetailLayoutProps } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
+import { StatsGrid } from "@/components/ui/stats-grid";
 import { PermissionGate } from "@/components/permission-guard";
 import { FieldGrid } from "@/components/shells/field-grid";
 import { RelatedEntitiesSection } from "@/components/shells/related-entities";
 import { RecordChatter } from "@/components/activity";
 import { LayoutList } from "lucide-react";
-import type { DetailPageConfig, DetailStatDef } from "@/types/detail-page-config";
+import type { DetailPageConfig } from "@/types/detail-page-config";
 import type { TabBarItem } from "@/components/ui/tab-bar";
-
-// ─── Types ───────────────────────────────────────────────────
-
-type EntityRecord = Record<string, unknown>;
-
-// ─── Helpers ─────────────────────────────────────────────────
-
-function getNestedValue(record: EntityRecord, key: string): unknown {
-    const parts = key.split(".");
-    let current: unknown = record;
-    for (const part of parts) {
-        if (current == null || typeof current !== "object") return undefined;
-        current = (current as EntityRecord)[part];
-    }
-    return current;
-}
-
-function computeStatValue(stat: DetailStatDef, record: EntityRecord): string | number {
-    if (stat.compute) return stat.compute(record);
-    if (stat.accessorKey) {
-        const val = getNestedValue(record, stat.accessorKey);
-        return val != null ? String(val) : "—";
-    }
-    return "—";
-}
+import { computeStatValue, getNestedValue } from "@/lib/record-utils";
+import { useEntityMeta } from "@/hooks/use-entity-meta";
+import type { EntityRecord } from "@/types/entity";
 
 // ─── Main Component ─────────────────────────────────────────
 
@@ -83,15 +61,21 @@ export function DetailPageShell({
     actions,
     avatar,
 }: DetailPageShellProps) {
-    const entityConfig = getEntityConfig(config.entityKey);
+    const {
+        entityConfig,
+        resource: metaResource,
+        basePath: metaBasePath,
+        slug: metaSlug,
+        displayNamePlural,
+    } = useEntityMeta(config.entityKey);
     const [activeTab, setActiveTab] = useState("overview");
 
     // Resolve entity metadata
-    const resource = entityConfig?.resource ?? config.entityKey;
-    const basePath = entityConfig?.basePath ?? `/api/${config.entityKey.replace(/_/g, "-")}`;
-    const slug = entityConfig?.slug ?? config.entityKey.replace(/_/g, "-");
+    const resource = entityConfig?.resource ?? metaResource;
+    const basePath = entityConfig?.basePath ?? metaBasePath;
+    const slug = entityConfig?.slug ?? metaSlug;
     const backHref = config.backHref ?? `/${slug}`;
-    const backLabel = config.backLabel ?? entityConfig?.displayNamePlural ?? "Back";
+    const backLabel = config.backLabel ?? displayNamePlural ?? "Back";
     const Icon = config.icon ?? LayoutList;
 
     // Determine if we use external data or self-fetch
@@ -263,10 +247,10 @@ export function DetailPageShell({
         if (activeTab === "overview") {
             return (
                 config.overviewSlot ?? (
-                    <div className="space-y-6">
+                    <div className="density-gap-page">
                         {/* Stats */}
                         {statValues && statValues.length > 0 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <StatsGrid>
                                 {statValues.map((s) => (
                                     <StatCard
                                         key={s.label}
@@ -281,7 +265,7 @@ export function DetailPageShell({
                                         icon={s.icon}
                                     />
                                 ))}
-                            </div>
+                            </StatsGrid>
                         )}
 
                         {/* Field Grid */}

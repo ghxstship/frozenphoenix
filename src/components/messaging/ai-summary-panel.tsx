@@ -51,7 +51,7 @@ export function AISummaryPanel({
                     className
                 )}
             >
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <Loader2 className="h-4 w-4 motion-safe:animate-spin text-primary" />
                 <span className="text-xs text-muted-foreground">{ms("ai_summary_generating")}</span>
             </div>
         );
@@ -87,7 +87,7 @@ export function AISummaryPanel({
                     {ms("ai_summary_title")}
                 </CardTitle>
                 <div className="flex items-center gap-1">
-                    <Badge variant="ghost" className="text-[9px]">
+                    <Badge variant="ghost" className="density-caption">
                         {result.message_count} messages
                     </Badge>
                     <Button
@@ -106,7 +106,7 @@ export function AISummaryPanel({
 
                 {result.action_items.length > 0 && (
                     <div>
-                        <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                        <h4 className="density-caption font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
                             <CheckSquare className="h-3 w-3" />
                             {ms("ai_summary_action_items")}
                         </h4>
@@ -126,7 +126,7 @@ export function AISummaryPanel({
 
                 {result.key_decisions.length > 0 && (
                     <div>
-                        <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                        <h4 className="density-caption font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
                             <Lightbulb className="h-3 w-3" />
                             {ms("ai_summary_key_decisions")}
                         </h4>

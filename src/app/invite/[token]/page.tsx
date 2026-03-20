@@ -17,6 +17,7 @@ import {
     Users,
     XCircle,
 } from "lucide-react";
+import { ROLE_LABELS } from "@/config/rbac";
 
 interface InvitationData {
     email: string;
@@ -32,15 +33,6 @@ interface InvitationData {
 }
 
 type InviteState = "loading" | "valid" | "expired" | "used" | "not_found" | "accepted" | "error";
-
-const ROLE_LABELS: Record<string, string> = {
-    exec: "Executive",
-    director: "Director",
-    pm: "Project Manager",
-    member: "Team Member",
-    client: "Client",
-    collaborator: "Collaborator",
-};
 
 export default function InviteAcceptPage() {
     const router = useRouter();
@@ -117,7 +109,7 @@ export default function InviteAcceptPage() {
         return (
             <AuthLayout title="Loading invitation…" subtitle="Verifying your invite">
                 <div className="flex justify-center py-8" role="status" aria-live="polite">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <Loader2 className="h-8 w-8 motion-safe:animate-spin text-primary" />
                     <span className="sr-only">Loading invitation details…</span>
                 </div>
             </AuthLayout>
@@ -128,7 +120,7 @@ export default function InviteAcceptPage() {
     if (state === "not_found") {
         return (
             <AuthLayout title="Invitation not found" subtitle="This link may be invalid">
-                <div className="text-center space-y-4 py-4" role="alert">
+                <div className="text-center density-gap-section py-4" role="alert">
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-destructive/10">
                         <XCircle className="h-7 w-7 text-destructive" aria-hidden="true" />
                     </div>
@@ -147,7 +139,7 @@ export default function InviteAcceptPage() {
     if (state === "expired") {
         return (
             <AuthLayout title="Invitation expired" subtitle="This link is no longer valid">
-                <div className="text-center space-y-4 py-4" role="alert">
+                <div className="text-center density-gap-section py-4" role="alert">
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-warning/10">
                         <AlertCircle className="h-7 w-7 text-warning" aria-hidden="true" />
                     </div>
@@ -166,7 +158,11 @@ export default function InviteAcceptPage() {
     if (state === "used") {
         return (
             <AuthLayout title="Already accepted" subtitle="This invitation was already used">
-                <div className="text-center space-y-4 py-4" role="status" aria-live="polite">
+                <div
+                    className="text-center density-gap-section py-4"
+                    role="status"
+                    aria-live="polite"
+                >
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-info/10">
                         <CheckCircle2 className="h-7 w-7 text-info" aria-hidden="true" />
                     </div>
@@ -186,7 +182,11 @@ export default function InviteAcceptPage() {
     if (state === "accepted") {
         return (
             <AuthLayout title="Welcome aboard!" subtitle="You've joined the team">
-                <div className="text-center space-y-4 py-4" role="status" aria-live="polite">
+                <div
+                    className="text-center density-gap-section py-4"
+                    role="status"
+                    aria-live="polite"
+                >
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10">
                         <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
                     </div>
@@ -217,7 +217,7 @@ export default function InviteAcceptPage() {
             title="You're invited"
             subtitle={`Join ${invitation?.organizations?.name || "a team"} on the platform`}
         >
-            <div className="space-y-6">
+            <div className="density-gap-page">
                 {error && (
                     <div
                         className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
@@ -230,7 +230,7 @@ export default function InviteAcceptPage() {
                 )}
 
                 {/* Invitation details card */}
-                <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+                <div className="rounded-xl border border-border bg-card p-6 density-gap-section">
                     <div className="flex items-center gap-3">
                         <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
                             <Building2 className="h-6 w-6 text-primary" aria-hidden="true" />
@@ -276,7 +276,10 @@ export default function InviteAcceptPage() {
                     >
                         {accepting ? (
                             <>
-                                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                                <Loader2
+                                    className="h-4 w-4 motion-safe:animate-spin"
+                                    aria-hidden="true"
+                                />
                                 Joining…
                             </>
                         ) : (

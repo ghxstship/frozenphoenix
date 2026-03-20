@@ -104,7 +104,7 @@ export function CompanyDetailClient({
                     <CardContent>
                         <div className="flex flex-wrap gap-1.5">
                             {tags.map((tag) => (
-                                <Badge key={tag} variant="outline" className="text-[10px]">
+                                <Badge key={tag} variant="outline" className="density-caption">
                                     {tag}
                                 </Badge>
                             ))}
@@ -218,7 +218,7 @@ export function CompanyDetailClient({
                                                     {Boolean(contact.primary) && (
                                                         <Badge
                                                             variant="warning"
-                                                            className="text-[9px]"
+                                                            className="density-caption"
                                                         >
                                                             Primary
                                                         </Badge>

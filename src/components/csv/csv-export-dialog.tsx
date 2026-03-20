@@ -285,7 +285,7 @@ export function CsvExportDialog({
 
                 {/* ═══ STEP: Configure ═══ */}
                 {step === "configure" && (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         {/* Active filters summary */}
                         {activeFilters.length > 0 && (
                             <div className="flex items-center gap-2 text-sm p-3 bg-secondary/50 rounded-lg">
@@ -375,7 +375,7 @@ export function CsvExportDialog({
                             >
                                 {previewLoading ? (
                                     <>
-                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
                                         Loading preview...
                                     </>
                                 ) : (
@@ -388,7 +388,7 @@ export function CsvExportDialog({
 
                 {/* ═══ STEP: Preview ═══ */}
                 {step === "preview" && previewData && (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         {/* Summary */}
                         <div
                             className="flex items-center justify-between text-sm p-3 bg-secondary/50 rounded-lg"
@@ -461,7 +461,7 @@ export function CsvExportDialog({
                 {/* ═══ STEP: Exporting ═══ */}
                 {step === "exporting" && (
                     <div className="flex flex-col items-center justify-center py-12 gap-4">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <Loader2 className="h-8 w-8 motion-safe:animate-spin text-primary" />
                         <p className="text-sm font-medium">Exporting records...</p>
                         <p className="text-xs text-muted-foreground">
                             This may take a moment for large datasets.
@@ -471,7 +471,7 @@ export function CsvExportDialog({
 
                 {/* ═══ STEP: Result ═══ */}
                 {step === "result" && exportResult && (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <div
                             className={cn(
                                 "flex items-start gap-3 p-4 rounded-lg text-sm",

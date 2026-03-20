@@ -41,7 +41,7 @@ export function CopilotToolActivity({ name, status, className }: CopilotToolActi
             aria-label={`Tool ${name} ${status === "pending" ? "running" : "complete"}`}
         >
             {status === "pending" ? (
-                <Loader2 className="h-3 w-3 animate-spin shrink-0" />
+                <Loader2 className="h-3 w-3 motion-safe:animate-spin shrink-0" />
             ) : (
                 <Check className="h-3 w-3 text-green-500 shrink-0" />
             )}

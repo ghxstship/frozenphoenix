@@ -63,7 +63,7 @@ export function AdvanceApprovalPanel({
             <CardHeader>
                 <CardTitle className="text-base">Approval</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="density-gap-section">
                 {/* Summary */}
                 <div className="flex items-center justify-between">
                     <div>
@@ -82,7 +82,8 @@ export function AdvanceApprovalPanel({
                         <span className="font-medium">{submittedBy}</span>
                         {Boolean(submittedAt) && (
                             <span className="text-muted-foreground">
-                                {" "}on {new Date(submittedAt!).toLocaleDateString()}
+                                {" "}
+                                on {new Date(submittedAt!).toLocaleDateString()}
                             </span>
                         )}
                     </div>
@@ -112,10 +113,7 @@ export function AdvanceApprovalPanel({
                             </Button>
                         ) : (
                             <div className="space-y-2 rounded-md border p-3">
-                                <label
-                                    htmlFor="reject-reason"
-                                    className="text-sm font-medium"
-                                >
+                                <label htmlFor="reject-reason" className="text-sm font-medium">
                                     Rejection Reason
                                 </label>
                                 <textarea

@@ -46,7 +46,7 @@ function SOWDeliverablesTab({ sowId }: { sowId: string }) {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -118,7 +118,7 @@ function SOWChangeLogTab({ sowId }: { sowId: string }) {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -192,7 +192,7 @@ function SOWDeliverableSummaryTab({ sowId }: { sowId: string }) {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -257,7 +257,7 @@ function CollaboratorRequirementsTab({ sowId }: { sowId: string }) {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -385,8 +385,8 @@ export function ScopeOfWorkDetailPageClient() {
     const effectiveDate = (sow?.effective_date as string) ?? (sow?.effectiveDate as string) ?? "";
     const expirationDate =
         (sow?.expiration_date as string) ?? (sow?.expirationDate as string) ?? "";
-    const _billingType = (sow?.billing_type as string) ?? (sow?.billingType as string) ?? "";
-    const _paymentTerms = (sow?.payment_terms as string) ?? (sow?.paymentTerms as string) ?? "";
+    const billingType = (sow?.billing_type as string) ?? (sow?.billingType as string) ?? "";
+    const paymentTerms = (sow?.payment_terms as string) ?? (sow?.paymentTerms as string) ?? "";
     const sowDescription = (sow?.description as string) ?? "";
     const deliverables = parseDeliverables(sow?.deliverables);
     const completedDeliverables = deliverables.filter((d) => d.status === "completed").length;
@@ -411,7 +411,7 @@ export function ScopeOfWorkDetailPageClient() {
     };
 
     const sidebarSlot = (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Client</CardTitle>
@@ -442,6 +442,20 @@ export function ScopeOfWorkDetailPageClient() {
                         <span className="text-muted-foreground">Remaining</span>
                         <span className="font-medium">{formatCurrency(totalValue - invoiced)}</span>
                     </div>
+                    {billingType && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Billing</span>
+                            <span className="font-medium capitalize">
+                                {billingType.replaceAll("_", " ")}
+                            </span>
+                        </div>
+                    )}
+                    {paymentTerms && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Terms</span>
+                            <span className="font-medium">{paymentTerms}</span>
+                        </div>
+                    )}
                     <ProgressBar value={invoicedPct} size="sm" />
                     <p className="text-xs text-muted-foreground text-center">
                         {invoicedPct}% invoiced
@@ -478,8 +492,8 @@ export function ScopeOfWorkDetailPageClient() {
     );
 
     const overviewSlot = (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="density-gap-page">
+            <div className="grid grid-cols-1 sm:grid-cols-3 density-gap-card">
                 <Card>
                     <CardContent className="pt-4">
                         <div className="flex items-center gap-3">

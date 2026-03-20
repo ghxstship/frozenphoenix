@@ -1,16 +1,9 @@
 import { notFound } from "next/navigation";
 import { createAdminClient, serverFromTable } from "@/lib/supabase/server";
-import {
-    ArrowLeft,
-    Building2,
-    ExternalLink,
-    Globe,
-    Linkedin,
-    MapPin,
-    Users,
-} from "lucide-react";
+import { ArrowLeft, Building2, ExternalLink, Globe, Linkedin, MapPin, Users } from "lucide-react";
 import Link from "next/link";
 import { CopyLinkButton } from "@/components/ui/copy-link-button";
+import { getInitials } from "@/lib/utils";
 
 interface OrgProfileData {
     id: string;
@@ -92,12 +85,7 @@ export default async function PublicOrgProfilePage({
 
     const { org, members, memberCount } = data;
 
-    const orgInitials = org.name
-        .split(" ")
-        .map((w: string) => w[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
+    const orgInitials = getInitials(org.name);
 
     return (
         <div className="min-h-screen bg-background">
@@ -229,12 +217,7 @@ export default async function PublicOrgProfilePage({
                                 .filter((m) => m.user_profiles)
                                 .map((m) => {
                                     const p = m.user_profiles!;
-                                    const memberInitials = p.display_name
-                                        .split(" ")
-                                        .map((n: string) => n[0])
-                                        .join("")
-                                        .toUpperCase()
-                                        .slice(0, 2);
+                                    const memberInitials = getInitials(p.display_name);
 
                                     const memberContent = (
                                         <>

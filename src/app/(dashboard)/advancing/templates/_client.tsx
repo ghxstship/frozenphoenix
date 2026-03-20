@@ -43,7 +43,7 @@ export function AdvancingTemplatesPageClient() {
 
             {isLoading ? (
                 <div className="flex items-center justify-center py-16">
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    <div className="h-6 w-6 motion-safe:animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </div>
             ) : filtered.length === 0 ? (
                 <EmptyState
@@ -89,7 +89,7 @@ export function AdvancingTemplatesPageClient() {
                                             <span>Type: {String(tpl.advance_type)}</span>
                                         )}
                                         {Boolean(tpl.is_global) && (
-                                            <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                                            <span className="rounded bg-primary/10 px-1.5 py-0.5 density-caption font-medium text-primary">
                                                 Global
                                             </span>
                                         )}

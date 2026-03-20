@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
     AlertTriangle,
     CheckCircle,
@@ -14,9 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatDate as formatDisplayDate } from "@/lib/locale";
-import { PermissionGate } from "@/components/permission-guard";
-import { PageHeader } from "@/components/ui/page-header";
-import { LoadingState } from "@/components/layouts/loading-state";
 import {
     useCreateResourceBooking,
     useResourceBookings,
@@ -25,6 +22,8 @@ import {
 import { useCrewMembers } from "@/lib/supabase";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_RESOURCE_BOOKING_CONFIG } from "@/config/create-entity-configs";
+import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
+import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 
 type BookingStatus = "tentative" | "confirmed" | "cancelled";
 type BookingType = "project_work" | "internal" | "time_off" | "training" | "admin";
@@ -112,9 +111,16 @@ export function ResourcePlannerPageClient() {
     const createBooking = useCreateResourceBooking();
     const updateBooking = useUpdateResourceBooking();
 
-    const handleAssignPlaceholder = (bookingId: string, crewMemberId: string) => {
-        updateBooking.mutate({ id: bookingId, crew_member_id: crewMemberId, status: "confirmed" });
-    };
+    const handleAssignPlaceholder = useCallback(
+        (bookingId: string, crewMemberId: string) => {
+            updateBooking.mutate({
+                id: bookingId,
+                crew_member_id: crewMemberId,
+                status: "confirmed",
+            });
+        },
+        [updateBooking]
+    );
 
     const bookings: ResourceBookingView[] = useMemo(
         () =>
@@ -165,107 +171,67 @@ export function ResourcePlannerPageClient() {
         return members;
     }, [sbCrew, bookings]);
 
-    if (loadingBookings || loadingCrew) return <LoadingState />;
-
-    const navigateWeek = (direction: "prev" | "next") => {
+    const navigateWeek = useCallback((direction: "prev" | "next") => {
         setCurrentWeekStart((prev) => {
             const newDate = new Date(prev);
             newDate.setDate(prev.getDate() + (direction === "next" ? 7 : -7));
             return newDate;
         });
-    };
+    }, []);
 
-    const goToToday = () => {
+    const goToToday = useCallback(() => {
         const today = new Date();
         const monday = new Date(today);
         monday.setDate(today.getDate() - today.getDay() + 1);
         setCurrentWeekStart(monday);
-    };
+    }, []);
 
-    const getBookingsForCrewOnDate = (crewMemberId: string, date: string) => {
-        return bookings.filter(
-            (b) => b.crewMemberId === crewMemberId && isDateInRange(date, b.startDate, b.endDate)
-        );
-    };
+    const getBookingsForCrewOnDate = useCallback(
+        (crewMemberId: string, date: string) => {
+            return bookings.filter(
+                (b) =>
+                    b.crewMemberId === crewMemberId && isDateInRange(date, b.startDate, b.endDate)
+            );
+        },
+        [bookings]
+    );
 
-    const stats = {
-        totalCrew: crewMembers.length,
-        avgUtilization: crewMembers.length
-            ? Math.round(
-                  crewMembers.reduce((sum, c) => sum + c.utilizationPercent, 0) / crewMembers.length
-              )
-            : 0,
-        overbooked: crewMembers.filter((c) => c.utilizationPercent >= 100).length,
-        available: crewMembers.filter((c) => c.utilizationPercent < 50).length,
-    };
-
-    return (
-        <>
-            <PermissionGate resource="resource_planner" action="read">
-                <div className="flex flex-col gap-6 p-6 motion-safe:animate-fade-in">
-                    <PageHeader
-                        title="Resource Planner"
-                        description="Schedule and manage team capacity across projects"
-                    >
-                        <Button onClick={openCreate}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            New Booking
-                        </Button>
-                    </PageHeader>
-
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Team Members</CardTitle>
-                                <Users className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{stats.totalCrew}</div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                    Avg Utilization
-                                </CardTitle>
-                                <Clock className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div
-                                    className={cn(
-                                        "text-2xl font-bold",
-                                        getUtilizationColor(stats.avgUtilization)
-                                    )}
-                                >
-                                    {stats.avgUtilization}%
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Overbooked</CardTitle>
-                                <AlertTriangle className="h-4 w-4 text-destructive" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-destructive">
-                                    {stats.overbooked}
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Available</CardTitle>
-                                <CheckCircle className="h-4 w-4 text-success" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-success">
-                                    {stats.available}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
+    const config: DashboardPageConfig = useMemo(
+        () => ({
+            resource: "resource_planner",
+            action: "read",
+            title: "Resource Planner",
+            description: "Schedule and manage team capacity across projects",
+            searchable: false,
+            headerActions: (
+                <Button onClick={openCreate}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    New Booking
+                </Button>
+            ),
+            stats: [
+                { label: "Team Members", icon: Users, compute: () => crewMembers.length },
+                {
+                    label: "Avg Utilization",
+                    icon: Clock,
+                    compute: () =>
+                        crewMembers.length
+                            ? `${Math.round(crewMembers.reduce((sum, c) => sum + c.utilizationPercent, 0) / crewMembers.length)}%`
+                            : "0%",
+                },
+                {
+                    label: "Overbooked",
+                    icon: AlertTriangle,
+                    compute: () => crewMembers.filter((c) => c.utilizationPercent >= 100).length,
+                },
+                {
+                    label: "Available",
+                    icon: CheckCircle,
+                    compute: () => crewMembers.filter((c) => c.utilizationPercent < 50).length,
+                },
+            ],
+            contentSlot: (
+                <>
                     {/* Calendar Navigation */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -408,7 +374,7 @@ export function ResourcePlannerPageClient() {
                                                 <div
                                                     key={dateStr}
                                                     role="gridcell"
-                                                    aria-label={`${crew.name}, ${new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric" }).format(date)}${bookings.length > 0 ? `: ${bookings.map((b) => b.projectName || b.bookingType.replace("_", " ")).join(", ")}` : ": Available"}`}
+                                                    aria-label={`${crew.name}, ${new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric" }).format(date)}${bookings.length > 0 ? `: ${bookings.map((b) => b.projectName || b.bookingType.replaceAll("_", " ")).join(", ")}` : ": Available"}`}
                                                     className={cn(
                                                         "p-1 border-r last:border-r-0 min-h-[60px] relative",
                                                         isWeekend && "bg-muted/20"
@@ -522,8 +488,29 @@ export function ResourcePlannerPageClient() {
                             })()}
                         </CardContent>
                     </Card>
-                </div>
-            </PermissionGate>
+                </>
+            ),
+        }),
+        [
+            crewMembers,
+            weekDates,
+            bookings,
+            navigateWeek,
+            goToToday,
+            openCreate,
+            updateBooking.isPending,
+            handleAssignPlaceholder,
+            getBookingsForCrewOnDate,
+        ]
+    );
+
+    return (
+        <>
+            <OperationalDashboardShell
+                config={config}
+                data={bookings as unknown as Record<string, unknown>[]}
+                isLoading={loadingBookings || loadingCrew}
+            />
             <CreateEntityDialog
                 open={createOpen}
                 onClose={closeCreate}

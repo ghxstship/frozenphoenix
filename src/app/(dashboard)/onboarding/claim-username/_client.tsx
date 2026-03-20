@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { csrfHeaders } from "@/lib/csrf";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/supabase/auth-context";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, AtSign, CheckCircle2, Loader2, XCircle } from "lucide-react";
-import { PageHeader } from "@/components/ui/page-header";
+import { AtSign, CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { WizardShell } from "@/components/shells/wizard-shell";
+import type { WizardConfig } from "@/types/wizard-config";
 
 type AvailabilityState = "idle" | "checking" | "available" | "unavailable";
 
@@ -114,154 +114,134 @@ export function ClaimUsernamePageClient() {
         }
     }, [input, availability, refreshProfile, router]);
 
-    if (success) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-background p-4">
-                <div
-                    className="w-full max-w-lg text-center space-y-4"
-                    role="status"
-                    aria-live="polite"
-                >
-                    <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10">
-                        <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
-                    </div>
-                    <h2 className="text-xl font-bold">Username claimed!</h2>
-                    <p className="text-sm text-muted-foreground">
-                        You&apos;re now{" "}
-                        <span className="font-semibold text-foreground">@{input}</span>
-                    </p>
-                    <Loader2 className="h-5 w-5 animate-spin text-primary mx-auto" />
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <div className="w-full max-w-lg space-y-8">
-                {/* Progress indicator */}
-                <div className="flex items-center gap-2 justify-center">
-                    <div className="h-2 w-12 rounded-full bg-primary" />
-                    <div className="h-2 w-12 rounded-full bg-primary" />
-                    <div className="h-2 w-12 rounded-full bg-muted" />
-                </div>
-
-                <PageHeader
-                    centered
-                    icon={AtSign}
-                    title="Choose your username"
-                    description={`Pick a unique handle for your public profile${profile?.display_name ? `, ${profile.display_name}` : ""}. You can change it later.`}
-                />
-
-                <div className="space-y-5">
-                    {error && (
+    const wizardConfig: WizardConfig = useMemo(
+        () => ({
+            title: "Choose your username",
+            description: `Pick a unique handle for your public profile${profile?.display_name ? `, ${profile.display_name}` : ""}. You can change it later.`,
+            icon: AtSign,
+            showProgress: false,
+            onCancel: () => router.push("/dashboard"),
+            onComplete: handleClaim,
+            submitLabel: `Claim @${input || "username"}`,
+            steps: [
+                {
+                    id: "claim",
+                    label: "Username",
+                    icon: AtSign,
+                    validate: () =>
+                        availability === "available" || "Please choose an available username.",
+                    content: success ? (
                         <div
-                            className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
-                            role="alert"
-                            aria-live="assertive"
+                            className="w-full text-center density-gap-section"
+                            role="status"
+                            aria-live="polite"
                         >
-                            {error}
-                        </div>
-                    )}
-
-                    <div className="space-y-2">
-                        <label htmlFor="username-input" className="text-sm font-medium">
-                            Username
-                        </label>
-                        <div className="relative">
-                            <AtSign
-                                className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
-                                aria-hidden="true"
-                            />
-                            <Input
-                                id="username-input"
-                                value={input}
-                                onChange={(e) => handleInputChange(e.target.value)}
-                                placeholder="your.username"
-                                className="pl-10 pr-10"
-                                disabled={claiming}
-                                autoComplete="off"
-                                autoFocus
-                            />
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                {availability === "checking" && (
-                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                )}
-                                {availability === "available" && (
-                                    <CheckCircle2 className="h-4 w-4 text-success" />
-                                )}
-                                {availability === "unavailable" && (
-                                    <XCircle className="h-4 w-4 text-destructive" />
-                                )}
+                            <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10">
+                                <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
                             </div>
-                        </div>
-
-                        {/* Feedback */}
-                        {availability === "available" && (
-                            <p className="text-xs text-success">Username is available!</p>
-                        )}
-                        {availability === "unavailable" && reason && (
-                            <p className="text-xs text-destructive">{reason}</p>
-                        )}
-                        {input.length > 0 && input.length < 3 && (
-                            <p className="text-xs text-muted-foreground">
-                                Username must be at least 3 characters
+                            <h2 className="text-xl font-bold">Username claimed!</h2>
+                            <p className="text-sm text-muted-foreground">
+                                You&apos;re now{" "}
+                                <span className="font-semibold text-foreground">@{input}</span>
                             </p>
-                        )}
-                    </div>
-
-                    {/* Suggestions */}
-                    {suggestions.length > 0 && (
-                        <div className="space-y-2">
-                            <p className="text-xs text-muted-foreground">
-                                Try one of these instead:
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                                {suggestions.map((s) => (
-                                    <button
-                                        key={s}
-                                        onClick={() => setInput(s)}
-                                        className="px-3 py-1 text-xs rounded-lg border border-border hover:bg-accent/10 transition-colors"
-                                    >
-                                        @{s}
-                                    </button>
-                                ))}
-                            </div>
+                            <Loader2 className="h-5 w-5 motion-safe:animate-spin text-primary mx-auto" />
                         </div>
-                    )}
-
-                    <div className="flex gap-3 pt-2">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={() => router.push("/dashboard")}
-                            disabled={claiming}
-                            className="flex-1"
-                        >
-                            Skip for now
-                        </Button>
-                        <Button
-                            type="button"
-                            onClick={handleClaim}
-                            disabled={claiming || availability !== "available"}
-                            className="flex-1"
-                            aria-busy={claiming}
-                        >
-                            {claiming ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                                    Claiming…
-                                </>
-                            ) : (
-                                <>
-                                    Claim @{input || "username"}
-                                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                                </>
+                    ) : (
+                        <div className="space-y-5">
+                            {error && (
+                                <div
+                                    className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                                    role="alert"
+                                    aria-live="assertive"
+                                >
+                                    {error}
+                                </div>
                             )}
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="username-input" className="text-sm font-medium">
+                                    Username
+                                </label>
+                                <div className="relative">
+                                    <AtSign
+                                        className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
+                                        aria-hidden="true"
+                                    />
+                                    <Input
+                                        id="username-input"
+                                        value={input}
+                                        onChange={(e) => handleInputChange(e.target.value)}
+                                        placeholder="your.username"
+                                        className="pl-10 pr-10"
+                                        disabled={claiming}
+                                        autoComplete="off"
+                                        autoFocus
+                                    />
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                        {availability === "checking" && (
+                                            <Loader2 className="h-4 w-4 motion-safe:animate-spin text-muted-foreground" />
+                                        )}
+                                        {availability === "available" && (
+                                            <CheckCircle2 className="h-4 w-4 text-success" />
+                                        )}
+                                        {availability === "unavailable" && (
+                                            <XCircle className="h-4 w-4 text-destructive" />
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Feedback */}
+                                {availability === "available" && (
+                                    <p className="text-xs text-success">Username is available!</p>
+                                )}
+                                {availability === "unavailable" && reason && (
+                                    <p className="text-xs text-destructive">{reason}</p>
+                                )}
+                                {input.length > 0 && input.length < 3 && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Username must be at least 3 characters
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Suggestions */}
+                            {suggestions.length > 0 && (
+                                <div className="space-y-2">
+                                    <p className="text-xs text-muted-foreground">
+                                        Try one of these instead:
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {suggestions.map((s) => (
+                                            <button
+                                                key={s}
+                                                onClick={() => setInput(s)}
+                                                className="px-3 py-1 text-xs rounded-lg border border-border hover:bg-accent/10 transition-colors"
+                                            >
+                                                @{s}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ),
+                },
+            ],
+        }),
+        [
+            profile?.display_name,
+            router,
+            handleClaim,
+            input,
+            availability,
+            success,
+            error,
+            claiming,
+            handleInputChange,
+            reason,
+            suggestions,
+        ]
     );
+
+    return <WizardShell config={wizardConfig} isSubmitting={claiming} />;
 }

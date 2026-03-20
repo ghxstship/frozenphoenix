@@ -1,9 +1,7 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_EVENT_CONFIG } from "@/config/create-entity-configs";
@@ -45,7 +43,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PermissionGate } from "@/components/permission-guard";
+import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
+import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 
 type EventType = "project" | "task" | "approval" | "milestone" | "event";
 
@@ -229,10 +228,6 @@ export function CalendarPageClient() {
 
     const isLoading = loadingProjects || loadingTasks || loadingApprovals || loadingCalEvents;
 
-    if (isLoading) {
-        return <LoadingState />;
-    }
-
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
@@ -241,69 +236,80 @@ export function CalendarPageClient() {
     const startDay = firstDayOfMonth.getDay();
     const daysInMonth = lastDayOfMonth.getDate();
 
-    const calendarDbEvents: CalendarEvent[] = (sbCalendarEvents ?? []).map(
-        (ce: Record<string, unknown>) => ({
-            id: `cal-${ce.id as string}`,
-            title: (ce.title as string) ?? "Untitled Event",
-            date: ((ce.start_date as string) ?? "").split("T")[0] ?? "",
-            type: "event" as EventType,
-            status: (ce.status as string) ?? undefined,
-        })
+    const calendarDbEvents: CalendarEvent[] = useMemo(
+        () =>
+            (sbCalendarEvents ?? []).map((ce: Record<string, unknown>) => ({
+                id: `cal-${ce.id as string}`,
+                title: (ce.title as string) ?? "Untitled Event",
+                date: ((ce.start_date as string) ?? "").split("T")[0] ?? "",
+                type: "event" as EventType,
+                status: (ce.status as string) ?? undefined,
+            })),
+        [sbCalendarEvents]
     );
 
-    const events: CalendarEvent[] = [
-        ...calendarDbEvents,
-        ...projects.map((p) => ({
-            id: `proj-start-${p.id}`,
-            title: `${p.name} — Start`,
-            date: p.startDate,
-            type: "project" as EventType,
-            projectName: p.client,
-            status: p.status,
-        })),
-        ...projects.map((p) => ({
-            id: `proj-end-${p.id}`,
-            title: `${p.name} — End`,
-            date: p.endDate,
-            type: "milestone" as EventType,
-            projectName: p.client,
-        })),
-        ...allTasks
-            .filter((t) => t.dueDate)
-            .map((t) => ({
-                id: `task-${t.id}`,
-                title: t.title,
-                date: t.dueDate!,
-                type: "task" as EventType,
-                status: t.status,
+    const events: CalendarEvent[] = useMemo(
+        () => [
+            ...calendarDbEvents,
+            ...projects.map((p) => ({
+                id: `proj-start-${p.id}`,
+                title: `${p.name} — Start`,
+                date: p.startDate,
+                type: "project" as EventType,
+                projectName: p.client,
+                status: p.status,
             })),
-        ...approvals.map((a) => ({
-            id: `approval-${a.id}`,
-            title: a.milestoneName,
-            date: a.deadline.split("T")[0] ?? "",
-            type: "approval" as EventType,
-            status: a.status,
-        })),
-    ];
+            ...projects.map((p) => ({
+                id: `proj-end-${p.id}`,
+                title: `${p.name} — End`,
+                date: p.endDate,
+                type: "milestone" as EventType,
+                projectName: p.client,
+            })),
+            ...allTasks
+                .filter((t) => t.dueDate)
+                .map((t) => ({
+                    id: `task-${t.id}`,
+                    title: t.title,
+                    date: t.dueDate!,
+                    type: "task" as EventType,
+                    status: t.status,
+                })),
+            ...approvals.map((a) => ({
+                id: `approval-${a.id}`,
+                title: a.milestoneName,
+                date: a.deadline.split("T")[0] ?? "",
+                type: "approval" as EventType,
+                status: a.status,
+            })),
+        ],
+        [calendarDbEvents, projects, allTasks, approvals]
+    );
 
-    const getEventsForDate = (day: number) => {
-        const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        return events.filter((e) => e.date === dateStr);
-    };
+    const getEventsForDate = useCallback(
+        (day: number) => {
+            const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            return events.filter((e) => e.date === dateStr);
+        },
+        [year, month, events]
+    );
 
-    const navigate = (direction: number) => {
-        if (view === "week") {
-            const d = new Date(currentDate);
-            d.setDate(d.getDate() + direction * 7);
-            setCurrentDate(d);
-        } else {
-            setCurrentDate(new Date(year, month + direction, 1));
-        }
-    };
+    const navigate = useCallback(
+        (direction: number) => {
+            if (view === "week") {
+                const d = new Date(currentDate);
+                d.setDate(d.getDate() + direction * 7);
+                setCurrentDate(d);
+            } else {
+                setCurrentDate(new Date(year, month + direction, 1));
+            }
+        },
+        [view, currentDate, year, month]
+    );
 
-    const goToToday = () => {
+    const goToToday = useCallback(() => {
         setCurrentDate(new Date());
-    };
+    }, []);
 
     const weekStart = getWeekStart(currentDate);
     const weekEnd = getWeekEnd(currentDate);
@@ -314,237 +320,279 @@ export function CalendarPageClient() {
             ? `${weekStart.toLocaleString("default", { month: "long" })} ${weekStart.getDate()}–${weekEnd.getDate()}, ${weekStart.getFullYear()}`
             : `${weekStart.toLocaleString("default", { month: "short" })} ${weekStart.getDate()} – ${weekEnd.toLocaleString("default", { month: "short" })} ${weekEnd.getDate()}, ${weekEnd.getFullYear()}`;
     const headerLabel = view === "week" ? weekLabel : monthName;
-    const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const weekDays = useMemo(() => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], []);
 
-    const today = new Date();
-    const isToday = (day: number) =>
-        today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
+    const today = useMemo(() => new Date(), []);
+    const isToday = useCallback(
+        (day: number) =>
+            today.getDate() === day && today.getMonth() === month && today.getFullYear() === year,
+        [today, month, year]
+    );
 
-    const calendarDays = [];
-    for (let i = 0; i < startDay; i++) {
-        calendarDays.push(null);
-    }
-    for (let day = 1; day <= daysInMonth; day++) {
-        calendarDays.push(day);
-    }
+    const calendarDays: (number | null)[] = useMemo(() => {
+        const days: (number | null)[] = [];
+        for (let i = 0; i < startDay; i++) {
+            days.push(null);
+        }
+        for (let day = 1; day <= daysInMonth; day++) {
+            days.push(day);
+        }
+        return days;
+    }, [startDay, daysInMonth]);
+
+    const config: DashboardPageConfig = useMemo(
+        () => ({
+            resource: "calendar",
+            action: "read",
+            title: "Calendar",
+            description: "Unified view of projects, tasks, and milestones",
+            searchable: false,
+            headerActions: (
+                <div className="flex items-center gap-2">
+                    <SegmentedControl
+                        value={view}
+                        onValueChange={(v) => setView(v as "month" | "week")}
+                        options={[
+                            { value: "month", label: "Month" },
+                            { value: "week", label: "Week" },
+                        ]}
+                        ariaLabel="Calendar view"
+                    />
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                                <Share2 className="h-4 w-4" />
+                                Export
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Download</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => downloadIcs(events)}>
+                                <Download className="h-4 w-4 mr-2" />
+                                iCal File (.ics)
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel>Add to Calendar</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => openGoogleCalendarImport(events)}>
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                                Google Calendar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openOutlookCalendarImport(events)}>
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                                Outlook Calendar
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Button size="sm" onClick={openCreate}>
+                        <Plus className="h-4 w-4" />
+                        Add Event
+                    </Button>
+                </div>
+            ),
+            contentSlot: (
+                <>
+                    <Card>
+                        <CardContent>
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => navigate(-1)}
+                                        aria-label={
+                                            view === "week" ? "Previous week" : "Previous month"
+                                        }
+                                        className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </button>
+                                    <h2
+                                        className="text-lg font-bold min-w-48 text-center"
+                                        id="calendar-month-label"
+                                    >
+                                        {headerLabel}
+                                    </h2>
+                                    <button
+                                        onClick={() => navigate(1)}
+                                        aria-label={view === "week" ? "Next week" : "Next month"}
+                                        className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </button>
+                                </div>
+                                <Button variant="ghost" size="sm" onClick={goToToday}>
+                                    Today
+                                </Button>
+                            </div>
+
+                            {view === "week" ? (
+                                <CalendarWeekGrid
+                                    weekStart={weekStart}
+                                    events={events}
+                                    weekDays={weekDays}
+                                    weekLabel={weekLabel}
+                                />
+                            ) : (
+                                <CalendarGrid
+                                    weekDays={weekDays}
+                                    calendarDays={calendarDays}
+                                    getEventsForDate={getEventsForDate}
+                                    isToday={isToday}
+                                    monthName={monthName}
+                                />
+                            )}
+
+                            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border">
+                                {(
+                                    Object.entries(eventTypeConfig) as [
+                                        EventType,
+                                        (typeof eventTypeConfig)[EventType],
+                                    ][]
+                                ).map(([type, config]) => (
+                                    <div
+                                        key={type}
+                                        className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                                    >
+                                        <div className={`h-2.5 w-2.5 rounded ${config.color}`} />
+                                        <span>
+                                            {
+                                                {
+                                                    project: "Project",
+                                                    task: "Task",
+                                                    approval: "Approval",
+                                                    milestone: "Milestone",
+                                                    event: "Event",
+                                                }[type]
+                                            }
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 density-gap-card">
+                        <Card>
+                            <CardContent>
+                                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                    <Clock className="h-4 w-4 text-warning" />
+                                    Upcoming Deadlines
+                                </h3>
+                                <div className="space-y-2">
+                                    {events
+                                        .filter((e) => new Date(e.date) >= today)
+                                        .sort(
+                                            (a, b) =>
+                                                new Date(a.date).getTime() -
+                                                new Date(b.date).getTime()
+                                        )
+                                        .slice(0, 5)
+                                        .map((event) => {
+                                            const config = eventTypeConfig[event.type];
+                                            const Icon = config.icon;
+                                            return (
+                                                <div
+                                                    key={event.id}
+                                                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 transition-colors"
+                                                >
+                                                    <div
+                                                        className={`h-8 w-8 rounded-lg ${config.color} flex items-center justify-center`}
+                                                    >
+                                                        <Icon className="h-4 w-4 text-primary-foreground" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-xs font-medium truncate">
+                                                            {event.title}
+                                                        </p>
+                                                        <p className="density-caption text-muted-foreground">
+                                                            {formatDate(event.date)}
+                                                        </p>
+                                                    </div>
+                                                    <Badge
+                                                        variant="ghost"
+                                                        className="density-caption"
+                                                    >
+                                                        {event.type}
+                                                    </Badge>
+                                                </div>
+                                            );
+                                        })}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardContent>
+                                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                                    <FolderKanban className="h-4 w-4 text-primary" />
+                                    Active Projects Timeline
+                                </h3>
+                                <div className="space-y-3">
+                                    {projects
+                                        .filter((p) => p.status === "active")
+                                        .map((project) => {
+                                            const start = new Date(project.startDate);
+                                            const end = new Date(project.endDate);
+                                            const total = end.getTime() - start.getTime();
+                                            const elapsed = today.getTime() - start.getTime();
+                                            const progress = Math.min(
+                                                100,
+                                                Math.max(0, (elapsed / total) * 100)
+                                            );
+
+                                            return (
+                                                <div key={project.id} className="space-y-1.5">
+                                                    <div className="flex items-center justify-between">
+                                                        <p className="text-xs font-medium">
+                                                            {project.name}
+                                                        </p>
+                                                        <p className="density-caption text-muted-foreground">
+                                                            {formatDate(project.startDate)} —{" "}
+                                                            {formatDate(project.endDate)}
+                                                        </p>
+                                                    </div>
+                                                    <ProgressBar value={progress} size="md" />
+                                                </div>
+                                            );
+                                        })}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </>
+            ),
+        }),
+        [
+            view,
+            setView,
+            events,
+            openCreate,
+            navigate,
+            goToToday,
+            headerLabel,
+            weekStart,
+            weekDays,
+            weekLabel,
+            calendarDays,
+            getEventsForDate,
+            isToday,
+            monthName,
+            projects,
+            today,
+        ]
+    );
 
     return (
-        <PermissionGate resource="calendar" action="read">
-            <div className="space-y-6 motion-safe:animate-fade-in">
-                <PageHeader
-                    title="Calendar"
-                    description="Unified view of projects, tasks, and milestones"
-                >
-                    <div className="flex items-center gap-2">
-                        <SegmentedControl
-                            value={view}
-                            onValueChange={(v) => setView(v as "month" | "week")}
-                            options={[
-                                { value: "month", label: "Month" },
-                                { value: "week", label: "Week" },
-                            ]}
-                            ariaLabel="Calendar view"
-                        />
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                    <Share2 className="h-4 w-4" />
-                                    Export
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Download</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => downloadIcs(events)}>
-                                    <Download className="h-4 w-4 mr-2" />
-                                    iCal File (.ics)
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuLabel>Add to Calendar</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => openGoogleCalendarImport(events)}>
-                                    <ExternalLink className="h-4 w-4 mr-2" />
-                                    Google Calendar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => openOutlookCalendarImport(events)}>
-                                    <ExternalLink className="h-4 w-4 mr-2" />
-                                    Outlook Calendar
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Button size="sm" onClick={openCreate}>
-                            <Plus className="h-4 w-4" />
-                            Add Event
-                        </Button>
-                    </div>
-                </PageHeader>
-                <Card>
-                    <CardContent>
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => navigate(-1)}
-                                    aria-label={
-                                        view === "week" ? "Previous week" : "Previous month"
-                                    }
-                                    className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
-                                >
-                                    <ChevronLeft className="h-4 w-4" />
-                                </button>
-                                <h2
-                                    className="text-lg font-bold min-w-48 text-center"
-                                    id="calendar-month-label"
-                                >
-                                    {headerLabel}
-                                </h2>
-                                <button
-                                    onClick={() => navigate(1)}
-                                    aria-label={view === "week" ? "Next week" : "Next month"}
-                                    className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
-                                >
-                                    <ChevronRight className="h-4 w-4" />
-                                </button>
-                            </div>
-                            <Button variant="ghost" size="sm" onClick={goToToday}>
-                                Today
-                            </Button>
-                        </div>
-
-                        {view === "week" ? (
-                            <CalendarWeekGrid
-                                weekStart={weekStart}
-                                events={events}
-                                weekDays={weekDays}
-                                weekLabel={weekLabel}
-                            />
-                        ) : (
-                            <CalendarGrid
-                                weekDays={weekDays}
-                                calendarDays={calendarDays}
-                                getEventsForDate={getEventsForDate}
-                                isToday={isToday}
-                                monthName={monthName}
-                            />
-                        )}
-
-                        <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border">
-                            {(
-                                Object.entries(eventTypeConfig) as [
-                                    EventType,
-                                    (typeof eventTypeConfig)[EventType],
-                                ][]
-                            ).map(([type, config]) => (
-                                <div
-                                    key={type}
-                                    className="flex items-center gap-1.5 text-xs text-muted-foreground"
-                                >
-                                    <div className={`h-2.5 w-2.5 rounded ${config.color}`} />
-                                    <span>
-                                        {
-                                            {
-                                                project: "Project",
-                                                task: "Task",
-                                                approval: "Approval",
-                                                milestone: "Milestone",
-                                                event: "Event",
-                                            }[type]
-                                        }
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <Card>
-                        <CardContent>
-                            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-warning" />
-                                Upcoming Deadlines
-                            </h3>
-                            <div className="space-y-2">
-                                {events
-                                    .filter((e) => new Date(e.date) >= today)
-                                    .sort(
-                                        (a, b) =>
-                                            new Date(a.date).getTime() - new Date(b.date).getTime()
-                                    )
-                                    .slice(0, 5)
-                                    .map((event) => {
-                                        const config = eventTypeConfig[event.type];
-                                        const Icon = config.icon;
-                                        return (
-                                            <div
-                                                key={event.id}
-                                                className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 transition-colors"
-                                            >
-                                                <div
-                                                    className={`h-8 w-8 rounded-lg ${config.color} flex items-center justify-center`}
-                                                >
-                                                    <Icon className="h-4 w-4 text-primary-foreground" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-xs font-medium truncate">
-                                                        {event.title}
-                                                    </p>
-                                                    <p className="text-[10px] text-muted-foreground">
-                                                        {formatDate(event.date)}
-                                                    </p>
-                                                </div>
-                                                <Badge variant="ghost" className="text-[9px]">
-                                                    {event.type}
-                                                </Badge>
-                                            </div>
-                                        );
-                                    })}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardContent>
-                            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                                <FolderKanban className="h-4 w-4 text-primary" />
-                                Active Projects Timeline
-                            </h3>
-                            <div className="space-y-3">
-                                {projects
-                                    .filter((p) => p.status === "active")
-                                    .map((project) => {
-                                        const start = new Date(project.startDate);
-                                        const end = new Date(project.endDate);
-                                        const total = end.getTime() - start.getTime();
-                                        const elapsed = today.getTime() - start.getTime();
-                                        const progress = Math.min(
-                                            100,
-                                            Math.max(0, (elapsed / total) * 100)
-                                        );
-
-                                        return (
-                                            <div key={project.id} className="space-y-1.5">
-                                                <div className="flex items-center justify-between">
-                                                    <p className="text-xs font-medium">
-                                                        {project.name}
-                                                    </p>
-                                                    <p className="text-[10px] text-muted-foreground">
-                                                        {formatDate(project.startDate)} —{" "}
-                                                        {formatDate(project.endDate)}
-                                                    </p>
-                                                </div>
-                                                <ProgressBar value={progress} size="md" />
-                                            </div>
-                                        );
-                                    })}
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
+        <>
+            <OperationalDashboardShell
+                config={config}
+                data={events as unknown as Record<string, unknown>[]}
+                isLoading={isLoading}
+            />
             <CreateEntityDialog
                 config={CREATE_EVENT_CONFIG}
                 open={createOpen}
                 onClose={closeCreate}
             />
-        </PermissionGate>
+        </>
     );
 }
 
@@ -679,14 +727,14 @@ function CalendarGrid({
                                                     return (
                                                         <div
                                                             key={event.id}
-                                                            className={`text-[10px] px-1.5 py-0.5 rounded truncate ${config.color} text-primary-foreground`}
+                                                            className={`density-caption px-1.5 py-0.5 rounded truncate ${config.color} text-primary-foreground`}
                                                         >
                                                             {event.title}
                                                         </div>
                                                     );
                                                 })}
                                                 {dayEvents.length > 3 && (
-                                                    <div className="text-[10px] text-muted-foreground px-1">
+                                                    <div className="density-caption text-muted-foreground px-1">
                                                         +{dayEvents.length - 3} more
                                                     </div>
                                                 )}
@@ -779,7 +827,7 @@ function CalendarWeekGrid({
                                         return (
                                             <div
                                                 key={event.id}
-                                                className={`text-[11px] px-2 py-1.5 rounded-md ${config.color} text-primary-foreground flex items-center gap-1.5`}
+                                                className={`density-caption px-2 py-1.5 rounded-md ${config.color} text-primary-foreground flex items-center gap-1.5`}
                                             >
                                                 <Icon className="h-3 w-3 shrink-0" />
                                                 <span className="truncate">{event.title}</span>
@@ -787,7 +835,7 @@ function CalendarWeekGrid({
                                         );
                                     })}
                                     {dayEvents.length === 0 && (
-                                        <div className="text-[10px] text-muted-foreground/50 text-center pt-4">
+                                        <div className="density-caption text-muted-foreground/50 text-center pt-4">
                                             No events
                                         </div>
                                     )}

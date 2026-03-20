@@ -228,7 +228,7 @@ function ProvidersPanel() {
     if (loading) return <LoadingState />;
 
     return (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">AI Providers</h3>
                 <Button variant="outline" size="sm" onClick={fetchProviders}>
@@ -303,7 +303,7 @@ function ProvidersPanel() {
                                         disabled={saving}
                                     >
                                         {saving ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                            <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
                                         ) : (
                                             <Save className="h-4 w-4" />
                                         )}
@@ -413,7 +413,7 @@ function ModelsPanel() {
     if (loading) return <LoadingState />;
 
     return (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <div className="flex items-center justify-between gap-4">
                 <h3 className="text-lg font-semibold">AI Models</h3>
                 <Input
@@ -440,22 +440,22 @@ function ModelsPanel() {
                             <div className="flex items-center gap-2 shrink-0">
                                 <div className="flex gap-1">
                                     {model.supports_streaming && (
-                                        <Badge variant="outline" className="text-[10px]">
+                                        <Badge variant="outline" className="density-caption">
                                             Stream
                                         </Badge>
                                     )}
                                     {model.supports_tools && (
-                                        <Badge variant="outline" className="text-[10px]">
+                                        <Badge variant="outline" className="density-caption">
                                             Tools
                                         </Badge>
                                     )}
                                     {model.supports_vision && (
-                                        <Badge variant="outline" className="text-[10px]">
+                                        <Badge variant="outline" className="density-caption">
                                             Vision
                                         </Badge>
                                     )}
                                 </div>
-                                <Badge variant="secondary" className="text-[10px]">
+                                <Badge variant="secondary" className="density-caption">
                                     {(model.context_window / 1000).toFixed(0)}k ctx
                                 </Badge>
                                 <Button
@@ -547,7 +547,7 @@ function SystemPromptsPanel() {
     if (loading) return <LoadingState />;
 
     return (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">System Prompts</h3>
                 <Button variant="outline" size="sm">
@@ -588,7 +588,7 @@ function SystemPromptsPanel() {
                                         disabled={saving}
                                     >
                                         {saving ? (
-                                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                            <Loader2 className="h-4 w-4 motion-safe:animate-spin mr-2" />
                                         ) : (
                                             <Save className="h-4 w-4 mr-2" />
                                         )}
@@ -677,7 +677,7 @@ function UsagePanel() {
     if (loading) return <LoadingState />;
 
     return (
-        <div className="space-y-6">
+        <div className="density-gap-page">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Usage Dashboard</h3>
                 <div className="flex gap-1">
@@ -694,7 +694,7 @@ function UsagePanel() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="grid grid-cols-2 density-gap-card sm:grid-cols-4">
                 <MetricCard label="Total Requests" value={totals.requests.toLocaleString()} />
                 <MetricCard label="Input Tokens" value={formatTokens(totals.input_tokens)} />
                 <MetricCard label="Output Tokens" value={formatTokens(totals.output_tokens)} />
@@ -827,7 +827,7 @@ function KnowledgeBasePanel() {
     if (loading) return <LoadingState />;
 
     return (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Knowledge Base</h3>
                 <div className="flex gap-2">
@@ -845,7 +845,7 @@ function KnowledgeBasePanel() {
                         disabled={uploading}
                     >
                         {uploading ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            <Loader2 className="h-4 w-4 motion-safe:animate-spin mr-2" />
                         ) : (
                             <Upload className="h-4 w-4 mr-2" />
                         )}
@@ -926,7 +926,7 @@ function LimitsPanel() {
     if (loading) return <LoadingState />;
 
     return (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Usage Limits</h3>
                 <Button variant="outline" size="sm">
@@ -953,7 +953,7 @@ function LimitsPanel() {
                                 {limit.active ? "Active" : "Inactive"}
                             </Badge>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 density-gap-card text-sm">
                             <div>
                                 <p className="text-muted-foreground">Daily Limit</p>
                                 <p className="font-medium">
@@ -995,7 +995,7 @@ function LimitsPanel() {
 function LoadingState() {
     return (
         <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="h-8 w-8 motion-safe:animate-spin text-muted-foreground" />
         </div>
     );
 }

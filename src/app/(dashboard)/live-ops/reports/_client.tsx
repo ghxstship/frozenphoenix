@@ -51,10 +51,10 @@ const CONFIG: DashboardPageConfig = {
                             </h3>
                             <StatusBadge
                                 status={(report.status as string) ?? "draft"}
-                                className="text-[10px]"
+                                className="density-caption"
                             />
                         </div>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                        <p className="density-caption text-muted-foreground mt-0.5">
                             {typeof report.compiled_by === "string" && `By ${report.compiled_by}`}
                             {typeof report.compiled_at === "string" &&
                                 ` — ${new Date(report.compiled_at).toLocaleDateString()}`}
@@ -62,44 +62,44 @@ const CONFIG: DashboardPageConfig = {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                <div className="grid grid-cols-2 sm:grid-cols-4 density-gap-card text-sm">
                     <div>
-                        <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <p className="density-caption text-muted-foreground flex items-center gap-1">
                             <Users className="h-3 w-3" /> Attendance
                         </p>
                         <p className="font-semibold">
                             {(Number(report.total_attendance) || 0).toLocaleString()}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="density-caption text-muted-foreground">
                             Peak: {(Number(report.peak_attendance) || 0).toLocaleString()} | VIP:{" "}
                             {Number(report.vip_count) || 0}
                         </p>
                     </div>
                     <div>
-                        <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <p className="density-caption text-muted-foreground flex items-center gap-1">
                             <DollarSign className="h-3 w-3" /> Financial
                         </p>
                         <p className="font-semibold">
                             {formatCurrency(Number(report.total_revenue) || 0)}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="density-caption text-muted-foreground">
                             Spent: {formatCurrency(Number(report.total_spent) || 0)} | Margin:{" "}
                             {Number(report.final_margin_percent) || 0}%
                         </p>
                     </div>
                     <div>
-                        <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <p className="density-caption text-muted-foreground flex items-center gap-1">
                             <AlertTriangle className="h-3 w-3" /> Incidents
                         </p>
                         <p className="font-semibold">{Number(report.total_incidents) || 0}</p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="density-caption text-muted-foreground">
                             Damaged: {Number(report.assets_damaged) || 0} | Missing:{" "}
                             {Number(report.assets_missing) || 0}
                         </p>
                     </div>
                     <div>
-                        <p className="text-[10px] text-muted-foreground">Timeline Variance</p>
-                        <div className="flex gap-2 text-[11px] mt-0.5">
+                        <p className="density-caption text-muted-foreground">Timeline Variance</p>
+                        <div className="flex gap-2 density-caption mt-0.5">
                             <span
                                 className={
                                     (Number(report.load_in_variance_minutes) || 0) > 15

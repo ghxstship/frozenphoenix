@@ -26,6 +26,7 @@ import {
     ArrowLeftRight,
     CheckCircle2,
     Clock,
+    Copy,
     Link2,
     Pause,
     Play,
@@ -47,12 +48,12 @@ export function IntegrationDetailPageClient() {
     const { data: webhookEvents } = useWebhookEvents(id);
     const { data: syncEvents } = useSyncEvents({ connection_id: id });
     const { data: conflictPolicies } = useSyncConflictPolicies(id);
+    const createConnection = useCreateProviderConnection();
     const updateConnection = useUpdateProviderConnection();
     const deleteConnection = useDeleteProviderConnection();
     const createPolicy = useCreateSyncConflictPolicy();
-    const _createConnection = useCreateProviderConnection();
+    const updatePolicy = useUpdateSyncConflictPolicy();
     const { data: _ticketMap } = useProviderTicketMap(id);
-    const _updatePolicy = useUpdateSyncConflictPolicy();
 
     const [newPolicyEntity, setNewPolicyEntity] = useState("");
     const [newPolicyField, setNewPolicyField] = useState("");
@@ -127,7 +128,7 @@ export function IntegrationDetailPageClient() {
         ],
         chatter: false,
         overviewSlot: (
-            <div className="space-y-6">
+            <div className="density-gap-page">
                 {justConnected && (
                     <div className="flex items-center gap-2 rounded-lg border border-success/40 bg-success/5 px-4 py-3 text-sm text-success">
                         <CheckCircle2 className="h-4 w-4 shrink-0" />
@@ -171,7 +172,7 @@ export function IntegrationDetailPageClient() {
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-sm">Connection Details</CardTitle>
@@ -392,7 +393,7 @@ export function IntegrationDetailPageClient() {
                 icon: Shield,
                 count: policies.length,
                 content: (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-sm">Add Conflict Policy</CardTitle>
@@ -469,9 +470,31 @@ export function IntegrationDetailPageClient() {
                                                         {p.field_name as string}
                                                     </span>
                                                 </div>
-                                                <Badge>
-                                                    {(p.strategy as string).replace(/_/g, " ")}
-                                                </Badge>
+                                                <div className="flex items-center gap-2">
+                                                    <select
+                                                        value={p.strategy as string}
+                                                        onChange={(e) => {
+                                                            updatePolicy.mutate({
+                                                                id: p.id as string,
+                                                                strategy: e.target.value,
+                                                            } as Parameters<
+                                                                typeof updatePolicy.mutate
+                                                            >[0]);
+                                                        }}
+                                                        className="rounded-md border bg-background px-2 py-1 text-xs"
+                                                        aria-label={`Change strategy for ${p.entity_type as string}.${p.field_name as string}`}
+                                                    >
+                                                        <option value="last_write_wins">
+                                                            Last Write Wins
+                                                        </option>
+                                                        <option value="source_priority">
+                                                            Source Priority
+                                                        </option>
+                                                        <option value="manual_review">
+                                                            Manual Review
+                                                        </option>
+                                                    </select>
+                                                </div>
                                             </div>
                                         </CardContent>
                                     </Card>
@@ -490,8 +513,8 @@ export function IntegrationDetailPageClient() {
                         <CardHeader>
                             <CardTitle className="text-sm">Connection Settings</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <CardContent className="density-gap-section">
+                            <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                                 <div>
                                     <label className="text-xs font-medium text-muted-foreground">
                                         Display Name
@@ -541,6 +564,23 @@ export function IntegrationDetailPageClient() {
             isLoading={isLoading}
             actions={
                 <div className="flex gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={createConnection.isPending}
+                        onClick={() => {
+                            createConnection.mutate({
+                                provider_type: providerType,
+                                display_name: `${displayName} (Copy)`,
+                                sync_direction: (conn.sync_direction as string) || "inbound",
+                                is_active: false,
+                            } as Parameters<typeof createConnection.mutate>[0]);
+                        }}
+                        aria-label="Duplicate connection"
+                    >
+                        <Copy className="mr-2 h-4 w-4" />
+                        Duplicate
+                    </Button>
                     <Button
                         variant={isActive ? "outline" : "default"}
                         size="sm"

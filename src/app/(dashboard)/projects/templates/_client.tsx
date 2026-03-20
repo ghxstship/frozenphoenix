@@ -86,7 +86,7 @@ export function ProjectTemplatesPageClient() {
 
     const contentSlot = (
         <div className="density-gap-page">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <StatCard title="Templates" value={templates.length} icon={Layout} />
                 <StatCard title="Total Usage" value={totalUsage} icon={Copy} />
                 <StatCard
@@ -126,19 +126,19 @@ export function ProjectTemplatesPageClient() {
                     action={!search ? { label: "New Template", onClick: openCreate } : undefined}
                 />
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 density-gap-card">
                     {filtered.map((template) => (
                         <Card
                             key={template.id}
                             className="hover:border-primary/30 transition-colors"
                         >
-                            <CardContent className="p-5 space-y-4">
+                            <CardContent className="p-5 density-gap-section">
                                 <div>
                                     <div className="flex items-center justify-between mb-1">
-                                        <Badge variant="info" className="text-[10px]">
+                                        <Badge variant="info" className="density-caption">
                                             {template.category}
                                         </Badge>
-                                        <span className="text-[10px] text-muted-foreground">
+                                        <span className="density-caption text-muted-foreground">
                                             Used {template.usageCount}x
                                         </span>
                                     </div>
@@ -156,7 +156,9 @@ export function ProjectTemplatesPageClient() {
                                                 {template.taskCount}
                                             </span>
                                         </div>
-                                        <p className="text-[10px] text-muted-foreground">Tasks</p>
+                                        <p className="density-caption text-muted-foreground">
+                                            Tasks
+                                        </p>
                                     </div>
                                     <div className="text-center p-2 rounded-lg bg-secondary/30">
                                         <div className="flex items-center justify-center gap-1">
@@ -165,7 +167,7 @@ export function ProjectTemplatesPageClient() {
                                                 {template.milestoneCount}
                                             </span>
                                         </div>
-                                        <p className="text-[10px] text-muted-foreground">
+                                        <p className="density-caption text-muted-foreground">
                                             Milestones
                                         </p>
                                     </div>
@@ -176,7 +178,9 @@ export function ProjectTemplatesPageClient() {
                                                 {template.roleCount}
                                             </span>
                                         </div>
-                                        <p className="text-[10px] text-muted-foreground">Roles</p>
+                                        <p className="density-caption text-muted-foreground">
+                                            Roles
+                                        </p>
                                     </div>
                                 </div>
 
@@ -189,7 +193,11 @@ export function ProjectTemplatesPageClient() {
 
                                 <div className="flex flex-wrap gap-1">
                                     {template.tags.map((tag) => (
-                                        <Badge key={tag} variant="ghost" className="text-[10px]">
+                                        <Badge
+                                            key={tag}
+                                            variant="ghost"
+                                            className="density-caption"
+                                        >
                                             {tag}
                                         </Badge>
                                     ))}
@@ -222,7 +230,7 @@ export function ProjectTemplatesPageClient() {
                                     </Button>
                                 </div>
 
-                                <p className="text-[10px] text-muted-foreground">
+                                <p className="density-caption text-muted-foreground">
                                     Last used {formatDate(template.lastUsed)}
                                 </p>
                             </CardContent>

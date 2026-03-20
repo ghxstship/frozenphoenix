@@ -22,6 +22,7 @@ import { RecordChatter } from "@/components/activity";
 import type { ActivityItem, CommentItem } from "@/components/activity";
 import { EntityLink } from "@/components/linked-records/entity-link";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertCircle,
@@ -116,7 +117,7 @@ export function ShipmentDetailClient({
     };
 
     const sidebarSlot = shipment ? (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Shipment Details</CardTitle>
@@ -187,8 +188,8 @@ export function ShipmentDetailClient({
     ) : null;
 
     const overviewSlot = shipment ? (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="density-gap-page">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <Card>
                     <CardContent className="pt-4">
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -232,7 +233,7 @@ export function ShipmentDetailClient({
                     </CardContent>
                 </Card>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base">Origin</CardTitle>
@@ -299,7 +300,10 @@ export function ShipmentDetailClient({
                                 <EmptyState
                                     icon={Package}
                                     title="No items"
-                                    description="No items in this shipment"
+                                    description={COMMON_STRINGS.empty_no_items_in.replace(
+                                        "{entity}",
+                                        "shipment"
+                                    )}
                                 />
                             ) : (
                                 <div className="overflow-x-auto">
@@ -365,7 +369,7 @@ export function ShipmentDetailClient({
                             <CardTitle className="text-base">Tracking History</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-4">
+                            <div className="density-gap-section">
                                 <div className="flex items-start gap-4">
                                     <div className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
                                     <div>

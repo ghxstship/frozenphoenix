@@ -413,6 +413,43 @@ export const PRIORITY_VARIANTS = {
 
 export type PriorityKey = keyof typeof PRIORITY_VARIANTS;
 
+// ─── Priority Border Classes ───
+// Maps priority values to left-border Tailwind classes for card accents.
+export const PRIORITY_BORDER_CLASSES: Record<string, string> = {
+    emergency: "border-l-destructive",
+    critical: "border-l-destructive",
+    high: "border-l-warning",
+    medium: "border-l-info",
+    normal: "border-l-muted-foreground",
+    low: "border-l-muted-foreground",
+};
+
+// ─── Tier Border Classes ───
+// Maps VIP/membership tiers to left-border accent classes.
+export const TIER_BORDER_CLASSES: Record<string, string> = {
+    platinum: "border-l-info",
+    gold: "border-l-warning",
+    silver: "border-l-secondary",
+    bronze: "",
+};
+
+// ─── Risk Background Classes ───
+// Maps risk levels to background + text color class combos.
+export const RISK_BG_CLASSES: Record<string, string> = {
+    low: "bg-success/10 text-success",
+    medium: "bg-warning/10 text-warning",
+    high: "bg-destructive/10 text-destructive",
+};
+
+// ─── Task Status Background Classes ───
+// Maps task statuses to background + text color class combos.
+export const TASK_STATUS_BG_CLASSES: Record<string, string> = {
+    todo: "bg-muted text-muted-foreground",
+    in_progress: "bg-info/10 text-info",
+    complete: "bg-success/10 text-success",
+    overdue: "bg-destructive/10 text-destructive",
+};
+
 // ─── Condition Variant Mappings ───
 export const CONDITION_VARIANTS = {
     excellent: "success",
@@ -984,6 +1021,17 @@ export function getPriorityLabel(priority: string): string {
     }
     return explicit ?? priority.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
+
+// ─── Severity Styles (SSOT) ──────────────────────────────────
+// Used by AlertBanner, MetricCard, and shell alert rendering.
+
+export const SEVERITY_STYLES = {
+    warning: "border-warning/30 bg-warning/5 text-warning",
+    info: "border-info/30 bg-info/5 text-info",
+    destructive: "border-destructive/30 bg-destructive/5 text-destructive",
+} as const;
+
+export type SeverityLevel = keyof typeof SEVERITY_STYLES;
 
 /**
  * Get human-readable label for condition

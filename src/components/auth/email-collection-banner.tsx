@@ -125,7 +125,10 @@ export function EmailCollectionBanner() {
 
                 <Button type="submit" size="sm" variant="outline" disabled={loading}>
                     {loading ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                        <Loader2
+                            className="h-3.5 w-3.5 motion-safe:animate-spin"
+                            aria-hidden="true"
+                        />
                     ) : (
                         "Save"
                     )}

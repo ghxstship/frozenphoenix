@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { EmptyRow } from "@/components/ui/empty-row";
 import {
     Calendar,
     CheckCircle2,
@@ -15,7 +16,6 @@ import {
     Clock,
     DollarSign,
     FileText,
-    Inbox,
     MessageSquare,
     Send,
     ShieldCheck,
@@ -25,13 +25,7 @@ import {
 } from "lucide-react";
 import { useInvoices, useTasks } from "@/lib/supabase";
 import { useVendorComplianceDocuments, useWorkOrders } from "@/lib/supabase";
-
-const TASK_STATUS_COLORS: Record<string, string> = {
-    todo: "bg-muted text-muted-foreground",
-    in_progress: "bg-info/10 text-info",
-    complete: "bg-success/10 text-success",
-    overdue: "bg-destructive/10 text-destructive",
-};
+import { TASK_STATUS_BG_CLASSES } from "@/config/ui-variants";
 
 const PRIORITY_BADGE: Record<string, "destructive" | "warning" | "ghost"> = {
     high: "destructive",
@@ -56,15 +50,6 @@ const INV_STATUS_BADGE: Record<string, "default" | "info" | "warning" | "success
         paid: "success",
         disputed: "destructive",
     };
-
-function EmptyRow({ message }: { message: string }) {
-    return (
-        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-            <Inbox className="h-8 w-8 mb-2 opacity-50" />
-            <p className="text-sm">{message}</p>
-        </div>
-    );
-}
 
 export function VendorPortalPageClient() {
     const { data: sbTasks, isLoading: tasksLoading } = useTasks();
@@ -129,7 +114,9 @@ export function VendorPortalPageClient() {
     };
     const invoices: InvView[] = (sbInvoices ?? []).map((inv) => ({
         id: inv.id,
-        number: `INV-${inv.id.slice(0, 8).toUpperCase()}`,
+        number:
+            ((inv as unknown as Record<string, unknown>).invoice_number as string) ??
+            inv.id.slice(0, 8),
         workOrderRef: inv.purchase_order_id ? "PO" : "",
         amount: Number(inv.amount ?? 0),
         status: (inv.status ?? "draft") as string,
@@ -152,7 +139,7 @@ export function VendorPortalPageClient() {
 
     const contentSlot = (
         <div className="density-gap-page">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 density-gap-card">
                 <StatCard title="Active Tasks" value={activeTasks} icon={CheckSquare} />
                 <StatCard title="Overdue" value={overdueTasks} icon={Clock} />
                 <StatCard title="Pending Docs" value={pendingDocs} icon={FileText} />
@@ -164,7 +151,7 @@ export function VendorPortalPageClient() {
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 density-gap-card">
                 {/* Work Orders */}
                 <Card>
                     <CardHeader>
@@ -178,19 +165,19 @@ export function VendorPortalPageClient() {
                         {workOrders.map((wo) => (
                             <div
                                 key={wo.id}
-                                className="p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
+                                className="p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
                             >
                                 <div className="flex items-start justify-between mb-1">
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-mono text-muted-foreground">
+                                            <span className="density-caption font-mono text-muted-foreground">
                                                 {wo.number}
                                             </span>
                                             <Badge
                                                 variant={WO_STATUS_BADGE[wo.status] || "default"}
-                                                className="text-[10px]"
+                                                className="density-caption"
                                             >
-                                                {wo.status.replace("_", " ")}
+                                                {wo.status.replaceAll("_", " ")}
                                             </Badge>
                                         </div>
                                         <h4 className="text-sm font-semibold mt-1">{wo.title}</h4>
@@ -237,7 +224,7 @@ export function VendorPortalPageClient() {
                                         <span className="text-sm font-semibold">{inv.number}</span>
                                         <Badge
                                             variant={INV_STATUS_BADGE[inv.status] || "default"}
-                                            className="text-[10px]"
+                                            className="density-caption"
                                         >
                                             {inv.status}
                                         </Badge>
@@ -270,7 +257,7 @@ export function VendorPortalPageClient() {
                     {tasks.map((task) => (
                         <div
                             key={task.id}
-                            className={`flex items-center justify-between p-3 rounded-lg ${TASK_STATUS_COLORS[task.status] ?? ""} transition-colors`}
+                            className={`flex items-center justify-between p-3 rounded-lg ${TASK_STATUS_BG_CLASSES[task.status] ?? ""} transition-colors`}
                         >
                             <div className="flex items-center gap-3">
                                 <div
@@ -307,7 +294,7 @@ export function VendorPortalPageClient() {
                                               : "ghost"
                                     }
                                 >
-                                    {task.status.replace("_", " ")}
+                                    {task.status.replaceAll("_", " ")}
                                 </Badge>
                             </div>
                         </div>
@@ -397,7 +384,7 @@ export function VendorPortalPageClient() {
                                                 : "info"
                                     }
                                 >
-                                    {doc.status.replace("_", " ")}
+                                    {doc.status.replaceAll("_", " ")}
                                 </Badge>
                                 {doc.status === "pending_review" && (
                                     <Button size="sm">

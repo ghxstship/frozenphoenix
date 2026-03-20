@@ -105,7 +105,7 @@ export function ProgressBar({
                     style={{ width: `${percentage}%` }}
                 >
                     {showLabel && labelPosition === "inside" && size !== "xs" && size !== "sm" && (
-                        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-primary-foreground">
+                        <span className="absolute inset-0 flex items-center justify-center density-caption font-bold text-primary-foreground">
                             {label}
                         </span>
                     )}

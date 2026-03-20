@@ -15,23 +15,19 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { SHELLS_STRINGS } from "@/lib/i18n/shells-strings";
+import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import { logger } from "@/lib/logger";
-import { getEntityConfig } from "@/lib/api/entity-config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CurrencyInput, DatePicker, FormField, Select, Textarea } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
+import { BackLink } from "@/components/ui/back-link";
 import { FormSection } from "@/components/layouts/form-layout";
 import { PermissionGate } from "@/components/permission-guard";
-import {
-    ArrowLeft,
-    ArrowRight,
-    CheckCircle2,
-    ChevronLeft,
-    Loader2,
-    Plus,
-    Trash2,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Plus, Trash2 } from "lucide-react";
+import { useEntityMeta } from "@/hooks/use-entity-meta";
 import type { FormFieldDef, FormPageConfig, FormWizardStepDef } from "@/types/form-page-config";
 
 // ─── Types ───────────────────────────────────────────────────
@@ -156,12 +152,11 @@ function renderField(
         case "checkbox":
             input = (
                 <div className="flex items-center gap-3">
-                    <input
-                        {...commonProps}
-                        type="checkbox"
+                    <Checkbox
+                        id={field.id}
                         checked={Boolean(value)}
-                        onChange={(e) => onChange(field.id, e.target.checked)}
-                        className="h-4 w-4 rounded border-input"
+                        onCheckedChange={(checked) => onChange(field.id, checked)}
+                        disabled={field.disabled}
                     />
                     {field.description && (
                         <label htmlFor={field.id} className="text-sm font-medium">
@@ -196,6 +191,41 @@ function renderField(
                         className="font-mono text-xs"
                         disabled={field.disabled}
                     />
+                </div>
+            );
+            break;
+
+        case "file":
+            input = (
+                <div className="flex flex-col gap-2">
+                    <Input
+                        id={field.id}
+                        name={field.id}
+                        type="file"
+                        accept={field.accept}
+                        multiple={field.multiple}
+                        disabled={field.disabled}
+                        onChange={(e) => {
+                            const files = e.target.files;
+                            if (!files || files.length === 0) {
+                                onChange(field.id, null);
+                                return;
+                            }
+                            onChange(field.id, field.multiple ? Array.from(files) : files[0]);
+                        }}
+                        className="cursor-pointer file:mr-3 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary hover:file:bg-primary/20"
+                    />
+                    {value != null && !field.multiple && (
+                        <p className="text-xs text-muted-foreground truncate">
+                            {value instanceof File ? value.name : String(value)}
+                        </p>
+                    )}
+                    {value != null && field.multiple && Array.isArray(value) && (
+                        <p className="text-xs text-muted-foreground">
+                            {(value as File[]).length} file
+                            {(value as File[]).length !== 1 ? "s" : ""} selected
+                        </p>
+                    )}
                 </div>
             );
             break;
@@ -297,7 +327,9 @@ function RepeaterFieldRenderer({
                 <p className="text-xs text-muted-foreground">{field.description}</p>
             )}
             {rows.length === 0 && (
-                <p className="text-sm text-muted-foreground italic py-3">No items added yet.</p>
+                <p className="text-sm text-muted-foreground italic py-3">
+                    {COMMON_STRINGS.empty_no_items_added}
+                </p>
             )}
             {rows.map((row, rowIndex) => (
                 <Card key={rowIndex}>
@@ -372,10 +404,7 @@ function SectionFieldsGrid({
     }
 
     return (
-        <div
-            className="grid grid-cols-1 sm:grid-cols-2"
-            style={{ gap: "var(--density-form-field-gap)" }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 density-gap-form-field">
             {visibleFields.map(renderFieldOrRepeater)}
         </div>
     );
@@ -446,14 +475,13 @@ export function FormPageShell({
     onSubmit,
     isSubmitting = false,
 }: FormPageShellProps) {
-    const entityConfig = getEntityConfig(config.entityKey);
-    const resource = entityConfig?.resource ?? config.entityKey;
+    const { resource } = useEntityMeta(config.entityKey);
 
     // Loading state
     if (isLoading) {
         return (
-            <div className="animate-fade-in max-w-3xl flex items-center justify-center py-24">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="motion-safe:animate-fade-in max-w-3xl flex items-center justify-center py-24">
+                <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
             </div>
         );
     }
@@ -623,16 +651,9 @@ function FormPageShellInner({
     // ─── Sections Layout ───
     if (config.layout !== "wizard") {
         return (
-            <div className="animate-fade-in max-w-3xl">
+            <div className="motion-safe:animate-fade-in max-w-3xl">
                 {/* Back Link */}
-                <Link
-                    href={config.backHref}
-                    className="group inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
-                    aria-label={`Go back to ${config.backLabel ?? "Back"}`}
-                >
-                    <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-                    {config.backLabel ?? "Back"}
-                </Link>
+                <BackLink href={config.backHref} label={config.backLabel ?? "Back"} />
 
                 {/* Header */}
                 <div className="mb-6">
@@ -644,7 +665,7 @@ function FormPageShellInner({
 
                 {/* Form */}
                 <form ref={formRef} onSubmit={handleSubmit}>
-                    <div className="space-y-6">
+                    <div className="density-gap-page">
                         {config.contentSlot ?? (
                             <>
                                 {(config.sections ?? []).map((section) => (
@@ -675,8 +696,8 @@ function FormPageShellInner({
                             className="text-xs text-muted-foreground/50 hidden sm:block"
                             aria-hidden="true"
                         >
-                            <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">⌘S</kbd> to
-                            save
+                            <kbd className="bg-muted px-1 py-0.5 rounded density-caption">⌘S</kbd>{" "}
+                            to save
                         </div>
                         <span className="sr-only">Press Command+S or Control+S to save</span>
                         <div className="flex items-center gap-3 ml-auto">
@@ -684,7 +705,9 @@ function FormPageShellInner({
                                 <Link href={config.backHref}>{config.cancelLabel ?? "Cancel"}</Link>
                             </Button>
                             <Button type="submit" disabled={isSubmitting}>
-                                {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                                {isSubmitting && (
+                                    <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
+                                )}
                                 {config.submitLabel ?? defaultSubmitLabel}
                             </Button>
                         </div>
@@ -696,16 +719,9 @@ function FormPageShellInner({
 
     // ─── Wizard Layout ───
     return (
-        <div className="space-y-6 animate-fade-in max-w-3xl mx-auto">
+        <div className="density-gap-page motion-safe:animate-fade-in max-w-3xl mx-auto">
             {/* Back Link */}
-            <Link
-                href={config.backHref}
-                className="group inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                aria-label={`Go back to ${config.backLabel ?? "Back"}`}
-            >
-                <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-                {config.backLabel ?? "Back"}
-            </Link>
+            <BackLink href={config.backHref} label={config.backLabel ?? "Back"} className="mb-0" />
 
             {/* Header */}
             <div>
@@ -729,7 +745,7 @@ function FormPageShellInner({
                                     {currentWizardStep.label}
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
+                            <CardContent className="density-gap-section">
                                 {currentWizardStep.content ?? (
                                     <SectionFieldsGrid
                                         fields={currentWizardStep.fields ?? []}
@@ -762,11 +778,13 @@ function FormPageShellInner({
                         onClick={handleSubmit as unknown as React.MouseEventHandler}
                     >
                         {isSubmitting ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-2 h-4 w-4 motion-safe:animate-spin" />
                         ) : (
                             <CheckCircle2 className="mr-2 h-4 w-4" />
                         )}
-                        {isSubmitting ? "Saving..." : (config.submitLabel ?? defaultSubmitLabel)}
+                        {isSubmitting
+                            ? SHELLS_STRINGS.form_saving
+                            : (config.submitLabel ?? defaultSubmitLabel)}
                     </Button>
                 ) : (
                     <Button

@@ -108,7 +108,7 @@ function ProcurementContent({
                 value="requests"
                 activeValue={activeTab}
                 idPrefix="procurement-tabs"
-                className="mt-0 space-y-4"
+                className="mt-0 density-gap-section"
             >
                 {filteredRequests.length === 0 ? (
                     <EmptyState
@@ -138,7 +138,7 @@ function ProcurementContent({
                                                         </h3>
                                                         <Badge
                                                             variant={priority.variant}
-                                                            className="text-[9px]"
+                                                            className="density-caption"
                                                         >
                                                             {priority.label}
                                                         </Badge>
@@ -146,7 +146,7 @@ function ProcurementContent({
                                                     <p className="text-xs text-muted-foreground mb-2">
                                                         {request.description}
                                                     </p>
-                                                    <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
+                                                    <div className="flex items-center gap-4 density-caption text-muted-foreground">
                                                         <span>{project?.name}</span>
                                                         <span>·</span>
                                                         <span>
@@ -163,7 +163,7 @@ function ProcurementContent({
                                                 </p>
                                                 <Badge
                                                     variant={status.variant}
-                                                    className="text-[10px] mt-1"
+                                                    className="density-caption mt-1"
                                                 >
                                                     {status.label}
                                                 </Badge>
@@ -250,7 +250,7 @@ function ProcurementContent({
                                             return (
                                                 <tr
                                                     key={po.id}
-                                                    className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer"
+                                                    className="border-b border-border/50 hover:bg-secondary/30 transition-colors"
                                                 >
                                                     <td className="px-4 py-3">
                                                         <span className="text-sm font-mono font-medium">
@@ -276,7 +276,7 @@ function ProcurementContent({
                                                                     po.status
                                                                 ) as BadgeVariant
                                                             }
-                                                            className="text-[10px]"
+                                                            className="density-caption"
                                                         >
                                                             {getStatusLabel(po.status)}
                                                         </Badge>

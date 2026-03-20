@@ -23,9 +23,19 @@ export function PoolCapacityBar({
 }: PoolCapacityBarProps) {
     const remaining = totalQuantity - allocatedCount;
     const pct = totalQuantity > 0 ? Math.round((allocatedCount / totalQuantity) * 100) : 0;
-    const urgency = remaining <= 0 ? "depleted" : remaining < 10 ? "low" : remaining < totalQuantity * 0.2 ? "warning" : "healthy";
+    const urgency =
+        remaining <= 0
+            ? "depleted"
+            : remaining < 10
+              ? "low"
+              : remaining < totalQuantity * 0.2
+                ? "warning"
+                : "healthy";
 
-    const urgencyStyles: Record<string, { bar: string; badge: "destructive" | "warning" | "success" | "ghost" }> = {
+    const urgencyStyles: Record<
+        string,
+        { bar: string; badge: "destructive" | "warning" | "success" | "ghost" }
+    > = {
         depleted: { bar: "bg-destructive", badge: "destructive" },
         low: { bar: "bg-destructive", badge: "destructive" },
         warning: { bar: "bg-warning", badge: "warning" },
@@ -37,7 +47,7 @@ export function PoolCapacityBar({
     if (compact) {
         return (
             <div className="space-y-1">
-                <div className="flex items-center justify-between text-[11px]">
+                <div className="flex items-center justify-between density-caption">
                     <div className="flex items-center gap-1.5">
                         {colorHex && (
                             <span
@@ -75,16 +85,16 @@ export function PoolCapacityBar({
                             )}
                             <p className="text-sm font-bold">{credentialTypeName}</p>
                         </div>
-                        <Badge variant="secondary" className="text-[9px] capitalize mt-1">
+                        <Badge variant="secondary" className="density-caption capitalize mt-1">
                             {category.replace("_", " ")}
                         </Badge>
                     </div>
-                    <Badge variant={style.badge} className="text-[10px]">
+                    <Badge variant={style.badge} className="density-caption">
                         {remaining} remaining
                     </Badge>
                 </div>
                 <div className="mt-3">
-                    <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+                    <div className="flex justify-between density-caption text-muted-foreground mb-1">
                         <span>{allocatedCount} allocated</span>
                         <span>{totalQuantity} total</span>
                     </div>

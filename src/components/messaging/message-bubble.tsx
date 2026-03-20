@@ -115,7 +115,7 @@ export function MessageBubble({
                     {message.priority !== "normal" && (
                         <span
                             className={cn(
-                                "text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded",
+                                "density-caption font-semibold uppercase px-1.5 py-0.5 rounded",
                                 message.priority === "urgent" && "bg-orange-500/10 text-orange-600",
                                 message.priority === "critical" && "bg-red-500/10 text-red-600",
                                 message.priority === "high" && "bg-yellow-500/10 text-yellow-600"
@@ -217,7 +217,7 @@ export function MessageBubble({
                         </p>
                         <button
                             onClick={() => onClearTranslation?.(message.id)}
-                            className="text-[10px] text-primary hover:underline"
+                            className="density-caption text-primary hover:underline"
                         >
                             {ms("translate_show_original")}
                         </button>
@@ -226,7 +226,7 @@ export function MessageBubble({
                     <button
                         onClick={() => onTranslate(message.id, message.body, "es")}
                         disabled={translatingMessageId === message.id}
-                        className="inline-flex items-center gap-1 mt-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                        className="inline-flex items-center gap-1 mt-1 density-caption text-muted-foreground hover:text-foreground transition-colors"
                         aria-label={ms("translate_button")}
                     >
                         <Globe className="h-3 w-3" />

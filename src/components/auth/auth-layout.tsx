@@ -42,7 +42,7 @@ export function AuthLayout({ children, title, subtitle, className }: AuthLayoutP
                         </span>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <h2 className="text-3xl font-bold tracking-tight text-foreground">
                             {brandConfig.tagline}
                         </h2>
@@ -74,7 +74,7 @@ export function AuthLayout({ children, title, subtitle, className }: AuthLayoutP
                 id="auth-main-content"
                 className="flex-1 flex items-center justify-center p-4 sm:p-8"
             >
-                <div className={cn("w-full max-w-md space-y-6", className)}>
+                <div className={cn("w-full max-w-md density-gap-page", className)}>
                     {/* Mobile-only brand header */}
                     <div className="text-center lg:hidden">
                         <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg mb-4">

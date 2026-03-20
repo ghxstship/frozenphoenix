@@ -31,7 +31,8 @@ export type FormFieldType =
     | "color"
     | "password"
     | "hidden"
-    | "repeater";
+    | "repeater"
+    | "file";
 
 export interface FormFieldDef {
     /** Unique field ID — also used as the form data key */
@@ -60,6 +61,12 @@ export interface FormFieldDef {
     disabled?: boolean;
     /** Whether the field is hidden (still in form data but not rendered) */
     hidden?: boolean;
+
+    // ─── File-specific ───
+    /** Accepted file types for file inputs (e.g. ".pdf,.png,image/*") */
+    accept?: string;
+    /** Allow multiple file selection (default: false) */
+    multiple?: boolean;
 
     // ─── Repeater-specific ───
     /** Sub-field definitions for repeater type — each row contains these fields */
@@ -113,8 +120,12 @@ export interface FormPageConfig {
     entityKey: string;
     /** Page title (e.g., "Add Asset", "Edit Project") */
     title: string;
+    /** i18n key for title — when provided, resolved at runtime via t() */
+    titleKey?: string;
     /** Page description */
     description?: string;
+    /** i18n key for description */
+    descriptionKey?: string;
     /** Page icon */
     icon?: LucideIcon;
 

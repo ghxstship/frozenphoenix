@@ -60,7 +60,7 @@ export function CatalogItemDetail({
 
                 {isLoading || !rec ? (
                     <div className="flex items-center justify-center py-16">
-                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        <div className="h-6 w-6 motion-safe:animate-spin rounded-full border-2 border-primary border-t-transparent" />
                     </div>
                 ) : (
                     <div className="flex flex-col gap-4 p-6">
@@ -81,7 +81,7 @@ export function CatalogItemDetail({
                             <div className="flex items-center gap-2">
                                 <h2 className="text-lg font-semibold">{String(rec.name)}</h2>
                                 {Boolean(rec.is_active) && (
-                                    <Badge variant="success" className="text-[10px]">
+                                    <Badge variant="success" className="density-caption">
                                         Active
                                     </Badge>
                                 )}
@@ -106,7 +106,7 @@ export function CatalogItemDetail({
                                     <Badge
                                         key={tag}
                                         variant="outline"
-                                        className="gap-1 text-[10px]"
+                                        className="gap-1 density-caption"
                                     >
                                         <Tag className="h-2.5 w-2.5" />
                                         {tag}

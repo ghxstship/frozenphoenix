@@ -330,7 +330,7 @@ export function CsvImportDialog({
 
                 {/* ═══ STEP: Upload ═══ */}
                 {step === "upload" && (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <div
                             className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
                             onClick={() => fileInputRef.current?.click()}
@@ -380,7 +380,7 @@ export function CsvImportDialog({
 
                 {/* ═══ STEP: Mapping ═══ */}
                 {step === "mapping" && (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         {/* File info */}
                         <div className="flex items-center justify-between text-sm p-3 bg-secondary/50 rounded-lg">
                             <span className="font-medium">{file?.name}</span>
@@ -481,7 +481,7 @@ export function CsvImportDialog({
 
                 {/* ═══ STEP: Validation ═══ */}
                 {step === "validation" && validation && (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         {/* Summary */}
                         <div
                             className={cn(
@@ -578,7 +578,7 @@ export function CsvImportDialog({
                 {/* ═══ STEP: Importing ═══ */}
                 {step === "importing" && (
                     <div className="flex flex-col items-center justify-center py-12 gap-4">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <Loader2 className="h-8 w-8 motion-safe:animate-spin text-primary" />
                         <p className="text-sm font-medium">Importing records...</p>
                         <p className="text-xs text-muted-foreground">
                             This may take a moment for large datasets.
@@ -588,7 +588,7 @@ export function CsvImportDialog({
 
                 {/* ═══ STEP: Result ═══ */}
                 {step === "result" && importResult && (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <div
                             className={cn(
                                 "flex items-start gap-3 p-4 rounded-lg text-sm",

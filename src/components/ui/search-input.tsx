@@ -113,7 +113,7 @@ export function SearchInput({
             />
             {showHint && (
                 <kbd
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground/60 font-mono"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 density-caption text-muted-foreground/60 font-mono"
                     aria-hidden="true"
                 >
                     ⌘K

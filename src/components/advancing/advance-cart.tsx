@@ -162,7 +162,7 @@ export function AdvanceCart({ isOpen, onClose, onCheckout, className }: AdvanceC
                                                     <Badge
                                                         key={mod.modifier_id}
                                                         variant="outline"
-                                                        className="text-[10px]"
+                                                        className="density-caption"
                                                     >
                                                         {mod.option_label}
                                                     </Badge>
@@ -170,7 +170,7 @@ export function AdvanceCart({ isOpen, onClose, onCheckout, className }: AdvanceC
                                             </div>
                                         )}
                                     {(item.start_date || item.end_date) && (
-                                        <span className="text-[10px] text-muted-foreground">
+                                        <span className="density-caption text-muted-foreground">
                                             {item.start_date}
                                             {item.start_date && item.end_date && " \u2192 "}
                                             {item.end_date}
@@ -221,7 +221,7 @@ export function CartToggle({ onClick, className }: { onClick: () => void; classN
             {totalItems > 0 && (
                 <Badge
                     variant="destructive"
-                    className="absolute -right-2 -top-2 h-5 min-w-5 justify-center p-0 text-[10px]"
+                    className="absolute -right-2 -top-2 h-5 min-w-5 justify-center p-0 density-caption"
                 >
                     {totalItems}
                 </Badge>

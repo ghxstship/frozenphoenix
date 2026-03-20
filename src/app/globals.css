@@ -1096,6 +1096,17 @@ html.theme-transition tr {
 
 /* ═══════ User Appearance Customizations ═══════ */
 
+/* ─── Z-Index Layer Tokens ─── */
+:root {
+    --z-tab-active: 1;
+    --z-overlay: 100;
+    --z-panel: 101;
+    --z-toast: 100;
+    --z-modal: 150;
+    --z-banner: 200;
+    --z-skip-link: 9999;
+}
+
 /* ─── Density Scale ─── */
 /* Default density (spacingFactor 1) */
 :root {
@@ -1116,6 +1127,8 @@ html.theme-transition tr {
     --density-section-gap: 1rem;
     --density-detail-header-mb: 1.5rem;
     --density-form-field-gap: 1.5rem;
+    --density-caption-size: 0.625rem;
+    --density-micro-size: 0.5rem;
 }
 
 /* Compact density (spacingFactor 0.75) */
@@ -1133,6 +1146,8 @@ html.theme-transition tr {
     --density-section-gap: 0.75rem;
     --density-detail-header-mb: 1rem;
     --density-form-field-gap: 1rem;
+    --density-caption-size: 0.5625rem;
+    --density-micro-size: 0.4375rem;
 }
 
 /* Comfortable density (spacingFactor 1.25) */
@@ -1150,6 +1165,53 @@ html.theme-transition tr {
     --density-section-gap: 1.5rem;
     --density-detail-header-mb: 2rem;
     --density-form-field-gap: 2rem;
+    --density-caption-size: 0.6875rem;
+    --density-micro-size: 0.5625rem;
+}
+
+/* ─── Density Utility Classes ─── */
+.density-gap-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--density-page-gap);
+}
+
+.density-gap-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--density-section-gap);
+}
+
+.density-gap-card {
+    gap: var(--density-card-gap);
+}
+
+.density-gap-form-field {
+    gap: var(--density-form-field-gap);
+}
+
+.density-container-px {
+    padding-left: var(--density-card-padding);
+    padding-right: var(--density-card-padding);
+}
+
+.density-container-py {
+    padding-top: var(--density-card-padding);
+    padding-bottom: var(--density-card-padding);
+}
+
+.density-container-p {
+    padding: var(--density-card-padding);
+}
+
+.density-caption {
+    font-size: var(--density-caption-size);
+    line-height: 1rem;
+}
+
+.density-micro {
+    font-size: var(--density-micro-size);
+    line-height: 0.875rem;
 }
 
 /* Legacy density-aware class (backward compat) */

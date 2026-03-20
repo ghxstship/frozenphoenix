@@ -100,7 +100,7 @@ export function OpportunityDetailClient({
         stageIndex >= 0 ? Math.round(((stageIndex + 1) / OPPORTUNITY_STAGES.length) * 100) : 0;
 
     const sidebarSlot = opp ? (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Opportunity Details</CardTitle>
@@ -197,8 +197,8 @@ export function OpportunityDetailClient({
     ) : undefined;
 
     const overviewSlot = opp ? (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="density-gap-page">
+            <div className="grid grid-cols-1 sm:grid-cols-3 density-gap-card">
                 <Card>
                     <CardContent className="pt-4">
                         <div className="flex items-center gap-3">
@@ -256,7 +256,7 @@ export function OpportunityDetailClient({
                             <Badge
                                 key={stage.id}
                                 variant={i <= stageIndex ? "default" : "ghost"}
-                                className="text-[10px]"
+                                className="density-caption"
                                 style={
                                     i <= stageIndex
                                         ? { backgroundColor: stage.color, color: "#fff" }
@@ -314,7 +314,7 @@ export function OpportunityDetailClient({
                             <CardTitle className="text-base">Activity Timeline</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-4">
+                            <div className="density-gap-section">
                                 {activities.map((activity) => (
                                     <div
                                         key={activity.id}

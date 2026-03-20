@@ -60,7 +60,7 @@ export function DataGallery({
     return (
         <div
             className={cn(
-                "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
+                "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 density-gap-card",
                 className
             )}
             role="list"
@@ -120,7 +120,7 @@ export function DataGallery({
                             <div className="absolute top-2 right-2">
                                 <Badge
                                     variant="ghost"
-                                    className="bg-background/80 backdrop-blur-sm text-[10px]"
+                                    className="bg-background/80 backdrop-blur-sm density-caption"
                                 >
                                     {item.status}
                                 </Badge>
@@ -131,7 +131,7 @@ export function DataGallery({
                         <div className="absolute bottom-0 left-0 right-0 p-3">
                             <p className="text-sm font-medium text-white truncate">{item.title}</p>
                             {item.subtitle && (
-                                <p className="text-[11px] text-white/70 truncate">
+                                <p className="density-caption text-white/70 truncate">
                                     {item.subtitle}
                                 </p>
                             )}

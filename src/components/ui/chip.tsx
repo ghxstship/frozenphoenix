@@ -19,7 +19,7 @@ const chipVariants = cva(
                 outline: "border border-border text-foreground",
             },
             size: {
-                sm: "px-2 py-0.5 text-[10px]",
+                sm: "px-2 py-0.5 density-caption",
                 md: "px-2.5 py-0.5 text-xs",
                 lg: "px-3 py-1 text-sm",
             },
@@ -29,21 +29,12 @@ const chipVariants = cva(
 );
 
 export interface ChipProps
-    extends React.HTMLAttributes<HTMLSpanElement>,
-        VariantProps<typeof chipVariants> {
+    extends React.HTMLAttributes<HTMLSpanElement>, VariantProps<typeof chipVariants> {
     onRemove?: () => void;
     icon?: React.ReactNode;
 }
 
-export function Chip({
-    className,
-    variant,
-    size,
-    onRemove,
-    icon,
-    children,
-    ...props
-}: ChipProps) {
+export function Chip({ className, variant, size, onRemove, icon, children, ...props }: ChipProps) {
     return (
         <span className={cn(chipVariants({ variant, size }), className)} {...props}>
             {icon && <span className="shrink-0">{icon}</span>}

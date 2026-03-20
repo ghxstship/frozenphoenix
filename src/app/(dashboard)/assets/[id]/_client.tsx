@@ -1,6 +1,7 @@
 "use client";
 
 import { logger } from "@/lib/logger";
+import { enumLabel, SCAN_ACTION_LABELS } from "@/lib/enum-labels";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -59,7 +60,7 @@ function AssetScanHistoryTab({ assetId }: { assetId: string }) {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -103,17 +104,17 @@ function AssetScanHistoryTab({ assetId }: { assetId: string }) {
                                     <div>
                                         <p className="text-xs font-medium">
                                             {typeof e.scan_action === "string"
-                                                ? e.scan_action.replace("_", " ").toUpperCase()
+                                                ? enumLabel(e.scan_action, SCAN_ACTION_LABELS)
                                                 : "Scan"}
                                         </p>
                                         {typeof e.scan_method === "string" && (
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="density-caption text-muted-foreground">
                                                 via {e.scan_method}
                                             </p>
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                <div className="flex items-center gap-1 density-caption text-muted-foreground">
                                     <Clock className="h-3 w-3" />
                                     {typeof e.scanned_at === "string"
                                         ? formatDate(e.scanned_at)
@@ -134,7 +135,7 @@ function AssetAssignmentsTab({ assetId }: { assetId: string }) {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -175,7 +176,7 @@ function AssetAssignmentsTab({ assetId }: { assetId: string }) {
                             >
                                 <div>
                                     <p className="text-sm font-medium">
-                                        {String(rec.status ?? "assigned").replace("_", " ")}
+                                        {String(rec.status ?? "assigned").replaceAll("_", " ")}
                                     </p>
                                     {rec.project_id ? (
                                         <p className="text-xs text-muted-foreground">
@@ -203,7 +204,7 @@ function AssetVersionsTab({ assetId }: { assetId: string }) {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -272,7 +273,7 @@ function AssetTagsTab({ assetId }: { assetId: string }) {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -340,7 +341,7 @@ function AssetMaintenanceTab({ assetId }: { assetId: string }) {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -352,8 +353,10 @@ function AssetMaintenanceTab({ assetId }: { assetId: string }) {
                     Maintenance Records {records?.length ? `(${records.length})` : ""}
                 </CardTitle>
                 <Button size="sm" onClick={handleCreate} disabled={createRecord.isPending}>
-                    {createRecord.isPending && <Loader2 className="h-4 w-4 animate-spin" />}Log
-                    Maintenance
+                    {createRecord.isPending && (
+                        <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
+                    )}
+                    Log Maintenance
                 </Button>
             </CardHeader>
             <CardContent>
@@ -528,11 +531,11 @@ export function AssetDetailClient({
     };
 
     const isLoading = !sbAssets;
-    const _conditionConfig = asset ? ASSET_CONDITION_MAP[asset.condition] : null;
+    const conditionConfig = asset ? ASSET_CONDITION_MAP[asset.condition] : null;
     const isRental = asset?.ownedOrRental === "rental";
 
     const sidebarSlot = asset ? (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             {isRental && asset.rentalReturnDate && (
                 <Card className="border-warning/50 bg-warning/5">
                     <CardContent className="pt-4">
@@ -581,7 +584,7 @@ export function AssetDetailClient({
     ) : undefined;
 
     const overviewSlot = asset ? (
-        <div className="space-y-6">
+        <div className="density-gap-page">
             {!!asset.notes && (
                 <Card>
                     <CardHeader>
@@ -610,7 +613,8 @@ export function AssetDetailClient({
 
     const config: DetailPageConfig = {
         ...BASE_CONFIG,
-        subtitleFn: () => asset?.category ?? "",
+        subtitleFn: () =>
+            [asset?.category, conditionConfig?.label].filter(Boolean).join(" · ") || "",
         sidebarSlot,
         overviewSlot,
         stats: [
@@ -698,7 +702,7 @@ export function AssetDetailClient({
                         </Button>
                         <Button onClick={handleCheckOut} disabled={createAssignment.isPending}>
                             {createAssignment.isPending && (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
                             )}
                             Check Out
                         </Button>
@@ -724,7 +728,9 @@ export function AssetDetailClient({
                             Cancel
                         </Button>
                         <Button onClick={handleLogMaintenance} disabled={updateAsset.isPending}>
-                            {updateAsset.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                            {updateAsset.isPending && (
+                                <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
+                            )}
                             Save
                         </Button>
                     </DialogFooter>

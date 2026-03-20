@@ -12,16 +12,16 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { apiList } from "@/lib/api/client";
-import { getEntityConfig } from "@/lib/api/entity-config";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
+import { StatsGrid } from "@/components/ui/stats-grid";
+import { AlertBanner } from "@/components/ui/alert-banner";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { type ViewMode, ViewSwitcher } from "@/components/ui/view-switcher";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
@@ -69,23 +69,8 @@ import { QuickViewPanel } from "@/components/shells/quick-view-panel";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { ColumnVisibilityPopover } from "@/components/ui/column-visibility-popover";
 import { useColumnPreferences } from "@/hooks/use-column-preferences";
-import {
-    AlertCircle,
-    CheckCircle2,
-    Clock,
-    Eye,
-    LayoutList,
-    Pencil,
-    Plus,
-    Trash2,
-    Upload,
-} from "lucide-react";
-import type {
-    ListAlertDef,
-    ListColumnDef,
-    ListPageConfig,
-    ListRowActionDef,
-} from "@/types/list-page-config";
+import { CheckCircle2, Clock, Eye, LayoutList, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import type { ListAlertDef, ListPageConfig, ListRowActionDef } from "@/types/list-page-config";
 import {
     getResolvedConfig,
     type ListPageConfigKey,
@@ -93,11 +78,11 @@ import {
     resolveListPageConfig,
 } from "@/config/list-page-configs/registry";
 import { apiCreate, apiDelete, apiUpdate } from "@/lib/api/client";
+import { humanizeSnakeCase } from "@/lib/utils";
 import { useConfirm } from "@/components/ui/confirm-dialog";
-
-// ─── Types ───────────────────────────────────────────────────
-
-type EntityRecord = Record<string, unknown>;
+import { matchesSearch, toDataTableColumn } from "@/lib/record-utils";
+import { useEntityMeta } from "@/hooks/use-entity-meta";
+import type { EntityRecord } from "@/types/entity";
 
 export interface ListPageShellProps {
     /** Direct config object (client-side only — NOT serializable across RSC boundary) */
@@ -110,64 +95,12 @@ export interface ListPageShellProps {
     isLoading?: boolean;
 }
 
-// ─── Helpers ─────────────────────────────────────────────────
+// ─── List Alert Renderer ─────────────────────────────────────
 
-function getNestedValue(record: EntityRecord, key: string): unknown {
-    const parts = key.split(".");
-    let current: unknown = record;
-    for (const part of parts) {
-        if (current == null || typeof current !== "object") return undefined;
-        current = (current as EntityRecord)[part];
-    }
-    return current;
-}
-
-function matchesSearch(record: EntityRecord, search: string, keys: string[]): boolean {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return keys.some((key) => {
-        const val = getNestedValue(record, key);
-        return typeof val === "string" && val.toLowerCase().includes(q);
-    });
-}
-
-function toDataTableColumn(col: ListColumnDef): ColumnDef<EntityRecord> {
-    return {
-        id: col.id,
-        header: col.header,
-        accessorKey: col.accessorKey as keyof EntityRecord | undefined,
-        accessorFn: col.accessorFn,
-        fieldType: col.fieldType,
-        fieldConfig: col.fieldConfig,
-        render: col.render,
-        sortable: col.sortable,
-        width: col.width,
-        minWidth: col.minWidth,
-        align: col.align,
-        hidden: col.hidden,
-        sticky: col.sticky,
-    };
-}
-
-// ─── Alert Banner ────────────────────────────────────────────
-
-function AlertBanner({ alert, records }: { alert: ListAlertDef; records: EntityRecord[] }) {
+function ListAlertRenderer({ alert, records }: { alert: ListAlertDef; records: EntityRecord[] }) {
     if (!alert.when(records)) return null;
-    const Icon = alert.icon ?? AlertCircle;
     const message = typeof alert.message === "function" ? alert.message(records) : alert.message;
-    const colorMap = {
-        warning: "border-warning/30 bg-warning/5 text-warning",
-        info: "border-info/30 bg-info/5 text-info",
-        destructive: "border-destructive/30 bg-destructive/5 text-destructive",
-    };
-    return (
-        <Card className={colorMap[alert.severity]}>
-            <CardContent className="py-3 flex items-center gap-3">
-                <Icon className="h-5 w-5 shrink-0" />
-                <p className="text-sm font-medium">{message}</p>
-            </CardContent>
-        </Card>
-    );
+    return <AlertBanner message={message} severity={alert.severity} icon={alert.icon} />;
 }
 
 // ─── View Content Renderer ──────────────────────────────────
@@ -546,7 +479,16 @@ function ListPageShellInner({
     isLoading: externalLoading,
 }: ListPageShellInnerProps) {
     const router = useRouter();
-    const entityConfig = getEntityConfig(config.entityKey);
+    const queryClient = useQueryClient();
+    const {
+        entityConfig,
+        resource: metaResource,
+        basePath: metaBasePath,
+        slug: metaSlug,
+        displayName,
+        displayNamePlural,
+        searchColumns,
+    } = useEntityMeta(config.entityKey);
     const [search, setSearch] = useState("");
     const [filterValues, setFilterValues] = useState<Record<string, string>>({});
     const [viewMode, setViewMode] = useState<ViewMode>(config.defaultView ?? "table");
@@ -556,14 +498,14 @@ function ListPageShellInner({
     const [quickViewRecordId, setQuickViewRecordId] = useState<string | null>(null);
 
     // Resolve entity metadata
-    const resource = entityConfig?.resource ?? config.entityKey;
-    const title = config.title ?? entityConfig?.displayNamePlural ?? config.entityKey;
+    const resource = entityConfig?.resource ?? metaResource;
+    const title = config.title ?? displayNamePlural;
     const description = config.description ?? `Manage ${title.toLowerCase()}`;
-    const basePath = entityConfig?.basePath ?? `/api/${config.entityKey.replace(/_/g, "-")}`;
-    const slug = entityConfig?.slug ?? config.entityKey.replace(/_/g, "-");
+    const basePath = entityConfig?.basePath ?? metaBasePath;
+    const slug = entityConfig?.slug ?? metaSlug;
     const searchKeys = useMemo(
-        () => config.searchKeys ?? entityConfig?.searchColumns ?? ["name", "title"],
-        [config.searchKeys, entityConfig?.searchColumns]
+        () => config.searchKeys ?? searchColumns,
+        [config.searchKeys, searchColumns]
     );
     const Icon = config.icon ?? LayoutList;
     const views = config.views ?? ["table"];
@@ -571,6 +513,11 @@ function ListPageShellInner({
     // Smart defaults: auto-enable export/import when entity has a config
     const exportable = config.exportable ?? entityConfig != null;
     const importable = config.importable ?? entityConfig != null;
+
+    // Cache invalidation helper (replaces window.location.reload)
+    const invalidateEntity = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: [config.entityKey] });
+    }, [queryClient, config.entityKey]);
 
     // Fetch data via API (skipped when external data is provided)
     // Query key aligned with makeListHook pattern: [entityKey, filterParams]
@@ -605,7 +552,7 @@ function ListPageShellInner({
                         column: "status",
                         options: uniqueStatuses.map((s) => ({
                             value: s,
-                            label: s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                            label: humanizeSnakeCase(s),
                         })),
                     },
                 ];
@@ -816,22 +763,22 @@ function ListPageShellInner({
                 onExecute: async (record) => {
                     if (!record.id) return;
                     const confirmed = await confirm({
-                        title: `Delete ${entityConfig?.displayName ?? config.entityKey}`,
-                        description: `Are you sure you want to delete this ${entityConfig?.displayName ?? config.entityKey}? This action cannot be undone.`,
+                        title: `Delete ${displayName}`,
+                        description: `Are you sure you want to delete this ${displayName}? This action cannot be undone.`,
                         confirmLabel: "Delete",
                         variant: "destructive",
                     });
                     if (!confirmed) return;
                     try {
                         await apiDelete(basePath, String(record.id));
-                        window.location.reload();
+                        invalidateEntity();
                     } catch {
                         // API errors surface via toast in production
                     }
                 },
             },
         ],
-        [router, slug, basePath, entityConfig?.displayName, config.entityKey, confirm]
+        [router, slug, basePath, displayName, confirm, invalidateEntity]
     );
 
     const resolvedRowActions = useMemo<ListRowActionDef[]>(() => {
@@ -898,8 +845,8 @@ function ListPageShellInner({
                 variant: "destructive" as const,
                 onExecute: async (selectedIds: string[]) => {
                     const count = selectedIds.length;
-                    const name = entityConfig?.displayName ?? config.entityKey;
-                    const plural = entityConfig?.displayNamePlural ?? name;
+                    const name = displayName;
+                    const plural = displayNamePlural;
                     const confirmed = await confirm({
                         title: `Delete ${count} ${count === 1 ? name : plural}`,
                         description: `Are you sure you want to delete ${count} ${count === 1 ? name : plural}? This action cannot be undone.`,
@@ -910,21 +857,14 @@ function ListPageShellInner({
                     try {
                         await Promise.all(selectedIds.map((id) => apiDelete(basePath, id)));
                         setSelectedKeys(new Set());
-                        window.location.reload();
+                        invalidateEntity();
                     } catch {
                         // API errors surface via toast in production
                     }
                 },
             },
         ];
-    }, [
-        config.bulkActions,
-        config.entityKey,
-        entityConfig?.displayName,
-        entityConfig?.displayNamePlural,
-        basePath,
-        confirm,
-    ]);
+    }, [config.bulkActions, displayName, displayNamePlural, basePath, confirm, invalidateEntity]);
 
     const hasBulkActions = resolvedBulkActions.length > 0;
     const hasMultiView = views.length > 1;
@@ -968,8 +908,7 @@ function ListPageShellInner({
                         {hasCreate && (
                             <Button size="sm" onClick={openCreate}>
                                 <Plus className="h-4 w-4" />{" "}
-                                {config.createLabel ??
-                                    `New ${entityConfig?.displayName ?? config.entityKey}`}
+                                {config.createLabel ?? `New ${displayName}`}
                             </Button>
                         )}
                     </PageHeader>
@@ -978,7 +917,7 @@ function ListPageShellInner({
                 {/* Stats */}
                 {config.statsSlot ??
                     (statsToRender && statsToRender.length > 0 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <StatsGrid>
                             {statsToRender.map((s) => (
                                 <StatCard
                                     key={s.label}
@@ -987,12 +926,12 @@ function ListPageShellInner({
                                     icon={s.icon}
                                 />
                             ))}
-                        </div>
+                        </StatsGrid>
                     ))}
 
                 {/* Alerts */}
                 {config.alerts?.map((alert, i) => (
-                    <AlertBanner key={i} alert={alert} records={records} />
+                    <ListAlertRenderer key={i} alert={alert} records={records} />
                 ))}
 
                 {/* Toolbar */}
@@ -1074,7 +1013,7 @@ function ListPageShellInner({
                                               await apiUpdate(basePath, itemId, {
                                                   [config.boardConfig!.groupByKey]: toColumn,
                                               });
-                                              window.location.reload();
+                                              invalidateEntity();
                                           } catch {
                                               // API errors surface via toast
                                           }
@@ -1106,7 +1045,7 @@ function ListPageShellInner({
                     onClose={closeCreate}
                     onSubmit={async (values) => {
                         await apiCreate(basePath, values);
-                        window.location.reload();
+                        invalidateEntity();
                     }}
                 />
             )}

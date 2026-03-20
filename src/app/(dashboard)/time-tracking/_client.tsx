@@ -161,7 +161,7 @@ function InvoicingPipeline({ entries }: { entries: TimeEntry[] }) {
         .reduce((s, g) => s + g.totalAmount, 0);
 
     return (
-        <div className="space-y-6">
+        <div className="density-gap-page">
             {/* Approval Workflow */}
             <Card>
                 <CardHeader>
@@ -176,7 +176,7 @@ function InvoicingPipeline({ entries }: { entries: TimeEntry[] }) {
             </Card>
 
             {/* Pipeline Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 density-gap-card">
                 <MetricCard
                     label="Ready to Invoice"
                     value={formatCurrency(totalReadyAmount)}
@@ -265,7 +265,7 @@ function InvoicingPipeline({ entries }: { entries: TimeEntry[] }) {
                                             <p className="text-sm font-bold tabular-nums">
                                                 {formatCurrency(group.totalAmount)}
                                             </p>
-                                            <Badge variant="success" className="text-[10px]">
+                                            <Badge variant="success" className="density-caption">
                                                 Approved
                                             </Badge>
                                         </div>
@@ -307,7 +307,10 @@ function InvoicingPipeline({ entries }: { entries: TimeEntry[] }) {
                                         <span className="text-sm tabular-nums text-muted-foreground">
                                             {formatCurrency(entry.hours * entry.rate)}
                                         </span>
-                                        <StatusBadge status="submitted" className="text-[10px]" />
+                                        <StatusBadge
+                                            status="submitted"
+                                            className="density-caption"
+                                        />
                                     </div>
                                 ))}
                         </div>
@@ -448,7 +451,12 @@ export function TimeTrackingPageClient() {
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
-                            <span className="font-mono text-2xl font-bold tabular-nums">
+                            <span
+                                className="font-mono text-2xl font-bold tabular-nums"
+                                role="timer"
+                                aria-live="off"
+                                aria-label={`Timer: ${formatTimer(timerSeconds)}`}
+                            >
                                 {formatTimer(timerSeconds)}
                             </span>
                             <Button variant="outline" size="sm" onClick={() => handleStopTimer()}>
@@ -460,7 +468,7 @@ export function TimeTrackingPageClient() {
             )}
 
             {/* KPI Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <StatCard
                     title="Today"
                     value={`${totalHoursToday}h`}
@@ -472,7 +480,6 @@ export function TimeTrackingPageClient() {
                     value={`${totalWeekHours}h`}
                     description={`${billableWeek}h billable`}
                     icon={Calendar}
-                    change={5}
                 />
                 <StatCard
                     title="Billable Rate"
@@ -528,7 +535,7 @@ export function TimeTrackingPageClient() {
 
             {/* Daily View */}
             {mode === "daily" && (
-                <div className="space-y-4">
+                <div className="density-gap-section">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Button variant="ghost" size="sm">
@@ -558,7 +565,7 @@ export function TimeTrackingPageClient() {
                             }}
                         >
                             {submitEntries.isPending ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <Loader2 className="mr-2 h-4 w-4 motion-safe:animate-spin" />
                             ) : (
                                 <Send className="mr-2 h-4 w-4" />
                             )}
@@ -590,13 +597,16 @@ export function TimeTrackingPageClient() {
                                                     {entry.project}
                                                 </p>
                                                 {entry.billable && (
-                                                    <Badge variant="info" className="text-[10px]">
+                                                    <Badge
+                                                        variant="info"
+                                                        className="density-caption"
+                                                    >
                                                         Billable
                                                     </Badge>
                                                 )}
                                                 <StatusBadge
                                                     status={entry.status}
-                                                    className="text-[10px]"
+                                                    className="density-caption"
                                                 />
                                             </div>
                                             <p className="text-xs text-muted-foreground mt-0.5">
@@ -608,7 +618,7 @@ export function TimeTrackingPageClient() {
                                                 {entry.hours}h
                                             </p>
                                             {entry.billable && (
-                                                <p className="text-[10px] text-muted-foreground">
+                                                <p className="density-caption text-muted-foreground">
                                                     {formatCurrency(entry.hours * entry.rate)}
                                                 </p>
                                             )}
@@ -626,7 +636,7 @@ export function TimeTrackingPageClient() {
 
             {/* Weekly Timesheet View */}
             {mode === "weekly" && (
-                <div className="space-y-4">
+                <div className="density-gap-section">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Button
@@ -671,7 +681,7 @@ export function TimeTrackingPageClient() {
                             }}
                         >
                             {submitEntries.isPending ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <Loader2 className="mr-2 h-4 w-4 motion-safe:animate-spin" />
                             ) : (
                                 <Send className="mr-2 h-4 w-4" />
                             )}
@@ -693,7 +703,7 @@ export function TimeTrackingPageClient() {
                                                 className="text-center p-3 font-medium w-20"
                                             >
                                                 <div>{day}</div>
-                                                <div className="text-[10px] text-muted-foreground font-normal">
+                                                <div className="density-caption text-muted-foreground font-normal">
                                                     {getWeekDates(currentWeekStart)[i]}
                                                 </div>
                                             </th>
@@ -713,14 +723,14 @@ export function TimeTrackingPageClient() {
                                                         <p className="font-medium text-xs">
                                                             {row.project}
                                                         </p>
-                                                        <p className="text-[10px] text-muted-foreground">
+                                                        <p className="density-caption text-muted-foreground">
                                                             {row.task}
                                                         </p>
                                                     </div>
                                                     {row.billable && (
                                                         <Badge
                                                             variant="info"
-                                                            className="text-[9px]"
+                                                            className="density-caption"
                                                         >
                                                             $
                                                         </Badge>
@@ -779,12 +789,12 @@ export function TimeTrackingPageClient() {
 
             {/* Timer View */}
             {mode === "timer" && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 density-gap-card">
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">Active Timer</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-6">
+                        <CardContent className="density-gap-page">
                             <div className="text-center">
                                 <p className="font-mono text-5xl font-bold tabular-nums">
                                     {formatTimer(timerSeconds)}
@@ -849,7 +859,7 @@ export function TimeTrackingPageClient() {
                                     >
                                         <div>
                                             <p className="text-xs font-semibold">{entry.project}</p>
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="density-caption text-muted-foreground">
                                                 {entry.task}
                                             </p>
                                         </div>
@@ -857,7 +867,7 @@ export function TimeTrackingPageClient() {
                                             <p className="text-sm font-mono font-bold tabular-nums">
                                                 {formatTimer(Math.round(entry.hours * 3600))}
                                             </p>
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="density-caption text-muted-foreground">
                                                 {entry.date === today ? "Today" : entry.date}
                                             </p>
                                         </div>
@@ -889,7 +899,7 @@ export function TimeTrackingPageClient() {
                     }}
                 >
                     {submitEntries.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
                     ) : (
                         <Send className="h-4 w-4" />
                     )}

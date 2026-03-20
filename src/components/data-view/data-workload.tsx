@@ -175,7 +175,7 @@ export function DataWorkload({
                                             className="h-6 w-6 rounded-full object-cover"
                                         />
                                     ) : (
-                                        <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium">
+                                        <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center density-caption font-medium">
                                             {resourceName.charAt(0).toUpperCase()}
                                         </div>
                                     )}
@@ -190,7 +190,7 @@ export function DataWorkload({
                                                   ? "warning"
                                                   : "secondary"
                                         }
-                                        className="text-[10px]"
+                                        className="density-caption"
                                     >
                                         {utilPct}%
                                     </Badge>
@@ -208,7 +208,7 @@ export function DataWorkload({
                                         style={{ width: `${Math.min(100, utilPct)}%` }}
                                     />
                                 </div>
-                                <div className="flex justify-between text-[10px] text-muted-foreground">
+                                <div className="flex justify-between density-caption text-muted-foreground">
                                     <span>{totalHours}h allocated</span>
                                     <span>{totalCapacity}h capacity</span>
                                 </div>
@@ -253,7 +253,7 @@ export function DataWorkload({
                                                 className="h-6 w-6 rounded-full object-cover"
                                             />
                                         ) : (
-                                            <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium">
+                                            <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center density-caption font-medium">
                                                 {resourceName.charAt(0).toUpperCase()}
                                             </div>
                                         )}
@@ -310,7 +310,7 @@ export function DataWorkload({
                                                     <div className="flex items-center justify-between">
                                                         <span
                                                             className={cn(
-                                                                "text-[10px] tabular-nums",
+                                                                "density-caption tabular-nums",
                                                                 isOver
                                                                     ? "text-destructive font-semibold"
                                                                     : "text-muted-foreground"

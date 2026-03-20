@@ -33,6 +33,7 @@ import {
 } from "@/lib/supabase/hooks-advancing";
 import { useAdvancesRealtime } from "@/lib/supabase/realtime-advancing";
 import { formatAdvanceCost } from "@/config/advancing-config";
+import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import type { AdvanceItemStatus, AdvancePriority, AdvanceStatus, AdvanceType } from "@/types";
 
@@ -42,7 +43,7 @@ function AdvanceStatusHistoryTab({ advanceId }: { advanceId: string }) {
         return (
             <Card>
                 <CardContent className="py-8 flex justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-5 w-5 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -82,7 +83,7 @@ function AdvanceStatusHistoryTab({ advanceId }: { advanceId: string }) {
                                 </p>
                             </div>
                             {Boolean(h.reason) && (
-                                <Badge variant="outline" className="text-[10px]">
+                                <Badge variant="outline" className="density-caption">
                                     {String(h.reason)}
                                 </Badge>
                             )}
@@ -100,7 +101,7 @@ function AdvanceTemplatesTab() {
         return (
             <Card>
                 <CardContent className="py-8 flex justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-5 w-5 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -149,7 +150,7 @@ const BASE_CONFIG: DetailPageConfig = {
     entityKey: "production_advance",
     titleKey: "title",
     subtitleFn: (r) =>
-        `${String(r.advance_number ?? "")} · ${String(r.advance_type ?? "").replace("_", " ")}`,
+        `${String(r.advance_number ?? "")} · ${String(r.advance_type ?? "").replaceAll("_", " ")}`,
     statusKey: "status",
     icon: Package,
     backHref: "/advancing",
@@ -245,7 +246,7 @@ export function AdvancingOrderDetailPageClient() {
             },
         ],
         overviewSlot: (
-            <div className="space-y-6">
+            <div className="density-gap-page">
                 {/* Reject reason input */}
                 {showRejectInput && (
                     <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3">
@@ -372,7 +373,7 @@ export function AdvancingOrderDetailPageClient() {
                     <CardContent>
                         {itemsList.length === 0 ? (
                             <p className="py-4 text-center text-sm text-muted-foreground">
-                                No items added yet
+                                {COMMON_STRINGS.empty_no_items_added}
                             </p>
                         ) : (
                             <div className="divide-y">
@@ -430,7 +431,7 @@ export function AdvancingOrderDetailPageClient() {
             </div>
         ),
         sidebarSlot: adv ? (
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4">
                 {/* Dates */}
                 <Card>
                     <CardHeader>
@@ -504,7 +505,9 @@ export function AdvancingOrderDetailPageClient() {
                             disabled={actionLoading !== null}
                         >
                             <Send className="h-4 w-4" />
-                            {actionLoading === "submit" ? "Submitting..." : "Submit"}
+                            {actionLoading === "submit"
+                                ? COMMON_STRINGS.action_submitting
+                                : COMMON_STRINGS.action_submit}
                         </Button>
                     )}
                     {canApprove && (

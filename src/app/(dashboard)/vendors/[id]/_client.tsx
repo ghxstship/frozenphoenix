@@ -128,7 +128,7 @@ export function VendorDetailClient({
     );
 
     const sidebarSlot = vendor ? (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Contact Info</CardTitle>
@@ -182,8 +182,8 @@ export function VendorDetailClient({
     ) : null;
 
     const overviewSlot = vendor ? (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="density-gap-page">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <Card>
                     <CardContent className="pt-4">
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -546,7 +546,9 @@ export function VendorDetailClient({
                             onClick={handleCreatePO}
                             disabled={!poDescription.trim() || createPO.isPending}
                         >
-                            {createPO.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                            {createPO.isPending && (
+                                <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
+                            )}
                             Create PO
                         </Button>
                     </DialogFooter>

@@ -86,7 +86,7 @@ export function TaskDetailPageClient() {
     const enrichedRecord = rec ? { ...rec, _projectName: project?.name ?? "" } : null;
 
     const sidebarSlot = (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Task Details</CardTitle>
@@ -149,8 +149,8 @@ export function TaskDetailPageClient() {
     );
 
     const overviewSlot = (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="density-gap-page">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <Card>
                     <CardContent className="pt-4">
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">

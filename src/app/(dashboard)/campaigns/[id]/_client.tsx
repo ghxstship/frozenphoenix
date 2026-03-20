@@ -135,7 +135,7 @@ export function CampaignDetailClient({
     const camp = rec as Record<string, unknown> | null;
 
     const sidebarSlot = camp ? (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Budget</CardTitle>
@@ -186,14 +186,14 @@ export function CampaignDetailClient({
     ) : undefined;
 
     const overviewSlot = camp ? (
-        <div className="space-y-6">
+        <div className="density-gap-page">
             {camp.total_reach !== null && (
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base">Performance Summary</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 density-gap-card">
                             <div className="text-center p-3 rounded-lg bg-secondary/20">
                                 <p className="text-xs text-muted-foreground">Reach</p>
                                 <p className="text-lg font-bold">
@@ -394,7 +394,7 @@ export function CampaignDetailClient({
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-4">
+                            <div className="density-gap-section">
                                 {kpis.map((kpi) => {
                                     const progress = kpi.target_value
                                         ? Math.min(
@@ -420,7 +420,7 @@ export function CampaignDetailClient({
                                                 </span>
                                             </div>
                                             <ProgressBar value={progress} size="sm" />
-                                            <p className="text-[10px] text-muted-foreground mt-1">
+                                            <p className="density-caption text-muted-foreground mt-1">
                                                 {progress}% of target
                                             </p>
                                         </div>

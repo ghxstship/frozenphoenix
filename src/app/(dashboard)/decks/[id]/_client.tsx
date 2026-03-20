@@ -126,7 +126,7 @@ export function DeckDetailClient({
     const current = slides[selectedSlide];
 
     const sidebarSlot = (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Deck Settings</CardTitle>
@@ -210,7 +210,7 @@ export function DeckDetailClient({
     );
 
     const overviewSlot = (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <div className="flex gap-2 overflow-x-auto pb-2">
                 {slides.map((slide, i) => {
                     const typeCfg = SLIDE_TYPES.find((t) => t.type === slide.type);
@@ -223,13 +223,13 @@ export function DeckDetailClient({
                         >
                             <div className="flex items-center gap-1.5 mb-1">
                                 <GripVertical className="h-3 w-3 text-muted-foreground/30" />
-                                <span className="text-[10px] text-muted-foreground font-mono">
+                                <span className="density-caption text-muted-foreground font-mono">
                                     {i + 1}
                                 </span>
                                 <Icon className="h-3 w-3 text-muted-foreground" />
                             </div>
                             <div className="aspect-video bg-secondary/50 rounded flex items-center justify-center p-1">
-                                <p className="text-[8px] text-center line-clamp-2">
+                                <p className="density-micro text-center line-clamp-2">
                                     {slide.title || typeCfg?.label}
                                 </p>
                             </div>
@@ -274,7 +274,7 @@ export function DeckDetailClient({
                             </p>
                         </div>
                     )}
-                    <div className="absolute bottom-2 right-3 text-sidebar-foreground/20 text-[10px] font-mono">
+                    <div className="absolute bottom-2 right-3 text-sidebar-foreground/20 density-caption font-mono">
                         {selectedSlide + 1}/{slides.length}
                     </div>
                     <Button

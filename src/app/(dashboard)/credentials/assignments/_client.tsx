@@ -49,7 +49,7 @@ const columns: ColumnDef<AssignmentRow>[] = [
             <div>
                 <p className="text-sm font-medium">{row.assignee_name}</p>
                 {row.assignee_email && (
-                    <p className="text-[10px] text-muted-foreground">{row.assignee_email}</p>
+                    <p className="density-caption text-muted-foreground">{row.assignee_email}</p>
                 )}
             </div>
         ),
@@ -92,8 +92,11 @@ const columns: ColumnDef<AssignmentRow>[] = [
         render: (v) => {
             const s = String(v);
             return (
-                <Badge variant={STATUS_VARIANTS[s] ?? "ghost"} className="text-[10px] capitalize">
-                    {s.replace("_", " ")}
+                <Badge
+                    variant={STATUS_VARIANTS[s] ?? "ghost"}
+                    className="density-caption capitalize"
+                >
+                    {s.replaceAll("_", " ")}
                 </Badge>
             );
         },
@@ -109,12 +112,12 @@ const columns: ColumnDef<AssignmentRow>[] = [
             return (
                 <div className="flex flex-wrap gap-1">
                     {zones.slice(0, 3).map((z: string) => (
-                        <Badge key={z} variant="ghost" className="text-[9px]">
+                        <Badge key={z} variant="ghost" className="density-caption">
                             {z}
                         </Badge>
                     ))}
                     {zones.length > 3 && (
-                        <Badge variant="ghost" className="text-[9px]">
+                        <Badge variant="ghost" className="density-caption">
                             +{zones.length - 3}
                         </Badge>
                     )}
@@ -160,7 +163,7 @@ export function CredentialAssignmentsPageClient() {
         <div className="density-gap-page">
             {revoked > 0 && (
                 <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/20 flex items-center gap-2">
-                    <Badge variant="destructive" className="text-[10px]">
+                    <Badge variant="destructive" className="density-caption">
                         {revoked}
                     </Badge>
                     <span className="text-xs text-destructive font-medium">

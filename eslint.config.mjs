@@ -97,6 +97,41 @@ const eslintConfig = defineConfig([
       "no-warning-comments": "off",
     },
   },
+  // Q-004: Ban direct PageHeader imports in dashboard page client components.
+  // All dashboard pages must use a shell (ListPageShell, OperationalDashboardShell,
+  // FormPageShell, SettingsPageShell, WizardShell) which provides its own PageHeader.
+  // Q-005: Ban raw PermissionGate wrapping in dashboard page client components.
+  // Shells enforce RBAC internally via config.resource — no manual PermissionGate needed.
+  {
+    files: ["src/app/(dashboard)/**/_client.tsx"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/demo-data*"],
+              message:
+                "Demo data imports are banned in production code. Use Supabase hooks instead.",
+            },
+            {
+              group: ["**/mock*", "**/mocks*"],
+              message:
+                "Mock data imports are banned in production code. Use Supabase hooks instead.",
+            },
+          ],
+          paths: [
+            {
+              name: "@/components/ui/page-header",
+              importNames: ["PageHeader"],
+              message:
+                "Direct PageHeader import is banned in dashboard pages. Use a shell component (ListPageShell, OperationalDashboardShell, FormPageShell, SettingsPageShell, WizardShell) which provides PageHeader internally.",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // Q-002 + Q-003 override: Demo-data definition files are the source, not consumers.
   {
     files: ["src/lib/demo-data*.ts"],

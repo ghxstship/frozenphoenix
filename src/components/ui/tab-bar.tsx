@@ -141,7 +141,7 @@ export function TabBar({
                     tabIndex={value === item.id ? 0 : -1}
                     onClick={() => onValueChange(item.id)}
                     className={cn(
-                        "relative z-[1] inline-flex items-center whitespace-nowrap font-medium transition-colors",
+                        "relative z-[var(--z-tab-active)] inline-flex items-center whitespace-nowrap font-medium transition-colors",
                         orientation === "horizontal" && "justify-center",
                         orientation === "vertical" && "justify-start",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",

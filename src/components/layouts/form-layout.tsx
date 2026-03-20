@@ -29,6 +29,10 @@ export interface FormLayoutProps {
     children: React.ReactNode;
 }
 
+/**
+ * @deprecated Zero consumers remain. Use FormPageShell instead.
+ * Retained only for reference. FormSection below is still canonical.
+ */
 export function FormLayout({
     backHref,
     backLabel = "Back",
@@ -60,7 +64,7 @@ export function FormLayout({
     }, [isValid, isSubmitting]);
 
     return (
-        <div className={cn("animate-fade-in max-w-3xl", className)}>
+        <div className={cn("motion-safe:animate-fade-in max-w-3xl", className)}>
             {/* Back Link */}
             <Link
                 href={backHref}
@@ -74,21 +78,21 @@ export function FormLayout({
             {/* Header */}
             <div className="mb-6">
                 <h1 className="text-2xl font-bold">{title}</h1>
-                {description && (
-                    <p className="text-muted-foreground mt-1">{description}</p>
-                )}
+                {description && <p className="text-muted-foreground mt-1">{description}</p>}
             </div>
 
             {/* Form */}
             <form ref={formRef} onSubmit={onSubmit}>
-                <div className="space-y-6">
-                    {children}
-                </div>
+                <div className="density-gap-page">{children}</div>
 
                 {/* Actions — sticky on scroll */}
                 <div className="flex items-center justify-between gap-3 mt-8 pt-4 pb-2 border-t border-border sticky bottom-0 bg-background/95 backdrop-blur-sm z-10">
-                    <div className="text-xs text-muted-foreground/50 hidden sm:block" aria-hidden="true">
-                        <kbd className="bg-muted px-1 py-0.5 rounded text-[10px]">⌘S</kbd> to save
+                    <div
+                        className="text-xs text-muted-foreground/50 hidden sm:block"
+                        aria-hidden="true"
+                    >
+                        <kbd className="bg-muted px-1 py-0.5 rounded density-caption">⌘S</kbd> to
+                        save
                     </div>
                     <span className="sr-only">Press Command+S or Control+S to save</span>
                     <div className="flex items-center gap-3 ml-auto">
@@ -102,20 +106,14 @@ export function FormLayout({
                                 {cancelLabel}
                             </Button>
                         ) : (
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                asChild
-                                disabled={isSubmitting}
-                            >
+                            <Button type="button" variant="ghost" asChild disabled={isSubmitting}>
                                 <Link href={backHref}>{cancelLabel}</Link>
                             </Button>
                         )}
-                        <Button
-                            type="submit"
-                            disabled={isSubmitting || !isValid}
-                        >
-                            {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                        <Button type="submit" disabled={isSubmitting || !isValid}>
+                            {isSubmitting && (
+                                <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
+                            )}
                             {submitLabel}
                         </Button>
                     </div>
@@ -173,7 +171,7 @@ export function FormSection({
                 )}
             </CardHeader>
             {isOpen && (
-                <CardContent id={contentId} className="space-y-4">
+                <CardContent id={contentId} className="density-gap-section">
                     {children}
                 </CardContent>
             )}

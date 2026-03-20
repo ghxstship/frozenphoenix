@@ -110,7 +110,7 @@ export function ConversationList({
                     <>
                         {pinned.length > 0 && (
                             <div>
-                                <div className="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                <div className="px-4 py-1.5 density-caption font-semibold uppercase tracking-wider text-muted-foreground">
                                     {ms("conversations_pinned")}
                                 </div>
                                 {pinned.map((conv) => (
@@ -126,7 +126,7 @@ export function ConversationList({
                         {unpinned.length > 0 && (
                             <div>
                                 {pinned.length > 0 && (
-                                    <div className="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                    <div className="px-4 py-1.5 density-caption font-semibold uppercase tracking-wider text-muted-foreground">
                                         Recent
                                     </div>
                                 )}
@@ -205,7 +205,7 @@ function ConversationItem({ conversation, isActive, onSelect }: ConversationItem
                         {displayName}
                     </span>
                     {timeLabel && (
-                        <span className="text-[10px] text-muted-foreground shrink-0">
+                        <span className="density-caption text-muted-foreground shrink-0">
                             {timeLabel}
                         </span>
                     )}
@@ -227,7 +227,7 @@ function ConversationItem({ conversation, isActive, onSelect }: ConversationItem
             {/* Unread badge */}
             {hasUnread && (
                 <div className="shrink-0 mt-1">
-                    <span className="inline-flex items-center justify-center h-5 min-w-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold px-1.5">
+                    <span className="inline-flex items-center justify-center h-5 min-w-5 rounded-full bg-primary text-primary-foreground density-caption font-bold px-1.5">
                         {conversation.unread_count > 99 ? "99+" : conversation.unread_count}
                     </span>
                 </div>

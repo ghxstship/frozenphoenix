@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { csrfHeaders } from "@/lib/csrf";
+import { capitalize, getInitials } from "@/lib/utils";
 import { SettingsPageShell } from "@/components/shells/settings-page-shell";
 import type { SettingsPageConfig } from "@/types/settings-page-config";
 import { Button } from "@/components/ui/button";
@@ -18,17 +19,6 @@ import {
 } from "@/lib/settings/hooks";
 import { SettingRow } from "@/components/settings/setting-row";
 import { PermissionGate } from "@/components/permission-guard";
-import { useOrganization, useUpdateOrganization } from "@/lib/supabase/hooks-admin";
-import {
-    useInviteCollaborator,
-    useUpdateCollaborator,
-    useUpdateCommTemplate,
-} from "@/lib/supabase/hooks-collaborators";
-import {
-    useBulkImportJob,
-    useBulkImportJobs,
-    useCreateBulkImportJob,
-} from "@/lib/supabase/hooks-credentialing";
 import {
     ACCENT_PRESETS,
     ANIMATION_PRESETS,
@@ -81,17 +71,10 @@ import { useToast } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
 import { buildAvatarPath, STORAGE_BUCKETS, useUploadFile } from "@/lib/supabase/storage";
 import { useUpdateProfile } from "@/lib/supabase/auth-actions";
+import { useUpdateOrganization } from "@/lib/supabase/hooks-admin";
 import Image from "next/image";
 import { AvatarCropDialog } from "@/components/ui/avatar-crop-dialog";
-
-const ROLE_LABELS: Record<string, string> = {
-    exec: "Executive",
-    director: "Director",
-    pm: "Project Manager",
-    member: "Team Member",
-    client: "Client",
-    collaborator: "Collaborator",
-};
+import { ROLE_LABELS } from "@/config/rbac";
 
 function SettingsCategorySection({
     category,
@@ -119,9 +102,6 @@ function SettingsCategorySection({
 }
 
 export function SettingsPageClient() {
-    const _inviteCollaborator = useInviteCollaborator();
-    const _updateCollaborator = useUpdateCollaborator();
-    const _updateCommTemplate = useUpdateCommTemplate();
     const {
         colorMode,
         setColorMode,
@@ -143,12 +123,6 @@ export function SettingsPageClient() {
         setAnimationSpeed,
     } = useTheme();
     const { user, profile, memberships, activeOrg, isOwner, refreshProfile } = useAuth();
-    const orgId = activeOrg?.organization_id ?? "";
-    const { data: _orgRecord } = useOrganization(orgId);
-    const _updateOrg = useUpdateOrganization();
-    const { data: _bulkImportJobs } = useBulkImportJobs();
-    const { data: _bulkImportJob } = useBulkImportJob("");
-    const _createBulkImport = useCreateBulkImportJob();
     const { addToast } = useToast();
     const router = useRouter();
     const { settings, loading: settingsLoading, updateSetting } = useSettings();
@@ -198,6 +172,11 @@ export function SettingsPageClient() {
     const [tpAirlineLoyalty, setTpAirlineLoyalty] = useState("");
     const [tpHotelLoyalty, setTpHotelLoyalty] = useState("");
     const [tpNotes, setTpNotes] = useState("");
+
+    // Organization & team hooks
+    const updateOrg = useUpdateOrganization();
+    const [editOrgName, setEditOrgName] = useState("");
+    const [orgNameDirty, setOrgNameDirty] = useState(false);
 
     // Avatar upload
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -455,12 +434,7 @@ export function SettingsPageClient() {
     ]);
 
     const userRole = activeOrg?.role ?? "vendor";
-    const userInitials = (profile?.display_name ?? "U")
-        .split(" ")
-        .map((n: string) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
+    const userInitials = getInitials(profile?.display_name ?? "U");
 
     const profileContent = (
         <>
@@ -472,7 +446,7 @@ export function SettingsPageClient() {
                         Profile Information
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="density-gap-section">
                     <div className="flex items-center gap-4">
                         <div className="relative h-20 w-20 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-accent flex items-center justify-center text-2xl font-bold text-primary-foreground">
                             {profile?.avatar_url ? (
@@ -505,7 +479,7 @@ export function SettingsPageClient() {
                                 disabled={avatarUploading}
                             >
                                 {avatarUploading ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
                                 ) : (
                                     <Upload className="h-4 w-4" />
                                 )}
@@ -528,7 +502,7 @@ export function SettingsPageClient() {
                         />
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                         <div className="space-y-2">
                             <label htmlFor="profile-name" className="text-sm font-medium">
                                 Display Name
@@ -581,7 +555,7 @@ export function SettingsPageClient() {
                     </p>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 density-gap-card">
                         <div className="space-y-2">
                             <label htmlFor="legal-first" className="text-sm font-medium">
                                 Legal First Name
@@ -613,7 +587,7 @@ export function SettingsPageClient() {
                             />
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card mt-4">
                         <div className="space-y-2">
                             <label htmlFor="preferred-name" className="text-sm font-medium">
                                 Preferred Name
@@ -649,7 +623,7 @@ export function SettingsPageClient() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                         <div className="space-y-2">
                             <label htmlFor="profile-phone" className="text-sm font-medium">
                                 Phone
@@ -681,7 +655,7 @@ export function SettingsPageClient() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 density-gap-card">
                         <div className="space-y-2">
                             <label htmlFor="mail-street1" className="text-sm font-medium">
                                 Street Address
@@ -702,7 +676,7 @@ export function SettingsPageClient() {
                                 onChange={(e) => setMailStreet2(e.target.value)}
                             />
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 density-gap-card">
                             <div className="space-y-2">
                                 <label htmlFor="mail-city" className="text-sm font-medium">
                                     City
@@ -756,7 +730,7 @@ export function SettingsPageClient() {
                         Billing Address
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="density-gap-section">
                     <label className="flex items-center gap-2 text-sm">
                         <input
                             type="checkbox"
@@ -767,7 +741,7 @@ export function SettingsPageClient() {
                         Same as mailing address
                     </label>
                     {!billingSameAsMailing && (
-                        <div className="grid grid-cols-1 gap-4">
+                        <div className="grid grid-cols-1 density-gap-card">
                             <div className="space-y-2">
                                 <label htmlFor="bill-street1" className="text-sm font-medium">
                                     Street Address
@@ -788,7 +762,7 @@ export function SettingsPageClient() {
                                     onChange={(e) => setBillStreet2(e.target.value)}
                                 />
                             </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 density-gap-card">
                                 <div className="space-y-2">
                                     <label htmlFor="bill-city" className="text-sm font-medium">
                                         City
@@ -848,7 +822,7 @@ export function SettingsPageClient() {
                     </p>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                         <div className="space-y-2">
                             <label htmlFor="ec-name" className="text-sm font-medium">
                                 Full Name
@@ -934,7 +908,7 @@ export function SettingsPageClient() {
                     </p>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                         <div className="space-y-2">
                             <label htmlFor="tp-seat" className="text-sm font-medium">
                                 Seat Preference
@@ -1003,7 +977,7 @@ export function SettingsPageClient() {
                     className="shadow-lg"
                 >
                     {profileSaving ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
                     ) : (
                         <Save className="h-4 w-4" />
                     )}
@@ -1037,17 +1011,44 @@ export function SettingsPageClient() {
                 <CardHeader>
                     <CardTitle>Organization Details</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CardContent className="density-gap-section">
+                    <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                         <div className="space-y-2">
                             <label htmlFor="org-name" className="text-sm font-medium">
                                 Organization Name
                             </label>
-                            <Input
-                                id="org-name"
-                                value={activeOrg?.organizations?.name ?? "—"}
-                                disabled
-                            />
+                            <div className="flex gap-2">
+                                <Input
+                                    id="org-name"
+                                    value={
+                                        orgNameDirty
+                                            ? editOrgName
+                                            : (activeOrg?.organizations?.name ?? "")
+                                    }
+                                    onChange={(e) => {
+                                        setEditOrgName(e.target.value);
+                                        setOrgNameDirty(true);
+                                    }}
+                                />
+                                {orgNameDirty && (
+                                    <Button
+                                        size="sm"
+                                        disabled={updateOrg.isPending || !editOrgName.trim()}
+                                        onClick={() => {
+                                            if (!activeOrg?.organization_id) return;
+                                            updateOrg.mutate(
+                                                {
+                                                    id: activeOrg.organization_id,
+                                                    name: editOrgName.trim(),
+                                                },
+                                                { onSuccess: () => setOrgNameDirty(false) }
+                                            );
+                                        }}
+                                    >
+                                        <Save className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <label htmlFor="org-role" className="text-sm font-medium">
@@ -1167,7 +1168,7 @@ export function SettingsPageClient() {
             <CardHeader>
                 <CardTitle>Notification Preferences</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="density-gap-section">
                 {/* Category settings from framework */}
                 {!settingsLoading && (
                     <SettingsCategorySection
@@ -1234,7 +1235,7 @@ export function SettingsPageClient() {
                 <CardHeader>
                     <CardTitle>Change Password</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="density-gap-section">
                     <div className="space-y-2">
                         <label htmlFor="current-password" className="text-sm font-medium">
                             Current Password
@@ -1363,7 +1364,7 @@ export function SettingsPageClient() {
                 <CardHeader>
                     <CardTitle>Theme Preferences</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="density-gap-page">
                     <div>
                         <p className="text-sm font-medium mb-3">Color Mode</p>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1457,7 +1458,7 @@ export function SettingsPageClient() {
                                     }`}
                                     aria-pressed={currentDensity === densityKey}
                                 >
-                                    {densityKey.charAt(0).toUpperCase() + densityKey.slice(1)}
+                                    {capitalize(densityKey)}
                                 </button>
                             ))}
                         </div>
@@ -1469,7 +1470,7 @@ export function SettingsPageClient() {
                 <CardHeader>
                     <CardTitle>Shape & Typography</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="density-gap-page">
                     <div>
                         <p className="text-sm font-medium mb-3">Border Radius</p>
                         <div className="flex gap-2">
@@ -1578,7 +1579,7 @@ export function SettingsPageClient() {
                 <CardHeader>
                     <CardTitle>Effects & Motion</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="density-gap-page">
                     <div>
                         <p className="text-sm font-medium mb-3">Shadow Intensity</p>
                         <div className="flex gap-2">
@@ -1799,7 +1800,7 @@ function TransferOwnershipCard() {
             <CardHeader>
                 <CardTitle className="text-destructive">Transfer Ownership</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="density-gap-section">
                 <p className="text-sm text-muted-foreground">
                     Transfer organization ownership to another internal team member. The new owner
                     will gain full administrative control including billing, organization settings,
@@ -1857,7 +1858,7 @@ function TransferOwnershipCard() {
                             disabled={!canSubmit}
                         >
                             {transferring ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
                             ) : (
                                 <ExternalLink className="h-4 w-4" />
                             )}
@@ -1974,7 +1975,7 @@ function UsernameCard() {
                     Username
                 </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="density-gap-section">
                 {!editing ? (
                     <div className="flex items-center justify-between">
                         <div>
@@ -2040,7 +2041,7 @@ function UsernameCard() {
                                 />
                                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
                                     {availability === "checking" && (
-                                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                        <Loader2 className="h-4 w-4 motion-safe:animate-spin text-muted-foreground" />
                                     )}
                                     {availability === "available" && (
                                         <CheckCircle2 className="h-4 w-4 text-success" />
@@ -2092,7 +2093,7 @@ function UsernameCard() {
                                 disabled={saving || availability !== "available"}
                             >
                                 {saving ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
                                 ) : (
                                     <Save className="h-4 w-4" />
                                 )}

@@ -25,6 +25,7 @@ import {
     Pause,
     Play,
     Plus,
+    Trash2,
     Zap,
 } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
@@ -121,6 +122,9 @@ function formatDateTime(dateStr: string): string {
 const AUTOMATIONS_TAB_VALUES = ["builder", "logs"] as const;
 
 export function AutomationsPageClient() {
+    const createAutomation = useCreateAutomation();
+    const updateAutomation = useUpdateAutomation();
+    const deleteAutomation = useDeleteAutomation();
     const [createOpen, openCreate, closeCreate] = useCreateAction();
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -133,9 +137,6 @@ export function AutomationsPageClient() {
 
     const { data: sbAutomations, isLoading } = useAutomations();
     const { data: sbLogs } = useAutomationLogs();
-    const _createAutomation = useCreateAutomation();
-    const _updateAutomation = useUpdateAutomation();
-    const _deleteAutomation = useDeleteAutomation();
 
     const automations: AutomationListItem[] = (sbAutomations ?? []).map(
         (a: Record<string, unknown>) => ({
@@ -192,7 +193,7 @@ export function AutomationsPageClient() {
 
     const contentSlot = (
         <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <StatCard title="Total Automations" value={automations.length} icon={Zap} />
                 <StatCard
                     title="Active"
@@ -269,7 +270,7 @@ export function AutomationsPageClient() {
                         }
                     />
                 ) : (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         {filtered.map((automation, i) => {
                             const statusCfg = WORKFLOW_STATUS_MAP[automation.status];
                             const triggerCfg = TRIGGER_LABELS[automation.trigger];
@@ -343,11 +344,11 @@ export function AutomationsPageClient() {
                                                     <p className="text-sm font-bold">
                                                         {automation.executionCount}
                                                     </p>
-                                                    <p className="text-[10px] text-muted-foreground">
+                                                    <p className="density-caption text-muted-foreground">
                                                         executions
                                                     </p>
                                                     {automation.lastExecuted && (
-                                                        <p className="text-[10px] text-muted-foreground">
+                                                        <p className="density-caption text-muted-foreground">
                                                             Last:{" "}
                                                             {formatDate(automation.lastExecuted)}
                                                         </p>
@@ -358,6 +359,18 @@ export function AutomationsPageClient() {
                                                                 variant="outline"
                                                                 size="sm"
                                                                 aria-label={`Pause automation: ${automation.name}`}
+                                                                disabled={
+                                                                    updateAutomation.isPending
+                                                                }
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    updateAutomation.mutate({
+                                                                        id: automation.id,
+                                                                        status: "paused",
+                                                                    } as Parameters<
+                                                                        typeof updateAutomation.mutate
+                                                                    >[0]);
+                                                                }}
                                                             >
                                                                 <Pause className="h-3 w-3" />
                                                             </Button>
@@ -366,10 +379,42 @@ export function AutomationsPageClient() {
                                                                 variant="outline"
                                                                 size="sm"
                                                                 aria-label={`Enable automation: ${automation.name}`}
+                                                                disabled={
+                                                                    updateAutomation.isPending
+                                                                }
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    updateAutomation.mutate({
+                                                                        id: automation.id,
+                                                                        status: "active",
+                                                                    } as Parameters<
+                                                                        typeof updateAutomation.mutate
+                                                                    >[0]);
+                                                                }}
                                                             >
                                                                 <Play className="h-3 w-3" />
                                                             </Button>
                                                         )}
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            aria-label={`Delete automation: ${automation.name}`}
+                                                            disabled={deleteAutomation.isPending}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (
+                                                                    window.confirm(
+                                                                        `Delete automation "${automation.name}"? This cannot be undone.`
+                                                                    )
+                                                                ) {
+                                                                    deleteAutomation.mutate(
+                                                                        automation.id
+                                                                    );
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Trash2 className="h-3 w-3" />
+                                                        </Button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -464,7 +509,7 @@ export function AutomationsPageClient() {
                                                             <Badge variant="ghost">
                                                                 {log.entityType}
                                                             </Badge>
-                                                            <span className="text-[10px] text-muted-foreground">
+                                                            <span className="density-caption text-muted-foreground">
                                                                 {log.duration}
                                                             </span>
                                                         </div>
@@ -479,13 +524,13 @@ export function AutomationsPageClient() {
                                                         </p>
                                                         {log.actionsRun.length > 0 && (
                                                             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                                                                <span className="text-[10px] text-muted-foreground">
+                                                                <span className="density-caption text-muted-foreground">
                                                                     Actions:
                                                                 </span>
                                                                 {log.actionsRun.map((action, j) => (
                                                                     <span
                                                                         key={j}
-                                                                        className="text-[10px] rounded bg-secondary/50 px-1.5 py-0.5 font-medium"
+                                                                        className="density-caption rounded bg-secondary/50 px-1.5 py-0.5 font-medium"
                                                                     >
                                                                         {action}
                                                                     </span>
@@ -523,6 +568,11 @@ export function AutomationsPageClient() {
                 config={CREATE_AUTOMATION_CONFIG}
                 open={createOpen}
                 onClose={closeCreate}
+                onSubmit={async (values) => {
+                    await createAutomation.mutateAsync(
+                        values as Parameters<typeof createAutomation.mutateAsync>[0]
+                    );
+                }}
             />
         </>
     );

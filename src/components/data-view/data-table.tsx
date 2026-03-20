@@ -678,7 +678,7 @@ export function DataTable<T extends object>({
                                                                 </span>
                                                                 <Badge
                                                                     variant="secondary"
-                                                                    className="text-[10px] h-4 px-1.5"
+                                                                    className="density-caption h-4 px-1.5"
                                                                 >
                                                                     {groupRows.length}
                                                                 </Badge>

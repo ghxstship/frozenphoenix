@@ -59,7 +59,7 @@ const approvalColumns: ColumnDef<Approval>[] = [
                         ? "warning"
                         : "ghost";
             return (
-                <Badge variant={variant} className="text-[10px]">
+                <Badge variant={variant} className="density-caption">
                     {v}
                 </Badge>
             );
@@ -260,7 +260,7 @@ export function ApprovalsPageClient() {
     const contentSlot = (
         <>
             {/* Summary Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <StatCard title="Pending" value={pending.length} icon={Clock} />
                 <StatCard title="Overdue" value={overdue.length} icon={AlertTriangle} />
                 <StatCard title="Approved" value={approved.length} icon={CheckCircle2} />
@@ -302,7 +302,7 @@ export function ApprovalsPageClient() {
                                         {/* Timeline dot and connector */}
                                         <div className="flex flex-col items-center shrink-0 w-6">
                                             <div
-                                                className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold ${statusColors[stage.status]}`}
+                                                className={`h-6 w-6 rounded-full flex items-center justify-center density-caption font-bold ${statusColors[stage.status]}`}
                                             >
                                                 {stage.status === "completed" ? (
                                                     <CheckCircle2 className="h-3.5 w-3.5" />
@@ -333,7 +333,7 @@ export function ApprovalsPageClient() {
                                                                   ? "default"
                                                                   : "ghost"
                                                         }
-                                                        className="text-[10px]"
+                                                        className="density-caption"
                                                     >
                                                         {stage.status}
                                                     </Badge>
@@ -348,7 +348,7 @@ export function ApprovalsPageClient() {
                                                 {stage.description}
                                             </p>
                                             {stage.completedAt && (
-                                                <p className="text-[10px] text-success mt-1">
+                                                <p className="density-caption text-success mt-1">
                                                     Completed{" "}
                                                     {formatDate(stage.completedAt, "compact")}
                                                 </p>
@@ -403,7 +403,7 @@ export function ApprovalsPageClient() {
 
                     {/* Bulk Action Bar */}
                     {selectedIds.size > 0 && (
-                        <div className="sticky top-0 z-20 flex items-center justify-between gap-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5 animate-fade-in">
+                        <div className="sticky top-0 z-20 flex items-center justify-between gap-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5 motion-safe:animate-fade-in">
                             <span className="text-sm font-medium">
                                 {selectedIds.size} approval{selectedIds.size > 1 ? "s" : ""}{" "}
                                 selected
@@ -424,7 +424,7 @@ export function ApprovalsPageClient() {
                                     disabled={bulkProcessing}
                                 >
                                     {bulkProcessing ? (
-                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" />
                                     ) : (
                                         <XCircle className="h-3.5 w-3.5" />
                                     )}
@@ -436,7 +436,7 @@ export function ApprovalsPageClient() {
                                     disabled={bulkProcessing}
                                 >
                                     {bulkProcessing ? (
-                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" />
                                     ) : (
                                         <CheckCircle2 className="h-3.5 w-3.5" />
                                     )}
@@ -470,7 +470,7 @@ export function ApprovalsPageClient() {
                                 description="No approvals match your current filters"
                             />
                         ) : (
-                            <div className="space-y-4">
+                            <div className="density-gap-section">
                                 {approvals.map((approval, i) => {
                                     const deadlineDate = new Date(approval.deadline);
                                     const now = new Date();
@@ -571,7 +571,7 @@ export function ApprovalsPageClient() {
                                                                     </strong>{" "}
                                                                     unless approved immediately.
                                                                 </p>
-                                                                <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+                                                                <div className="mt-2 flex items-center gap-2 density-caption text-muted-foreground">
                                                                     <Calendar className="h-3 w-3" />
                                                                     <span>
                                                                         Deadline was:{" "}
@@ -631,7 +631,7 @@ export function ApprovalsPageClient() {
                                                                 disabled={updateApproval.isPending}
                                                             >
                                                                 {updateApproval.isPending ? (
-                                                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                                    <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" />
                                                                 ) : (
                                                                     <CheckCircle2 className="h-3.5 w-3.5" />
                                                                 )}

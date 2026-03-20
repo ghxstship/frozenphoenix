@@ -23,7 +23,7 @@ export function NewInvoicePageClient() {
     const createInvoice = useCreateClientInvoice();
     const [client, setClient] = useState({ companyName: "", projectName: "", poNumber: "" });
     const [lineItems, setLineItems] = useState<LineItem[]>([
-        { id: "1", description: "", quantity: 1, unitPrice: 0 },
+        { id: crypto.randomUUID(), description: "", quantity: 1, unitPrice: 0 },
     ]);
     const [terms, setTerms] = useState({
         paymentTerms: "Net 30",
@@ -35,7 +35,7 @@ export function NewInvoicePageClient() {
     const addLineItem = () =>
         setLineItems([
             ...lineItems,
-            { id: String(Date.now()), description: "", quantity: 1, unitPrice: 0 },
+            { id: crypto.randomUUID(), description: "", quantity: 1, unitPrice: 0 },
         ]);
     const removeLineItem = (id: string) => setLineItems(lineItems.filter((li) => li.id !== id));
     const updateLineItem = (id: string, field: keyof LineItem, value: string | number) =>
@@ -55,7 +55,6 @@ export function NewInvoicePageClient() {
         onCancel: () => router.push("/invoices"),
         onComplete: async () => {
             await createInvoice.mutateAsync({
-                invoice_number: `INV-${Date.now().toString(36).toUpperCase()}`,
                 title: client.companyName,
                 notes: terms.notes,
                 due_date: new Date(Date.now() + Number(terms.dueInDays) * 86400000)
@@ -71,7 +70,7 @@ export function NewInvoicePageClient() {
                 label: "Client & Project",
                 icon: Building2,
                 content: (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <CardTitle className="text-base flex items-center gap-2">
                             <Building2 className="h-4 w-4" />
                             Client & Project Details
@@ -115,7 +114,7 @@ export function NewInvoicePageClient() {
                 label: "Line Items",
                 icon: FileText,
                 content: (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-base flex items-center gap-2">
                                 <FileText className="h-4 w-4" />
@@ -227,12 +226,12 @@ export function NewInvoicePageClient() {
                 label: "Terms & Notes",
                 icon: DollarSign,
                 content: (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <CardTitle className="text-base flex items-center gap-2">
                             <DollarSign className="h-4 w-4" />
                             Payment Terms & Notes
                         </CardTitle>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 density-gap-card">
                             <div>
                                 <label className="text-sm font-medium mb-1 block">
                                     Payment Terms
@@ -283,21 +282,21 @@ export function NewInvoicePageClient() {
                 label: "Review",
                 icon: CheckCircle2,
                 content: (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <CardTitle className="text-base flex items-center gap-2">
                             <CheckCircle2 className="h-4 w-4" />
                             Review Invoice
                         </CardTitle>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 density-gap-card">
                             <div className="p-3 rounded-lg bg-secondary/30">
-                                <p className="text-[10px] text-muted-foreground">Client</p>
+                                <p className="density-caption text-muted-foreground">Client</p>
                                 <p className="text-sm font-semibold">{client.companyName || "—"}</p>
                                 <p className="text-xs text-muted-foreground mt-1">
                                     {client.projectName}
                                 </p>
                             </div>
                             <div className="p-3 rounded-lg bg-secondary/30">
-                                <p className="text-[10px] text-muted-foreground">Terms</p>
+                                <p className="density-caption text-muted-foreground">Terms</p>
                                 <p className="text-sm font-semibold">{terms.paymentTerms}</p>
                                 <p className="text-xs text-muted-foreground mt-1">
                                     Due in {terms.dueInDays} days · Tax {terms.taxRate}%

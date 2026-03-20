@@ -1,14 +1,11 @@
 "use client";
 
-import { LoadingState } from "@/components/layouts/loading-state";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CREATE_SHIFT_CONFIG } from "@/config/create-entity-configs";
-import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
 import { MetricCard } from "@/components/ui/metric-card";
 import { HeatmapGrid } from "@/components/ui/heatmap-grid";
 import { GanttChart, type GanttTask } from "@/components/ui/gantt-chart";
@@ -33,8 +30,9 @@ import {
     Users,
 } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { PermissionGate } from "@/components/permission-guard";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
+import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
+import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 
 interface Shift {
     id: string;
@@ -162,114 +160,123 @@ export function SchedulingPageClient() {
 
     const isLoading = loadingCrew || loadingProjects || loadingShifts;
 
-    if (isLoading) {
-        return <LoadingState />;
-    }
+    const weekDays = useMemo(
+        () =>
+            Array.from({ length: 7 }, (_, i) => {
+                const date = new Date(currentWeekStart);
+                date.setDate(date.getDate() + i);
+                return date;
+            }),
+        [currentWeekStart]
+    );
 
-    const weekDays = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date(currentWeekStart);
-        date.setDate(date.getDate() + i);
-        return date;
-    });
-
-    const navigateWeek = (direction: number) => {
-        const newDate = new Date(currentWeekStart);
-        newDate.setDate(newDate.getDate() + direction * 7);
-        setCurrentWeekStart(newDate);
-    };
+    const navigateWeek = useCallback(
+        (direction: number) => {
+            const newDate = new Date(currentWeekStart);
+            newDate.setDate(newDate.getDate() + direction * 7);
+            setCurrentWeekStart(newDate);
+        },
+        [currentWeekStart]
+    );
 
     const formatDateKey = (date: Date) => date.toISOString().split("T")[0];
 
-    const getShiftsForDateAndCrew = (date: Date, crewId: string) => {
-        const dateKey = formatDateKey(date);
-        return shifts.filter(
-            (s) =>
-                s.date === dateKey &&
-                s.crewMemberId === crewId &&
-                (selectedProject === "all" || s.projectId === selectedProject)
-        );
-    };
+    const getShiftsForDateAndCrew = useCallback(
+        (date: Date, crewId: string) => {
+            const dateKey = formatDateKey(date);
+            return shifts.filter(
+                (s) =>
+                    s.date === dateKey &&
+                    s.crewMemberId === crewId &&
+                    (selectedProject === "all" || s.projectId === selectedProject)
+            );
+        },
+        [shifts, selectedProject]
+    );
 
-    const filteredCrew =
-        selectedProject === "all"
-            ? crew
-            : crew.filter((c) =>
-                  shifts.some((s) => s.crewMemberId === c.id && s.projectId === selectedProject)
-              );
+    const filteredCrew = useMemo(
+        () =>
+            selectedProject === "all"
+                ? crew
+                : crew.filter((c) =>
+                      shifts.some((s) => s.crewMemberId === c.id && s.projectId === selectedProject)
+                  ),
+        [crew, shifts, selectedProject]
+    );
 
-    const totalScheduledHours = shifts.reduce((sum, shift) => {
-        const start = parseInt(shift.startTime.split(":")[0] ?? "0");
-        const end = parseInt(shift.endTime.split(":")[0] ?? "0");
-        return sum + (end - start);
-    }, 0);
+    const totalScheduledHours = useMemo(
+        () =>
+            shifts.reduce((sum, shift) => {
+                const start = parseInt(shift.startTime.split(":")[0] ?? "0");
+                const end = parseInt(shift.endTime.split(":")[0] ?? "0");
+                return sum + (end - start);
+            }, 0),
+        [shifts]
+    );
 
-    const statusConfig = {
-        scheduled: { label: "Scheduled", variant: "ghost" as const, icon: Clock },
-        checked_in: { label: "Checked In", variant: "success" as const, icon: CheckCircle2 },
-        checked_out: { label: "Checked Out", variant: "info" as const, icon: CheckCircle2 },
-        no_show: { label: "No Show", variant: "destructive" as const, icon: AlertTriangle },
-    };
+    const statusConfig = useMemo(
+        () => ({
+            scheduled: { label: "Scheduled", variant: "ghost" as const, icon: Clock },
+            checked_in: { label: "Checked In", variant: "success" as const, icon: CheckCircle2 },
+            checked_out: { label: "Checked Out", variant: "info" as const, icon: CheckCircle2 },
+            no_show: { label: "No Show", variant: "destructive" as const, icon: AlertTriangle },
+        }),
+        []
+    );
 
-    return (
-        <>
-            <PermissionGate resource="scheduling" action="read">
-                <div className="space-y-6 motion-safe:animate-fade-in">
-                    <PageHeader
-                        title="Crew Scheduling"
-                        description="Shift management and labor allocation across productions"
+    const config: DashboardPageConfig = useMemo(
+        () => ({
+            resource: "scheduling",
+            action: "read",
+            title: "Crew Scheduling",
+            description: "Shift management and labor allocation across productions",
+            searchable: false,
+            headerActions: (
+                <div className="flex items-center gap-2">
+                    <select
+                        value={selectedProject}
+                        onChange={(e) => setSelectedProject(e.target.value)}
+                        className="h-8 rounded-lg border border-input bg-background px-2 text-xs"
                     >
-                        <div className="flex items-center gap-2">
-                            <select
-                                value={selectedProject}
-                                onChange={(e) => setSelectedProject(e.target.value)}
-                                className="h-8 rounded-lg border border-input bg-background px-2 text-xs"
-                            >
-                                <option value="all">All Projects</option>
-                                {projects.map((p) => (
-                                    <option key={p.id} value={p.id}>
-                                        {p.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <Button size="sm" onClick={openCreate}>
-                                <Plus className="h-4 w-4" />
-                                Add Shift
-                            </Button>
-                        </div>
-                    </PageHeader>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <StatCard title="Crew Scheduled" value={filteredCrew.length} icon={Users} />
-                        <StatCard
-                            title="Total Hours This Week"
-                            value={totalScheduledHours}
-                            icon={Clock}
-                        />
-                        <StatCard
-                            title="Currently On-Site"
-                            value={shifts.filter((s) => s.status === "checked_in").length}
-                            icon={CheckCircle2}
-                        />
-                        {(() => {
-                            const util = utilizationData ?? [];
-                            const avgUtil =
-                                util.length > 0
-                                    ? Math.round(
-                                          util.reduce((s, u) => s + u.utilization_percent_week, 0) /
-                                              util.length
-                                      )
-                                    : 0;
-                            return (
-                                <StatCard
-                                    title="Avg Utilization"
-                                    value={`${avgUtil}%`}
-                                    icon={BarChart3}
-                                    change={avgUtil > 80 ? 5 : -3}
-                                    description="this week"
-                                />
-                            );
-                        })()}
-                    </div>
-
+                        <option value="all">All Projects</option>
+                        {projects.map((p) => (
+                            <option key={p.id} value={p.id}>
+                                {p.name}
+                            </option>
+                        ))}
+                    </select>
+                    <Button size="sm" onClick={openCreate}>
+                        <Plus className="h-4 w-4" />
+                        Add Shift
+                    </Button>
+                </div>
+            ),
+            stats: [
+                { label: "Crew Scheduled", icon: Users, value: filteredCrew.length },
+                { label: "Total Hours This Week", icon: Clock, value: totalScheduledHours },
+                {
+                    label: "Currently On-Site",
+                    icon: CheckCircle2,
+                    value: shifts.filter((s) => s.status === "checked_in").length,
+                },
+                {
+                    label: "Avg Utilization",
+                    icon: BarChart3,
+                    compute: () => {
+                        const util = utilizationData ?? [];
+                        const avgUtil =
+                            util.length > 0
+                                ? Math.round(
+                                      util.reduce((s, u) => s + u.utilization_percent_week, 0) /
+                                          util.length
+                                  )
+                                : 0;
+                        return `${avgUtil}%`;
+                    },
+                },
+            ],
+            contentSlot: (
+                <>
                     {/* View Toggle */}
                     <div className="flex items-center justify-between">
                         <SegmentedControl
@@ -330,7 +337,7 @@ export function SchedulingPageClient() {
                                     );
 
                                     return (
-                                        <div className="space-y-4">
+                                        <div className="density-gap-section">
                                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                                 <MetricCard
                                                     label="Over-Allocated"
@@ -484,7 +491,7 @@ export function SchedulingPageClient() {
                                                                     <p className="text-xs font-medium">
                                                                         {crew.name}
                                                                     </p>
-                                                                    <p className="text-[10px] text-muted-foreground">
+                                                                    <p className="density-caption text-muted-foreground">
                                                                         {crew.role}
                                                                     </p>
                                                                 </div>
@@ -519,10 +526,10 @@ export function SchedulingPageClient() {
                                                                                 key={shift.id}
                                                                                 className="p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors cursor-pointer mb-1"
                                                                             >
-                                                                                <p className="text-[10px] font-medium truncate">
+                                                                                <p className="density-caption font-medium truncate">
                                                                                     {project?.name}
                                                                                 </p>
-                                                                                <p className="text-[9px] text-muted-foreground">
+                                                                                <p className="density-caption text-muted-foreground">
                                                                                     {
                                                                                         shift.startTime
                                                                                     }{" "}
@@ -533,7 +540,7 @@ export function SchedulingPageClient() {
                                                                                     variant={
                                                                                         config.variant
                                                                                     }
-                                                                                    className="text-[8px] mt-1 px-1"
+                                                                                    className="density-micro mt-1 px-1"
                                                                                 >
                                                                                     {config.label}
                                                                                 </Badge>
@@ -542,7 +549,7 @@ export function SchedulingPageClient() {
                                                                     })}
                                                                     {shifts.length === 0 && (
                                                                         <div className="h-16 flex items-center justify-center">
-                                                                            <span className="text-[10px] text-muted-foreground/50">
+                                                                            <span className="density-caption text-muted-foreground/50">
                                                                                 —
                                                                             </span>
                                                                         </div>
@@ -559,8 +566,35 @@ export function SchedulingPageClient() {
                             </CardContent>
                         </Card>
                     )}
-                </div>
-            </PermissionGate>
+                </>
+            ),
+        }),
+        [
+            activeView,
+            setActiveView,
+            selectedProject,
+            projects,
+            openCreate,
+            filteredCrew,
+            totalScheduledHours,
+            shifts,
+            utilizationData,
+            ganttTasks,
+            ganttDateRange,
+            weekDays,
+            navigateWeek,
+            getShiftsForDateAndCrew,
+            statusConfig,
+        ]
+    );
+
+    return (
+        <>
+            <OperationalDashboardShell
+                config={config}
+                data={shifts as unknown as Record<string, unknown>[]}
+                isLoading={isLoading}
+            />
             <CreateEntityDialog
                 config={CREATE_SHIFT_CONFIG}
                 open={createOpen}

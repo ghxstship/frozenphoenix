@@ -16,11 +16,7 @@ interface ChannelBrowserProps {
     className?: string;
 }
 
-export function ChannelBrowser({
-    onJoinChannel,
-    onSelectChannel,
-    className,
-}: ChannelBrowserProps) {
+export function ChannelBrowser({ onJoinChannel, onSelectChannel, className }: ChannelBrowserProps) {
     const [searchQuery, setSearchQuery] = React.useState("");
     const [categoryFilter, setCategoryFilter] = React.useState<string | null>(null);
 
@@ -38,14 +34,11 @@ export function ChannelBrowser({
             const q = searchQuery.toLowerCase();
             result = result.filter(
                 (c: ConversationListItem) =>
-                    c.name?.toLowerCase().includes(q) ||
-                    c.description?.toLowerCase().includes(q)
+                    c.name?.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q)
             );
         }
         if (categoryFilter) {
-            result = result.filter(
-                (c: ConversationListItem) => c.category === categoryFilter
-            );
+            result = result.filter((c: ConversationListItem) => c.category === categoryFilter);
         }
         return result;
     }, [channels, searchQuery, categoryFilter]);
@@ -117,8 +110,13 @@ export function ChannelBrowser({
                                             {channel.name || "Unnamed channel"}
                                         </span>
                                         {channel.category && (
-                                            <Badge variant="outline" className="text-[10px] h-4">
-                                                {CHANNEL_CATEGORY_LABELS[channel.category as ChannelCategory] || channel.category}
+                                            <Badge
+                                                variant="outline"
+                                                className="density-caption h-4"
+                                            >
+                                                {CHANNEL_CATEGORY_LABELS[
+                                                    channel.category as ChannelCategory
+                                                ] || channel.category}
                                             </Badge>
                                         )}
                                     </div>

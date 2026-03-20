@@ -71,7 +71,7 @@ function CallSheetCrewTab({ callSheetId }: { callSheetId: string }) {
         return (
             <Card>
                 <CardContent className="py-8 flex justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-5 w-5 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -130,7 +130,7 @@ function CallSheetCrewTab({ callSheetId }: { callSheetId: string }) {
                                         {row.crew_members.phone}
                                     </span>
                                 )}
-                                <Badge variant="ghost" className="text-[10px]">
+                                <Badge variant="ghost" className="density-caption">
                                     #{row.display_order ?? 0}
                                 </Badge>
                             </div>
@@ -315,7 +315,7 @@ export function CallSheetDetailClient({
                                             {entry.time}
                                         </span>
                                         <span className="text-sm flex-1">{entry.activity}</span>
-                                        <Badge variant="ghost" className="text-[10px] shrink-0">
+                                        <Badge variant="ghost" className="density-caption shrink-0">
                                             {entry.department}
                                         </Badge>
                                     </div>

@@ -152,7 +152,7 @@ export function VoiceMessageRecorder({
     if (state === "requesting") {
         return (
             <div className={cn("flex items-center gap-2 px-3 py-1.5", className)}>
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                <Loader2 className="h-4 w-4 motion-safe:animate-spin text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">Requesting microphone...</span>
             </div>
         );

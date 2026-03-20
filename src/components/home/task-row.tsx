@@ -45,19 +45,21 @@ export function TaskRow({ task }: { task: TaskRowItem }) {
                     {task.title}
                 </p>
                 {task.projectName && (
-                    <p className="text-[10px] text-muted-foreground truncate">{task.projectName}</p>
+                    <p className="density-caption text-muted-foreground truncate">
+                        {task.projectName}
+                    </p>
                 )}
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
-                <Badge variant={statusCfg?.variant ?? "ghost"} className="text-[9px]">
+                <Badge variant={statusCfg?.variant ?? "ghost"} className="density-caption">
                     {statusCfg?.label ?? task.status}
                 </Badge>
-                <Badge variant={priorityCfg?.variant ?? "ghost"} className="text-[9px]">
+                <Badge variant={priorityCfg?.variant ?? "ghost"} className="density-caption">
                     {priorityCfg?.label ?? task.priority}
                 </Badge>
                 {due && (
                     <span
-                        className={`text-[10px] tabular-nums ${
+                        className={`density-caption tabular-nums ${
                             due.overdue ? "text-destructive font-semibold" : "text-muted-foreground"
                         }`}
                     >

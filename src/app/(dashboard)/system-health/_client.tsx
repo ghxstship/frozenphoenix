@@ -15,12 +15,12 @@ import {
     Database,
     Gauge,
     HardDrive,
-    Inbox,
     Shield,
     Users,
     XCircle,
     Zap,
 } from "lucide-react";
+import { EmptyRow } from "@/components/ui/empty-row";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import {
     useDomainEvents,
@@ -94,15 +94,6 @@ const slaStatusColor = (status: string) => {
             return "text-muted-foreground";
     }
 };
-
-function EmptyRow({ message }: { message: string }) {
-    return (
-        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-            <Inbox className="h-8 w-8 mb-2 opacity-50" />
-            <p className="text-sm">{message}</p>
-        </div>
-    );
-}
 
 function formatMinutes(m: number): string {
     if (m < 60) return `${m} min`;
@@ -191,7 +182,7 @@ export function SystemHealthPageClient() {
 
     const contentSlot = (
         <div className="density-gap-page">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 density-gap-card">
                 {/* Service Status */}
                 <Card>
                     <CardHeader>
@@ -241,7 +232,7 @@ export function SystemHealthPageClient() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
+                        <div className="density-gap-section">
                             {slaMetrics.length === 0 && (
                                 <EmptyRow message="No SLA definitions configured" />
                             )}
@@ -316,7 +307,7 @@ export function SystemHealthPageClient() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 density-gap-card">
                         {resilienceTargets.length === 0 && (
                             <EmptyRow message="No resilience targets configured" />
                         )}
@@ -356,7 +347,7 @@ export function SystemHealthPageClient() {
             </Card>
 
             {/* System Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <StatCard
                     title="Migrations"
                     value={22}

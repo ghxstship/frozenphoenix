@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { cn, getInitials } from "@/lib/utils";
+import { capitalize, cn, getInitials } from "@/lib/utils";
 import { NotificationBell } from "@/components/notifications";
 import { createClient } from "@/lib/supabase/client";
 import { useSidebar } from "@/hooks/use-sidebar";
@@ -131,7 +131,9 @@ function TopbarIconButton({
     const tooltipContent = shortcut ? (
         <span className="flex items-center gap-2">
             {label}
-            <kbd className="text-[10px] font-mono bg-background/20 px-1 rounded">{shortcut}</kbd>
+            <kbd className="density-caption font-mono bg-background/20 px-1 rounded">
+                {shortcut}
+            </kbd>
         </span>
     ) : (
         label
@@ -149,7 +151,7 @@ function TopbarIconButton({
         <>
             <Icon className={ICON_SIZES.sm} />
             {badge !== undefined && badge > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-destructive text-[10px] text-destructive-foreground flex items-center justify-center font-bold px-1">
+                <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-destructive density-caption text-destructive-foreground flex items-center justify-center font-bold px-1">
                     {badge > 9 ? "9+" : badge}
                 </span>
             )}
@@ -256,7 +258,7 @@ function EnvironmentBadge() {
     return (
         <Badge
             variant={variant as "warning" | "info"}
-            className="text-[9px] px-1.5 py-0 h-5 hidden sm:flex"
+            className="density-caption px-1.5 py-0 h-5 hidden sm:flex"
         >
             {label}
         </Badge>
@@ -615,7 +617,7 @@ function QuickCreateMenu({ userRole }: { userRole: PermissionLevel }) {
                 {visibleGroups.map((group, gi) => (
                     <React.Fragment key={group.label}>
                         {gi > 0 && <DropdownMenuSeparator />}
-                        <DropdownMenuLabel className="text-[10px] font-medium text-muted-foreground/70 uppercase tracking-wider">
+                        <DropdownMenuLabel className="density-caption font-medium text-muted-foreground/70 uppercase tracking-wider">
                             {group.label}
                         </DropdownMenuLabel>
                         {group.actions.map((action) => (
@@ -654,7 +656,7 @@ function MessagesMenu() {
         >
             <MessageSquare className={ICON_SIZES.sm} />
             {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-destructive text-[10px] text-destructive-foreground flex items-center justify-center font-bold px-1">
+                <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-destructive density-caption text-destructive-foreground flex items-center justify-center font-bold px-1">
                     {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
             )}
@@ -695,7 +697,9 @@ function HelpMenu() {
                 >
                     <Keyboard className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
                     Keyboard shortcuts
-                    <kbd className="ml-auto text-[10px] font-mono text-muted-foreground/60">⌘K</kbd>
+                    <kbd className="ml-auto density-caption font-mono text-muted-foreground/60">
+                        ⌘K
+                    </kbd>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
@@ -813,8 +817,8 @@ function UserMenu() {
                     <p className="text-sm font-semibold truncate">{displayName}</p>
                     <p className="text-xs text-muted-foreground truncate">{displayEmail}</p>
                     {userRole && (
-                        <Badge variant="secondary" className="mt-1 text-[9px] px-1.5 py-0 h-4">
-                            {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+                        <Badge variant="secondary" className="mt-1 density-caption px-1.5 py-0 h-4">
+                            {capitalize(userRole)}
                         </Badge>
                     )}
                 </div>
@@ -1165,7 +1169,7 @@ export function Topbar() {
             >
                 <Search className="h-3.5 w-3.5" />
                 <span>Search or type a command...</span>
-                <kbd className="flex items-center gap-0.5 text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded border border-border/50">
+                <kbd className="flex items-center gap-0.5 density-caption font-mono bg-muted px-1.5 py-0.5 rounded border border-border/50">
                     <Command className="h-2.5 w-2.5" />K
                 </kbd>
             </button>

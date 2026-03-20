@@ -99,7 +99,7 @@ export function PushToTalkButton({
                 <RadioTower className="h-3.5 w-3.5" />
                 <span className="font-medium">{channelName ?? ms("ptt_channel")}</span>
                 {activeSpeakers > 0 && (
-                    <Badge variant="info" className="text-[9px]">
+                    <Badge variant="info" className="density-caption">
                         {ms("ptt_active_speakers").replace("{count}", String(activeSpeakers))}
                     </Badge>
                 )}
@@ -129,21 +129,21 @@ export function PushToTalkButton({
                 aria-pressed={state === "transmitting"}
             >
                 {state === "connecting" ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="h-5 w-5 motion-safe:animate-spin" />
                 ) : (
                     <Radio className={cn("h-5 w-5", state === "transmitting" && "animate-pulse")} />
                 )}
 
                 {/* Pulse ring when transmitting */}
                 {state === "transmitting" && (
-                    <span className="absolute inset-0 rounded-full border-2 border-destructive/40 animate-ping" />
+                    <span className="absolute inset-0 rounded-full border-2 border-destructive/40 motion-safe:animate-ping" />
                 )}
             </button>
 
             {/* State label */}
             <span
                 className={cn(
-                    "text-[10px] font-medium min-w-[80px]",
+                    "density-caption font-medium min-w-[80px]",
                     state === "idle" && "text-muted-foreground",
                     state === "connecting" && "text-warning",
                     state === "transmitting" && "text-destructive"

@@ -6,16 +6,9 @@ import { Lock, Radio } from "lucide-react";
 import { useCommChannels } from "@/lib/supabase";
 import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { PRIORITY_BORDER_CLASSES } from "@/config/ui-variants";
 
 type Row = Record<string, unknown>;
-
-const PRIORITY_COLORS: Record<string, string> = {
-    emergency: "border-l-destructive",
-    critical: "border-l-destructive",
-    high: "border-l-warning",
-    medium: "",
-    low: "",
-};
 
 const CONFIG: DashboardPageConfig = {
     resource: "live_ops",
@@ -39,7 +32,7 @@ const CONFIG: DashboardPageConfig = {
     gridCols: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3",
     cardRenderer: (item: Row) => (
         <Card
-            className={`hover:shadow-sm transition-all border-l-2 ${PRIORITY_COLORS[item.priority as string] ?? ""}`}
+            className={`hover:shadow-sm transition-all border-l-2 ${PRIORITY_BORDER_CLASSES[item.priority as string] ?? ""}`}
         >
             <CardContent className="py-4">
                 <div className="flex items-center justify-between mb-2">
@@ -49,12 +42,12 @@ const CONFIG: DashboardPageConfig = {
                         </span>
                         <h3 className="text-sm font-semibold">{item.name as string}</h3>
                     </div>
-                    <StatusBadge status={item.priority as string} className="text-[10px]" />
+                    <StatusBadge status={item.priority as string} className="density-caption" />
                 </div>
-                <p className="text-[11px] text-muted-foreground mb-2">
+                <p className="density-caption text-muted-foreground mb-2">
                     {item.assignment as string}
                 </p>
-                <div className="flex items-center justify-between text-[10px]">
+                <div className="flex items-center justify-between density-caption">
                     <span className="text-muted-foreground">
                         {(item.discipline as string) ?? ""}
                     </span>

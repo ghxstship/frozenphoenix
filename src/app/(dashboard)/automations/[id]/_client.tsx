@@ -11,6 +11,7 @@ import { useAutomationLogs } from "@/lib/supabase";
 import { useAutomationWithRules } from "@/lib/supabase/hooks-automation";
 import { WORKFLOW_STATUS_MAP, type WorkflowStatusType } from "@/config/domain-config";
 import { formatDate } from "@/lib/utils";
+import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     Activity,
@@ -264,7 +265,7 @@ export function AutomationDetailPageClient() {
             },
         ],
         overviewSlot: (
-            <div className="space-y-6">
+            <div className="density-gap-page">
                 {isDryRun && (
                     <div className="flex items-center gap-2 rounded-lg border border-info/40 bg-info/5 px-4 py-3 text-sm text-info">
                         <Activity className="h-4 w-4 shrink-0" />
@@ -286,7 +287,7 @@ export function AutomationDetailPageClient() {
                 </div>
 
                 {/* Rule Builder */}
-                <div className="space-y-6">
+                <div className="density-gap-page">
                     {rules.map((rule, ruleIndex) => (
                         <Card key={rule.id} className="border-2">
                             <CardHeader className="pb-3">
@@ -305,7 +306,7 @@ export function AutomationDetailPageClient() {
                                     )}
                                 </div>
                             </CardHeader>
-                            <CardContent className="space-y-4">
+                            <CardContent className="density-gap-section">
                                 {/* Trigger */}
                                 <div>
                                     <label className="text-xs font-medium text-muted-foreground mb-2 block">
@@ -703,33 +704,35 @@ export function AutomationDetailPageClient() {
                         )}
                         {isDryRun ? "Exit Dry-Run" : "Dry-Run Mode"}
                     </Button>
-                    <Button
-                        size="sm"
-                        onClick={handleSave}
-                        disabled={saveStatus === "saving"}
-                        variant={
-                            saveStatus === "success"
-                                ? "default"
-                                : saveStatus === "error"
-                                  ? "destructive"
-                                  : "default"
-                        }
-                    >
-                        {saveStatus === "saving" ? (
-                            <Activity className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                            <Save className="mr-2 h-4 w-4" />
-                        )}
-                        {saveStatus === "saving"
-                            ? "Saving..."
-                            : saveStatus === "success"
-                              ? "Saved!"
-                              : saveStatus === "error"
-                                ? "Failed — Retry"
-                                : isDryRun
-                                  ? "Validate"
-                                  : "Save Rules"}
-                    </Button>
+                    <div className="flex items-center gap-2" role="status" aria-live="polite">
+                        <Button
+                            size="sm"
+                            onClick={handleSave}
+                            disabled={saveStatus === "saving"}
+                            variant={
+                                saveStatus === "success"
+                                    ? "default"
+                                    : saveStatus === "error"
+                                      ? "destructive"
+                                      : "default"
+                            }
+                        >
+                            {saveStatus === "saving" ? (
+                                <Activity className="mr-2 h-4 w-4 motion-safe:animate-spin" />
+                            ) : (
+                                <Save className="mr-2 h-4 w-4" />
+                            )}
+                            {saveStatus === "saving"
+                                ? COMMON_STRINGS.action_saving
+                                : saveStatus === "success"
+                                  ? "Saved!"
+                                  : saveStatus === "error"
+                                    ? "Failed — Retry"
+                                    : isDryRun
+                                      ? "Validate"
+                                      : "Save Rules"}
+                        </Button>
+                    </div>
                 </div>
             }
         />

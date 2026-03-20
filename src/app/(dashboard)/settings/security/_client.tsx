@@ -19,8 +19,8 @@ import {
     Smartphone,
     Trash2,
 } from "lucide-react";
-import { PermissionGate } from "@/components/permission-guard";
-import { PageHeader } from "@/components/ui/page-header";
+import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
+import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 
 interface MfaFactor {
     id: string;
@@ -214,14 +214,13 @@ export function SecuritySettingsPageClient() {
 
     const verifiedFactors = mfaFactors.filter((f) => f.status === "verified");
 
-    return (
-        <PermissionGate resource="security">
-            <div className="space-y-6 max-w-2xl motion-safe:animate-fade-in">
-                <PageHeader
-                    title="Security Settings"
-                    description="Manage your password, two-factor authentication, and active sessions."
-                />
-
+    const shellConfig: DashboardPageConfig = {
+        resource: "security",
+        title: "Security Settings",
+        description: "Manage your password, two-factor authentication, and active sessions.",
+        searchable: false,
+        contentSlot: (
+            <div className="density-gap-page max-w-2xl">
                 {/* Password Change */}
                 <Card>
                     <CardHeader>
@@ -231,7 +230,11 @@ export function SecuritySettingsPageClient() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handlePasswordChange} className="space-y-4" noValidate>
+                        <form
+                            onSubmit={handlePasswordChange}
+                            className="density-gap-section"
+                            noValidate
+                        >
                             {pwError && (
                                 <div
                                     className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
@@ -295,7 +298,7 @@ export function SecuritySettingsPageClient() {
                                 {pwLoading ? (
                                     <>
                                         <Loader2
-                                            className="h-4 w-4 animate-spin"
+                                            className="h-4 w-4 motion-safe:animate-spin"
                                             aria-hidden="true"
                                         />{" "}
                                         Updating…
@@ -316,10 +319,10 @@ export function SecuritySettingsPageClient() {
                             Two-Factor Authentication
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="density-gap-section">
                         {mfaLoading ? (
                             <div className="flex items-center justify-center py-4">
-                                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                                <Loader2 className="h-5 w-5 motion-safe:animate-spin text-muted-foreground" />
                             </div>
                         ) : verifiedFactors.length > 0 ? (
                             <>
@@ -354,7 +357,7 @@ export function SecuritySettingsPageClient() {
                                             aria-label={`Remove ${factor.friendly_name}`}
                                         >
                                             {mfaRemoving === factor.id ? (
-                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
                                             ) : (
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             )}
@@ -415,7 +418,7 @@ export function SecuritySettingsPageClient() {
                     <CardContent>
                         {sessionsLoading ? (
                             <div className="flex items-center justify-center py-4">
-                                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                                <Loader2 className="h-5 w-5 motion-safe:animate-spin text-muted-foreground" />
                             </div>
                         ) : sessions.length > 0 ? (
                             <ul className="space-y-2" role="list">
@@ -471,6 +474,8 @@ export function SecuritySettingsPageClient() {
                     </CardContent>
                 </Card>
             </div>
-        </PermissionGate>
-    );
+        ),
+    };
+
+    return <OperationalDashboardShell config={shellConfig} />;
 }

@@ -87,7 +87,7 @@ export default function ESignaturePage() {
     if (loading) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-background">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <Loader2 className="h-8 w-8 motion-safe:animate-spin text-muted-foreground" />
             </div>
         );
     }
@@ -150,7 +150,7 @@ export default function ESignaturePage() {
                 </div>
             </header>
 
-            <main className="mx-auto max-w-3xl px-4 py-8 sm:px-8 space-y-6">
+            <main className="mx-auto max-w-3xl px-4 py-8 sm:px-8 density-gap-page">
                 {/* Contract Summary */}
                 <Card>
                     <CardHeader>
@@ -210,7 +210,7 @@ export default function ESignaturePage() {
                             Sign Document
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="density-gap-section">
                         {error && (
                             <div className="flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
                                 <AlertTriangle className="h-4 w-4 shrink-0" />
@@ -234,7 +234,7 @@ export default function ESignaturePage() {
                                     <p className="text-2xl italic font-serif text-primary">
                                         {signedName}
                                     </p>
-                                    <p className="text-[10px] text-muted-foreground mt-1">
+                                    <p className="density-caption text-muted-foreground mt-1">
                                         Signature preview
                                     </p>
                                 </div>
@@ -265,7 +265,7 @@ export default function ESignaturePage() {
                         >
                             {submitting ? (
                                 <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
                                     Signing...
                                 </>
                             ) : (

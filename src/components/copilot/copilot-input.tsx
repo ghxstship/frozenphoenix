@@ -111,7 +111,7 @@ export function CopilotInput({
                             aria-label="Send message"
                         >
                             {disabled && !isStreaming ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
                             ) : (
                                 <ArrowUp className="h-4 w-4" />
                             )}
@@ -120,7 +120,7 @@ export function CopilotInput({
                 )}
             </div>
 
-            <p className="text-[10px] text-muted-foreground mt-1.5 text-center">
+            <p className="density-caption text-muted-foreground mt-1.5 text-center">
                 AI responses may be inaccurate. Verify important information.
             </p>
         </div>

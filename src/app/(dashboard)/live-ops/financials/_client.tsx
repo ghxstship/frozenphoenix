@@ -93,7 +93,7 @@ export function LiveFinancialsPageClient() {
         <OperationalDashboardShell config={config} data={rows} isLoading={isLoading}>
             {latest && (
                 <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 density-gap-card">
                         <Card>
                             <CardContent className="py-4">
                                 <h3 className="text-sm font-semibold mb-3">Budget Overview</h3>
@@ -194,7 +194,7 @@ export function LiveFinancialsPageClient() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-4 density-gap-card mb-4">
                                 <div>
                                     <p className="text-xs text-muted-foreground">Transactions</p>
                                     <p className="text-lg font-bold">{posCount}</p>
@@ -230,9 +230,9 @@ export function LiveFinancialsPageClient() {
                                                     <div className="flex items-center gap-2">
                                                         <Badge
                                                             variant="secondary"
-                                                            className="text-[9px] capitalize"
+                                                            className="density-caption capitalize"
                                                         >
-                                                            {cat.replace("_", " ")}
+                                                            {cat.replaceAll("_", " ")}
                                                         </Badge>
                                                     </div>
                                                     <span className="text-xs font-medium">

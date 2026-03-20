@@ -54,7 +54,9 @@ export function AssignmentRow({
                 <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{assigneeName}</p>
                     {assigneeEmail && (
-                        <p className="text-[10px] text-muted-foreground truncate">{assigneeEmail}</p>
+                        <p className="density-caption text-muted-foreground truncate">
+                            {assigneeEmail}
+                        </p>
                     )}
                 </div>
             </div>
@@ -68,11 +70,13 @@ export function AssignmentRow({
                                 style={{ backgroundColor: credentialTypeColor }}
                             />
                         )}
-                        <span className="text-[11px] text-muted-foreground">{credentialTypeName}</span>
+                        <span className="density-caption text-muted-foreground">
+                            {credentialTypeName}
+                        </span>
                     </div>
                 )}
 
-                <span className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground">
+                <span className="flex items-center gap-1 density-caption font-mono text-muted-foreground">
                     <QrCode className="h-3 w-3" />
                     {barcodeValue}
                 </span>
@@ -80,17 +84,22 @@ export function AssignmentRow({
                 {zoneAccess.length > 0 && (
                     <div className="hidden sm:flex gap-1">
                         {zoneAccess.slice(0, 2).map((z) => (
-                            <Badge key={z} variant="ghost" className="text-[9px]">{z}</Badge>
+                            <Badge key={z} variant="ghost" className="density-caption">
+                                {z}
+                            </Badge>
                         ))}
                     </div>
                 )}
 
-                <Badge variant={STATUS_VARIANTS[status] ?? "ghost"} className="text-[10px] capitalize">
+                <Badge
+                    variant={STATUS_VARIANTS[status] ?? "ghost"}
+                    className="density-caption capitalize"
+                >
                     {status.replace("_", " ")}
                 </Badge>
 
                 {checkedInAt && (
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="density-caption text-muted-foreground">
                         {new Date(checkedInAt).toLocaleTimeString()}
                     </span>
                 )}

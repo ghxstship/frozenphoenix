@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { use } from "react";
 import Link from "next/link";
-import { PageHeader } from "@/components/ui/page-header";
+import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,9 +23,9 @@ import {
     Type,
     Variable,
 } from "lucide-react";
-import { LoadingState } from "@/components/layouts/loading-state";
 import { useDocumentTemplate, useUpdateDocumentTemplate } from "@/lib/supabase";
-import { PermissionGate } from "@/components/permission-guard";
+import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
+import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 
 type BlockType = "heading" | "paragraph" | "variable" | "image" | "divider" | "table";
 
@@ -90,7 +90,20 @@ export function TemplateEditorPageClient({ params }: { params: Promise<{ id: str
 
     const { data: template, isLoading } = useDocumentTemplate(templateId);
 
-    if (isLoading) return <LoadingState />;
+    if (isLoading)
+        return (
+            <OperationalDashboardShell
+                config={{
+                    resource: "templates",
+                    action: "write",
+                    title: "Template Editor",
+                    description: "",
+                    searchable: false,
+                }}
+                data={[]}
+                isLoading={true}
+            />
+        );
 
     const t = (template ?? {}) as Record<string, unknown>;
     const initialName = (t.name as string) ?? "";
@@ -127,64 +140,77 @@ function TemplateEditorInner({
     const [blocks, setBlocks] = useState<TemplateBlock[]>(initialBlocks);
     const blockCounter = React.useRef(100);
 
-    const handleSave = () => {
+    const handleSave = useCallback(() => {
         updateTemplate.mutate({
             id: templateId,
             name: templateName,
             category: templateCategory,
             content: JSON.stringify(blocks),
         });
-    };
+    }, [updateTemplate, templateId, templateName, templateCategory, blocks]);
 
-    const addBlock = (type: BlockType) => {
+    const addBlock = useCallback((type: BlockType) => {
         blockCounter.current += 1;
-        setBlocks([
-            ...blocks,
+        setBlocks((prev) => [
+            ...prev,
             {
                 id: String(blockCounter.current),
                 type,
                 content: type === "variable" ? "{{variable}}" : "",
             },
         ]);
-    };
+    }, []);
 
-    const removeBlock = (id: string) => setBlocks(blocks.filter((b) => b.id !== id));
+    const removeBlock = useCallback(
+        (id: string) => setBlocks((prev) => prev.filter((b) => b.id !== id)),
+        []
+    );
 
-    const updateBlock = (id: string, content: string) =>
-        setBlocks(blocks.map((b) => (b.id === id ? { ...b, content } : b)));
+    const updateBlock = useCallback(
+        (id: string, content: string) =>
+            setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, content } : b))),
+        []
+    );
 
-    return (
-        <PermissionGate resource="templates" action="write">
-            <div className="space-y-6 motion-safe:animate-fade-in">
-                <PageHeader title="Template Editor" description={`Editing: ${templateName}`}>
-                    <div className="flex gap-2">
-                        <Link href={`/templates/${templateId}`}>
-                            <Button variant="outline" size="sm">
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back
-                            </Button>
-                        </Link>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setPreviewMode(!previewMode)}
-                        >
-                            <Eye className="mr-2 h-4 w-4" />
-                            {previewMode ? "Edit" : "Preview"}
+    const config: DashboardPageConfig = useMemo(
+        () => ({
+            resource: "templates",
+            action: "write",
+            title: "Template Editor",
+            description: `Editing: ${templateName}`,
+            searchable: false,
+            headerActions: (
+                <div className="flex gap-2">
+                    <Link href={`/templates/${templateId}`}>
+                        <Button variant="outline" size="sm">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back
                         </Button>
-                        <Button size="sm" onClick={handleSave} disabled={updateTemplate.isPending}>
-                            {updateTemplate.isPending ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                                <Save className="mr-2 h-4 w-4" />
-                            )}
-                            {updateTemplate.isPending ? "Saving..." : "Save"}
-                        </Button>
-                    </div>
-                </PageHeader>
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    </Link>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPreviewMode(!previewMode)}
+                    >
+                        <Eye className="mr-2 h-4 w-4" />
+                        {previewMode ? "Edit" : "Preview"}
+                    </Button>
+                    <Button size="sm" onClick={handleSave} disabled={updateTemplate.isPending}>
+                        {updateTemplate.isPending ? (
+                            <Loader2 className="mr-2 h-4 w-4 motion-safe:animate-spin" />
+                        ) : (
+                            <Save className="mr-2 h-4 w-4" />
+                        )}
+                        {updateTemplate.isPending
+                            ? COMMON_STRINGS.action_saving
+                            : COMMON_STRINGS.action_save}
+                    </Button>
+                </div>
+            ),
+            contentSlot: (
+                <div className="grid grid-cols-1 lg:grid-cols-4 density-gap-card">
                     {/* Template Settings */}
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-base">Settings</CardTitle>
@@ -216,10 +242,10 @@ function TemplateEditorInner({
                                                 variant={
                                                     templateCategory === cat ? "default" : "ghost"
                                                 }
-                                                className="cursor-pointer text-[10px]"
+                                                className="cursor-pointer density-caption"
                                                 onClick={() => setTemplateCategory(cat)}
                                             >
-                                                {cat.replace("_", " ")}
+                                                {cat.replaceAll("_", " ")}
                                             </Badge>
                                         ))}
                                     </div>
@@ -268,7 +294,7 @@ function TemplateEditorInner({
                                         </button>
                                     ))}
                                 </div>
-                                <p className="text-[10px] text-muted-foreground mt-2">
+                                <p className="density-caption text-muted-foreground mt-2">
                                     Click to copy to clipboard
                                 </p>
                             </CardContent>
@@ -286,7 +312,7 @@ function TemplateEditorInner({
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="p-8 bg-card rounded-lg border min-h-[600px] space-y-4">
+                                    <div className="p-8 bg-card rounded-lg border min-h-[600px] density-gap-section">
                                         {blocks.map((block) => {
                                             switch (block.type) {
                                                 case "heading":
@@ -345,7 +371,7 @@ function TemplateEditorInner({
                                             Template Blocks ({blocks.length})
                                         </CardTitle>
                                         <Badge variant="ghost">
-                                            {templateCategory.replace("_", " ")}
+                                            {templateCategory.replaceAll("_", " ")}
                                         </Badge>
                                     </div>
                                 </CardHeader>
@@ -365,7 +391,7 @@ function TemplateEditorInner({
                                                     <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="text-[10px] text-muted-foreground font-medium mb-1">
+                                                    <p className="density-caption text-muted-foreground font-medium mb-1">
                                                         {blockCfg?.label ?? block.type}
                                                     </p>
                                                     {block.type === "divider" ? (
@@ -417,7 +443,29 @@ function TemplateEditorInner({
                         )}
                     </div>
                 </div>
-            </div>
-        </PermissionGate>
+            ),
+        }),
+        [
+            templateName,
+            templateId,
+            previewMode,
+            handleSave,
+            updateTemplate.isPending,
+            templateCategory,
+            setTemplateName,
+            setTemplateCategory,
+            blocks,
+            addBlock,
+            removeBlock,
+            updateBlock,
+        ]
+    );
+
+    return (
+        <OperationalDashboardShell
+            config={config}
+            data={blocks as unknown as Record<string, unknown>[]}
+            isLoading={false}
+        />
     );
 }

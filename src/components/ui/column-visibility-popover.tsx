@@ -128,7 +128,7 @@ export function ColumnVisibilityPopover({
                                 {col.header}
                             </span>
                             {col.sticky && (
-                                <span className="text-[10px] text-muted-foreground ml-auto">
+                                <span className="density-caption text-muted-foreground ml-auto">
                                     pinned
                                 </span>
                             )}

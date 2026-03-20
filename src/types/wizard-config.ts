@@ -18,8 +18,12 @@ export interface WizardStepDef {
     id: string;
     /** Step label (shown in indicator) */
     label: string;
+    /** i18n key for step label — when provided, resolved at runtime via t() */
+    labelKey?: string;
     /** Step description (shown below label in indicator) */
     description?: string;
+    /** i18n key for step description */
+    descriptionKey?: string;
     /** Step icon */
     icon?: LucideIcon;
     /** Step content — rendered in the step panel */
@@ -43,8 +47,12 @@ export interface WizardConfig {
     // ─── Header ───
     /** Wizard title */
     title: string;
+    /** i18n key for title — when provided, resolved at runtime via t() */
+    titleKey?: string;
     /** Wizard description */
     description?: string;
+    /** i18n key for description */
+    descriptionKey?: string;
     /** Page icon */
     icon?: LucideIcon;
 

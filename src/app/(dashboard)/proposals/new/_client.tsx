@@ -264,7 +264,7 @@ export function NewProposalPageClient() {
     // ─── Step content ───
 
     const step1Content = (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <div className="space-y-2">
                 <label htmlFor="proposal-title" className="text-sm font-medium">
                     Proposal Title
@@ -277,7 +277,7 @@ export function NewProposalPageClient() {
                 />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                 <div className="space-y-2">
                     <label htmlFor="company-select" className="text-sm font-medium">
                         Company
@@ -322,7 +322,7 @@ export function NewProposalPageClient() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 density-gap-card">
                 <div className="space-y-2">
                     <label htmlFor="deal-select" className="text-sm font-medium">
                         Link to Deal (optional)
@@ -376,7 +376,7 @@ export function NewProposalPageClient() {
     );
 
     const step2Content = (
-        <div className="space-y-6">
+        <div className="density-gap-page">
             {/* Rate Card Import Panel */}
             <Card>
                 <CardHeader>
@@ -592,13 +592,13 @@ export function NewProposalPageClient() {
     );
 
     const step3Content = (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
             {/* Terms */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base">Notes & Terms</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="density-gap-section">
                     <div className="space-y-2">
                         <label htmlFor="exec-summary" className="text-sm font-medium">
                             Executive Summary
@@ -632,7 +632,7 @@ export function NewProposalPageClient() {
                 <CardHeader>
                     <CardTitle className="text-base">Review Summary</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="density-gap-section">
                     <div className="space-y-3">
                         <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground flex items-center gap-1.5">

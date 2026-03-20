@@ -55,7 +55,7 @@ export function GateScanSheet({ result, open, onOpenChange }: GateScanSheetProps
                     <SheetDescription>{result.message}</SheetDescription>
                 </SheetHeader>
 
-                <div className="mt-6 space-y-6">
+                <div className="mt-6 density-gap-page">
                     {/* Assignee */}
                     {assignment && (
                         <section className="space-y-2">
@@ -94,7 +94,7 @@ export function GateScanSheet({ result, open, onOpenChange }: GateScanSheetProps
                                 <span className="text-sm font-medium">
                                     {String(credType.name ?? "")}
                                 </span>
-                                <Badge variant="secondary" className="ml-auto text-[10px]">
+                                <Badge variant="secondary" className="ml-auto density-caption">
                                     {String(credType.category ?? "").replace("_", " ")}
                                 </Badge>
                             </div>
@@ -109,7 +109,7 @@ export function GateScanSheet({ result, open, onOpenChange }: GateScanSheetProps
                             </h3>
                             <div className="flex flex-wrap gap-1.5">
                                 {(assignment.zone_access as string[]).map((z) => (
-                                    <Badge key={z} variant="outline" className="text-[10px]">
+                                    <Badge key={z} variant="outline" className="density-caption">
                                         {z}
                                     </Badge>
                                 ))}

@@ -50,7 +50,7 @@ export function NetworkStatusProvider({ children }: { children: React.ReactNode 
                 {!isOnline && (
                     <motion.div
                         key="offline-banner"
-                        className="fixed top-0 left-0 right-0 z-[200] bg-destructive text-destructive-foreground px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2"
+                        className="fixed top-0 left-0 right-0 z-[var(--z-banner)] bg-destructive text-destructive-foreground px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2"
                         initial={{ y: -48, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: -48, opacity: 0 }}
@@ -66,7 +66,7 @@ export function NetworkStatusProvider({ children }: { children: React.ReactNode 
                 {showReconnected && isOnline && (
                     <motion.div
                         key="reconnected-banner"
-                        className="fixed top-0 left-0 right-0 z-[200] bg-success text-success-foreground px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2"
+                        className="fixed top-0 left-0 right-0 z-[var(--z-banner)] bg-success text-success-foreground px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2"
                         initial={{ y: -48, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: -48, opacity: 0 }}

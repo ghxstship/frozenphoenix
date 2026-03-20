@@ -57,10 +57,10 @@ const CONFIG: DashboardPageConfig = {
                             </h3>
                             <StatusBadge
                                 status={item.status as string}
-                                className="text-[10px] shrink-0"
+                                className="density-caption shrink-0"
                             />
                         </div>
-                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
+                        <div className="flex items-center gap-3 density-caption text-muted-foreground mt-0.5">
                             {typeof item.department === "string" && item.department && (
                                 <span>{item.department}</span>
                             )}
@@ -77,7 +77,7 @@ const CONFIG: DashboardPageConfig = {
                             {Number(item.received_quantity) || 0}/
                             {Number(item.expected_quantity) || 0}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">received</p>
+                        <p className="density-caption text-muted-foreground">received</p>
                     </div>
                 </div>
             </CardContent>

@@ -91,7 +91,11 @@ export default function ForgotPasswordPage() {
     if (success) {
         return (
             <AuthLayout title="Check your email" subtitle="Password reset instructions sent">
-                <div className="text-center space-y-4 py-4" role="status" aria-live="polite">
+                <div
+                    className="text-center density-gap-section py-4"
+                    role="status"
+                    aria-live="polite"
+                >
                     <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-success/10">
                         <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
                     </div>
@@ -130,7 +134,7 @@ export default function ForgotPasswordPage() {
             title="Reset your password"
             subtitle="Enter your email and we\u2019ll send you a reset link"
         >
-            <form onSubmit={handleReset} className="space-y-4" noValidate>
+            <form onSubmit={handleReset} className="density-gap-section" noValidate>
                 {error && (
                     <div
                         className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
@@ -166,7 +170,10 @@ export default function ForgotPasswordPage() {
                 <Button type="submit" className="w-full" disabled={loading} aria-busy={loading}>
                     {loading ? (
                         <>
-                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            <Loader2
+                                className="h-4 w-4 motion-safe:animate-spin"
+                                aria-hidden="true"
+                            />
                             Sending…
                         </>
                     ) : (

@@ -161,8 +161,8 @@ function ProjectCard({ project }: { project: Project }) {
     const isOverBudget = budgetPercent > 90;
 
     return (
-        <Card className="group cursor-pointer hover:border-primary/30">
-            <CardContent className="space-y-4">
+        <Card className="group hover:border-primary/30">
+            <CardContent className="density-gap-section">
                 <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                         <h3 className="text-base font-bold truncate group-hover:text-primary transition-colors">
@@ -224,7 +224,7 @@ function ProjectCard({ project }: { project: Project }) {
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between pt-1 text-[11px] text-muted-foreground">
+                <div className="flex items-center justify-between pt-1 density-caption text-muted-foreground">
                     <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {formatDate(project.startDate)} — {formatDate(project.endDate)}
@@ -268,7 +268,7 @@ function ProjectsContent({ projects }: { projects: Project[] }) {
                 <div className="flex items-center gap-1 overflow-x-auto pb-2 -mx-4 px-4 lg:mx-0 lg:px-0">
                     {PROJECT_PHASE_ORDER.map((phase, i) => (
                         <React.Fragment key={phase}>
-                            <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap px-2 py-1 rounded-md bg-secondary/50">
+                            <span className="density-caption font-medium text-muted-foreground whitespace-nowrap px-2 py-1 rounded-md bg-secondary/50">
                                 {PROJECT_PHASE_CONFIG[phase].label}
                             </span>
                             {i < PROJECT_PHASE_ORDER.length - 1 && (
@@ -328,7 +328,7 @@ function ProjectsContent({ projects }: { projects: Project[] }) {
                         description="Create your first project to get started"
                     />
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 density-gap-card">
                         {projects.map((project, i) => (
                             <StaggerItem key={project.id} index={i} stagger="relaxed">
                                 <ProjectCard project={project} />

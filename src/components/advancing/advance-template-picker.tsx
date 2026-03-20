@@ -42,16 +42,14 @@ export function AdvanceTemplatePicker({ onClose }: AdvanceTemplatePickerProps) {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-8">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <div className="h-5 w-5 motion-safe:animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
         );
     }
 
     if (list.length === 0) {
         return (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-                No templates available
-            </p>
+            <p className="py-4 text-center text-sm text-muted-foreground">No templates available</p>
         );
     }
 
@@ -67,20 +65,14 @@ export function AdvanceTemplatePicker({ onClose }: AdvanceTemplatePickerProps) {
                         <CardContent className="flex items-center gap-3 py-3">
                             <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-medium">
-                                    {String(tpl.name)}
-                                </p>
+                                <p className="truncate text-sm font-medium">{String(tpl.name)}</p>
                                 {Boolean(tpl.description) && (
                                     <p className="truncate text-xs text-muted-foreground">
                                         {String(tpl.description)}
                                     </p>
                                 )}
                             </div>
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => applyTemplate(tpl)}
-                            >
+                            <Button size="sm" variant="outline" onClick={() => applyTemplate(tpl)}>
                                 <Plus className="h-3.5 w-3.5" />
                                 Use
                             </Button>

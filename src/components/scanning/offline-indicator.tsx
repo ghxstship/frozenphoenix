@@ -72,7 +72,7 @@ export function OfflineIndicator({
                     className="h-7 text-xs"
                 >
                     {isSyncing ? (
-                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                        <Loader2 className="h-3 w-3 motion-safe:animate-spin mr-1" />
                     ) : (
                         <RefreshCw className="h-3 w-3 mr-1" />
                     )}

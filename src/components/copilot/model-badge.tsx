@@ -21,7 +21,7 @@ export function ModelBadge({ modelName, providerName, onClick, className }: Mode
             disabled={!isClickable}
             className={cn(
                 "inline-flex items-center gap-1.5 rounded-md border border-border",
-                "px-2 py-1 text-[11px] text-muted-foreground",
+                "px-2 py-1 density-caption text-muted-foreground",
                 isClickable && "hover:bg-secondary hover:text-foreground cursor-pointer",
                 !isClickable && "cursor-default",
                 "transition-colors",

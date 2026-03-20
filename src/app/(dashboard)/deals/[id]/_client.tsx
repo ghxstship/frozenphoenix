@@ -49,7 +49,7 @@ function PipelinesTab() {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -116,7 +116,7 @@ function LostReasonsTab() {
         return (
             <Card>
                 <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-6 w-6 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -372,7 +372,7 @@ export function DealDetailClient({
         }
     };
 
-    const _stageConfig = deal ? DEAL_STAGE_MAP[deal.stage as keyof typeof DEAL_STAGE_MAP] : null;
+    const stageConfig = deal ? DEAL_STAGE_MAP[deal.stage as keyof typeof DEAL_STAGE_MAP] : null;
     const weightedValue = deal ? deal.value * (deal.probability / 100) : 0;
     const daysToClose = deal
         ? Math.max(
@@ -384,7 +384,7 @@ export function DealDetailClient({
         : 0;
 
     const overviewSlot = deal ? (
-        <div className="space-y-6">
+        <div className="density-gap-page">
             {!!deal.notes && (
                 <Card>
                     <CardHeader>
@@ -400,7 +400,7 @@ export function DealDetailClient({
                     <CardTitle className="text-base">Timeline</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <div className="flex items-start gap-3">
                             <div className="h-2 w-2 rounded-full bg-primary mt-2" />
                             <div>
@@ -427,7 +427,7 @@ export function DealDetailClient({
 
     const config: DetailPageConfig = {
         ...BASE_CONFIG,
-        subtitleFn: () => deal?.company ?? "",
+        subtitleFn: () => [deal?.company, stageConfig?.label].filter(Boolean).join(" · ") || "",
         overviewSlot,
         stats: [
             {
@@ -520,7 +520,7 @@ export function DealDetailClient({
                             Convert Deal to Project
                         </DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4 py-2">
+                    <div className="density-gap-section py-2">
                         <p className="text-sm text-muted-foreground">
                             This will create a new project from this deal and mark the deal as won.
                         </p>
@@ -531,7 +531,7 @@ export function DealDetailClient({
                                 onChange={(e) => setConvertProjectName(e.target.value)}
                             />
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 density-gap-card">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Client</label>
                                 <Input value={deal?.company ?? ""} disabled />
@@ -557,7 +557,7 @@ export function DealDetailClient({
                             disabled={!convertProjectName.trim() || createProject.isPending}
                         >
                             {createProject.isPending && (
-                                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                <Loader2 className="h-4 w-4 mr-1 motion-safe:animate-spin" />
                             )}
                             Convert to Project
                         </Button>
@@ -584,7 +584,7 @@ export function DealDetailClient({
                             disabled={!noteText.trim() || createComment.isPending}
                         >
                             {createComment.isPending && (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
                             )}
                             Save Note
                         </Button>

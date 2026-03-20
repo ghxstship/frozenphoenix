@@ -19,7 +19,7 @@ function CreativeReviewsTab() {
         return (
             <Card>
                 <CardContent className="py-8 flex justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <Loader2 className="h-5 w-5 motion-safe:animate-spin text-muted-foreground" />
                 </CardContent>
             </Card>
         );
@@ -329,7 +329,7 @@ export function CreativeAssetDetailClient({
                                             </p>
                                         )}
                                         {review.reviewed_at && (
-                                            <p className="text-[10px] text-muted-foreground/60">
+                                            <p className="density-caption text-muted-foreground/60">
                                                 {formatDate(review.reviewed_at, "compact")}
                                             </p>
                                         )}

@@ -95,7 +95,7 @@ export function QrGeneratorDialog({
                     <DialogTitle>QR Code</DialogTitle>
                 </DialogHeader>
 
-                <div className="flex flex-col items-center space-y-4 py-4">
+                <div className="flex flex-col items-center density-gap-section py-4">
                     <QRDisplay value={value} size={Number(size)} label={label} />
 
                     <div className="w-full max-w-[200px]">
@@ -127,7 +127,7 @@ export function QrGeneratorDialog({
                     </Button>
                     <Button onClick={handleDownloadPng} disabled={downloading}>
                         {downloading ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                            <Loader2 className="h-4 w-4 motion-safe:animate-spin mr-1" />
                         ) : (
                             <Download className="h-4 w-4 mr-1" />
                         )}

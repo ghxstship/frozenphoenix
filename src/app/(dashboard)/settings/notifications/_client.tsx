@@ -113,7 +113,7 @@ export function NotificationSettingsPageClient() {
     if (isLoading) return <LoadingState />;
 
     const preferencesContent = (
-        <div className="space-y-6 max-w-3xl">
+        <div className="density-gap-page max-w-3xl">
             {/* ─── Delivery Channels ─── */}
             <Card>
                 <CardHeader>
@@ -196,7 +196,7 @@ export function NotificationSettingsPageClient() {
                         Quiet Hours
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="density-gap-section">
                     <ChannelRow
                         icon={Moon}
                         label="Enable quiet hours"
@@ -207,7 +207,7 @@ export function NotificationSettingsPageClient() {
                         }
                     />
                     {getBool("quiet_hours_enabled") && (
-                        <div className="grid grid-cols-1 gap-4 pl-10 sm:grid-cols-3">
+                        <div className="grid grid-cols-1 density-gap-card pl-10 sm:grid-cols-3">
                             <div className="space-y-1.5">
                                 <label className="text-sm font-medium">Start</label>
                                 <Input

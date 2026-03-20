@@ -25,15 +25,10 @@ import { useApprovals, useCrewMembers, useDeals, useProjects, useTasks } from "@
 import { useActivities } from "@/lib/supabase";
 import {
     useCreateDashboard,
-    useCreateDashboardWidget,
-    useCreateReportDefinition,
     useDashboards,
     useDashboardWidgets,
     useDashboardWithWidgets,
     useReportDefinitions,
-    useUpdateDashboard,
-    useUpdateDashboardWidget,
-    useUpdateReportDefinition,
 } from "@/lib/supabase/hooks-automation";
 import { useMemo } from "react";
 
@@ -48,6 +43,7 @@ interface DashboardWidget {
 }
 
 export function DashboardsPageClient() {
+    const createDashboard = useCreateDashboard();
     const [createOpen, openCreate, closeCreate] = useCreateAction();
     const DASHBOARD_TABS = ["overview", "projects", "sales", "resources"] as const;
     const [selectedDashboard, setSelectedDashboard] = useQueryTabState({
@@ -60,12 +56,6 @@ export function DashboardsPageClient() {
     const { data: _dbWidgets } = useDashboardWidgets();
     const { data: _dashboardDetail } = useDashboardWithWidgets("");
     const { data: _reportDefs } = useReportDefinitions();
-    const _createDashboard = useCreateDashboard();
-    const _updateDashboard = useUpdateDashboard();
-    const _createWidget = useCreateDashboardWidget();
-    const _updateWidget = useUpdateDashboardWidget();
-    const _createReport = useCreateReportDefinition();
-    const _updateReport = useUpdateReportDefinition();
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
     const { data: sbDeals } = useDeals();
     const { data: sbTasks } = useTasks();
@@ -231,7 +221,7 @@ export function DashboardsPageClient() {
             />
 
             {/* KPI Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <div className="grid density-gap-card md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                 {widgets.map((widget) => (
                     <Card key={widget.id}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -269,7 +259,7 @@ export function DashboardsPageClient() {
             </div>
 
             {/* Main Dashboard Content */}
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid density-gap-card lg:grid-cols-2">
                 {/* Project Profitability */}
                 <Card>
                     <CardHeader>
@@ -280,7 +270,7 @@ export function DashboardsPageClient() {
                         <CardDescription>Revenue, costs, and margins by project</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
+                        <div className="density-gap-section">
                             {projectProfitability.map((project) => (
                                 <div key={project.name} className="space-y-2">
                                     <div className="flex items-center justify-between">
@@ -316,7 +306,7 @@ export function DashboardsPageClient() {
                         <CardDescription>Capacity by department</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
+                        <div className="density-gap-section">
                             {utilizationByDepartment.map((dept) => (
                                 <div key={dept.department} className="space-y-2">
                                     <div className="flex items-center justify-between">
@@ -362,7 +352,7 @@ export function DashboardsPageClient() {
                         <CardDescription>Deals by stage</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
+                        <div className="density-gap-section">
                             {pipelineStages.map((stage, index) => (
                                 <div key={stage.stage} className="flex items-center gap-4">
                                     <div className="w-24 text-sm font-medium">{stage.stage}</div>
@@ -406,7 +396,7 @@ export function DashboardsPageClient() {
                         <CardDescription>Latest updates across projects</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
+                        <div className="density-gap-section">
                             {recentActivities.length === 0 ? (
                                 <p className="text-sm text-muted-foreground">No recent activity</p>
                             ) : (
@@ -442,6 +432,11 @@ export function DashboardsPageClient() {
                 config={CREATE_DASHBOARD_CONFIG}
                 open={createOpen}
                 onClose={closeCreate}
+                onSubmit={async (values) => {
+                    await createDashboard.mutateAsync(
+                        values as Parameters<typeof createDashboard.mutateAsync>[0]
+                    );
+                }}
             />
         </>
     );

@@ -52,7 +52,7 @@ export function QueuePageClient() {
     const contentSlot = (
         <div className="density-gap-page">
             {/* Stats */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 density-gap-card sm:grid-cols-3">
                 <StatCard
                     title="Awaiting Review"
                     value={submittedList.length}
@@ -80,7 +80,7 @@ export function QueuePageClient() {
             {/* Queue list */}
             {isLoading ? (
                 <div className="flex items-center justify-center py-16">
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    <div className="h-6 w-6 motion-safe:animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </div>
             ) : filtered.length === 0 ? (
                 <EmptyState

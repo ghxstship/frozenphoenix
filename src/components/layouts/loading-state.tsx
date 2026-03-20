@@ -13,19 +13,20 @@ export interface LoadingStateProps {
     className?: string;
 }
 
-export function LoadingState({
-    variant = "page",
-    rows = 3,
-    className,
-}: LoadingStateProps) {
+export function LoadingState({ variant = "page", rows = 3, className }: LoadingStateProps) {
     if (variant === "page") {
         return (
-            <div className={cn("space-y-6", className)} role="status" aria-busy="true" aria-label="Loading content">
+            <div
+                className={cn("density-gap-page", className)}
+                role="status"
+                aria-busy="true"
+                aria-label="Loading content"
+            >
                 <div className="space-y-3">
                     <ShimmerBlock className="h-8 w-56 rounded-lg" />
                     <ShimmerBlock className="h-4 w-80 rounded" />
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 density-gap-card">
                     {[...Array(4)].map((_, i) => (
                         <ShimmerBlock key={i} className="h-24 rounded-xl" />
                     ))}
@@ -38,7 +39,12 @@ export function LoadingState({
 
     if (variant === "card") {
         return (
-            <div className={cn("space-y-3", className)} role="status" aria-busy="true" aria-label="Loading card">
+            <div
+                className={cn("space-y-3", className)}
+                role="status"
+                aria-busy="true"
+                aria-label="Loading card"
+            >
                 <ShimmerBlock className="h-40 rounded-xl" />
                 <ShimmerBlock className="h-4 w-3/4 rounded" />
                 <ShimmerBlock className="h-3 w-1/2 rounded" />
@@ -49,9 +55,17 @@ export function LoadingState({
 
     if (variant === "list") {
         return (
-            <div className={cn("space-y-3", className)} role="status" aria-busy="true" aria-label="Loading list">
+            <div
+                className={cn("space-y-3", className)}
+                role="status"
+                aria-busy="true"
+                aria-label="Loading list"
+            >
                 {[...Array(rows)].map((_, i) => (
-                    <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-border/30">
+                    <div
+                        key={i}
+                        className="flex items-center gap-4 p-4 rounded-xl border border-border/30"
+                    >
                         <ShimmerBlock className="h-10 w-10 rounded-full shrink-0" />
                         <div className="flex-1 space-y-2">
                             <ShimmerBlock className="h-4 w-48 rounded" />
@@ -67,14 +81,22 @@ export function LoadingState({
 
     if (variant === "table") {
         return (
-            <div className={cn("rounded-lg border border-border overflow-hidden", className)} role="status" aria-busy="true" aria-label="Loading table">
+            <div
+                className={cn("rounded-lg border border-border overflow-hidden", className)}
+                role="status"
+                aria-busy="true"
+                aria-label="Loading table"
+            >
                 <div className="flex gap-4 p-4 bg-muted/30 border-b border-border">
                     {[...Array(5)].map((_, i) => (
                         <ShimmerBlock key={i} className="h-3 flex-1 rounded" />
                     ))}
                 </div>
                 {[...Array(rows)].map((_, i) => (
-                    <div key={i} className="flex gap-4 p-4 border-b border-border/30 last:border-b-0">
+                    <div
+                        key={i}
+                        className="flex gap-4 p-4 border-b border-border/30 last:border-b-0"
+                    >
                         <ShimmerBlock className="h-4 w-8 rounded shrink-0" />
                         {[...Array(4)].map((_, j) => (
                             <ShimmerBlock key={j} className="h-4 flex-1 rounded" />

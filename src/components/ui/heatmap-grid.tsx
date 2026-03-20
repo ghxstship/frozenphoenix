@@ -115,7 +115,7 @@ export function HeatmapGrid({
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-medium truncate">{row.label}</p>
                                         {row.sublabel && (
-                                            <p className="text-[10px] text-muted-foreground truncate">
+                                            <p className="density-caption text-muted-foreground truncate">
                                                 {row.sublabel}
                                             </p>
                                         )}
@@ -132,7 +132,7 @@ export function HeatmapGrid({
                                         }}
                                     />
                                 </div>
-                                <div className="flex justify-between text-[10px] text-muted-foreground">
+                                <div className="flex justify-between density-caption text-muted-foreground">
                                     <span>Avg: {formatValue(avg)}</span>
                                     <span>Peak: {formatValue(peak)}</span>
                                 </div>
@@ -187,7 +187,7 @@ export function HeatmapGrid({
                                         {row.sublabel && (
                                             <TruncatedText
                                                 as="p"
-                                                className="text-[10px] text-muted-foreground"
+                                                className="density-caption text-muted-foreground"
                                             >
                                                 {row.sublabel}
                                             </TruncatedText>
@@ -210,7 +210,7 @@ export function HeatmapGrid({
                                             <button
                                                 type="button"
                                                 className={cn(
-                                                    "w-full h-10 rounded-md flex items-center justify-center text-[10px] font-medium tabular-nums transition-colors",
+                                                    "w-full h-10 rounded-md flex items-center justify-center density-caption font-medium tabular-nums transition-colors",
                                                     colorClass,
                                                     onCellClick &&
                                                         "cursor-pointer hover:ring-2 hover:ring-primary/30",
@@ -238,7 +238,7 @@ export function HeatmapGrid({
 
             {/* Legend */}
             {colorScale === "utilization" && (
-                <div className="flex items-center gap-2 mt-3 text-[10px] text-muted-foreground px-3">
+                <div className="flex items-center gap-2 mt-3 density-caption text-muted-foreground px-3">
                     <span>Utilization:</span>
                     <span className="flex items-center gap-1">
                         <span className="h-3 w-3 rounded bg-muted/30" /> 0%

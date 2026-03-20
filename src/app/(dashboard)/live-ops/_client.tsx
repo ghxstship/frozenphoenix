@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useQueryTabState } from "@/hooks/use-query-tab-state";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -9,10 +11,9 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { Activity, AlertTriangle, CheckCircle2, Clock, Radio, Users } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useLiveEventInstances } from "@/lib/supabase";
-import {
-    useCreateLiveCrewAssignment,
-    useCreateLiveEventInstance,
-} from "@/lib/supabase/hooks-live-ops";
+import { useCreateLiveEventInstance } from "@/lib/supabase/hooks-live-ops";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_LIVE_EVENT_INSTANCE_CONFIG } from "@/config/create-entity-configs";
 import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 
@@ -23,12 +24,7 @@ const BASE_CONFIG: DashboardPageConfig = {
     action: "read" as const,
     title: "Live Operations — Command Dashboard",
     description: "Real-time operational overview of all active live events",
-    headerActions: (
-        <Button size="sm">
-            <Radio className="mr-2 h-4 w-4" />
-            New Live Event
-        </Button>
-    ),
+    headerActions: null,
     emptyState: {
         icon: Radio,
         title: "No live events",
@@ -47,13 +43,30 @@ const PHASES = [
     "hold",
     "strike",
     "wrapped",
-];
+] as const;
+
+const PHASE_LABELS: Record<string, string> = {
+    all: "All",
+    advance: "Advance",
+    load_in: "Load In",
+    setup: "Setup",
+    rehearsal: "Rehearsal",
+    ready: "Ready",
+    live: "Live",
+    hold: "Hold",
+    strike: "Strike",
+    wrapped: "Wrapped",
+};
 
 export function LiveOpsPageClient() {
-    const [phaseFilter, setPhaseFilter] = useState("all");
+    const createEvent = useCreateLiveEventInstance();
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
+    const [phaseFilter, setPhaseFilter] = useQueryTabState({
+        key: "phase",
+        defaultValue: "all",
+        validValues: PHASES,
+    });
     const { data: events, isLoading } = useLiveEventInstances();
-    const _createEvent = useCreateLiveEventInstance();
-    const _createAssignment = useCreateLiveCrewAssignment();
 
     const rows = useMemo(() => (events ?? []) as Row[], [events]);
 
@@ -84,24 +97,25 @@ export function LiveOpsPageClient() {
                 },
                 { label: "Alerts", icon: AlertTriangle, value: alertCount },
             ],
+            headerActions: (
+                <Button size="sm" onClick={openCreate}>
+                    <Radio className="mr-2 h-4 w-4" />
+                    New Live Event
+                </Button>
+            ),
         }),
-        [activeCount, totalAttendance, totalCapacity, alertCount]
+        [activeCount, totalAttendance, totalCapacity, alertCount, openCreate]
     );
 
     return (
         <OperationalDashboardShell config={config} data={rows} isLoading={isLoading}>
-            <div className="flex gap-2 flex-wrap">
-                {PHASES.map((phase) => (
-                    <Button
-                        key={phase}
-                        variant={phaseFilter === phase ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setPhaseFilter(phase)}
-                    >
-                        {phase === "all" ? "All" : phase}
-                    </Button>
-                ))}
-            </div>
+            <SegmentedControl
+                ariaLabel="Phase filter"
+                value={phaseFilter}
+                onValueChange={(v) => setPhaseFilter(v as (typeof PHASES)[number])}
+                size="sm"
+                options={PHASES.map((p) => ({ value: p, label: PHASE_LABELS[p] ?? p }))}
+            />
 
             {filtered.length === 0 ? (
                 <EmptyState
@@ -127,14 +141,14 @@ export function LiveOpsPageClient() {
                                                     </h3>
                                                     <StatusBadge
                                                         status={(evt.phase as string) ?? ""}
-                                                        className="text-[10px]"
+                                                        className="density-caption"
                                                     />
                                                     <StatusBadge
                                                         status={(evt.risk_level as string) ?? ""}
-                                                        className="text-[10px]"
+                                                        className="density-caption"
                                                     />
                                                 </div>
-                                                <p className="text-[11px] text-muted-foreground mt-0.5">
+                                                <p className="density-caption text-muted-foreground mt-0.5">
                                                     {(evt.project_id as string) ?? ""} —{" "}
                                                     {typeof evt.created_at === "string"
                                                         ? new Date(
@@ -147,7 +161,7 @@ export function LiveOpsPageClient() {
                                                 <p className="text-lg font-bold">
                                                     {att.toLocaleString()}
                                                 </p>
-                                                <p className="text-[10px] text-muted-foreground">
+                                                <p className="density-caption text-muted-foreground">
                                                     of {cap.toLocaleString()}
                                                 </p>
                                             </div>
@@ -155,7 +169,7 @@ export function LiveOpsPageClient() {
 
                                         <ProgressBar value={capPct} size="md" className="mb-3" />
 
-                                        <div className="flex items-center gap-3 flex-wrap text-[11px]">
+                                        <div className="flex items-center gap-3 flex-wrap density-caption">
                                             <span className="flex items-center gap-1 text-muted-foreground">
                                                 <Clock className="h-3 w-3" />
                                                 {(evt.weather_status as string) ??
@@ -165,7 +179,7 @@ export function LiveOpsPageClient() {
                                                 evt.weather_alert_level !== "none" && (
                                                     <StatusBadge
                                                         status={evt.weather_alert_level}
-                                                        className="text-[10px]"
+                                                        className="density-caption"
                                                     />
                                                 )}
                                         </div>
@@ -176,6 +190,16 @@ export function LiveOpsPageClient() {
                     })}
                 </div>
             )}
+            <CreateEntityDialog
+                config={CREATE_LIVE_EVENT_INSTANCE_CONFIG}
+                open={createOpen}
+                onClose={closeCreate}
+                onSubmit={async (values) => {
+                    await createEvent.mutateAsync(
+                        values as Parameters<typeof createEvent.mutateAsync>[0]
+                    );
+                }}
+            />
         </OperationalDashboardShell>
     );
 }

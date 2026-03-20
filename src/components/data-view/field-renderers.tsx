@@ -19,8 +19,7 @@ import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { logger } from "@/lib/logger";
 import { Avatar } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
-import { formatCurrency, formatDate, formatRelativeTime } from "@/lib/utils";
+import { cn, formatCurrency, formatDate, formatRelativeTime, humanizeSnakeCase } from "@/lib/utils";
 import {
     AlertTriangle,
     ArrowDown,
@@ -98,7 +97,7 @@ export function StatusField({ value, variantMap, labelMap, size = "sm" }: Status
             `StatusField missing labelMap entry for "${value}". Pass an explicit labelMap.`
         );
     }
-    const label = explicit ?? value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    const label = explicit ?? humanizeSnakeCase(value);
 
     return (
         <Badge variant={variant} className={cn(size === "sm" && "text-xs px-2 py-0.5")}>

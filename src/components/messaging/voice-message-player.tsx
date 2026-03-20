@@ -113,7 +113,7 @@ export function VoiceMessagePlayer({ src, durationSeconds, className }: VoiceMes
                 </div>
             </div>
 
-            <span className="text-[10px] font-mono tabular-nums text-muted-foreground shrink-0">
+            <span className="density-caption font-mono tabular-nums text-muted-foreground shrink-0">
                 {formatDuration(durationSeconds)}
             </span>
         </div>

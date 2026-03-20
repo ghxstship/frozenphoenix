@@ -258,7 +258,7 @@ export function ReportsPageClient() {
     const contentSlot = (
         <>
             {/* Summary Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 density-gap-card">
                 <Card>
                     <CardContent className="pt-4">
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -347,7 +347,7 @@ export function ReportsPageClient() {
                     description="Try selecting a different category"
                 />
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 density-gap-card">
                     {filteredReports.map((report, i) => {
                         const Icon = report.icon;
                         const category = categoryConfig[report.category];
@@ -362,7 +362,7 @@ export function ReportsPageClient() {
                                             </div>
                                             <Badge
                                                 variant={category.variant}
-                                                className="text-[10px]"
+                                                className="density-caption"
                                             >
                                                 {category.label}
                                             </Badge>
@@ -421,7 +421,7 @@ export function ReportsPageClient() {
                                         {reportDef.title}
                                     </CardTitle>
                                     <div className="flex items-center gap-2">
-                                        <Badge variant="ghost" className="text-[10px]">
+                                        <Badge variant="ghost" className="density-caption">
                                             {rows.length} rows
                                         </Badge>
                                         <Button
@@ -489,7 +489,7 @@ export function ReportsPageClient() {
                 })()}
 
             {/* Quick Charts */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 density-gap-card">
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2">

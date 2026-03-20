@@ -155,7 +155,7 @@ export function DataTimeline({ data, className, actions, onItemClick }: DataTime
                     {groups.map(([groupLabel, items]) => (
                         <React.Fragment key={groupLabel}>
                             {groupLabel && (
-                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide pt-2">
+                                <p className="density-caption font-semibold text-muted-foreground uppercase tracking-wide pt-2">
                                     {groupLabel}
                                 </p>
                             )}
@@ -175,17 +175,17 @@ export function DataTimeline({ data, className, actions, onItemClick }: DataTime
                                             </p>
                                             <Badge
                                                 variant="secondary"
-                                                className="text-[9px] shrink-0"
+                                                className="density-caption shrink-0"
                                             >
                                                 {durationDays}d
                                             </Badge>
                                         </div>
                                         {item.sublabel && (
-                                            <p className="text-[10px] text-muted-foreground truncate">
+                                            <p className="density-caption text-muted-foreground truncate">
                                                 {item.sublabel}
                                             </p>
                                         )}
-                                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                        <div className="flex items-center gap-2 density-caption text-muted-foreground">
                                             <span>{formatShort(item.startDate)}</span>
                                             <span>\u2013</span>
                                             <span>{formatShort(item.endDate)}</span>
@@ -230,7 +230,7 @@ export function DataTimeline({ data, className, actions, onItemClick }: DataTime
                                     <div
                                         key={col}
                                         className={cn(
-                                            "shrink-0 text-center text-[10px] py-2 border-r border-border/30",
+                                            "shrink-0 text-center density-caption py-2 border-r border-border/30",
                                             isThisWeek && "bg-primary/5 font-bold text-primary"
                                         )}
                                         style={{ width: colWidth }}
@@ -247,7 +247,7 @@ export function DataTimeline({ data, className, actions, onItemClick }: DataTime
                         <React.Fragment key={groupLabel}>
                             {groupLabel && (
                                 <div className="flex border-b border-border/30 bg-muted/10">
-                                    <div className="w-52 shrink-0 p-2 pl-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide border-r sticky left-0 bg-muted/10 z-10">
+                                    <div className="w-52 shrink-0 p-2 pl-3 density-caption font-semibold text-muted-foreground uppercase tracking-wide border-r sticky left-0 bg-muted/10 z-10">
                                         {groupLabel}
                                     </div>
                                     <div style={{ width: gridWidth }} />
@@ -278,7 +278,7 @@ export function DataTimeline({ data, className, actions, onItemClick }: DataTime
                                                 {item.sublabel && (
                                                     <TruncatedText
                                                         as="p"
-                                                        className="text-[10px] text-muted-foreground"
+                                                        className="density-caption text-muted-foreground"
                                                     >
                                                         {item.sublabel}
                                                     </TruncatedText>
@@ -341,7 +341,7 @@ export function DataTimeline({ data, className, actions, onItemClick }: DataTime
                                                             style={{ width: `${progress}%` }}
                                                         />
                                                     )}
-                                                    <span className="relative z-10 text-[9px] font-medium px-1.5 truncate block leading-6">
+                                                    <span className="relative z-10 density-caption font-medium px-1.5 truncate block leading-6">
                                                         {item.label}
                                                     </span>
                                                 </button>

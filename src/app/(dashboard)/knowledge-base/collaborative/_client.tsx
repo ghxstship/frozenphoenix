@@ -1,11 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
 import { formatDate } from "@/lib/utils";
 import {
     Circle,
@@ -21,9 +19,9 @@ import {
     Unlock,
     Users,
 } from "lucide-react";
-import { PermissionGate } from "@/components/permission-guard";
-import { LoadingState } from "@/components/layouts/loading-state";
 import { useKnowledgeBaseArticles } from "@/lib/supabase";
+import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
+import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 
 interface CollaborativeDocument {
     id: string;
@@ -83,32 +81,43 @@ export function CollaborativeEditorPageClient() {
 
     const activeDoc = selectedDoc ?? documents[0] ?? null;
 
-    if (isLoading) return <LoadingState />;
-
     const totalEditors = documents.reduce((s, d) => s + d.activeEditors.length, 0);
-    const totalVersions = documents.reduce((s, d) => s + d.version, 0);
-    const conflicts = documents.reduce((s, d) => s + d.conflictCount, 0);
 
-    return (
-        <PermissionGate resource="knowledge_base" action="read">
-            <div className="space-y-6 motion-safe:animate-fade-in">
-                <PageHeader
-                    title="Collaborative Editing"
-                    description="Real-time multi-user document editing with presence indicators and conflict resolution"
-                >
-                    <Badge variant="info" className="text-sm px-3 py-1">
-                        <Users className="mr-2 h-3.5 w-3.5" />
-                        {totalEditors} active editors
-                    </Badge>
-                </PageHeader>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard title="Documents" value={documents.length} icon={FileText} />
-                    <StatCard title="Active Editors" value={totalEditors} icon={Users} />
-                    <StatCard title="Total Revisions" value={totalVersions} icon={GitBranch} />
-                    <StatCard title="Conflicts" value={conflicts} icon={Shield} />
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    const config: DashboardPageConfig = useMemo(
+        () => ({
+            resource: "knowledge_base",
+            action: "read",
+            title: "Collaborative Editing",
+            description:
+                "Real-time multi-user document editing with presence indicators and conflict resolution",
+            searchable: false,
+            headerActions: (
+                <Badge variant="info" className="text-sm px-3 py-1">
+                    <Users className="mr-2 h-3.5 w-3.5" />
+                    {totalEditors} active editors
+                </Badge>
+            ),
+            stats: [
+                { label: "Documents", icon: FileText, compute: (d) => d.length },
+                {
+                    label: "Active Editors",
+                    icon: Users,
+                    compute: (d) =>
+                        d.reduce((s, r) => s + ((r.activeEditors as unknown[]) ?? []).length, 0),
+                },
+                {
+                    label: "Total Revisions",
+                    icon: GitBranch,
+                    compute: (d) => d.reduce((s, r) => s + Number(r.version ?? 0), 0),
+                },
+                {
+                    label: "Conflicts",
+                    icon: Shield,
+                    compute: (d) => d.reduce((s, r) => s + Number(r.conflictCount ?? 0), 0),
+                },
+            ],
+            contentSlot: (
+                <div className="grid grid-cols-1 lg:grid-cols-3 density-gap-card">
                     {/* Document List */}
                     <div className="space-y-3">
                         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
@@ -125,12 +134,12 @@ export function CollaborativeEditorPageClient() {
                                         <div>
                                             <h4 className="text-sm font-semibold">{doc.title}</h4>
                                             <div className="flex items-center gap-2 mt-1">
-                                                <Badge variant="ghost" className="text-[10px]">
+                                                <Badge variant="ghost" className="density-caption">
                                                     {doc.category}
                                                 </Badge>
                                                 <Badge
                                                     variant={STATUS_BADGE[doc.status]}
-                                                    className="text-[10px] flex items-center gap-0.5"
+                                                    className="density-caption flex items-center gap-0.5"
                                                 >
                                                     {doc.status === "locked" ? (
                                                         <Lock className="h-2.5 w-2.5" />
@@ -143,7 +152,7 @@ export function CollaborativeEditorPageClient() {
                                                 </Badge>
                                             </div>
                                         </div>
-                                        <span className="text-[10px] text-muted-foreground">
+                                        <span className="density-caption text-muted-foreground">
                                             v{doc.version}
                                         </span>
                                     </div>
@@ -158,7 +167,7 @@ export function CollaborativeEditorPageClient() {
                                                         className={`h-6 w-6 rounded-full ${editor.avatarColor} border-2 border-background flex items-center justify-center`}
                                                         title={`${editor.name} — ${editor.cursor}`}
                                                     >
-                                                        <span className="text-[9px] text-white font-bold">
+                                                        <span className="density-caption text-white font-bold">
                                                             {editor.name
                                                                 .split(" ")
                                                                 .map((n) => n[0])
@@ -167,13 +176,13 @@ export function CollaborativeEditorPageClient() {
                                                     </div>
                                                 ))}
                                             </div>
-                                            <span className="text-[10px] text-muted-foreground ml-1">
+                                            <span className="density-caption text-muted-foreground ml-1">
                                                 {doc.activeEditors.length} editing
                                             </span>
                                             {doc.conflictCount > 0 && (
                                                 <Badge
                                                     variant="destructive"
-                                                    className="text-[9px] ml-auto"
+                                                    className="density-caption ml-auto"
                                                 >
                                                     {doc.conflictCount} conflict
                                                 </Badge>
@@ -181,7 +190,7 @@ export function CollaborativeEditorPageClient() {
                                         </div>
                                     )}
 
-                                    <p className="text-[10px] text-muted-foreground mt-2">
+                                    <p className="density-caption text-muted-foreground mt-2">
                                         <Clock className="h-3 w-3 inline mr-1" />
                                         {doc.lastEditedBy} ·{" "}
                                         {doc.lastEditedAt ? formatDate(doc.lastEditedAt) : "—"}
@@ -192,7 +201,7 @@ export function CollaborativeEditorPageClient() {
                     </div>
 
                     {/* Selected Document Detail */}
-                    <div className="lg:col-span-2 space-y-4">
+                    <div className="lg:col-span-2 density-gap-section">
                         {activeDoc ? (
                             <>
                                 <Card>
@@ -242,7 +251,7 @@ export function CollaborativeEditorPageClient() {
                                                                 <div
                                                                     className={`h-5 w-5 rounded-full ${editor.avatarColor} flex items-center justify-center`}
                                                                 >
-                                                                    <span className="text-[8px] text-white font-bold">
+                                                                    <span className="density-micro text-white font-bold">
                                                                         {editor.name
                                                                             .split(" ")
                                                                             .map((n) => n[0])
@@ -302,7 +311,10 @@ export function CollaborativeEditorPageClient() {
                                                 </p>
                                                 <p>
                                                     Category:{" "}
-                                                    <Badge variant="ghost" className="text-[10px]">
+                                                    <Badge
+                                                        variant="ghost"
+                                                        className="density-caption"
+                                                    >
                                                         {activeDoc.category}
                                                     </Badge>
                                                 </p>
@@ -335,12 +347,12 @@ export function CollaborativeEditorPageClient() {
                                                         <p className="text-xs font-medium">
                                                             {v.changes}
                                                         </p>
-                                                        <p className="text-[10px] text-muted-foreground">
+                                                        <p className="density-caption text-muted-foreground">
                                                             {v.author} · {formatDate(v.timestamp)}
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-2 text-[10px]">
+                                                <div className="flex items-center gap-2 density-caption">
                                                     <span className="text-success">
                                                         +{v.additions}
                                                     </span>
@@ -350,7 +362,7 @@ export function CollaborativeEditorPageClient() {
                                                     <Button
                                                         size="sm"
                                                         variant="ghost"
-                                                        className="h-6 text-[10px]"
+                                                        className="h-6 density-caption"
                                                     >
                                                         Restore
                                                     </Button>
@@ -370,7 +382,16 @@ export function CollaborativeEditorPageClient() {
                         )}
                     </div>
                 </div>
-            </div>
-        </PermissionGate>
+            ),
+        }),
+        [documents, activeDoc, totalEditors]
+    );
+
+    return (
+        <OperationalDashboardShell
+            config={config}
+            data={documents as unknown as Record<string, unknown>[]}
+            isLoading={isLoading}
+        />
     );
 }

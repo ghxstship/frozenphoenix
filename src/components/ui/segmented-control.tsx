@@ -113,7 +113,7 @@ export function SegmentedControl<T extends string = string>({
                         tabIndex={selected ? 0 : -1}
                         onClick={() => onValueChange(option.value)}
                         className={cn(
-                            "relative z-[1] inline-flex items-center gap-1.5 rounded-md transition-colors",
+                            "relative z-[var(--z-tab-active)] inline-flex items-center gap-1.5 rounded-md transition-colors",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                             "disabled:pointer-events-none disabled:opacity-50",
                             size === "sm" ? "px-2 py-1 text-xs" : "px-2.5 py-1.5 text-sm",

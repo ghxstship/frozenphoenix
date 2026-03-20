@@ -103,14 +103,14 @@ export function InvitationsPageClient() {
                                                         {roleConfig && (
                                                             <Badge
                                                                 variant={roleConfig.variant}
-                                                                className="text-[10px]"
+                                                                className="density-caption"
                                                             >
                                                                 {roleConfig.label}
                                                             </Badge>
                                                         )}
                                                         <StatusBadge status={inv.status} />
                                                         {isPending && remaining > 0 && (
-                                                            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                                            <span className="density-caption text-muted-foreground flex items-center gap-1">
                                                                 <Clock className="h-3 w-3" />
                                                                 Expires in {remaining}d
                                                             </span>

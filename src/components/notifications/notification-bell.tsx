@@ -139,7 +139,7 @@ export function NotificationBell() {
                 >
                     <Bell className="h-5 w-5" />
                     {unreadCount > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center px-1">
+                        <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full bg-destructive density-caption font-bold text-destructive-foreground flex items-center justify-center px-1">
                             {unreadCount > 99 ? "99+" : unreadCount}
                         </span>
                     )}
@@ -148,7 +148,7 @@ export function NotificationBell() {
 
             {isOpen && (
                 <div
-                    className="absolute right-0 top-full mt-2 w-96 max-h-[480px] overflow-hidden rounded-xl border bg-popover shadow-lg z-50 animate-fade-in"
+                    className="absolute right-0 top-full mt-2 w-96 max-h-[480px] overflow-hidden rounded-xl border bg-popover shadow-lg z-50 motion-safe:animate-fade-in"
                     role="dialog"
                     aria-label="Notifications"
                 >
@@ -249,10 +249,13 @@ export function NotificationBell() {
                                                 {notif.body}
                                             </p>
                                             <div className="flex items-center gap-2 mt-1">
-                                                <Badge variant="ghost" className="text-[10px] h-4">
+                                                <Badge
+                                                    variant="ghost"
+                                                    className="density-caption h-4"
+                                                >
                                                     {notif.type}
                                                 </Badge>
-                                                <span className="text-[10px] text-muted-foreground">
+                                                <span className="density-caption text-muted-foreground">
                                                     {timeAgo(notif.created_at)}
                                                 </span>
                                             </div>

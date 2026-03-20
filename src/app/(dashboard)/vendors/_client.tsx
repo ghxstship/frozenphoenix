@@ -33,7 +33,7 @@ const vendorColumns: ColumnDef<Vendor>[] = [
         render: (_v, row) => (
             <div>
                 <p className="text-sm font-medium">{row.name}</p>
-                <p className="text-[10px] text-muted-foreground">{row.specialty}</p>
+                <p className="density-caption text-muted-foreground">{row.specialty}</p>
             </div>
         ),
     },
@@ -48,7 +48,7 @@ const vendorColumns: ColumnDef<Vendor>[] = [
             const variant =
                 v === "active" ? "success" : v === "suspended" ? "destructive" : "warning";
             return (
-                <Badge variant={variant} className="text-[10px]">
+                <Badge variant={variant} className="density-caption">
                     {v}
                 </Badge>
             );
@@ -119,7 +119,7 @@ function VendorCard({ vendor }: { vendor: Vendor }) {
                                   ? "destructive"
                                   : "warning"
                         }
-                        className="text-[10px]"
+                        className="density-caption"
                     >
                         {vendor.status}
                     </Badge>
@@ -146,7 +146,7 @@ function VendorCard({ vendor }: { vendor: Vendor }) {
                 {/* Document Compliance */}
                 <div className="flex flex-wrap gap-1.5">
                     <div
-                        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${
+                        className={`flex items-center gap-1 px-2 py-1 rounded-md density-caption font-medium ${
                             vendor.coiValid
                                 ? "bg-success/10 text-success"
                                 : "bg-destructive/10 text-destructive"
@@ -160,7 +160,7 @@ function VendorCard({ vendor }: { vendor: Vendor }) {
                         COI
                     </div>
                     <div
-                        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${
+                        className={`flex items-center gap-1 px-2 py-1 rounded-md density-caption font-medium ${
                             vendor.ndaSigned
                                 ? "bg-success/10 text-success"
                                 : "bg-muted text-muted-foreground"
@@ -170,7 +170,7 @@ function VendorCard({ vendor }: { vendor: Vendor }) {
                         NDA
                     </div>
                     <div
-                        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium ${
+                        className={`flex items-center gap-1 px-2 py-1 rounded-md density-caption font-medium ${
                             vendor.w9Uploaded
                                 ? "bg-success/10 text-success"
                                 : "bg-muted text-muted-foreground"
@@ -184,7 +184,7 @@ function VendorCard({ vendor }: { vendor: Vendor }) {
                 {/* COI Gate */}
                 {!vendor.coiValid && (
                     <div className="mt-3 p-2 rounded-lg bg-destructive/5 border border-destructive/20">
-                        <p className="text-[10px] font-medium text-destructive flex items-center gap-1">
+                        <p className="density-caption font-medium text-destructive flex items-center gap-1">
                             <ShieldAlert className="h-3 w-3" />
                             Cannot assign to projects — COI expired
                         </p>
@@ -229,7 +229,7 @@ function VendorsContent({ vendors }: { vendors: Vendor[] }) {
                     hoverable
                 />
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 density-gap-card">
                     {vendors.map((vendor, i) => (
                         <StaggerItem key={vendor.id} index={i} stagger="relaxed">
                             <VendorCard vendor={vendor} />

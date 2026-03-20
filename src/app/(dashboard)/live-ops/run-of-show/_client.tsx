@@ -123,15 +123,15 @@ export function RunOfShowPageClient() {
                                             </h3>
                                             <StatusBadge
                                                 status={cue.status as string}
-                                                className="text-[10px] shrink-0"
+                                                className="density-caption shrink-0"
                                             />
                                             {Boolean(cue.is_critical) && (
-                                                <span className="text-[10px] text-destructive font-medium shrink-0">
+                                                <span className="density-caption text-destructive font-medium shrink-0">
                                                     CRITICAL
                                                 </span>
                                             )}
                                         </div>
-                                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
+                                        <div className="flex items-center gap-3 density-caption text-muted-foreground mt-0.5">
                                             <span>{(cue.department as string) ?? ""}</span>
                                             {typeof cue.responsible_id === "string" &&
                                                 cue.responsible_id && (
@@ -150,7 +150,7 @@ export function RunOfShowPageClient() {
                                                         minute: "2-digit",
                                                     })}
                                                 </p>
-                                                <p className="text-[10px] text-muted-foreground">
+                                                <p className="density-caption text-muted-foreground">
                                                     scheduled
                                                 </p>
                                             </div>
@@ -166,7 +166,7 @@ export function RunOfShowPageClient() {
                                                         }
                                                     )}
                                                 </p>
-                                                <p className="text-[10px] text-muted-foreground">
+                                                <p className="density-caption text-muted-foreground">
                                                     actual
                                                 </p>
                                             </div>

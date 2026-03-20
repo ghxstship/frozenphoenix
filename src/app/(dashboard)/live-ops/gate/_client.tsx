@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
-import { PageHeader } from "@/components/ui/page-header";
+import React, { useCallback, useMemo, useState } from "react";
+import { enumLabel, SCAN_RESULT_LABELS } from "@/lib/enum-labels";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BadgeCheck, LogIn, LogOut, ShieldAlert, ShieldCheck, XCircle } from "lucide-react";
-import { PermissionGate } from "@/components/permission-guard";
 import { ScanFeedback, ScanInput } from "@/components/scanning";
+import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
+import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import type { ScanFeedbackResult, ScanMethod } from "@/components/scanning";
 import {
     type GateScanResult,
@@ -114,16 +115,19 @@ export function GateScannerPageClient() {
         minLength: 4,
     });
 
-    const resultIcon =
-        lastResult?.result === "valid" ? (
-            <ShieldCheck className="h-16 w-16 text-success" />
-        ) : lastResult?.result === "denied" || lastResult?.result === "revoked" ? (
-            <XCircle className="h-16 w-16 text-destructive" />
-        ) : lastResult?.result === "zone_denied" ? (
-            <ShieldAlert className="h-16 w-16 text-warning" />
-        ) : lastResult?.result === "expired" ? (
-            <ShieldAlert className="h-16 w-16 text-muted-foreground" />
-        ) : null;
+    const resultIcon = useMemo(
+        () =>
+            lastResult?.result === "valid" ? (
+                <ShieldCheck className="h-16 w-16 text-success" />
+            ) : lastResult?.result === "denied" || lastResult?.result === "revoked" ? (
+                <XCircle className="h-16 w-16 text-destructive" />
+            ) : lastResult?.result === "zone_denied" ? (
+                <ShieldAlert className="h-16 w-16 text-warning" />
+            ) : lastResult?.result === "expired" ? (
+                <ShieldAlert className="h-16 w-16 text-muted-foreground" />
+            ) : null,
+        [lastResult?.result]
+    );
 
     const resultColor =
         lastResult?.result === "valid"
@@ -134,200 +138,233 @@ export function GateScannerPageClient() {
                 ? "border-destructive/50 bg-destructive/5"
                 : "border-border bg-card";
 
-    return (
-        <PermissionGate resource="gate_operations" action="read">
-            <div className="space-y-6 motion-safe:animate-fade-in">
-                <PageHeader
-                    title={S.title}
-                    description="Scan credentials for check-in / check-out at entry points"
-                />
-                <OfflineIndicator
-                    isOnline={isOnline}
-                    pendingCount={pendingCount}
-                    isSyncing={isSyncing}
-                    onSyncNow={syncNow}
-                    onClearPending={clearPending}
-                />
+    const config: DashboardPageConfig = useMemo(
+        () => ({
+            resource: "gate_operations",
+            action: "read",
+            title: S.title,
+            description: "Scan credentials for check-in / check-out at entry points",
+            searchable: false,
+            contentSlot: (
+                <>
+                    <OfflineIndicator
+                        isOnline={isOnline}
+                        pendingCount={pendingCount}
+                        isSyncing={isSyncing}
+                        onSyncNow={syncNow}
+                        onClearPending={clearPending}
+                    />
 
-                {/* Audio/haptic/visual feedback toast */}
-                <ScanFeedback
-                    result={feedback.result}
-                    message={feedback.message}
-                    visible={feedback.visible}
-                    onDismiss={() => setFeedback((f) => ({ ...f, visible: false }))}
-                />
+                    {/* Audio/haptic/visual feedback toast */}
+                    <ScanFeedback
+                        result={feedback.result}
+                        message={feedback.message}
+                        visible={feedback.visible}
+                        onDismiss={() => setFeedback((f) => ({ ...f, visible: false }))}
+                    />
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 space-y-6">
-                        <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex flex-col items-center space-y-6">
-                                    <div className="flex items-center gap-2 w-full max-w-md">
-                                        <Button
-                                            size="sm"
-                                            variant={
-                                                scanType === "check_in" ? "default" : "outline"
-                                            }
-                                            onClick={() => setScanType("check_in")}
-                                        >
-                                            <LogIn className="h-4 w-4" />
-                                            Check In
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant={
-                                                scanType === "check_out" ? "default" : "outline"
-                                            }
-                                            onClick={() => setScanType("check_out")}
-                                        >
-                                            <LogOut className="h-4 w-4" />
-                                            Check Out
-                                        </Button>
-                                    </div>
-
-                                    {/* Multi-method scan input (keyboard + camera + NFC) */}
-                                    <div className="w-full max-w-md">
-                                        <ScanInput
-                                            onScan={handleScan}
-                                            placeholder={
-                                                SCANNING_STRINGS.input.credentialPlaceholder
-                                            }
-                                            disabled={gateScan.isPending}
-                                        />
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {lastResult && (
-                            <Card
-                                className={`border-2 ${resultColor} transition-colors cursor-pointer`}
-                                onClick={() => setSheetOpen(true)}
-                                role="button"
-                                tabIndex={0}
-                                onKeyDown={(e) => e.key === "Enter" && setSheetOpen(true)}
-                                aria-label="View scan details"
-                            >
+                    <div className="grid grid-cols-1 lg:grid-cols-3 density-gap-card">
+                        <div className="lg:col-span-2 density-gap-page">
+                            <Card>
                                 <CardContent className="pt-6">
-                                    <div className="flex flex-col items-center text-center space-y-3">
-                                        {resultIcon}
-                                        <h2 className="text-xl font-bold capitalize">
-                                            {lastResult.result.replace("_", " ")}
-                                        </h2>
-                                        <p className="text-sm text-muted-foreground">
-                                            {lastResult.message}
-                                        </p>
+                                    <div className="flex flex-col items-center density-gap-page">
+                                        <div className="flex items-center gap-2 w-full max-w-md">
+                                            <Button
+                                                size="sm"
+                                                variant={
+                                                    scanType === "check_in" ? "default" : "outline"
+                                                }
+                                                onClick={() => setScanType("check_in")}
+                                            >
+                                                <LogIn className="h-4 w-4" />
+                                                Check In
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant={
+                                                    scanType === "check_out" ? "default" : "outline"
+                                                }
+                                                onClick={() => setScanType("check_out")}
+                                            >
+                                                <LogOut className="h-4 w-4" />
+                                                Check Out
+                                            </Button>
+                                        </div>
 
-                                        {lastResult.assignment && (
-                                            <div className="mt-4 p-4 rounded-lg bg-card border w-full max-w-sm">
-                                                <p className="text-sm font-bold">
-                                                    {String(
-                                                        lastResult.assignment.assignee_name ?? ""
-                                                    )}
-                                                </p>
-                                                {lastResult.credential_type && (
-                                                    <div className="flex items-center gap-1.5 mt-1">
-                                                        {typeof (
-                                                            lastResult.credential_type as Record<
-                                                                string,
-                                                                unknown
-                                                            >
-                                                        ).color_hex === "string" && (
-                                                            <span
-                                                                className="inline-block h-2.5 w-2.5 rounded-full"
-                                                                style={{
-                                                                    backgroundColor: (
+                                        {/* Multi-method scan input (keyboard + camera + NFC) */}
+                                        <div className="w-full max-w-md">
+                                            <ScanInput
+                                                onScan={handleScan}
+                                                placeholder={
+                                                    SCANNING_STRINGS.input.credentialPlaceholder
+                                                }
+                                                disabled={gateScan.isPending}
+                                            />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {lastResult && (
+                                <Card
+                                    className={`border-2 ${resultColor} transition-colors cursor-pointer`}
+                                    onClick={() => setSheetOpen(true)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => e.key === "Enter" && setSheetOpen(true)}
+                                    aria-label="View scan details"
+                                >
+                                    <CardContent className="pt-6">
+                                        <div className="flex flex-col items-center text-center space-y-3">
+                                            {resultIcon}
+                                            <h2 className="text-xl font-bold capitalize">
+                                                {lastResult.result.replaceAll("_", " ")}
+                                            </h2>
+                                            <p className="text-sm text-muted-foreground">
+                                                {lastResult.message}
+                                            </p>
+
+                                            {lastResult.assignment && (
+                                                <div className="mt-4 p-4 rounded-lg bg-card border w-full max-w-sm">
+                                                    <p className="text-sm font-bold">
+                                                        {String(
+                                                            lastResult.assignment.assignee_name ??
+                                                                ""
+                                                        )}
+                                                    </p>
+                                                    {lastResult.credential_type && (
+                                                        <div className="flex items-center gap-1.5 mt-1">
+                                                            {typeof (
+                                                                lastResult.credential_type as Record<
+                                                                    string,
+                                                                    unknown
+                                                                >
+                                                            ).color_hex === "string" && (
+                                                                <span
+                                                                    className="inline-block h-2.5 w-2.5 rounded-full"
+                                                                    style={{
+                                                                        backgroundColor: (
+                                                                            lastResult.credential_type as Record<
+                                                                                string,
+                                                                                unknown
+                                                                            >
+                                                                        ).color_hex as string,
+                                                                    }}
+                                                                />
+                                                            )}
+                                                            <span className="text-xs text-muted-foreground">
+                                                                {String(
+                                                                    (
                                                                         lastResult.credential_type as Record<
                                                                             string,
                                                                             unknown
                                                                         >
-                                                                    ).color_hex as string,
-                                                                }}
-                                                            />
-                                                        )}
-                                                        <span className="text-xs text-muted-foreground">
-                                                            {String(
-                                                                (
-                                                                    lastResult.credential_type as Record<
-                                                                        string,
-                                                                        unknown
-                                                                    >
-                                                                ).name ?? ""
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                                <p className="text-[10px] font-mono text-muted-foreground mt-1">
-                                                    {String(
-                                                        lastResult.assignment.barcode_value ?? ""
+                                                                    ).name ?? ""
+                                                                )}
+                                                            </span>
+                                                        </div>
                                                     )}
-                                                </p>
-                                            </div>
-                                        )}
+                                                    <p className="density-caption font-mono text-muted-foreground mt-1">
+                                                        {String(
+                                                            lastResult.assignment.barcode_value ??
+                                                                ""
+                                                        )}
+                                                    </p>
+                                                </div>
+                                            )}
 
-                                        <p className="text-[10px] text-muted-foreground mt-2">
-                                            Tap for details
-                                        </p>
+                                            <p className="density-caption text-muted-foreground mt-2">
+                                                Tap for details
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-sm">
+                                    <BadgeCheck className="h-4 w-4" />
+                                    Scan History ({scanHistory.length})
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {scanHistory.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground text-center py-8">
+                                        No scans yet
+                                    </p>
+                                ) : (
+                                    <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                                        {scanHistory.map((s, i) => (
+                                            <div
+                                                key={i}
+                                                className={`p-2 rounded-lg border ${
+                                                    s.result === "valid"
+                                                        ? "border-success/20"
+                                                        : "border-destructive/20"
+                                                }`}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <Badge
+                                                        variant={
+                                                            s.result === "valid"
+                                                                ? "success"
+                                                                : "destructive"
+                                                        }
+                                                        className="density-caption"
+                                                    >
+                                                        {enumLabel(s.result, SCAN_RESULT_LABELS)}
+                                                    </Badge>
+                                                    <span className="density-caption text-muted-foreground">
+                                                        {new Date(s.timestamp).toLocaleTimeString()}
+                                                    </span>
+                                                </div>
+                                                {s.assignee_name && (
+                                                    <p className="text-xs mt-1 truncate">
+                                                        {s.assignee_name}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
-                                </CardContent>
-                            </Card>
-                        )}
+                                )}
+                            </CardContent>
+                        </Card>
                     </div>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-sm">
-                                <BadgeCheck className="h-4 w-4" />
-                                Scan History ({scanHistory.length})
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {scanHistory.length === 0 ? (
-                                <p className="text-sm text-muted-foreground text-center py-8">
-                                    No scans yet
-                                </p>
-                            ) : (
-                                <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                                    {scanHistory.map((s, i) => (
-                                        <div
-                                            key={i}
-                                            className={`p-2 rounded-lg border ${
-                                                s.result === "valid"
-                                                    ? "border-success/20"
-                                                    : "border-destructive/20"
-                                            }`}
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <Badge
-                                                    variant={
-                                                        s.result === "valid"
-                                                            ? "success"
-                                                            : "destructive"
-                                                    }
-                                                    className="text-[9px]"
-                                                >
-                                                    {s.result.replace("_", " ").toUpperCase()}
-                                                </Badge>
-                                                <span className="text-[10px] text-muted-foreground">
-                                                    {new Date(s.timestamp).toLocaleTimeString()}
-                                                </span>
-                                            </div>
-                                            {s.assignee_name && (
-                                                <p className="text-xs mt-1 truncate">
-                                                    {s.assignee_name}
-                                                </p>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
+                    {/* Scan detail sheet (slide-over) */}
+                    <GateScanSheet
+                        result={lastResult}
+                        open={sheetOpen}
+                        onOpenChange={setSheetOpen}
+                    />
+                </>
+            ),
+        }),
+        [
+            isOnline,
+            pendingCount,
+            isSyncing,
+            syncNow,
+            clearPending,
+            feedback,
+            scanType,
+            handleScan,
+            gateScan.isPending,
+            lastResult,
+            resultIcon,
+            resultColor,
+            sheetOpen,
+            scanHistory,
+        ]
+    );
 
-                {/* Scan detail sheet (slide-over) */}
-                <GateScanSheet result={lastResult} open={sheetOpen} onOpenChange={setSheetOpen} />
-            </div>
-        </PermissionGate>
+    return (
+        <OperationalDashboardShell
+            config={config}
+            data={scanHistory as unknown as Record<string, unknown>[]}
+            isLoading={false}
+        />
     );
 }

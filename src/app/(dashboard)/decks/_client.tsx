@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDecks, useProjects } from "@/lib/supabase";
 import { useCreateDeck } from "@/lib/supabase/hooks-documents";
+import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CREATE_DECK_CONFIG } from "@/config/create-entity-configs";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
@@ -21,8 +23,10 @@ import {
     ExternalLink,
     FileText,
     Play,
+    Plus,
     Presentation,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { ListPageShell } from "@/components/shells/list-page-shell";
 import type { ListPageConfig } from "@/types/list-page-config";
@@ -61,7 +65,7 @@ function DeckCard({ deck, project }: { deck: Deck; project: Project | undefined 
                 <div className="absolute top-3 left-3">
                     <Badge
                         variant="secondary"
-                        className="text-[9px] bg-foreground/20 text-primary-foreground border-0"
+                        className="density-caption bg-foreground/20 text-primary-foreground border-0"
                     >
                         {type.label}
                     </Badge>
@@ -105,12 +109,12 @@ function DeckCard({ deck, project }: { deck: Deck; project: Project | undefined 
                     </div>
                     <Badge
                         variant={getStatusVariant(deck.status) as BadgeVariant}
-                        className="text-[9px] shrink-0"
+                        className="density-caption shrink-0"
                     >
                         {getStatusLabel(deck.status)}
                     </Badge>
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                <div className="flex items-center justify-between density-caption text-muted-foreground">
                     <span className="flex items-center gap-1">
                         <FileText className="h-3 w-3" />
                         {deck.slideCount} slides
@@ -121,7 +125,7 @@ function DeckCard({ deck, project }: { deck: Deck; project: Project | undefined 
                     </span>
                 </div>
                 {deck.presentedAt && (
-                    <div className="mt-2 flex items-center gap-1 text-[10px] text-success">
+                    <div className="mt-2 flex items-center gap-1 density-caption text-success">
                         <CheckCircle2 className="h-3 w-3" />
                         Presented {formatDate(deck.presentedAt)}
                     </div>
@@ -214,7 +218,7 @@ function DecksContent({ decks, projects }: { decks: Deck[]; projects: Project[] 
                         description="Create your first presentation deck"
                     />
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 density-gap-card">
                         {filteredDecks.map((deck, i) => {
                             const project = projects.find((p) => p.id === deck.projectId);
                             return (
@@ -293,7 +297,10 @@ function DecksContent({ decks, projects }: { decks: Deck[]; projects: Project[] 
                                                     {project?.name}
                                                 </td>
                                                 <td className="px-4 py-3">
-                                                    <Badge variant="ghost" className="text-[10px]">
+                                                    <Badge
+                                                        variant="ghost"
+                                                        className="density-caption"
+                                                    >
                                                         {type.label}
                                                     </Badge>
                                                 </td>
@@ -304,7 +311,7 @@ function DecksContent({ decks, projects }: { decks: Deck[]; projects: Project[] 
                                                                 deck.status
                                                             ) as BadgeVariant
                                                         }
-                                                        className="text-[10px]"
+                                                        className="density-caption"
                                                     >
                                                         {getStatusLabel(deck.status)}
                                                     </Badge>
@@ -370,9 +377,10 @@ function DecksContent({ decks, projects }: { decks: Deck[]; projects: Project[] 
 
 // ─── Page ────────────────────────────────────────────────────
 export function DecksPageClient() {
+    const createDeck = useCreateDeck();
+    const [createOpen, openCreate, closeCreate] = useCreateAction();
     const { data: sbDecks, isLoading: loadingDecks } = useDecks();
     const { data: sbProjects, isLoading: loadingProjects } = useProjects();
-    const _createDeck = useCreateDeck();
 
     const decks: Deck[] = useMemo(
         () =>
@@ -442,9 +450,29 @@ export function DecksPageClient() {
                     compute: () => decks.filter((d) => d.status === "presented").length,
                 },
             ],
-            contentSlot: <DecksContent decks={decks} projects={projects} />,
+            contentSlot: (
+                <>
+                    <DecksContent decks={decks} projects={projects} />
+                    <CreateEntityDialog
+                        config={CREATE_DECK_CONFIG}
+                        open={createOpen}
+                        onClose={closeCreate}
+                        onSubmit={async (values) => {
+                            await createDeck.mutateAsync(
+                                values as Parameters<typeof createDeck.mutateAsync>[0]
+                            );
+                        }}
+                    />
+                </>
+            ),
+            headerActions: (
+                <Button onClick={openCreate}>
+                    <Plus className="mr-2 h-4 w-4" /> New Deck
+                </Button>
+            ),
         }),
-        [decks, projects]
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [decks, projects, createOpen]
     );
 
     return (

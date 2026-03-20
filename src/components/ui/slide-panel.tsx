@@ -45,7 +45,7 @@ export function SlidePanel({
             {open && (
                 <>
                     <motion.div
-                        className="fixed inset-0 z-[100] glass-overlay backdrop-blur-sm"
+                        className="fixed inset-0 z-[var(--z-overlay)] glass-overlay backdrop-blur-sm"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -56,7 +56,7 @@ export function SlidePanel({
                     <motion.div
                         ref={focusTrapRef as React.Ref<HTMLDivElement>}
                         className={cn(
-                            "fixed top-0 bottom-0 z-[101] w-full flex flex-col",
+                            "fixed top-0 bottom-0 z-[var(--z-panel)] w-full flex flex-col",
                             "bg-[var(--glass-surface-bg)] backdrop-blur-xl backdrop-saturate-150",
                             "border-[var(--glass-surface-border)] glass-noise glass-edge-glow",
                             side === "right" ? "right-0 border-l" : "left-0 border-r",

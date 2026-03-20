@@ -73,12 +73,12 @@ export function CatalogItemCard({ item, onAddToCart, className }: CatalogItemCar
 
                 <div className="flex flex-wrap gap-1">
                     {statusConfig && (
-                        <Badge variant={statusConfig.variant} className="text-[10px]">
+                        <Badge variant={statusConfig.variant} className="density-caption">
                             {statusConfig.label}
                         </Badge>
                     )}
                     {tags.slice(0, 2).map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-[10px]">
+                        <Badge key={tag} variant="outline" className="density-caption">
                             {tag}
                         </Badge>
                     ))}

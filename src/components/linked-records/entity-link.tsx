@@ -60,7 +60,7 @@ export function EntityLink({
                 {entityName}
             </span>
             {status && (
-                <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded bg-secondary">
+                <span className="density-caption text-muted-foreground px-1.5 py-0.5 rounded bg-secondary">
                     {status}
                 </span>
             )}

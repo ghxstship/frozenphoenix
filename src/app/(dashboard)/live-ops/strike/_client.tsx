@@ -51,10 +51,10 @@ const CONFIG: DashboardPageConfig = {
                             </h3>
                             <StatusBadge
                                 status={item.status as string}
-                                className="text-[10px] shrink-0"
+                                className="density-caption shrink-0"
                             />
                         </div>
-                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
+                        <div className="flex items-center gap-3 density-caption text-muted-foreground mt-0.5">
                             <span>{(item.department as string) ?? ""}</span>
                             <span>{(item.responsible_id as string) ?? ""}</span>
                             {Array.isArray(item.depends_on_ids) &&
@@ -65,7 +65,7 @@ const CONFIG: DashboardPageConfig = {
                                 )}
                         </div>
                         {typeof item.notes === "string" && item.notes && (
-                            <p className="text-[10px] text-warning mt-1">{item.notes}</p>
+                            <p className="density-caption text-warning mt-1">{item.notes}</p>
                         )}
                     </div>
                     <div className="text-right text-sm shrink-0">
@@ -77,7 +77,7 @@ const CONFIG: DashboardPageConfig = {
                             }
                             m
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="density-caption text-muted-foreground">
                             {item.actual_duration_minutes ? "actual" : "estimated"}
                         </p>
                     </div>

@@ -148,7 +148,7 @@ export function BrandKitDetailClient({
         assetFilter === "all" ? assets : assets.filter((a) => a.type === assetFilter);
 
     const sidebarSlot = (
-        <div className="space-y-4">
+        <div className="density-gap-section">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-sm">Brand Identity</CardTitle>
@@ -192,7 +192,7 @@ export function BrandKitDetailClient({
                                 style={{ backgroundColor: c.color }}
                             />
                             <span className="text-xs">{c.label}</span>
-                            <span className="text-[10px] font-mono text-muted-foreground ml-auto">
+                            <span className="density-caption font-mono text-muted-foreground ml-auto">
                                 {c.color}
                             </span>
                         </button>
@@ -218,7 +218,7 @@ export function BrandKitDetailClient({
     );
 
     const overviewSlot = (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 density-gap-card">
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
@@ -226,7 +226,7 @@ export function BrandKitDetailClient({
                         Color Palette
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="density-gap-section">
                     {[
                         { label: "Primary", color: primaryColor },
                         { label: "Secondary", color: secondaryColor },
@@ -250,7 +250,7 @@ export function BrandKitDetailClient({
                                 <div className="flex gap-1 mt-1">
                                     <button
                                         onClick={() => copyColor(c.color)}
-                                        className="text-[10px] text-primary hover:underline flex items-center gap-0.5"
+                                        className="density-caption text-primary hover:underline flex items-center gap-0.5"
                                     >
                                         <Copy className="h-2.5 w-2.5" />
                                         HEX
@@ -276,7 +276,7 @@ export function BrandKitDetailClient({
                         Typography
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="density-gap-page">
                     <div>
                         <OverlineText className="mb-2">Heading Font</OverlineText>
                         <div className="p-4 rounded-lg bg-secondary/30">
@@ -317,7 +317,7 @@ export function BrandKitDetailClient({
                 label: "Asset Library",
                 count: assets.length,
                 content: (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex gap-2 flex-wrap">
                                 {["all", "logo", "icon", "photo", "pattern", "illustration"].map(
@@ -343,7 +343,7 @@ export function BrandKitDetailClient({
                                 Upload Asset
                             </Button>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 density-gap-card">
                             {filteredAssets.map((asset) => (
                                 <Card key={asset.id} className="hover:shadow-md transition-shadow">
                                     <CardContent className="p-4">
@@ -374,11 +374,11 @@ export function BrandKitDetailClient({
                                                             ASSET_TYPE_VARIANTS[asset.type] ??
                                                             "ghost"
                                                         }
-                                                        className="text-[9px]"
+                                                        className="density-caption"
                                                     >
                                                         {asset.type}
                                                     </Badge>
-                                                    <span className="text-[10px] text-muted-foreground">
+                                                    <span className="density-caption text-muted-foreground">
                                                         {asset.format} · {asset.size}
                                                     </span>
                                                 </div>
@@ -415,7 +415,7 @@ export function BrandKitDetailClient({
                 label: "Brand Guidelines",
                 count: guidelineSections.length,
                 content: (
-                    <div className="space-y-4">
+                    <div className="density-gap-section">
                         <div className="flex items-center justify-between">
                             <p className="text-sm text-muted-foreground">
                                 Document brand rules, voice, and visual standards.
@@ -443,7 +443,7 @@ export function BrandKitDetailClient({
                                 </Button>
                             </div>
                         </div>
-                        <div className="space-y-4">
+                        <div className="density-gap-section">
                             {guidelineSections.map((section, i) => (
                                 <StaggerItem key={section.id} index={i} stagger="relaxed">
                                     <Card>

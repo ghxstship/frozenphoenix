@@ -149,7 +149,7 @@ export function OnboardingChecklist() {
 
     return (
         <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-            <div className="p-4 sm:p-5 space-y-4">
+            <div className="p-4 sm:p-5 density-gap-section">
                 <div className="flex items-start justify-between">
                     <div className="space-y-1">
                         <h3 className="font-semibold text-base">
@@ -221,7 +221,7 @@ export function OnboardingChecklist() {
                                         />
                                     ) : isCompleting ? (
                                         <Loader2
-                                            className="h-5 w-5 text-primary animate-spin shrink-0"
+                                            className="h-5 w-5 text-primary motion-safe:animate-spin shrink-0"
                                             aria-hidden="true"
                                         />
                                     ) : (

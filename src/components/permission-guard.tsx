@@ -91,7 +91,7 @@ export function PermissionGate({
         return (
             <div className="flex items-center justify-center min-h-[40vh] p-6">
                 <Loader2
-                    className="h-6 w-6 animate-spin text-muted-foreground"
+                    className="h-6 w-6 motion-safe:animate-spin text-muted-foreground"
                     aria-label="Loading"
                 />
             </div>

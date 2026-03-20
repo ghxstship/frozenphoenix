@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Send } from "lucide-react";
 import { useAdvanceCart } from "@/hooks/use-advance-cart";
 import { useCreateAdvance } from "@/lib/supabase/hooks-advancing";
@@ -320,7 +321,7 @@ export function AdvanceCheckout({ onBack, onSuccess, className }: AdvanceCheckou
                                                     <Badge
                                                         key={mod.modifier_id}
                                                         variant="outline"
-                                                        className="text-[10px]"
+                                                        className="density-caption"
                                                     >
                                                         {mod.option_label}
                                                     </Badge>
@@ -376,7 +377,7 @@ export function AdvanceCheckout({ onBack, onSuccess, className }: AdvanceCheckou
                     className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
                     <Send className="h-4 w-4" />
-                    {isSubmitting ? "Submitting..." : "Submit for Review"}
+                    {isSubmitting ? COMMON_STRINGS.action_submitting : "Submit for Review"}
                 </button>
             </div>
         </div>

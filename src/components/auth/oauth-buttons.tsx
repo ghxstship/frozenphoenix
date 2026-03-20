@@ -64,7 +64,7 @@ export function OAuthButtons({ onOAuth, onBluesky, loading, disabled }: OAuthBut
                     aria-label="Sign in with Google"
                 >
                     {loading === "google" ? (
-                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />
                     ) : (
                         <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
                             <path
@@ -101,7 +101,7 @@ export function OAuthButtons({ onOAuth, onBluesky, loading, disabled }: OAuthBut
                     aria-label="Sign in with Bluesky"
                 >
                     {loading === "bluesky" ? (
-                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />
                     ) : (
                         <BlueskyIcon className="h-4 w-4" />
                     )}
@@ -132,7 +132,10 @@ export function OAuthButtons({ onOAuth, onBluesky, loading, disabled }: OAuthBut
                         aria-label="Continue with Bluesky"
                     >
                         {loading === "bluesky" ? (
-                            <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                            <Loader2
+                                className="h-3 w-3 motion-safe:animate-spin"
+                                aria-hidden="true"
+                            />
                         ) : (
                             "Go"
                         )}

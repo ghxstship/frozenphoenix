@@ -70,7 +70,7 @@ export function EnvironmentPageClient() {
         <OperationalDashboardShell config={config} data={rows} isLoading={isLoading}>
             {latest && (
                 <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 density-gap-card">
                         <Card>
                             <CardContent className="py-4">
                                 <h3 className="text-sm font-semibold mb-3">Weather Conditions</h3>
@@ -176,7 +176,7 @@ export function EnvironmentPageClient() {
                                                         {Boolean(reading.weather_alert) && (
                                                             <StatusBadge
                                                                 status="warning"
-                                                                className="text-[10px]"
+                                                                className="density-caption"
                                                             >
                                                                 Alert
                                                             </StatusBadge>
@@ -184,7 +184,7 @@ export function EnvironmentPageClient() {
                                                     </div>
                                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                                                         <div>
-                                                            <p className="text-[10px] text-muted-foreground">
+                                                            <p className="density-caption text-muted-foreground">
                                                                 Temp
                                                             </p>
                                                             <p className="font-medium">
@@ -192,7 +192,7 @@ export function EnvironmentPageClient() {
                                                                     "—"}
                                                                 °F
                                                             </p>
-                                                            <p className="text-[10px] text-muted-foreground">
+                                                            <p className="density-caption text-muted-foreground">
                                                                 Humidity:{" "}
                                                                 {(reading.humidity_percent as number) ??
                                                                     "—"}
@@ -200,7 +200,7 @@ export function EnvironmentPageClient() {
                                                             </p>
                                                         </div>
                                                         <div>
-                                                            <p className="text-[10px] text-muted-foreground">
+                                                            <p className="density-caption text-muted-foreground">
                                                                 Wind
                                                             </p>
                                                             <p className="font-medium">
@@ -208,7 +208,7 @@ export function EnvironmentPageClient() {
                                                                     0}{" "}
                                                                 mph
                                                             </p>
-                                                            <p className="text-[10px] text-muted-foreground">
+                                                            <p className="density-caption text-muted-foreground">
                                                                 Gusts:{" "}
                                                                 {Number(reading.wind_gusts_mph) ||
                                                                     0}{" "}
@@ -216,7 +216,7 @@ export function EnvironmentPageClient() {
                                                             </p>
                                                         </div>
                                                         <div>
-                                                            <p className="text-[10px] text-muted-foreground">
+                                                            <p className="density-caption text-muted-foreground">
                                                                 Noise
                                                             </p>
                                                             <p className="font-medium">
@@ -224,13 +224,13 @@ export function EnvironmentPageClient() {
                                                                     "—"}{" "}
                                                                 dB
                                                             </p>
-                                                            <p className="text-[10px] text-muted-foreground">
+                                                            <p className="density-caption text-muted-foreground">
                                                                 {(reading.noise_location as string) ??
                                                                     ""}
                                                             </p>
                                                         </div>
                                                         <div>
-                                                            <p className="text-[10px] text-muted-foreground">
+                                                            <p className="density-caption text-muted-foreground">
                                                                 Power
                                                             </p>
                                                             <p className="font-medium">
@@ -248,7 +248,7 @@ export function EnvironmentPageClient() {
                                                                 size="xs"
                                                                 className="mt-1"
                                                             />
-                                                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                                                            <p className="density-caption text-muted-foreground mt-0.5">
                                                                 Fuel:{" "}
                                                                 {(reading.generator_fuel_percent as number) ??
                                                                     "—"}

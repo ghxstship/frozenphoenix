@@ -37,7 +37,8 @@ export function LinkedRecordCard({
             className={cn(
                 "group flex items-center gap-3 p-3 rounded-lg border border-border",
                 "hover:bg-secondary/50 hover:border-border/80 hover:shadow-sm transition-all duration-200",
-                onClick && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                onClick &&
+                    "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 className
             )}
             role={onClick ? "button" : undefined}
@@ -50,33 +51,39 @@ export function LinkedRecordCard({
                 }
             }}
         >
-            <CardContent className={cn("flex items-center gap-3", variant === "compact" ? "p-0" : "pt-4")}>
-                <div className={cn(
-                    variant === "compact" ? "h-8 w-8" : "h-10 w-10",
-                    "shrink-0 rounded-lg flex items-center justify-center bg-primary/10 text-primary"
-                )}>
+            <CardContent
+                className={cn("flex items-center gap-3", variant === "compact" ? "p-0" : "pt-4")}
+            >
+                <div
+                    className={cn(
+                        variant === "compact" ? "h-8 w-8" : "h-10 w-10",
+                        "shrink-0 rounded-lg flex items-center justify-center bg-primary/10 text-primary"
+                    )}
+                >
                     <Icon className={variant === "compact" ? "h-4 w-4" : "h-5 w-5"} />
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        <span className={cn(
-                            "font-medium truncate",
-                            variant === "compact" ? "text-sm" : "text-base"
-                        )}>
+                        <span
+                            className={cn(
+                                "font-medium truncate",
+                                variant === "compact" ? "text-sm" : "text-base"
+                            )}
+                        >
                             {record.name}
                         </span>
                         {record.status && (
-                            <Badge variant="secondary" className="text-[10px] shrink-0">
+                            <Badge variant="secondary" className="density-caption shrink-0">
                                 {record.status}
                             </Badge>
                         )}
                     </div>
-                    
+
                     {variant !== "compact" && (
                         <p className="text-xs text-muted-foreground">{config.label}</p>
                     )}
-                    
+
                     {variant === "detailed" && metadata && metadata.length > 0 && (
                         <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
                             {metadata.map((item) => (
@@ -136,7 +143,7 @@ export function LinkedRecordList({
                 <h3 className="text-sm font-semibold flex items-center gap-2">
                     {config && <config.icon className="h-4 w-4 text-muted-foreground" />}
                     {title}
-                    <Badge variant="secondary" className="text-[10px]">
+                    <Badge variant="secondary" className="density-caption">
                         {records.length}
                     </Badge>
                 </h3>
@@ -156,11 +163,7 @@ export function LinkedRecordList({
             ) : (
                 <div className="space-y-2">
                     {displayRecords.map((record) => (
-                        <LinkedRecordCard
-                            key={record.id}
-                            record={record}
-                            variant={variant}
-                        />
+                        <LinkedRecordCard key={record.id} record={record} variant={variant} />
                     ))}
                 </div>
             )}

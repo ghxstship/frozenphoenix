@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import {
     Dialog,
     DialogContent,
@@ -33,7 +34,7 @@ import { useToast } from "@/components/ui/toast";
 import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { useCustomFieldDefinitions, useUpdateCustomFieldDefinition } from "@/lib/supabase";
-import { useCustomFieldValues, useUpsertCustomFieldValue } from "@/lib/supabase/hooks-automation";
+import { useCreateCustomFieldDefinition } from "@/lib/supabase/hooks-automation";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface CustomFieldDefinition {
@@ -71,11 +72,9 @@ export function CustomFieldsPageClient() {
     const [editName, setEditName] = useState("");
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
+    const createField = useCreateCustomFieldDefinition();
     const { data: sbFields, isLoading } = useCustomFieldDefinitions();
     const updateField = useUpdateCustomFieldDefinition();
-    // Wire entity-scoped custom field value hooks for preview/editing
-    const { data: _fieldValues } = useCustomFieldValues("preview", editingField?.id ?? "");
-    const _upsertFieldValue = useUpsertCustomFieldValue();
 
     const handleEdit = (field: CustomFieldDefinition) => {
         setEditingField(field);
@@ -204,30 +203,33 @@ export function CustomFieldsPageClient() {
                                         <div className="flex items-center gap-2">
                                             <h4 className="text-sm font-semibold">{field.name}</h4>
                                             {field.isRequired && (
-                                                <Badge variant="destructive" className="text-[9px]">
+                                                <Badge
+                                                    variant="destructive"
+                                                    className="density-caption"
+                                                >
                                                     Required
                                                 </Badge>
                                             )}
                                             {field.isSearchable && (
-                                                <Badge variant="info" className="text-[9px]">
+                                                <Badge variant="info" className="density-caption">
                                                     Searchable
                                                 </Badge>
                                             )}
                                         </div>
                                         <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-                                            <code className="text-[10px] bg-secondary/50 px-1.5 py-0.5 rounded">
+                                            <code className="density-caption bg-secondary/50 px-1.5 py-0.5 rounded">
                                                 {field.fieldKey}
                                             </code>
                                             <span>·</span>
                                             <Badge
                                                 variant="ghost"
-                                                className="text-[10px] capitalize"
+                                                className="density-caption capitalize"
                                             >
                                                 {field.entityType}
                                             </Badge>
                                             <span>·</span>
                                             <span className="capitalize">
-                                                {field.fieldType.replace("_", " ")}
+                                                {field.fieldType.replaceAll("_", " ")}
                                             </span>
                                         </div>
                                     </div>
@@ -239,13 +241,13 @@ export function CustomFieldsPageClient() {
                                                 <Badge
                                                     key={opt}
                                                     variant="ghost"
-                                                    className="text-[9px]"
+                                                    className="density-caption"
                                                 >
                                                     {opt}
                                                 </Badge>
                                             ))}
                                             {field.options.length > 4 && (
-                                                <Badge variant="ghost" className="text-[9px]">
+                                                <Badge variant="ghost" className="density-caption">
                                                     +{field.options.length - 4}
                                                 </Badge>
                                             )}
@@ -253,7 +255,9 @@ export function CustomFieldsPageClient() {
                                     )}
                                     <div className="text-center text-xs">
                                         <p className="font-bold">{field.usageCount}</p>
-                                        <p className="text-[10px] text-muted-foreground">uses</p>
+                                        <p className="density-caption text-muted-foreground">
+                                            uses
+                                        </p>
                                     </div>
                                     <div className="flex gap-1">
                                         <Button
@@ -277,7 +281,7 @@ export function CustomFieldsPageClient() {
                                 </div>
                             </div>
                             {field.defaultValue && (
-                                <p className="text-[10px] text-muted-foreground mt-2 ml-12">
+                                <p className="density-caption text-muted-foreground mt-2 ml-12">
                                     Default:{" "}
                                     <code className="bg-secondary/50 px-1 py-0.5 rounded">
                                         {field.defaultValue}
@@ -322,6 +326,11 @@ export function CustomFieldsPageClient() {
                 config={CREATE_CUSTOM_FIELD_CONFIG}
                 open={createOpen}
                 onClose={closeCreate}
+                onSubmit={async (values) => {
+                    await createField.mutateAsync(
+                        values as Parameters<typeof createField.mutateAsync>[0]
+                    );
+                }}
             />
             <Dialog
                 open={!!editingField}
@@ -349,7 +358,9 @@ export function CustomFieldsPageClient() {
                             onClick={handleEditSave}
                             disabled={!editName.trim() || updateField.isPending}
                         >
-                            {updateField.isPending ? "Saving..." : "Save Changes"}
+                            {updateField.isPending
+                                ? COMMON_STRINGS.action_saving
+                                : COMMON_STRINGS.action_save}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

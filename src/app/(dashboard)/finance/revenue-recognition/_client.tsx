@@ -74,9 +74,9 @@ export function RevenueRecognitionPageClient() {
         validValues: ["entries", "summary", "schedules"],
     });
 
+    const createRevRec = useCreateRevenueRecognition();
     const { data: sbEntries, isLoading: loadingEntries } = useRevenueRecognitionEntries();
     const { data: sbSummary, isLoading: loadingSummary } = useRevenueRecognitionSummary();
-    const _createRevRec = useCreateRevenueRecognition();
 
     const entries: RevenueEntry[] = useMemo(
         () =>
@@ -139,7 +139,7 @@ export function RevenueRecognitionPageClient() {
 
     const contentSlot = (
         <div className="density-gap-page">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 density-gap-card">
                 <StatCard
                     title="Recognized Revenue"
                     value={formatCurrency(totalRecognized)}
@@ -177,16 +177,16 @@ export function RevenueRecognitionPageClient() {
                                                 {entry.projectName}
                                             </h3>
                                             <div className="flex items-center gap-2 mt-1">
-                                                <span className="text-[10px] font-mono text-muted-foreground">
+                                                <span className="density-caption font-mono text-muted-foreground">
                                                     {entry.invoiceNumber}
                                                 </span>
                                                 <Badge
                                                     variant={STATUS_BADGE[entry.status]}
-                                                    className="text-[10px]"
+                                                    className="density-caption"
                                                 >
-                                                    {entry.status.replace("_", " ")}
+                                                    {entry.status.replaceAll("_", " ")}
                                                 </Badge>
-                                                <Badge variant="ghost" className="text-[10px]">
+                                                <Badge variant="ghost" className="density-caption">
                                                     {METHOD_LABELS[entry.recognitionMethod]}
                                                 </Badge>
                                             </div>
@@ -195,14 +195,14 @@ export function RevenueRecognitionPageClient() {
                                             <p className="text-sm font-bold">
                                                 {formatCurrency(entry.totalAmount)}
                                             </p>
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="density-caption text-muted-foreground">
                                                 {entry.period}
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 density-gap-card mb-3">
                                         <div>
-                                            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                            <p className="density-caption text-muted-foreground flex items-center gap-1">
                                                 <ArrowUpRight className="h-3 w-3 text-success" />
                                                 Recognized
                                             </p>
@@ -211,7 +211,7 @@ export function RevenueRecognitionPageClient() {
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                            <p className="density-caption text-muted-foreground flex items-center gap-1">
                                                 <ArrowDownRight className="h-3 w-3 text-warning" />
                                                 Deferred
                                             </p>
@@ -220,7 +220,7 @@ export function RevenueRecognitionPageClient() {
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="density-caption text-muted-foreground">
                                                 Recognition
                                             </p>
                                             <p className="text-sm font-semibold">{pct}%</p>
@@ -235,7 +235,7 @@ export function RevenueRecognitionPageClient() {
             </TabPanel>
 
             <TabPanel value="summary" activeValue={activeTab}>
-                <div className="space-y-4">
+                <div className="density-gap-section">
                     {summaries.map((period) => {
                         const recognizedPct = Math.round(
                             (period.recognizedRevenue / period.totalRevenue) * 100
@@ -254,9 +254,9 @@ export function RevenueRecognitionPageClient() {
                                             {formatCurrency(period.totalRevenue)}
                                         </p>
                                     </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 density-gap-card mb-3">
                                         <div className="p-3 rounded-lg bg-success/10">
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="density-caption text-muted-foreground">
                                                 Recognized
                                             </p>
                                             <p className="text-sm font-bold text-success">
@@ -264,7 +264,7 @@ export function RevenueRecognitionPageClient() {
                                             </p>
                                         </div>
                                         <div className="p-3 rounded-lg bg-warning/10">
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="density-caption text-muted-foreground">
                                                 Deferred
                                             </p>
                                             <p className="text-sm font-bold text-warning">
@@ -272,7 +272,7 @@ export function RevenueRecognitionPageClient() {
                                             </p>
                                         </div>
                                         <div className="p-3 rounded-lg bg-info/10">
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="density-caption text-muted-foreground">
                                                 Unbilled
                                             </p>
                                             <p className="text-sm font-bold text-info">
@@ -280,7 +280,7 @@ export function RevenueRecognitionPageClient() {
                                             </p>
                                         </div>
                                         <div className="p-3 rounded-lg bg-secondary/30">
-                                            <p className="text-[10px] text-muted-foreground">
+                                            <p className="density-caption text-muted-foreground">
                                                 Recognition Rate
                                             </p>
                                             <p className="text-sm font-bold">{recognizedPct}%</p>
@@ -302,7 +302,7 @@ export function RevenueRecognitionPageClient() {
                             Recognition Schedule — Q1 2026
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="density-gap-section">
                         {summaries.map((s) => {
                             const pct =
                                 s.totalRevenue > 0
@@ -322,7 +322,7 @@ export function RevenueRecognitionPageClient() {
                                         </div>
                                     </div>
                                     <ProgressBar value={pct} size="sm" />
-                                    <p className="text-[10px] text-muted-foreground mt-1">
+                                    <p className="density-caption text-muted-foreground mt-1">
                                         {pct}% of total recognized
                                     </p>
                                 </div>
@@ -340,8 +340,23 @@ export function RevenueRecognitionPageClient() {
         title: "Revenue Recognition",
         description: "ASC 606 / IFRS 15 compliant revenue recognition tracking across projects",
         headerActions: (
-            <Button size="sm">
-                <TrendingUp className="h-4 w-4" /> Run Recognition
+            <Button
+                size="sm"
+                disabled={createRevRec.isPending}
+                onClick={() => {
+                    if (
+                        window.confirm(
+                            "Run revenue recognition for all pending entries? This will create new recognition records."
+                        )
+                    ) {
+                        createRevRec.mutate({ status: "pending_review" } as Parameters<
+                            typeof createRevRec.mutate
+                        >[0]);
+                    }
+                }}
+            >
+                <TrendingUp className="h-4 w-4" />{" "}
+                {createRevRec.isPending ? "Running..." : "Run Recognition"}
             </Button>
         ),
         contentSlot,

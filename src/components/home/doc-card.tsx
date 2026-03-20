@@ -81,7 +81,7 @@ export function DocCard({ doc }: { doc: DocCardItem }) {
                             <div className="min-w-0">
                                 <p className="text-sm font-semibold truncate">{doc.title}</p>
                                 {doc.parentTitle && (
-                                    <p className="text-[10px] text-muted-foreground">
+                                    <p className="density-caption text-muted-foreground">
                                         in {doc.parentTitle}
                                     </p>
                                 )}
@@ -93,14 +93,14 @@ export function DocCard({ doc }: { doc: DocCardItem }) {
                     </div>
 
                     <div className="flex items-center gap-1.5 flex-wrap">
-                        <StatusBadge status={doc.status} className="text-[9px]" />
-                        <Badge variant="ghost" className="text-[9px]">
+                        <StatusBadge status={doc.status} className="density-caption" />
+                        <Badge variant="ghost" className="density-caption">
                             {typeLabel}
                         </Badge>
                         {doc.isPublic ? (
                             <Globe className="h-3 w-3 text-success" />
                         ) : doc.sharedWith > 0 ? (
-                            <span className="flex items-center gap-0.5 text-[9px] text-muted-foreground">
+                            <span className="flex items-center gap-0.5 density-caption text-muted-foreground">
                                 <Users className="h-2.5 w-2.5" /> {doc.sharedWith}
                             </span>
                         ) : (
@@ -109,12 +109,12 @@ export function DocCard({ doc }: { doc: DocCardItem }) {
                     </div>
 
                     {doc.projectName && (
-                        <p className="text-[10px] text-muted-foreground truncate">
+                        <p className="density-caption text-muted-foreground truncate">
                             {doc.projectName}
                         </p>
                     )}
 
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t">
+                    <div className="flex items-center justify-between density-caption text-muted-foreground pt-1 border-t">
                         <div className="flex items-center gap-2">
                             {doc.commentCount > 0 && (
                                 <span className="flex items-center gap-0.5">

@@ -104,16 +104,16 @@ export function LiveCrewPageClient() {
                                                         ? "checked_in"
                                                         : "not_checked_in"
                                                 }
-                                                className="text-[10px] shrink-0"
+                                                className="density-caption shrink-0"
                                             />
                                             {Boolean(member.overtime_flagged) && (
-                                                <span className="text-[10px] text-warning font-medium shrink-0 flex items-center gap-0.5">
+                                                <span className="density-caption text-warning font-medium shrink-0 flex items-center gap-0.5">
                                                     <AlertTriangle className="h-3 w-3" />
                                                     OT
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                                        <p className="density-caption text-muted-foreground mt-0.5">
                                             {(member.role_description as string) ?? ""} ·{" "}
                                             {(member.department as string) ?? ""} ·{" "}
                                             {(member.zone as string) ?? ""}
@@ -125,7 +125,7 @@ export function LiveCrewPageClient() {
                                                 {Number(member.hours_worked) || 0}h
                                             </p>
                                             {typeof member.checked_in_at === "string" && (
-                                                <p className="text-[10px] text-muted-foreground">
+                                                <p className="density-caption text-muted-foreground">
                                                     In:{" "}
                                                     {new Date(
                                                         member.checked_in_at
@@ -141,7 +141,7 @@ export function LiveCrewPageClient() {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    className="h-7 px-2 text-[10px]"
+                                                    className="h-7 px-2 density-caption"
                                                     title="Check in"
                                                     disabled={updateAssignment.isPending}
                                                     onClick={() =>
@@ -160,7 +160,7 @@ export function LiveCrewPageClient() {
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
-                                                            className="h-7 px-2 text-[10px]"
+                                                            className="h-7 px-2 density-caption"
                                                             title="Start break"
                                                             disabled={updateAssignment.isPending}
                                                             onClick={() =>
@@ -178,7 +178,7 @@ export function LiveCrewPageClient() {
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
-                                                            className="h-7 px-2 text-[10px] text-warning"
+                                                            className="h-7 px-2 density-caption text-warning"
                                                             title="End break"
                                                             disabled={updateAssignment.isPending}
                                                             onClick={() =>
@@ -196,7 +196,7 @@ export function LiveCrewPageClient() {
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="h-7 px-2 text-[10px]"
+                                                        className="h-7 px-2 density-caption"
                                                         title="Check out"
                                                         disabled={updateAssignment.isPending}
                                                         onClick={() =>
@@ -212,7 +212,7 @@ export function LiveCrewPageClient() {
                                                     </Button>
                                                 </>
                                             ) : (
-                                                <span className="text-[10px] text-muted-foreground">
+                                                <span className="density-caption text-muted-foreground">
                                                     Out:{" "}
                                                     {typeof member.checked_out_at === "string"
                                                         ? new Date(

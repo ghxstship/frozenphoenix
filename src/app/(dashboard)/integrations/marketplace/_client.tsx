@@ -129,7 +129,7 @@ export function MarketplacePageClient() {
                         <h3 className="text-sm font-semibold text-muted-foreground mb-3">
                             {group.label}
                         </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 density-gap-card">
                             {group.items.map((item) => {
                                 const isConnected = connectedTypes.has(item.provider_type);
                                 return (
@@ -151,7 +151,7 @@ export function MarketplacePageClient() {
                                                             {item.is_beta && (
                                                                 <Badge
                                                                     variant="warning"
-                                                                    className="text-[10px]"
+                                                                    className="density-caption"
                                                                 >
                                                                     Beta
                                                                 </Badge>
@@ -159,7 +159,7 @@ export function MarketplacePageClient() {
                                                             {isConnected && (
                                                                 <Badge
                                                                     variant="success"
-                                                                    className="text-[10px]"
+                                                                    className="density-caption"
                                                                 >
                                                                     <CheckCircle2 className="h-3 w-3 mr-1" />{" "}
                                                                     Connected
@@ -172,7 +172,7 @@ export function MarketplacePageClient() {
                                                         <div className="flex items-center gap-2 mt-2 flex-wrap">
                                                             <Badge
                                                                 variant="ghost"
-                                                                className="text-[10px]"
+                                                                className="density-caption"
                                                             >
                                                                 {item.auth_type === "oauth2"
                                                                     ? "OAuth 2.0"
@@ -184,7 +184,7 @@ export function MarketplacePageClient() {
                                                                 <Badge
                                                                     key={f}
                                                                     variant="ghost"
-                                                                    className="text-[10px]"
+                                                                    className="density-caption"
                                                                 >
                                                                     {f}
                                                                 </Badge>

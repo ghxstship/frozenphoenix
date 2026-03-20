@@ -16,16 +16,14 @@ export function AdvanceTimeline({ entityType, entityId, className }: AdvanceTime
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-8">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <div className="h-5 w-5 motion-safe:animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
         );
     }
 
     if (!history || history.length === 0) {
         return (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-                No status history yet
-            </p>
+            <p className="py-4 text-center text-sm text-muted-foreground">No status history yet</p>
         );
     }
 
@@ -34,13 +32,21 @@ export function AdvanceTimeline({ entityType, entityId, className }: AdvanceTime
     return (
         <div className={cn("flex flex-col", className)}>
             <h4 className="mb-3 text-sm font-medium text-muted-foreground">Status History</h4>
-            <ol className="relative border-l border-border pl-6" aria-label="Status history timeline">
+            <ol
+                className="relative border-l border-border pl-6"
+                aria-label="Status history timeline"
+            >
                 {(history as Record<string, unknown>[]).map((entry, index) => {
                     const toStatus = entry.to_status as string;
                     const fromStatus = entry.from_status as string | null;
                     const reason = entry.reason as string | null;
                     const createdAt = entry.created_at as string;
-                    const toConfig = (statusMap as Record<string, { label: string; icon?: React.ComponentType<{ className?: string }> }>)[toStatus];
+                    const toConfig = (
+                        statusMap as Record<
+                            string,
+                            { label: string; icon?: React.ComponentType<{ className?: string }> }
+                        >
+                    )[toStatus];
                     const Icon = toConfig?.icon;
 
                     return (
@@ -61,7 +67,10 @@ export function AdvanceTimeline({ entityType, entityId, className }: AdvanceTime
                                 </div>
                                 {fromStatus && (
                                     <span className="text-xs text-muted-foreground">
-                                        from {(statusMap as Record<string, { label: string }>)[fromStatus]?.label ?? fromStatus}
+                                        from{" "}
+                                        {(statusMap as Record<string, { label: string }>)[
+                                            fromStatus
+                                        ]?.label ?? fromStatus}
                                     </span>
                                 )}
                                 {reason && (
@@ -71,7 +80,7 @@ export function AdvanceTimeline({ entityType, entityId, className }: AdvanceTime
                                 )}
                                 <time
                                     dateTime={createdAt}
-                                    className="text-[11px] text-muted-foreground/60"
+                                    className="density-caption text-muted-foreground/60"
                                 >
                                     {new Date(createdAt).toLocaleString()}
                                 </time>

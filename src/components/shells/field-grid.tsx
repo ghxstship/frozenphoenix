@@ -12,18 +12,8 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { FieldRenderer } from "@/components/data-view/field-renderers";
 import type { DetailFieldDef } from "@/types/detail-page-config";
-
-type EntityRecord = Record<string, unknown>;
-
-function getNestedValue(record: EntityRecord, key: string): unknown {
-    const parts = key.split(".");
-    let current: unknown = record;
-    for (const part of parts) {
-        if (current == null || typeof current !== "object") return undefined;
-        current = (current as EntityRecord)[part];
-    }
-    return current;
-}
+import { getNestedValue } from "@/lib/record-utils";
+import type { EntityRecord } from "@/types/entity";
 
 interface FieldGridProps {
     fields: DetailFieldDef[];

@@ -21,6 +21,13 @@ import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+    Select as DSSelect,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import type {
     SettingsPageConfig,
     SettingsRowDef,
@@ -70,19 +77,21 @@ function SettingsRowRenderer({ row }: { row: SettingsRowDef }) {
                     </Button>
                 )}
                 {row.type === "select" && row.options && (
-                    <select
+                    <DSSelect
                         value={String(row.value ?? "")}
-                        onChange={(e) => row.onChange?.(e.target.value)}
-                        disabled={row.disabled}
-                        className="h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-                        aria-label={row.label}
+                        onValueChange={(v) => row.onChange?.(v)}
                     >
-                        {row.options.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                            </option>
-                        ))}
-                    </select>
+                        <SelectTrigger className="h-9 min-w-[140px]" aria-label={row.label}>
+                            <SelectValue placeholder={row.label} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {row.options.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </DSSelect>
                 )}
                 {row.type === "input" && (
                     <Input
@@ -164,7 +173,7 @@ export function SettingsPageShell({ config, children }: SettingsPageShellProps) 
                   {tab.content ? (
                       tab.content
                   ) : tab.sections ? (
-                      <div className="space-y-6">
+                      <div className="density-gap-page">
                           {tab.sections.map((section) => (
                               <SettingsSectionRenderer key={section.id} section={section} />
                           ))}
@@ -178,7 +187,7 @@ export function SettingsPageShell({ config, children }: SettingsPageShellProps) 
             resource={config.resource}
             action={config.action as "read" | "write" | "delete" | "manage" | undefined}
         >
-            <div className="space-y-6 motion-safe:animate-fade-in">
+            <div className="density-gap-page motion-safe:animate-fade-in">
                 <PageHeader title={config.title} description={config.description}>
                     {config.headerActions}
                 </PageHeader>
@@ -198,7 +207,7 @@ export function SettingsPageShell({ config, children }: SettingsPageShellProps) 
                                 />
                             </CardContent>
                         </Card>
-                        <div className="flex-1 space-y-6">
+                        <div className="flex-1 density-gap-page">
                             <div
                                 role="tabpanel"
                                 id={`settings-tabs-tabpanel-${activeTab}`}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { enumLabel, SURVEY_TYPE_LABELS } from "@/lib/enum-labels";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -88,7 +89,7 @@ function NpsIndicator({ score }: { score: number }) {
             <span className={`text-sm font-bold ${color}`}>{score}</span>
             <Badge
                 variant={score >= 9 ? "success" : score >= 7 ? "warning" : "destructive"}
-                className="text-[10px]"
+                className="density-caption"
             >
                 {label}
             </Badge>
@@ -176,7 +177,7 @@ function SurveysContent({
                                 }
                             />
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                                 {filteredTemplates.map((template) => (
                                     <StaggerItem
                                         key={template.id}
@@ -192,9 +193,12 @@ function SurveysContent({
                                                         <div className="flex items-center gap-2 mt-1">
                                                             <Badge
                                                                 variant={TYPE_BADGE[template.type]}
-                                                                className="text-[10px]"
+                                                                className="density-caption"
                                                             >
-                                                                {template.type.toUpperCase()}
+                                                                {enumLabel(
+                                                                    template.type,
+                                                                    SURVEY_TYPE_LABELS
+                                                                )}
                                                             </Badge>
                                                             <span className="text-xs text-muted-foreground">
                                                                 {template.questionCount} questions
@@ -202,7 +206,7 @@ function SurveysContent({
                                                             {!template.isActive && (
                                                                 <Badge
                                                                     variant="ghost"
-                                                                    className="text-[10px]"
+                                                                    className="density-caption"
                                                                 >
                                                                     Inactive
                                                                 </Badge>
@@ -260,7 +264,7 @@ function SurveysContent({
                                                         <p className="text-lg font-bold">
                                                             {template.responseCount}
                                                         </p>
-                                                        <p className="text-[10px] text-muted-foreground">
+                                                        <p className="density-caption text-muted-foreground">
                                                             Responses
                                                         </p>
                                                     </div>
@@ -268,15 +272,18 @@ function SurveysContent({
                                                         <p className="text-lg font-bold">
                                                             {template.averageRating.toFixed(1)}
                                                         </p>
-                                                        <p className="text-[10px] text-muted-foreground">
+                                                        <p className="density-caption text-muted-foreground">
                                                             Avg Rating
                                                         </p>
                                                     </div>
                                                     <div className="text-center p-2 rounded-lg bg-secondary/30">
                                                         <p className="text-xs font-medium capitalize">
-                                                            {template.triggerOn.replace("_", " ")}
+                                                            {template.triggerOn.replaceAll(
+                                                                "_",
+                                                                " "
+                                                            )}
                                                         </p>
-                                                        <p className="text-[10px] text-muted-foreground">
+                                                        <p className="density-caption text-muted-foreground">
                                                             Trigger
                                                         </p>
                                                     </div>
@@ -322,7 +329,7 @@ function SurveysContent({
                                                             </h3>
                                                             <Badge
                                                                 variant="ghost"
-                                                                className="text-[10px]"
+                                                                className="density-caption"
                                                             >
                                                                 {response.templateName}
                                                             </Badge>
@@ -348,7 +355,7 @@ function SurveysContent({
                                                         &ldquo;{response.comments}&rdquo;
                                                     </p>
                                                 )}
-                                                <p className="text-[10px] text-muted-foreground mt-2">
+                                                <p className="density-caption text-muted-foreground mt-2">
                                                     {formatDate(response.submittedAt)}
                                                 </p>
                                             </CardContent>
@@ -359,8 +366,8 @@ function SurveysContent({
                         ))}
 
                     {tabId === "analytics" && (
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="density-gap-page">
+                            <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="text-base flex items-center gap-2">
@@ -406,7 +413,7 @@ function SurveysContent({
                                             NPS Breakdown
                                         </CardTitle>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
+                                    <CardContent className="density-gap-section">
                                         {[
                                             {
                                                 label: "Promoters (9-10)",

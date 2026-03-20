@@ -107,7 +107,7 @@ export function CatalogPageClient() {
             {/* Items */}
             {isLoading ? (
                 <div className="flex items-center justify-center py-16">
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    <div className="h-6 w-6 motion-safe:animate-spin rounded-full border-2 border-primary border-t-transparent" />
                 </div>
             ) : filtered.length === 0 ? (
                 <EmptyState
@@ -116,7 +116,7 @@ export function CatalogPageClient() {
                     description="Add items to the catalog to get started"
                 />
             ) : view === "grid" ? (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid density-gap-card sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {filtered.map((item) => (
                         <Card key={item.id as string}>
                             <CardContent className="flex flex-col gap-2 pt-4">
@@ -131,7 +131,7 @@ export function CatalogPageClient() {
                                     </div>
                                     <Badge
                                         variant={item.is_active ? "success" : "secondary"}
-                                        className="text-[10px]"
+                                        className="density-caption"
                                     >
                                         {item.is_active ? "Active" : "Inactive"}
                                     </Badge>
@@ -171,7 +171,7 @@ export function CatalogPageClient() {
                                     </span>
                                     <Badge
                                         variant={item.is_active ? "success" : "secondary"}
-                                        className="text-[10px]"
+                                        className="density-caption"
                                     >
                                         {item.is_active ? "Active" : "Inactive"}
                                     </Badge>

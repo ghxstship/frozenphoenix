@@ -135,7 +135,7 @@ export function DataMap({ data, className, height = 400, actions, onItemClick }:
                                         {item.title}
                                     </DropdownMenuLabel>
                                     {item.subtitle && (
-                                        <p className="px-2 pb-1.5 text-[10px] text-muted-foreground">
+                                        <p className="px-2 pb-1.5 density-caption text-muted-foreground">
                                             {item.subtitle}
                                         </p>
                                     )}

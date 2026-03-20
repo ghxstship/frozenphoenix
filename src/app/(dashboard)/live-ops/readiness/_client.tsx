@@ -89,22 +89,22 @@ const CONFIG: DashboardPageConfig = {
                             </h3>
                             <StatusBadge
                                 status={item.status as string}
-                                className="text-[10px] shrink-0"
+                                className="density-caption shrink-0"
                             />
                             {Boolean(item.is_blocking) && (
-                                <span className="text-[10px] text-destructive font-medium shrink-0">
+                                <span className="density-caption text-destructive font-medium shrink-0">
                                     BLOCKING
                                 </span>
                             )}
                         </div>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                        <p className="density-caption text-muted-foreground mt-0.5">
                             Verifier: {item.verifier_role as string}
                         </p>
                     </div>
                     {typeof item.verified_by_id === "string" && (
                         <div className="text-right text-xs shrink-0">
                             <p className="font-medium">{item.verified_by_id}</p>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="density-caption text-muted-foreground">
                                 {typeof item.verified_at === "string"
                                     ? new Date(item.verified_at).toLocaleTimeString([], {
                                           hour: "2-digit",

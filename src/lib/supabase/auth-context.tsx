@@ -284,12 +284,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
         }
 
-        // Clear server-side session cookies via API route
-        try {
-            await fetch("/api/auth/signout", { method: "POST" });
-        } catch {
-            // Best-effort — continue with client-side signOut
-        }
+        // Clear server-side session cookies via API route (fire-and-forget).
+        // This must NOT block the critical path — if the server is slow or
+        // unreachable, the client-side signOut + hard navigation must proceed.
+        fetch("/api/auth/signout", { method: "POST", keepalive: true }).catch(() => {});
 
         // Client-side signOut (clears local Supabase tokens).
         // Must complete before navigation so back-button doesn't see stale tokens.

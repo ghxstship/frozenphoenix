@@ -773,6 +773,14 @@ function LocaleSwitcher() {
 function UserMenu() {
     const { user, profile, memberships, activeOrg, switchOrg, signOut } = useAuth();
     const router = useRouter();
+    const [signingOut, setSigningOut] = useState(false);
+
+    const handleSignOut = useCallback(async () => {
+        if (signingOut) return;
+        setSigningOut(true);
+        await signOut();
+        // signOut() handles navigation via window.location.href
+    }, [signOut, signingOut]);
 
     const displayName = profile?.display_name || user?.email?.split("@")[0] || "User";
     const displayEmail = user?.email || "";
@@ -875,11 +883,11 @@ function UserMenu() {
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem
-                    onClick={signOut}
+                    onClick={handleSignOut}
                     className="text-destructive focus:text-destructive"
                 >
                     <LogOut className={cn(ICON_SIZES.sm, "mr-2")} />
-                    Sign out
+                    {signingOut ? "Signing out…" : "Sign out"}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

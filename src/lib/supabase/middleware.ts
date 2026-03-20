@@ -66,7 +66,7 @@ function isPublicRoute(pathname: string): boolean {
 
 function setCacheCookie(response: NextResponse, name: string, value: string, maxAge: number): void {
     response.cookies.set(name, value, {
-        httpOnly: true,
+        httpOnly: false, // Client JS must clear these on org-switch and MFA verify
         secure: IS_PROD,
         sameSite: "lax",
         path: "/",

@@ -2,7 +2,50 @@ import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 // Inline redirect validation to avoid importing client-side module in server route
-const ALLOWED_PREFIXES = ["/dashboard", "/onboarding", "/settings", "/projects", "/invite"];
+const ALLOWED_PREFIXES = [
+    "/dashboard",
+    "/onboarding",
+    "/settings",
+    "/projects",
+    "/invite",
+    "/tasks",
+    "/events",
+    "/activations",
+    "/budgets",
+    "/calendar",
+    "/campaigns",
+    "/crew",
+    "/contracts",
+    "/documents",
+    "/finance",
+    "/incidents",
+    "/invoices",
+    "/locations",
+    "/messages",
+    "/proposals",
+    "/reports",
+    "/shipments",
+    "/vendors",
+    "/assets",
+    "/approvals",
+    "/leads",
+    "/deals",
+    "/opportunities",
+    "/live-ops",
+    "/time-tracking",
+    "/resource-planner",
+    "/workforce",
+    "/knowledge-base",
+    "/templates",
+    "/automations",
+    "/integrations",
+    "/user-management",
+    "/org-chart",
+    "/scheduling",
+    "/compliance",
+    "/client-portal",
+    "/vendor-portal",
+];
 
 function safeRedirect(url: string | null): string {
     const fallback = "/dashboard";

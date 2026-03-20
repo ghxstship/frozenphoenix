@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { csrfHeaders } from "@/lib/csrf";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
 import { AuthLayout } from "@/components/auth";
@@ -34,9 +35,11 @@ type InviteState = "loading" | "valid" | "expired" | "used" | "not_found" | "acc
 
 const ROLE_LABELS: Record<string, string> = {
     exec: "Executive",
+    director: "Director",
     pm: "Project Manager",
+    member: "Team Member",
     client: "Client",
-    vendor: "Vendor",
+    collaborator: "Collaborator",
 };
 
 export default function InviteAcceptPage() {
@@ -88,6 +91,7 @@ export default function InviteAcceptPage() {
         try {
             const res = await fetch(`/api/invitations/${token}/accept`, {
                 method: "POST",
+                headers: csrfHeaders(),
             });
 
             if (res.ok) {

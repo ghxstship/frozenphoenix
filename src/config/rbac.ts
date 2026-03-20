@@ -585,6 +585,9 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "team_members", actions: ["read"] },
     ],
     collaborator: [
+        // Command Center — collaborator is also DEFAULT_LEVEL fallback,
+        // so dashboard must be accessible to prevent false Access Denied.
+        { resource: "dashboard", actions: ["read"] },
         { resource: "tasks", actions: ["read"] },
         { resource: "schedule", actions: ["read"] },
         { resource: "vault", actions: ["read"] },

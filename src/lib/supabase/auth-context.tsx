@@ -244,9 +244,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Revoke tracked session (fire-and-forget)
         fetch("/api/auth/session-track", { method: "DELETE", keepalive: true }).catch(() => {});
 
-        // Clear persisted preferences
+        // Clear persisted preferences and middleware cache cookies.
+        // Cache cookies must be cleared to prevent the next user from
+        // inheriting the previous user's role/org/lifecycle/MFA level.
         if (typeof window !== "undefined") {
             localStorage.removeItem(AUTH_ACTIVE_ORG_KEY);
+            const cacheCookies = [
+                "fp-mfa-level",
+                "fp-user-role",
+                "fp-org-id",
+                "fp-lifecycle-status",
+                "fp-onboarding-complete",
+                "fp-onboarding-skipped",
+            ];
+            for (const name of cacheCookies) {
+                document.cookie = `${name}=; path=/; max-age=0`;
+            }
         }
 
         // Clear server-side session cookies via API route

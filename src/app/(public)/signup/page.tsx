@@ -97,9 +97,18 @@ function SignupForm() {
                     return;
                 }
 
-                // When autoconfirm is enabled, redirect to onboarding
+                // When autoconfirm is enabled, session exists immediately.
+                // If the user signed up via an invite link, redirect to the
+                // invite page where they can accept with proper CSRF protection.
+                // (The auth callback path handles this server-side, but autoconfirm
+                // skips the callback entirely.)
+                if (data?.session && inviteToken) {
+                    router.push(`/invite/${inviteToken}`);
+                    return;
+                }
+
                 if (data?.session) {
-                    router.push(inviteToken ? "/dashboard" : "/onboarding/org-setup");
+                    router.push("/onboarding/org-setup");
                     return;
                 }
 

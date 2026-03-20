@@ -3,7 +3,50 @@
    ═══════════════════════════════════════════════════════════════ */
 
 // ─── Redirect Validation (prevents open redirect) ──────────────
-const ALLOWED_REDIRECT_PREFIXES = ["/dashboard", "/onboarding", "/settings", "/projects", "/invite"];
+const ALLOWED_REDIRECT_PREFIXES = [
+    "/dashboard",
+    "/onboarding",
+    "/settings",
+    "/projects",
+    "/invite",
+    "/tasks",
+    "/events",
+    "/activations",
+    "/budgets",
+    "/calendar",
+    "/campaigns",
+    "/crew",
+    "/contracts",
+    "/documents",
+    "/finance",
+    "/incidents",
+    "/invoices",
+    "/locations",
+    "/messages",
+    "/proposals",
+    "/reports",
+    "/shipments",
+    "/vendors",
+    "/assets",
+    "/approvals",
+    "/leads",
+    "/deals",
+    "/opportunities",
+    "/live-ops",
+    "/time-tracking",
+    "/resource-planner",
+    "/workforce",
+    "/knowledge-base",
+    "/templates",
+    "/automations",
+    "/integrations",
+    "/user-management",
+    "/org-chart",
+    "/scheduling",
+    "/compliance",
+    "/client-portal",
+    "/vendor-portal",
+];
 
 export function validateRedirectUrl(url: string | null): string {
     const fallback = "/dashboard";
@@ -23,9 +66,7 @@ export function validateRedirectUrl(url: string | null): string {
     // Must start with / and match an allowed prefix
     if (!url.startsWith("/")) return fallback;
 
-    const isAllowed = ALLOWED_REDIRECT_PREFIXES.some((prefix) =>
-        url.startsWith(prefix)
-    );
+    const isAllowed = ALLOWED_REDIRECT_PREFIXES.some((prefix) => url.startsWith(prefix));
 
     return isAllowed ? url : fallback;
 }
@@ -45,7 +86,9 @@ function getRateLimitState(): RateLimitState {
     try {
         const stored = sessionStorage.getItem(RATE_LIMIT_KEY);
         if (stored) return JSON.parse(stored);
-    } catch { /* ignore */ }
+    } catch {
+        /* ignore */
+    }
     return { attempts: 0, lastAttempt: 0, lockedUntil: 0 };
 }
 
@@ -53,7 +96,9 @@ function setRateLimitState(state: RateLimitState) {
     if (typeof window === "undefined") return;
     try {
         sessionStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(state));
-    } catch { /* ignore */ }
+    } catch {
+        /* ignore */
+    }
 }
 
 export function checkRateLimit(): { allowed: boolean; retryAfterMs: number } {
@@ -91,7 +136,9 @@ export function resetRateLimit() {
     if (typeof window === "undefined") return;
     try {
         sessionStorage.removeItem(RATE_LIMIT_KEY);
-    } catch { /* ignore */ }
+    } catch {
+        /* ignore */
+    }
 }
 
 export function formatLockoutTime(ms: number): string {
@@ -114,8 +161,7 @@ const AUTH_ERROR_MAP: Record<string, string> = {
     "Auth session missing!": "Your session has expired. Please sign in again.",
     "New password should be different from the old password.":
         "Your new password must be different from your current password.",
-    "Unable to validate email address: invalid format":
-        "Please enter a valid email address.",
+    "Unable to validate email address: invalid format": "Please enter a valid email address.",
 };
 
 export function mapAuthError(message: string | undefined | null): string {

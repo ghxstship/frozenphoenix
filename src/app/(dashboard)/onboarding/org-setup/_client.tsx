@@ -18,7 +18,6 @@ import {
     UserCheck,
     Users,
 } from "lucide-react";
-import { PermissionGate } from "@/components/permission-guard";
 import { PageHeader } from "@/components/ui/page-header";
 
 const TIMEZONES = [
@@ -186,200 +185,189 @@ export function OrgSetupPageClient() {
     }
 
     return (
-        <PermissionGate resource="settings">
-            <div className="min-h-screen flex items-center justify-center bg-background p-4">
-                <div className="w-full max-w-lg space-y-8">
-                    {/* Progress indicator */}
-                    <div
-                        className="flex items-center gap-2 justify-center"
-                        role="progressbar"
-                        aria-valuenow={1}
-                        aria-valuemin={1}
-                        aria-valuemax={3}
-                        aria-label="Onboarding step 1 of 3"
-                    >
-                        <div className="h-2 w-12 rounded-full bg-primary" />
-                        <div className="h-2 w-12 rounded-full bg-muted" />
-                        <div className="h-2 w-12 rounded-full bg-muted" />
-                    </div>
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+            <div className="w-full max-w-lg space-y-8">
+                {/* Progress indicator */}
+                <div
+                    className="flex items-center gap-2 justify-center"
+                    role="progressbar"
+                    aria-valuenow={1}
+                    aria-valuemin={1}
+                    aria-valuemax={3}
+                    aria-label="Onboarding step 1 of 3"
+                >
+                    <div className="h-2 w-12 rounded-full bg-primary" />
+                    <div className="h-2 w-12 rounded-full bg-muted" />
+                    <div className="h-2 w-12 rounded-full bg-muted" />
+                </div>
 
-                    <PageHeader
-                        centered
+                <PageHeader
+                    centered
+                    icon={Building2}
+                    title="Set up your organization"
+                    description={`Welcome${profile?.display_name ? `, ${profile.display_name}` : ""}! Let's get your workspace configured.`}
+                />
+
+                <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                    {error && (
+                        <div
+                            className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+                            role="alert"
+                            aria-live="assertive"
+                        >
+                            {error}
+                        </div>
+                    )}
+
+                    <AuthFormField
+                        fieldId="org-name"
+                        label="Organization Name"
+                        type="text"
                         icon={Building2}
-                        title="Set up your organization"
-                        description={`Welcome${profile?.display_name ? `, ${profile.display_name}` : ""}! Let's get your workspace configured.`}
+                        placeholder="Acme Productions"
+                        value={orgName}
+                        onChange={(e) => setOrgName(e.target.value)}
+                        required
+                        disabled={loading}
                     />
 
-                    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-                        {error && (
-                            <div
-                                className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
-                                role="alert"
-                                aria-live="assertive"
-                            >
-                                {error}
-                            </div>
-                        )}
-
-                        <AuthFormField
-                            fieldId="org-name"
-                            label="Organization Name"
-                            type="text"
-                            icon={Building2}
-                            placeholder="Acme Productions"
-                            value={orgName}
-                            onChange={(e) => setOrgName(e.target.value)}
-                            required
-                            disabled={loading}
-                        />
-
-                        <fieldset className="space-y-2" disabled={loading}>
-                            <legend className="text-sm font-medium leading-none">
-                                What best describes your role?
-                            </legend>
-                            <div className="grid gap-2">
-                                {ROLE_OPTIONS.map((opt) => {
-                                    const Icon = opt.icon;
-                                    const isSelected = role === opt.value;
-                                    return (
-                                        <label
-                                            key={opt.value}
-                                            className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
+                    <fieldset className="space-y-2" disabled={loading}>
+                        <legend className="text-sm font-medium leading-none">
+                            What best describes your role?
+                        </legend>
+                        <div className="grid gap-2">
+                            {ROLE_OPTIONS.map((opt) => {
+                                const Icon = opt.icon;
+                                const isSelected = role === opt.value;
+                                return (
+                                    <label
+                                        key={opt.value}
+                                        className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
+                                            isSelected
+                                                ? "border-primary bg-primary/5 ring-1 ring-primary"
+                                                : "border-input hover:border-muted-foreground/30"
+                                        }`}
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="role"
+                                            value={opt.value}
+                                            checked={isSelected}
+                                            onChange={() => setRole(opt.value)}
+                                            className="sr-only"
+                                        />
+                                        <Icon
+                                            className={`h-5 w-5 mt-0.5 shrink-0 ${
                                                 isSelected
-                                                    ? "border-primary bg-primary/5 ring-1 ring-primary"
-                                                    : "border-input hover:border-muted-foreground/30"
+                                                    ? "text-primary"
+                                                    : "text-muted-foreground"
                                             }`}
-                                        >
-                                            <input
-                                                type="radio"
-                                                name="role"
-                                                value={opt.value}
-                                                checked={isSelected}
-                                                onChange={() => setRole(opt.value)}
-                                                className="sr-only"
-                                            />
-                                            <Icon
-                                                className={`h-5 w-5 mt-0.5 shrink-0 ${
-                                                    isSelected
-                                                        ? "text-primary"
-                                                        : "text-muted-foreground"
-                                                }`}
-                                                aria-hidden="true"
-                                            />
-                                            <div className="space-y-0.5">
-                                                <span
-                                                    className={`text-sm font-medium ${
-                                                        isSelected ? "text-primary" : ""
-                                                    }`}
-                                                >
-                                                    {opt.label}
-                                                </span>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {opt.description}
-                                                </p>
-                                            </div>
-                                        </label>
-                                    );
-                                })}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                                You can change this later. As the organization creator, you&apos;ll
-                                have full admin access regardless of role.
-                            </p>
-                        </fieldset>
-
-                        <div className="space-y-2">
-                            <label
-                                htmlFor="org-industry"
-                                className="text-sm font-medium leading-none"
-                            >
-                                Industry
-                            </label>
-                            <div className="relative">
-                                <Globe
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
-                                    aria-hidden="true"
-                                />
-                                <select
-                                    id="org-industry"
-                                    value={industry}
-                                    onChange={(e) => setIndustry(e.target.value)}
-                                    className="flex h-9 w-full rounded-lg border border-input bg-transparent pl-10 pr-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
-                                    disabled={loading}
-                                >
-                                    <option value="">Select your industry…</option>
-                                    {INDUSTRIES.map((ind) => (
-                                        <option key={ind} value={ind}>
-                                            {ind}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label
-                                htmlFor="org-timezone"
-                                className="text-sm font-medium leading-none"
-                            >
-                                Default Timezone
-                            </label>
-                            <div className="relative">
-                                <Clock
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
-                                    aria-hidden="true"
-                                />
-                                <select
-                                    id="org-timezone"
-                                    value={timezone}
-                                    onChange={(e) => setTimezone(e.target.value)}
-                                    className="flex h-9 w-full rounded-lg border border-input bg-transparent pl-10 pr-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
-                                    disabled={loading}
-                                >
-                                    {TIMEZONES.map((tz) => (
-                                        <option key={tz} value={tz}>
-                                            {tz.replace(/_/g, " ")}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-3 pt-2">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={handleSkip}
-                                disabled={loading}
-                                className="flex-1"
-                            >
-                                Skip for now
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={loading}
-                                className="flex-1"
-                                aria-busy={loading}
-                            >
-                                {loading ? (
-                                    <>
-                                        <Loader2
-                                            className="h-4 w-4 animate-spin"
                                             aria-hidden="true"
                                         />
-                                        Creating…
-                                    </>
-                                ) : (
-                                    <>
-                                        Continue
-                                        <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                                    </>
-                                )}
-                            </Button>
+                                        <div className="space-y-0.5">
+                                            <span
+                                                className={`text-sm font-medium ${
+                                                    isSelected ? "text-primary" : ""
+                                                }`}
+                                            >
+                                                {opt.label}
+                                            </span>
+                                            <p className="text-xs text-muted-foreground">
+                                                {opt.description}
+                                            </p>
+                                        </div>
+                                    </label>
+                                );
+                            })}
                         </div>
-                    </form>
-                </div>
+                        <p className="text-xs text-muted-foreground">
+                            You can change this later. As the organization creator, you&apos;ll have
+                            full admin access regardless of role.
+                        </p>
+                    </fieldset>
+
+                    <div className="space-y-2">
+                        <label htmlFor="org-industry" className="text-sm font-medium leading-none">
+                            Industry
+                        </label>
+                        <div className="relative">
+                            <Globe
+                                className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
+                                aria-hidden="true"
+                            />
+                            <select
+                                id="org-industry"
+                                value={industry}
+                                onChange={(e) => setIndustry(e.target.value)}
+                                className="flex h-9 w-full rounded-lg border border-input bg-transparent pl-10 pr-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
+                                disabled={loading}
+                            >
+                                <option value="">Select your industry…</option>
+                                {INDUSTRIES.map((ind) => (
+                                    <option key={ind} value={ind}>
+                                        {ind}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label htmlFor="org-timezone" className="text-sm font-medium leading-none">
+                            Default Timezone
+                        </label>
+                        <div className="relative">
+                            <Clock
+                                className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
+                                aria-hidden="true"
+                            />
+                            <select
+                                id="org-timezone"
+                                value={timezone}
+                                onChange={(e) => setTimezone(e.target.value)}
+                                className="flex h-9 w-full rounded-lg border border-input bg-transparent pl-10 pr-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
+                                disabled={loading}
+                            >
+                                {TIMEZONES.map((tz) => (
+                                    <option key={tz} value={tz}>
+                                        {tz.replace(/_/g, " ")}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={handleSkip}
+                            disabled={loading}
+                            className="flex-1"
+                        >
+                            Skip for now
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={loading}
+                            className="flex-1"
+                            aria-busy={loading}
+                        >
+                            {loading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                                    Creating…
+                                </>
+                            ) : (
+                                <>
+                                    Continue
+                                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </form>
             </div>
-        </PermissionGate>
+        </div>
     );
 }

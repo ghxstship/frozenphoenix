@@ -82,6 +82,21 @@ function MfaVerifyForm() {
                     return;
                 }
 
+                // Invalidate middleware cache cookies so the next request
+                // goes through the slow path and sees the new AAL2 level.
+                // Without this, the stale fp-mfa-level=needs_aal2 cookie
+                // causes an infinite redirect loop back to this page.
+                const cacheCookies = [
+                    "fp-mfa-level",
+                    "fp-user-role",
+                    "fp-org-id",
+                    "fp-lifecycle-status",
+                    "fp-onboarding-complete",
+                ];
+                for (const name of cacheCookies) {
+                    document.cookie = `${name}=; path=/; max-age=0`;
+                }
+
                 router.push("/dashboard");
                 router.refresh();
             } catch {
@@ -172,6 +187,24 @@ function MfaVerifyForm() {
                             });
                         } catch {
                             // Best-effort
+                        }
+                        // Clear persisted org preference and middleware cache
+                        // cookies to prevent state leak to the next user.
+                        try {
+                            localStorage.removeItem("fp-active-org-id");
+                            const cacheCookies = [
+                                "fp-mfa-level",
+                                "fp-user-role",
+                                "fp-org-id",
+                                "fp-lifecycle-status",
+                                "fp-onboarding-complete",
+                                "fp-onboarding-skipped",
+                            ];
+                            for (const name of cacheCookies) {
+                                document.cookie = `${name}=; path=/; max-age=0`;
+                            }
+                        } catch {
+                            // localStorage/cookies may be unavailable
                         }
                         const supabase = createClient();
                         if (supabase) await supabase.auth.signOut();

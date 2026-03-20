@@ -267,6 +267,12 @@ export function WizardShell({
                             <SkipForward className="h-4 w-4 ml-1" />
                         </Button>
                     )}
+                    {currentStep?.skippable && isLastStep && config.onCancel && (
+                        <Button variant="ghost" onClick={config.onCancel} disabled={isSubmitting}>
+                            {skipLabel}
+                            <SkipForward className="h-4 w-4 ml-1" />
+                        </Button>
+                    )}
                     <Button onClick={handleNext} disabled={isSubmitting}>
                         {isSubmitting
                             ? SHELLS_STRINGS.form_saving

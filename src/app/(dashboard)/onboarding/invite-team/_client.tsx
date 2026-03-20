@@ -139,8 +139,8 @@ export function InviteTeamPageClient() {
     }, []);
 
     const handleSubmit = useCallback(
-        async (e: React.FormEvent) => {
-            e.preventDefault();
+        async (e?: React.FormEvent) => {
+            e?.preventDefault();
             setError(null);
 
             const validRows = rows.filter(
@@ -221,12 +221,13 @@ export function InviteTeamPageClient() {
             showProgress: false,
             submitLabel: "Send Invitations",
             onCancel: handleSkip,
-            onComplete: handleSubmit as unknown as () => Promise<void>,
+            onComplete: handleSubmit,
             steps: [
                 {
                     id: "invite",
                     label: "Invite Team",
                     icon: UserPlus,
+                    skippable: true,
                     content: success ? (
                         <div
                             className="w-full text-center density-gap-section"

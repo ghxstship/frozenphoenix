@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "@/lib/motion";
 import { SlidingIndicator } from "@/components/ui/sliding-indicator";
@@ -23,6 +24,71 @@ export interface TabBarProps {
     ariaLabel?: string;
     idPrefix?: string;
     className?: string;
+    /** When set, syncs the active tab with a URL search parameter (e.g. "tab" → ?tab=value).
+     *  Also persists to localStorage as fallback. URL takes precedence on mount. */
+    urlParam?: string;
+}
+
+/**
+ * Hook that syncs tab state with URL searchParams and localStorage.
+ * Returns the resolved initial value and an onChange wrapper.
+ */
+function useUrlTabState(
+    urlParam: string | undefined,
+    value: string,
+    onValueChange: (v: string) => void,
+    items: TabBarItem[]
+) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    // On mount, resolve initial value from URL > localStorage > prop default
+    const didInit = React.useRef(false);
+    React.useEffect(() => {
+        if (!urlParam || didInit.current) return;
+        didInit.current = true;
+
+        const fromUrl = searchParams.get(urlParam);
+        if (fromUrl && items.some((i) => i.id === fromUrl)) {
+            onValueChange(fromUrl);
+            return;
+        }
+
+        const storageKey = `fp-tab-${urlParam}`;
+        try {
+            const fromStorage = localStorage.getItem(storageKey);
+            if (fromStorage && items.some((i) => i.id === fromStorage)) {
+                onValueChange(fromStorage);
+            }
+        } catch {
+            // localStorage unavailable
+        }
+    }, [urlParam, searchParams, items, onValueChange]);
+
+    // Wrapped onChange that also updates URL + localStorage
+    const handleChange = React.useCallback(
+        (newValue: string) => {
+            onValueChange(newValue);
+
+            if (!urlParam) return;
+
+            // Update URL search param via router.replace (no history entry)
+            const params = new URLSearchParams(searchParams.toString());
+            params.set(urlParam, newValue);
+            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+
+            // Persist to localStorage as fallback
+            try {
+                localStorage.setItem(`fp-tab-${urlParam}`, newValue);
+            } catch {
+                // localStorage unavailable
+            }
+        },
+        [onValueChange, urlParam, router, pathname, searchParams]
+    );
+
+    return { handleChange };
 }
 
 export function TabBar({
@@ -35,7 +101,9 @@ export function TabBar({
     ariaLabel,
     idPrefix,
     className,
+    urlParam,
 }: TabBarProps) {
+    const { handleChange } = useUrlTabState(urlParam, value, onValueChange, items);
     const tabListRef = React.useRef<HTMLDivElement>(null);
     const prefix = idPrefix ? `${idPrefix}-` : "";
 
@@ -88,7 +156,7 @@ export function TabBar({
 
             const nextItem = enabledItems[nextIndex];
             if (nextItem) {
-                onValueChange(nextItem.id);
+                handleChange(nextItem.id);
                 const btn = Array.from(
                     tabListRef.current?.querySelectorAll<HTMLButtonElement>("[role='tab']") ?? []
                 ).find((tabButton) => tabButton.dataset.tabValue === nextItem.id);
@@ -139,7 +207,7 @@ export function TabBar({
                     data-tab-value={item.id}
                     disabled={item.disabled}
                     tabIndex={value === item.id ? 0 : -1}
-                    onClick={() => onValueChange(item.id)}
+                    onClick={() => handleChange(item.id)}
                     className={cn(
                         "relative z-[var(--z-tab-active)] inline-flex items-center whitespace-nowrap font-medium transition-colors",
                         orientation === "horizontal" && "justify-center",

@@ -28,6 +28,7 @@ import type { PermissionLevel } from "@/types";
 import { logger } from "@/lib/logger";
 import { getClientId, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME, validateCsrf } from "@/lib/csrf";
+import { resolveRoleAndOrg } from "./auth-resolver";
 
 // ─── Shared Mutation Rate Limiter ────────────────────────────
 // 30 mutations per minute per client across all custom endpoints
@@ -36,40 +37,6 @@ const customMutationLimiter = rateLimit({ windowMs: 60_000, max: 30 });
 // ─── Auth Rate Limiter (stricter) ────────────────────────────
 // 10 auth attempts per minute per client
 const authLimiter = rateLimit({ windowMs: 60_000, max: 10 });
-
-// ─── Valid roles for cookie validation ───────────────────────
-const VALID_ROLES = new Set<string>(["exec", "director", "pm", "member", "client", "collaborator"]);
-
-// Performance: resolves role + orgId from cookies first (set by middleware).
-// Falls back to a SINGLE combined query instead of two separate queries.
-async function resolveRoleAndOrg(
-    supabase: NonNullable<Awaited<ReturnType<typeof createClient>>>,
-    userId: string,
-    cachedRole?: string | null,
-    cachedOrgId?: string | null
-): Promise<{ role: PermissionLevel; orgId: string }> {
-    const roleFromCookie =
-        cachedRole && VALID_ROLES.has(cachedRole) ? (cachedRole as PermissionLevel) : null;
-    const orgIdFromCookie = cachedOrgId || null;
-
-    // Fast path: both cached
-    if (roleFromCookie && orgIdFromCookie) {
-        return { role: roleFromCookie, orgId: orgIdFromCookie };
-    }
-
-    // Slow path: single query for both role + orgId
-    const { data } = await supabase
-        .from("org_memberships")
-        .select("role, organization_id")
-        .eq("user_id", userId)
-        .eq("is_default_org", true)
-        .single();
-
-    return {
-        role: roleFromCookie ?? (data?.role as PermissionLevel) ?? "member",
-        orgId: orgIdFromCookie ?? data?.organization_id ?? "",
-    };
-}
 
 // ─── Types ───────────────────────────────────────────────────
 

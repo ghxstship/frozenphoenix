@@ -8,16 +8,6 @@ export type {
     SortConfig,
 } from "./crud-factory";
 
-export { createEntityMutations, createMutationHooks } from "./mutation-hook-factory";
-export type {
-    CreateOptions,
-    DeleteOptions,
-    EntityHookSet,
-    MutationHookConfig,
-    TransitionOptions,
-    UpdateOptions,
-} from "./mutation-hook-factory";
-
 export {
     ENTITY_CONFIGS,
     getEntityConfig,
@@ -26,3 +16,5 @@ export {
     toCrudConfig,
 } from "./entity-config";
 export type { EntityConfig } from "./entity-config";
+
+export { resolveRoleAndOrg, VALID_ROLES } from "./auth-resolver";

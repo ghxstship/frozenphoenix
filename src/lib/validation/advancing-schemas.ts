@@ -1,22 +1,24 @@
 import { z } from "zod";
+import {
+    nonEmptyString,
+    nonNegativeNumber,
+    optionalString,
+    positiveInt,
+    uuidField,
+} from "./primitives";
 
-// ─── Shared Primitives ───
-const uuidField = z.string().uuid("Invalid ID");
+// ─── Advancing-specific overrides (transform empty → undefined) ───
 const optionalUuid = z
     .string()
     .uuid("Invalid ID")
     .optional()
     .or(z.literal(""))
     .transform((v) => v || undefined);
-const nonEmptyString = z.string().min(1, "Required");
-const optionalString = z.string().optional().default("");
 const optionalDate = z
     .string()
     .optional()
     .or(z.literal(""))
     .transform((v) => v || undefined);
-const nonNegativeNumber = z.number().min(0, "Must be 0 or greater");
-const positiveInt = z.number().int().positive("Must be at least 1");
 
 // ─── Enums ───
 const advanceTypeEnum = z.enum(["pre_event", "load_in", "show_day", "strike", "post_event"]);

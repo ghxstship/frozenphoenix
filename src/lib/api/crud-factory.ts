@@ -45,6 +45,7 @@ import { logger } from "@/lib/logger";
 import { getClientId, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import type { StateMachineDefinition } from "@/lib/state-machine";
 import { validateTransition } from "@/lib/state-machine";
+import { resolveRoleAndOrg } from "./auth-resolver";
 
 // ─── Shared Mutation Rate Limiter ────────────────────────────
 // 30 mutations per minute per client across all CRUD endpoints
@@ -171,44 +172,6 @@ export interface CrudHandlers {
         request: NextRequest,
         context: { params: Promise<{ id: string }> }
     ) => Promise<NextResponse>;
-}
-
-// ─── Valid roles for cookie validation ───────────────────────
-const VALID_ROLES = new Set<string>(["exec", "director", "pm", "member", "client", "collaborator"]);
-
-// ─── Role + OrgId Resolver ──────────────────────────────────
-// Performance: Reads both role AND orgId from middleware cookies first.
-// Falls back to a SINGLE combined query instead of two separate queries.
-
-async function resolveRoleAndOrg(
-    supabase: Awaited<ReturnType<typeof createClient>>,
-    userId: string,
-    cachedRole?: string | null,
-    cachedOrgId?: string | null
-): Promise<{ role: PermissionLevel; orgId: string }> {
-    const roleFromCookie =
-        cachedRole && VALID_ROLES.has(cachedRole) ? (cachedRole as PermissionLevel) : null;
-    const orgIdFromCookie = cachedOrgId || null;
-
-    // Fast path: both cached
-    if (roleFromCookie && orgIdFromCookie) {
-        return { role: roleFromCookie, orgId: orgIdFromCookie };
-    }
-
-    if (!supabase) return { role: "member", orgId: "" };
-
-    // Slow path: single query for both role + orgId
-    const { data } = await supabase
-        .from("org_memberships")
-        .select("role, organization_id")
-        .eq("user_id", userId)
-        .eq("is_default_org", true)
-        .single();
-
-    return {
-        role: roleFromCookie ?? (data?.role as PermissionLevel) ?? "member",
-        orgId: orgIdFromCookie ?? data?.organization_id ?? "",
-    };
 }
 
 // ─── Apply Filters ───────────────────────────────────────────

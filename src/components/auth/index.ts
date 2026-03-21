@@ -1,8 +1,7 @@
-export { PasswordInput, StrengthMeter, calculatePasswordStrength } from "./password-input";
-export type { PasswordInputProps, PasswordStrength, PasswordRequirement } from "./password-input";
-export { AuthFormField } from "./auth-form-field";
-export type { AuthFormFieldProps } from "./auth-form-field";
-export { AuthLayout } from "./auth-layout";
-export { OAuthButtons } from "./oauth-buttons";
-export { BotProtection, useBotProtection } from "./bot-protection";
-export { EmailCollectionBanner } from "./email-collection-banner";
+/* Re-export from consolidated auth feature module */
+export { AuthFormField } from "@/features/auth/components/auth-form-field";
+export { AuthLayout } from "@/features/auth/components/auth-layout";
+export { BotProtection, useBotProtection } from "@/features/auth/components/bot-protection";
+export { EmailCollectionBanner } from "@/features/auth/components/email-collection-banner";
+export { OAuthButtons } from "@/features/auth/components/oauth-buttons";
+export { PasswordInput } from "@/features/auth/components/password-input";

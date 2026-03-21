@@ -2,7 +2,6 @@
 
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { csrfHeaders } from "@/lib/csrf";
-import Papa from "papaparse";
 import {
     AlertCircle,
     CheckCircle,
@@ -112,7 +111,7 @@ export function CsvImportDialog({
     // ─── Step 1: Upload & Parse ───
 
     const handleFileSelect = useCallback(
-        (e: React.ChangeEvent<HTMLInputElement>) => {
+        async (e: React.ChangeEvent<HTMLInputElement>) => {
             const selectedFile = e.target.files?.[0];
             if (!selectedFile) return;
 
@@ -131,6 +130,8 @@ export function CsvImportDialog({
             }
 
             setFile(selectedFile);
+
+            const Papa = (await import("papaparse")).default;
 
             Papa.parse<string[]>(selectedFile, {
                 skipEmptyLines: true,

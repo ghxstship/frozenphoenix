@@ -61,11 +61,7 @@ import {
     WORKFORCE_STATUS_MAP,
 } from "@/config/domain-config";
 
-// ─── Helpers ───
-
-function mapToOptions(map: Record<string, { label: string }>): { value: string; label: string }[] {
-    return Object.entries(map).map(([value, { label }]) => ({ value, label }));
-}
+import { mapToOptions } from "@/config/config-utils";
 
 // ─── Production ───
 

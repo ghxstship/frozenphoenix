@@ -320,7 +320,7 @@ import {
     workerReviewUpdateSchema,
     workflowCreateSchema,
     workflowUpdateSchema,
-} from "./remaining-entity-schemas";
+} from "./extended-domain-schemas";
 
 import {
     accountHealthScoreCreateSchema,
@@ -487,7 +487,7 @@ import {
     workerComplianceDocUpdateSchema,
     workPackageCreateSchema,
     workPackageUpdateSchema,
-} from "./phase-h-entity-schemas";
+} from "./governance-entity-schemas";
 
 // ─── Registry Entry ──────────────────────────────────────────
 

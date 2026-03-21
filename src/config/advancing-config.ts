@@ -27,7 +27,6 @@ import {
     X,
     Zap,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import type {
     AdvanceItemStatus,
     AdvancePriority,
@@ -38,16 +37,7 @@ import type {
     PricingTier,
     WeatherRating,
 } from "@/types";
-import type { BadgeVariant } from "./ui-variants";
-
-// ─── Generic Config Interface ───
-interface EnumConfig<T extends string> {
-    value: T;
-    label: string;
-    variant: BadgeVariant;
-    description?: string;
-    icon?: LucideIcon;
-}
+import type { EnumConfig } from "./config-utils";
 
 // ═══════════════════════════════════════════════════════════════
 // ADVANCE STATUS

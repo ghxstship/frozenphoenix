@@ -16,12 +16,14 @@ import { useAuth } from "@/lib/supabase/auth-context";
 import { LAYOUT } from "@/config/design-tokens";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useEscapeKey, useFocusTrap } from "@/hooks/use-accessibility";
+import { useSwipeGesture } from "@/hooks/use-swipe-gesture";
 import { Tooltip } from "@/components/ui/tooltip";
 import { OrgSwitcher, TeamSwitcher } from "@/components/context-switcher";
 import type { PermissionLevel } from "@/types";
 import {
     ChevronDown,
     ChevronRight,
+    Clock,
     Loader2,
     LogOut,
     PanelLeft,
@@ -227,9 +229,21 @@ export function Sidebar() {
     const setFilterQuery = useSidebar((state) => state.setFilterQuery);
     const togglePin = useSidebar((state) => state.togglePin);
     const toggleCollapse = useSidebar((state) => state.toggleCollapse);
-    const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(
-        Object.fromEntries(navigationConfig.map((s) => [s.title, s.defaultExpanded ?? false]))
-    );
+    const expandedSections = useSidebar((state) => state.expandedSections);
+    const setExpandedSection = useSidebar((state) => state.setExpandedSection);
+    const recentItems = useSidebar((state) => state.recentItems);
+
+    // On first hydration, initialize defaults for sections not yet in persisted state
+    const didInitSections = useRef(false);
+    useEffect(() => {
+        if (didInitSections.current) return;
+        didInitSections.current = true;
+        for (const section of navigationConfig) {
+            if (expandedSections[section.title] === undefined && section.defaultExpanded) {
+                setExpandedSection(section.title, true);
+            }
+        }
+    }, [expandedSections, setExpandedSection]);
     const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
     const [signingOut, setSigningOut] = useState(false);
     const navRef = useRef<HTMLElement>(null);
@@ -325,8 +339,8 @@ export function Sidebar() {
     }, [collapsed, isMobile]);
 
     const toggleSection = useCallback((title: string) => {
-        setExpandedSections((prev) => ({ ...prev, [title]: !prev[title] }));
-    }, []);
+        setExpandedSection(title, !(expandedSections[title] ?? false));
+    }, [setExpandedSection, expandedSections]);
 
     const toggleItemChildren = useCallback((path: string) => {
         setExpandedItems((prev) => ({ ...prev, [path]: !prev[path] }));
@@ -396,12 +410,21 @@ export function Sidebar() {
 
     return (
         <>
-            {/* Mobile Overlay */}
+            {/* Mobile Overlay — swipe-left-to-close */}
             {isMobile && isOpen && (
                 <div
                     className="fixed inset-0 z-40 bg-foreground/50 backdrop-blur-sm lg:hidden"
                     onClick={closeMobileSidebar}
                     aria-hidden="true"
+                    onTouchStart={(e) => {
+                        const touch = e.touches[0];
+                        if (touch) (e.currentTarget as HTMLElement).dataset.startX = String(touch.clientX);
+                    }}
+                    onTouchEnd={(e) => {
+                        const startX = Number((e.currentTarget as HTMLElement).dataset.startX || 0);
+                        const endX = e.changedTouches[0]?.clientX ?? startX;
+                        if (startX - endX > 60) closeMobileSidebar();
+                    }}
                 />
             )}
 
@@ -526,6 +549,41 @@ export function Sidebar() {
                                             expandedItems={expandedItems}
                                             onToggleChildren={toggleItemChildren}
                                         />
+                                    );
+                                })}
+                            </div>
+                            <div className="mx-2 my-2 border-t border-sidebar-border/50" />
+                        </div>
+                    )}
+
+                    {/* R8: Recent Items Section */}
+                    {recentItems.length > 0 && !isFiltering && !collapsed && (
+                        <div className="mb-2">
+                            <div className="flex items-center gap-1.5 px-2 py-1 density-caption font-semibold uppercase tracking-wider text-sidebar-primary/60">
+                                <Clock className="h-3 w-3" />
+                                Recent
+                            </div>
+                            <div className="space-y-0.5">
+                                {recentItems.map((recent) => {
+                                    const isActive =
+                                        pathname === recent.path ||
+                                        pathname.startsWith(recent.path + "/");
+                                    return (
+                                        <Link
+                                            key={`recent-${recent.path}`}
+                                            href={recent.path}
+                                            className={cn(
+                                                "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+                                                isActive
+                                                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                                                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                                            )}
+                                        >
+                                            <span className="truncate">{recent.title}</span>
+                                            <span className="ml-auto text-[10px] text-sidebar-foreground/30">
+                                                {recent.entityType}
+                                            </span>
+                                        </Link>
                                     );
                                 })}
                             </div>

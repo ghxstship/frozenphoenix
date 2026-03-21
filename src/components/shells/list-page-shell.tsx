@@ -13,7 +13,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { apiList } from "@/lib/api/client";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { EmptyState } from "@/components/layouts/empty-state";
@@ -479,6 +479,8 @@ function ListPageShellInner({
     isLoading: externalLoading,
 }: ListPageShellInnerProps) {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
     const queryClient = useQueryClient();
     const {
         entityConfig,
@@ -490,7 +492,43 @@ function ListPageShellInner({
         searchColumns,
     } = useEntityMeta(config.entityKey);
     const [search, setSearch] = useState("");
-    const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+
+    // Hydrate filter values from URL search params on mount
+    const [filterValues, setFilterValues] = useState<Record<string, string>>(() => {
+        const initial: Record<string, string> = {};
+        searchParams.forEach((value, key) => {
+            if (key.startsWith("filter.")) {
+                initial[key.slice(7)] = value;
+            }
+        });
+        return initial;
+    });
+
+    // Sync filter changes to URL
+    const updateFilterValues = useCallback(
+        (updater: (prev: Record<string, string>) => Record<string, string>) => {
+            setFilterValues((prev) => {
+                const next = updater(prev);
+                // Build new URL params
+                const params = new URLSearchParams(searchParams.toString());
+                // Remove all existing filter.* params
+                Array.from(params.keys())
+                    .filter((k) => k.startsWith("filter."))
+                    .forEach((k) => params.delete(k));
+                // Add active filters
+                for (const [id, val] of Object.entries(next)) {
+                    if (val && val !== "all") {
+                        params.set(`filter.${id}`, val);
+                    }
+                }
+                const qs = params.toString();
+                router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+                return next;
+            });
+        },
+        [searchParams, router, pathname]
+    );
+
     const [viewMode, setViewMode] = useState<ViewMode>(config.defaultView ?? "table");
     const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
     const [createOpen, openCreate, closeCreate] = useCreateAction();
@@ -703,9 +741,9 @@ function ListPageShellInner({
             label: f.label,
             value: filterValues[f.id] ?? "all",
             options: f.options.map((o) => ({ value: o.value, label: o.label })),
-            onValueChange: (val: string) => setFilterValues((prev) => ({ ...prev, [f.id]: val })),
+            onValueChange: (val: string) => updateFilterValues((prev) => ({ ...prev, [f.id]: val })),
         }));
-    }, [resolvedFilters, filterValues]);
+    }, [resolvedFilters, filterValues, updateFilterValues]);
 
     const activeFilterCount = useMemo(() => {
         return Object.values(filterValues).filter((v) => v !== "all").length;
@@ -944,7 +982,7 @@ function ListPageShellInner({
                         }}
                         filters={filterBarFilters}
                         activeCount={activeFilterCount}
-                        onClearAll={() => setFilterValues({})}
+                        onClearAll={() => updateFilterValues(() => ({}))}
                         actions={
                             <>
                                 {viewMode === "table" && colVisibilityItems.length > 1 && (

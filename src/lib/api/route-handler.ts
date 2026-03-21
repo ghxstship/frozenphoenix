@@ -18,7 +18,7 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
-import { ApiErrors } from "@/lib/api-utils";
+import { ApiErrors, generateRequestId } from "@/lib/api-utils";
 import { rateLimit as createRateLimiter, getClientId, rateLimitResponse } from "@/lib/rate-limit";
 
 // ─── Types ───────────────────────────────────────────────────
@@ -65,12 +65,6 @@ function getLimiter(config: RateLimitConfig): ReturnType<typeof createRateLimite
         limiterCache.set(key, limiter);
     }
     return limiter;
-}
-
-// ─── Request ID ──────────────────────────────────────────────
-
-function generateRequestId(): string {
-    return `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
 // ─── Wrapper ─────────────────────────────────────────────────

@@ -25,6 +25,16 @@ const CopilotPanel = dynamic(
     { ssr: false }
 );
 
+// Mobile navigation — only loaded on touch/mobile devices
+const MobileTabBar = dynamic(
+    () => import("@/components/layouts/mobile-tab-bar").then((m) => m.MobileTabBar),
+    { ssr: false }
+);
+const MobileFab = dynamic(
+    () => import("@/components/layouts/mobile-fab").then((m) => m.MobileFab),
+    { ssr: false }
+);
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     useCopilotContext();
     const { messagingEnabled } = useMessagingEnabled();
@@ -82,7 +92,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         id="main-content"
                         role="main"
                         aria-label="Main content"
-                        className="p-4 lg:p-6 xl:p-8 overflow-x-hidden"
+                        className="p-4 lg:p-6 xl:p-8 overflow-x-hidden pb-20 lg:pb-8"
                         tabIndex={-1}
                     >
                         <ErrorBoundary level="page">
@@ -98,6 +108,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {/* AI Copilot slide-over panel */}
                 <CopilotPanel />
+
+                {/* Mobile navigation — bottom tab bar + FAB */}
+                {isMobile && (
+                    <>
+                        <MobileTabBar />
+                        <MobileFab />
+                    </>
+                )}
             </div>
         </>
     );

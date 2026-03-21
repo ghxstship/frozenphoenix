@@ -63,15 +63,7 @@ import type {
     VipTier,
     WorkPackageStatus,
 } from "@/types";
-import type { BadgeVariant } from "./ui-variants";
-
-// ─── Generic Config Interface ───
-interface EnumConfig<T extends string> {
-    value: T;
-    label: string;
-    variant: BadgeVariant;
-    description?: string;
-}
+import type { EnumConfig } from "./config-utils";
 
 // ─── Deal Stages ───
 export const DEAL_STAGES: EnumConfig<DealStage>[] = [

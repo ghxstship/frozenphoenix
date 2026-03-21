@@ -11,19 +11,23 @@ import {
     Blocks,
     BookLock,
     BookOpen,
+    BookMarked,
     Boxes,
     Brain,
     Brush,
     Building2,
     Calculator,
     Calendar,
+    CalendarCheck,
     CalendarDays,
+    CalendarRange,
     Car,
     CheckSquare,
     CircleDollarSign,
     ClipboardCheck,
     ClipboardList,
     ClipboardMinus,
+    Clock,
     ClipboardPenLine,
     Code2,
     ContactRound,
@@ -65,6 +69,7 @@ import {
     Mail,
     MapPin,
     Megaphone,
+    MessageSquareMore,
     MessageSquareQuote,
     Navigation,
     Package,
@@ -264,7 +269,7 @@ export const navigationConfig: NavSection[] = [
                 permission: "messaging_dm.read",
             },
             {
-                title: "Tasks",
+                title: "My Tasks",
                 path: "/home/tasks",
                 icon: CheckSquare,
                 permission: "tasks.read",
@@ -282,13 +287,13 @@ export const navigationConfig: NavSection[] = [
                 permission: "dashboard.read",
             },
             {
-                title: "Documents",
+                title: "My Documents",
                 path: "/home/documents",
                 icon: FileCheck,
                 permission: "documents.read",
             },
             {
-                title: "Insights",
+                title: "Analytics",
                 path: "/reports",
                 icon: BarChart3,
                 permission: "reports.read",
@@ -393,7 +398,7 @@ export const navigationConfig: NavSection[] = [
             },
             { title: "Accounts", path: "/accounts", icon: Building2, permission: "accounts.read" },
             {
-                title: "Contacts",
+                title: "Companies",
                 path: "/companies",
                 icon: ContactRound,
                 permission: "people.read",
@@ -444,7 +449,7 @@ export const navigationConfig: NavSection[] = [
             },
             { title: "Locations", path: "/locations", icon: MapPin, permission: "locations.read" },
             {
-                title: "Advancing",
+                title: "Advance Orders",
                 path: "/advancing",
                 icon: ShoppingCart,
                 permission: "advancing.read",
@@ -625,21 +630,22 @@ export const navigationConfig: NavSection[] = [
             },
         ],
     },
+    // ── R2: Crew & Scheduling (split from Workforce) ──
     {
-        title: "Workforce",
+        title: "Crew & Scheduling",
         defaultExpanded: false,
         items: [
             { title: "Crew", path: "/crew", icon: HardHat, permission: "crew.read" },
             {
                 title: "Shifts",
                 path: "/shifts",
-                icon: CalendarDays,
+                icon: Clock,
                 permission: "crew.read",
             },
             {
                 title: "Availability",
                 path: "/crew-availability",
-                icon: CalendarDays,
+                icon: CalendarCheck,
                 permission: "crew.read",
             },
             {
@@ -695,7 +701,7 @@ export const navigationConfig: NavSection[] = [
                 permission: "certifications.read",
             },
             {
-                title: "Workforce",
+                title: "HR",
                 path: "/workforce",
                 icon: UsersRound,
                 permission: "workforce.read",
@@ -720,6 +726,13 @@ export const navigationConfig: NavSection[] = [
                     },
                 ],
             },
+        ],
+    },
+    // ── R2: Vendors (split from Workforce) ──
+    {
+        title: "Vendors",
+        defaultExpanded: false,
+        items: [
             { title: "Vendors", path: "/vendors", icon: Store, permission: "vendors.read" },
             {
                 title: "Vendor Onboarding",
@@ -742,7 +755,7 @@ export const navigationConfig: NavSection[] = [
             {
                 title: "Vendor Reviews",
                 path: "/vendor-reviews",
-                icon: Star,
+                icon: MessageSquareMore,
                 permission: "vendor_reviews.read",
             },
         ],
@@ -998,7 +1011,7 @@ export const navigationConfig: NavSection[] = [
             {
                 title: "Financial Periods",
                 path: "/financial-periods",
-                icon: CalendarDays,
+                icon: CalendarRange,
                 permission: "finance.manage",
             },
         ],
@@ -1065,6 +1078,7 @@ export const navigationConfig: NavSection[] = [
             },
         ],
     },
+    // ── R1: Admin (split — user/org management + settings) ──
     {
         title: "Admin",
         defaultExpanded: false,
@@ -1107,14 +1121,6 @@ export const navigationConfig: NavSection[] = [
                 icon: KeyRound,
                 permission: "audit_log.read",
             },
-            {
-                title: "Knowledge Base",
-                path: "/knowledge-base",
-                icon: BookOpen,
-                permission: "kb.read",
-            },
-            { title: "SOPs", path: "/sops", icon: Layers, permission: "sops.read" },
-            { title: "Vault", path: "/vault", icon: Lock, permission: "vault.read" },
             {
                 title: "Settings",
                 path: "/settings",
@@ -1159,6 +1165,21 @@ export const navigationConfig: NavSection[] = [
                     },
                 ],
             },
+        ],
+    },
+    // ── R1: Platform (split — infrastructure, integrations, portals, data) ──
+    {
+        title: "Platform",
+        defaultExpanded: false,
+        items: [
+            {
+                title: "Knowledge Base",
+                path: "/knowledge-base",
+                icon: BookOpen,
+                permission: "kb.read",
+            },
+            { title: "SOPs", path: "/sops", icon: BookMarked, permission: "sops.read" },
+            { title: "Vault", path: "/vault", icon: Lock, permission: "vault.read" },
             {
                 title: "Tags",
                 path: "/tags",

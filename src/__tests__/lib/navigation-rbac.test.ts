@@ -30,8 +30,8 @@ import type { PermissionLevel } from "@/types";
 // ═══════════════════════════════════════════════════════════════
 
 describe("Navigation Config Structure", () => {
-    it("has 11 sections total", () => {
-        expect(navigationConfig).toHaveLength(11);
+    it("has 13 sections total (after WAYFINDER R1+R2 splits)", () => {
+        expect(navigationConfig).toHaveLength(13);
     });
 
     it("every section has a title and at least one item", () => {
@@ -68,11 +68,35 @@ describe("Navigation Config Structure", () => {
         }
     });
 
-    it("Admin section exists and has the most items", () => {
+    it("Admin and Platform sections exist (split from original Admin)", () => {
         const admin = navigationConfig.find((s) => s.title === "Admin");
+        const platform = navigationConfig.find((s) => s.title === "Platform");
         expect(admin).toBeDefined();
+        expect(platform).toBeDefined();
+        // Admin should have ≤ 9 items after split (users, roles, settings etc.)
         const adminItemCount = flattenNavItems([admin!]).length;
-        expect(adminItemCount).toBeGreaterThanOrEqual(15);
+        expect(adminItemCount).toBeLessThanOrEqual(20); // including settings children
+    });
+
+    it("Crew & Scheduling and Vendors sections exist (split from Workforce)", () => {
+        const crew = navigationConfig.find((s) => s.title === "Crew & Scheduling");
+        const vendors = navigationConfig.find((s) => s.title === "Vendors");
+        expect(crew).toBeDefined();
+        expect(vendors).toBeDefined();
+    });
+
+    it("WAYFINDER R6: labels are renamed correctly", () => {
+        const allItems = flattenNavItems(navigationConfig);
+        const labels = allItems.map((i) => i.title);
+        expect(labels).toContain("My Tasks");
+        expect(labels).toContain("My Documents");
+        expect(labels).toContain("Analytics");
+        expect(labels).toContain("Advance Orders");
+        expect(labels).toContain("Companies");
+        expect(labels).toContain("HR");
+        // Old labels should NOT exist
+        expect(labels).not.toContain("Insights");
+        expect(labels).not.toContain("Advancing");
     });
 
     it("Home section is first and always expanded", () => {

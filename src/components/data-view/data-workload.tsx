@@ -30,7 +30,7 @@ export interface WorkloadAllocation {
     color?: string;
 }
 
-interface DataWorkloadProps {
+export interface DataWorkloadProps {
     data: WorkloadAllocation[];
     capacityHoursPerDay?: number;
     className?: string;

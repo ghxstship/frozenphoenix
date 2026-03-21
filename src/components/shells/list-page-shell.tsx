@@ -13,7 +13,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { apiList } from "@/lib/api/client";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { EmptyState } from "@/components/layouts/empty-state";
@@ -32,35 +32,44 @@ import { RowActionsMenu } from "@/components/data-view/row-actions-menu";
 // Performance: Alternate data views are dynamically imported — only loaded when user
 // switches to that view mode. DataTable stays eager as the default view.
 // Saves ~200-400KB from the critical path JS bundle.
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// The generic data view component types use class components with required defaults,
+// making dynamic<T>() incompatible. We assert to the concrete ComponentType to type
+// the rendered JSX while preserving dynamic import code-splitting.
+import type { DataBoardProps } from "@/components/data-view/data-board";
+import type { DataCardsProps } from "@/components/data-view/data-cards";
+import type { DataTimelineProps } from "@/components/data-view/data-timeline";
+import type { DataCalendarProps } from "@/components/data-view/data-calendar";
+import type { DataGalleryProps } from "@/components/data-view/data-gallery";
+
 const DataBoard = dynamic(() =>
     import("@/components/data-view/data-board").then((m) => m.DataBoard)
-) as React.ComponentType<any>;
+) as unknown as React.ComponentType<DataBoardProps<EntityRecord>>;
 const DataCards = dynamic(() =>
     import("@/components/data-view/data-cards").then((m) => m.DataCards)
-) as React.ComponentType<any>;
+) as unknown as React.ComponentType<DataCardsProps<EntityRecord>>;
 const DataTimeline = dynamic(() =>
     import("@/components/data-view/data-timeline").then((m) => m.DataTimeline)
-) as React.ComponentType<any>;
+) as unknown as React.ComponentType<DataTimelineProps>;
 const DataCalendar = dynamic(() =>
     import("@/components/data-view/data-calendar").then((m) => m.DataCalendar)
-) as React.ComponentType<any>;
+) as unknown as React.ComponentType<DataCalendarProps>;
 const DataGallery = dynamic(() =>
     import("@/components/data-view/data-gallery").then((m) => m.DataGallery)
-) as React.ComponentType<any>;
+) as unknown as React.ComponentType<DataGalleryProps>;
 const DataChart = dynamic(() =>
     import("@/components/data-view/data-chart").then((m) => m.DataChart)
 );
 // getChartColor is a pure function — import from the tiny shared module
 // instead of eagerly pulling in the full DataChart component.
 import { getChartColor } from "@/components/data-view/chart-colors";
+import type { DataMapProps } from "@/components/data-view/data-map";
+import type { DataWorkloadProps } from "@/components/data-view/data-workload";
 const DataMap = dynamic(() =>
     import("@/components/data-view/data-map").then((m) => m.DataMap)
-) as React.ComponentType<any>;
+) as unknown as React.ComponentType<DataMapProps>;
 const DataWorkload = dynamic(() =>
     import("@/components/data-view/data-workload").then((m) => m.DataWorkload)
-) as React.ComponentType<any>;
-/* eslint-enable @typescript-eslint/no-explicit-any */
+) as unknown as React.ComponentType<DataWorkloadProps>;
 import { PermissionGate } from "@/components/permission-guard";
 import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
@@ -741,7 +750,8 @@ function ListPageShellInner({
             label: f.label,
             value: filterValues[f.id] ?? "all",
             options: f.options.map((o) => ({ value: o.value, label: o.label })),
-            onValueChange: (val: string) => updateFilterValues((prev) => ({ ...prev, [f.id]: val })),
+            onValueChange: (val: string) =>
+                updateFilterValues((prev) => ({ ...prev, [f.id]: val })),
         }));
     }, [resolvedFilters, filterValues, updateFilterValues]);
 

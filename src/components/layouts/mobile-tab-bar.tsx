@@ -1,18 +1,12 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useBreakpoint } from "@/hooks/use-media-query";
-import {
-    CalendarDays,
-    CheckSquare,
-    Home,
-    Mail,
-    Menu,
-} from "lucide-react";
+import { CalendarDays, CheckSquare, Home, Mail, Menu } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 // ── Tab Configuration ──

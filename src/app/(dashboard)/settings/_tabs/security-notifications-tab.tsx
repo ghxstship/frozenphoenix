@@ -36,7 +36,7 @@ export function NotificationsTab({ settingsLoading, settingsContent }: Notificat
                 [channel]: enabled,
             });
         },
-        [user?.id, upsertNotifPrefs]
+        [user, upsertNotifPrefs]
     );
 
     return (

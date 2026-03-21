@@ -26,7 +26,7 @@ export interface CardFieldDef<T> {
 }
 
 // ─── Cards Props ───
-interface DataCardsProps<T> {
+export interface DataCardsProps<T> {
     data: T[];
     keyField: keyof T;
     // Card content

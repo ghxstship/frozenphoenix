@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 interface SwipeGestureOptions {
     /** Minimum distance (px) to trigger swipe. Default: 50 */
@@ -53,7 +53,8 @@ export function useSwipeGesture<T extends HTMLElement>(options: SwipeGestureOpti
             const touch = e.touches[0];
             if (!touch) return;
 
-            const isEdge = touch.clientX <= edgeWidth || touch.clientX >= window.innerWidth - edgeWidth;
+            const isEdge =
+                touch.clientX <= edgeWidth || touch.clientX >= window.innerWidth - edgeWidth;
 
             touchStateRef.current = {
                 startX: touch.clientX,
@@ -112,7 +113,16 @@ export function useSwipeGesture<T extends HTMLElement>(options: SwipeGestureOpti
                 }
             }
         },
-        [enabled, edgeOnly, threshold, velocityThreshold, onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown]
+        [
+            enabled,
+            edgeOnly,
+            threshold,
+            velocityThreshold,
+            onSwipeLeft,
+            onSwipeRight,
+            onSwipeUp,
+            onSwipeDown,
+        ]
     );
 
     useEffect(() => {

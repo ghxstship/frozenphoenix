@@ -48,7 +48,7 @@ export interface CardField<T> {
 }
 
 // ─── Board Props ───
-interface DataBoardProps<T> {
+export interface DataBoardProps<T> {
     data: T[];
     columns: BoardColumn<T>[];
     keyField: keyof T;

@@ -163,7 +163,7 @@ export function TabBar({
                 btn?.focus();
             }
         },
-        [items, value, onValueChange, orientation]
+        [items, value, handleChange, orientation]
     );
 
     const activeSelector = `[data-tab-value="${value}"]`;

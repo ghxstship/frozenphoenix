@@ -19,9 +19,17 @@ interface FabAction {
 
 const FAB_ACTIONS: FabAction[] = [
     { label: "New Event", href: "/events/new", contexts: ["/events", "/dashboard", "/calendar"] },
-    { label: "New Task", href: "/tasks/new", contexts: ["/tasks", "/home/tasks", "/dashboard", "/projects"] },
+    {
+        label: "New Task",
+        href: "/tasks/new",
+        contexts: ["/tasks", "/home/tasks", "/dashboard", "/projects"],
+    },
     { label: "New Project", href: "/projects/new", contexts: ["/projects", "/dashboard"] },
-    { label: "New Invoice", href: "/invoices/new", contexts: ["/invoices", "/finance", "/billing"] },
+    {
+        label: "New Invoice",
+        href: "/invoices/new",
+        contexts: ["/invoices", "/finance", "/billing"],
+    },
     { label: "New Crew", href: "/crew/new", contexts: ["/crew", "/workforce", "/shifts"] },
     { label: "New Vendor", href: "/vendors/new", contexts: ["/vendors", "/vendor-onboarding"] },
 ];
@@ -35,11 +43,9 @@ export function MobileFab({ className }: { className?: string }) {
     const lastScrollY = useRef(0);
     const [isVisible, setIsVisible] = useState(true);
 
-    // Don't render on desktop
-    if (isDesktop) return null;
-
     // Hide on scroll down, show on scroll up
     useEffect(() => {
+        if (isDesktop) return;
         const handleScroll = () => {
             const currentY = window.scrollY;
             setIsVisible(currentY < lastScrollY.current || currentY < 100);
@@ -48,15 +54,7 @@ export function MobileFab({ className }: { className?: string }) {
 
         window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    // Filter actions relevant to current page
-    const relevantActions = FAB_ACTIONS.filter((action) =>
-        action.contexts.some((ctx) => pathname.startsWith(ctx))
-    );
-
-    // Fallback: show first 3 generic actions if no context match
-    const actions = relevantActions.length > 0 ? relevantActions : FAB_ACTIONS.slice(0, 3);
+    }, [isDesktop]);
 
     const handleToggle = useCallback(() => {
         setIsOpen((prev) => !prev);
@@ -65,6 +63,17 @@ export function MobileFab({ className }: { className?: string }) {
     const handleClose = useCallback(() => {
         setIsOpen(false);
     }, []);
+
+    // Don't render on desktop
+    if (isDesktop) return null;
+
+    // Filter actions relevant to current page
+    const relevantActions = FAB_ACTIONS.filter((action) =>
+        action.contexts.some((ctx) => pathname.startsWith(ctx))
+    );
+
+    // Fallback: show first 3 generic actions if no context match
+    const actions = relevantActions.length > 0 ? relevantActions : FAB_ACTIONS.slice(0, 3);
 
     return (
         <>
@@ -129,11 +138,7 @@ export function MobileFab({ className }: { className?: string }) {
                 aria-label={isOpen ? "Close quick actions" : "Quick create"}
                 aria-expanded={isOpen}
             >
-                {isOpen ? (
-                    <X className="h-6 w-6" />
-                ) : (
-                    <Plus className="h-6 w-6" />
-                )}
+                {isOpen ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
             </motion.button>
         </>
     );

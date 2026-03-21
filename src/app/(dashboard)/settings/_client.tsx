@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { csrfHeaders } from "@/lib/csrf";
-import { capitalize, getInitials } from "@/lib/utils";
+import { getInitials } from "@/lib/utils";
 import { SettingsPageShell } from "@/components/shells/settings-page-shell";
 import type { SettingsPageConfig } from "@/types/settings-page-config";
 import { Button } from "@/components/ui/button";
@@ -11,36 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { useSettings } from "@/lib/settings/settings-provider";
-import {
-    useNotificationPreferences,
-    useRevokeSession,
-    useUpsertNotificationPreferences,
-    useUserSessions,
-} from "@/lib/settings/hooks";
-import { SettingRow } from "@/components/settings/setting-row";
 import { PermissionGate } from "@/components/permission-guard";
-import {
-    ACCENT_PRESETS,
-    ANIMATION_PRESETS,
-    BORDER_RADIUS_PRESETS,
-    DENSITY_SCALE,
-    FONT_FAMILY_PRESETS,
-    FONT_SIZE_PRESETS,
-    SHADOW_PRESETS,
-    useTheme,
-} from "@/components/theme-provider";
-import type {
-    AccentColor,
-    AnimationSpeed,
-    BorderRadiusScale,
-    ColorMode,
-    FontFamilyChoice,
-    FontSizeScale,
-    GlassEffect,
-    LayoutDensity,
-    ShadowIntensity,
-} from "@/components/theme-provider";
-import type { ResolvedSetting, SettingCategory } from "@/types/settings";
+import { useTheme } from "@/components/theme-provider";
+import type { SettingCategory } from "@/types/settings";
 import {
     AtSign,
     Award,
@@ -49,20 +22,13 @@ import {
     CheckCircle2,
     ExternalLink,
     Heart,
-    Key,
     Loader2,
-    LogOut,
-    Mail,
     MapPin,
-    Monitor,
-    Moon,
     Palette,
     Phone,
     Plane,
     Save,
     Shield,
-    Smartphone,
-    Sun,
     Upload,
     User,
     XCircle,
@@ -77,9 +43,7 @@ import { AvatarCropDialog } from "@/components/ui/avatar-crop-dialog";
 import { ROLE_LABELS } from "@/config/rbac";
 import { SettingsCategorySection } from "./_components/settings-category-section";
 import { AppearanceTab } from "./_tabs/appearance-tab";
-import { SecurityTab, NotificationsTab } from "./_tabs/security-notifications-tab";
-
-// SettingsCategorySection is now in _components/settings-category-section.tsx
+import { NotificationsTab, SecurityTab } from "./_tabs/security-notifications-tab";
 
 export function SettingsPageClient() {
     const {
@@ -235,25 +199,6 @@ export function SettingsPageClient() {
             }
         },
         [user?.id, uploadFile, updateProfile, refreshProfile, addToast, cropImageSrc]
-    );
-
-    // Notification preferences
-    const { data: notifPrefs } = useNotificationPreferences(user?.id ?? null);
-    const upsertNotifPrefs = useUpsertNotificationPreferences();
-
-    // Sessions
-    const { data: sessions } = useUserSessions(user?.id ?? null);
-    const revokeSession = useRevokeSession();
-
-    const handleNotifToggle = useCallback(
-        (channel: string, enabled: boolean) => {
-            if (!user?.id) return;
-            upsertNotifPrefs.mutate({
-                user_id: user.id,
-                [channel]: enabled,
-            });
-        },
-        [user?.id, upsertNotifPrefs]
     );
 
     const handleSaveSetting = useCallback(

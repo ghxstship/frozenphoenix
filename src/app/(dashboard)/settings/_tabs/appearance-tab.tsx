@@ -26,7 +26,7 @@ import type {
     ShadowIntensity,
 } from "@/components/theme-provider";
 import type { SettingCategory } from "@/types/settings";
-import { Monitor, Moon, Palette, Sun } from "lucide-react";
+import { Monitor, Moon, Sun } from "lucide-react";
 import { SettingsCategorySection } from "../_components/settings-category-section";
 
 interface AppearanceTabProps {

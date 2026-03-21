@@ -30,7 +30,7 @@ export interface TimelineItem {
     group?: string;
 }
 
-interface DataTimelineProps {
+export interface DataTimelineProps {
     data: TimelineItem[];
     className?: string;
     actions?: (item: TimelineItem) => React.ReactNode;

@@ -32,7 +32,7 @@ export interface MapItem {
     color?: string;
 }
 
-interface DataMapProps {
+export interface DataMapProps {
     data: MapItem[];
     className?: string;
     height?: number;

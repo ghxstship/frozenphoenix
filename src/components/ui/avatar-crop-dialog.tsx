@@ -2,16 +2,27 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
-import type { Area } from "react-easy-crop";
+import type { Area, Point } from "react-easy-crop";
 
-// react-easy-crop's TS types mark all props as required even though most have defaults
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// Define the exact subset of CropperProps we use — fully typed, no `any`.
+interface AvatarCropperProps {
+    image: string;
+    crop: Point;
+    zoom: number;
+    rotation: number;
+    aspect: number;
+    cropShape: "rect" | "round";
+    showGrid: boolean;
+    onCropChange: (location: Point) => void;
+    onZoomChange: (zoom: number) => void;
+    onRotationChange: (rotation: number) => void;
+    onCropComplete: (croppedArea: Area, croppedAreaPixels: Area) => void;
+}
+
 const Cropper = dynamic(() => import("react-easy-crop").then((m) => m.default), {
     ssr: false,
-    loading: () => (
-        <div className="w-full aspect-square rounded-lg bg-muted animate-shimmer" />
-    ),
-}) as any;
+    loading: () => <div className="w-full aspect-square rounded-lg bg-muted animate-shimmer" />,
+}) as unknown as React.ComponentType<AvatarCropperProps>;
 import {
     Dialog,
     DialogContent,

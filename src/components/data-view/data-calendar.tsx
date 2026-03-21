@@ -33,7 +33,7 @@ export interface CalendarItem {
     color?: string;
 }
 
-interface DataCalendarProps {
+export interface DataCalendarProps {
     data: CalendarItem[];
     className?: string;
     actions?: (item: CalendarItem) => React.ReactNode;

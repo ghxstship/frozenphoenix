@@ -24,7 +24,7 @@ export interface GalleryItem {
     status?: string;
 }
 
-interface DataGalleryProps {
+export interface DataGalleryProps {
     data: GalleryItem[];
     aspectRatio?: "square" | "video" | "wide";
     className?: string;

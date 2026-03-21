@@ -16,7 +16,6 @@ import { useAuth } from "@/lib/supabase/auth-context";
 import { LAYOUT } from "@/config/design-tokens";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useEscapeKey, useFocusTrap } from "@/hooks/use-accessibility";
-import { useSwipeGesture } from "@/hooks/use-swipe-gesture";
 import { Tooltip } from "@/components/ui/tooltip";
 import { OrgSwitcher, TeamSwitcher } from "@/components/context-switcher";
 import type { PermissionLevel } from "@/types";
@@ -338,9 +337,12 @@ export function Sidebar() {
         return () => document.removeEventListener("keydown", handleKey);
     }, [collapsed, isMobile]);
 
-    const toggleSection = useCallback((title: string) => {
-        setExpandedSection(title, !(expandedSections[title] ?? false));
-    }, [setExpandedSection, expandedSections]);
+    const toggleSection = useCallback(
+        (title: string) => {
+            setExpandedSection(title, !(expandedSections[title] ?? false));
+        },
+        [setExpandedSection, expandedSections]
+    );
 
     const toggleItemChildren = useCallback((path: string) => {
         setExpandedItems((prev) => ({ ...prev, [path]: !prev[path] }));
@@ -418,7 +420,8 @@ export function Sidebar() {
                     aria-hidden="true"
                     onTouchStart={(e) => {
                         const touch = e.touches[0];
-                        if (touch) (e.currentTarget as HTMLElement).dataset.startX = String(touch.clientX);
+                        if (touch)
+                            (e.currentTarget as HTMLElement).dataset.startX = String(touch.clientX);
                     }}
                     onTouchEnd={(e) => {
                         const startX = Number((e.currentTarget as HTMLElement).dataset.startX || 0);

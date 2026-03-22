@@ -3,7 +3,7 @@
 import React, { useCallback, useState } from "react";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { updateEmail } from "@/lib/supabase/auth-actions";
-import { csrfHeaders } from "@/lib/csrf";
+import { csrfHeaders } from "@/lib/security/csrf";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle2, Loader2, Mail, X } from "lucide-react";
 

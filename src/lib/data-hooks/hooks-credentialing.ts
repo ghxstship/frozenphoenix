@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { csrfHeaders } from "@/lib/csrf";
+import { csrfHeaders } from "@/lib/security/csrf";
 import { getSupabase } from "@/lib/supabase/client";
 import type {
     AssignCredentialRequest,

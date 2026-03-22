@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/toast";
-import { useNetworkStatus } from "@/components/network-status";
+import { useNetworkStatus } from "@/components/app/network-status";
 
 interface MutationWithToastOptions<TData, TVariables> {
     mutationFn: (variables: TVariables) => Promise<TData>;

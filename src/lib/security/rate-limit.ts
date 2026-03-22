@@ -7,7 +7,7 @@
    the limit is exceeded.
    
    Usage:
-     import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+     import { rateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
      
      const limiter = rateLimit({ windowMs: 60_000, max: 10 });
      

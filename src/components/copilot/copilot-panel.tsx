@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { csrfHeaders } from "@/lib/csrf";
+import { csrfHeaders } from "@/lib/security/csrf";
 import { cn } from "@/lib/utils";
 import { SlidePanel } from "@/components/ui/slide-panel";
 import { useCopilot } from "@/hooks/use-copilot";

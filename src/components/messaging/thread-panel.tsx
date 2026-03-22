@@ -17,7 +17,7 @@ import {
 } from "@/lib/supabase/hooks-messaging";
 import { useAuth } from "@/lib/supabase/auth-context";
 import type { MessageWithSender } from "@/types/messaging";
-import { formatRelativeTime } from "@/lib/locale";
+import { formatRelativeTime } from "@/lib/formatters/locale";
 import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 
 interface ThreadPanelProps {

@@ -185,12 +185,16 @@ export function BarcodeScanner({
 
     // Auto-start on mount, stop on unmount
     useEffect(() => {
-        void startScanner();
+        let cancelled = false;
+        const init = async () => {
+            if (!cancelled) await startScanner();
+        };
+        void init();
         return () => {
+            cancelled = true;
             void stopScanner();
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [startScanner, stopScanner]);
 
     return (
         <div className={cn("relative flex flex-col gap-3", className)}>

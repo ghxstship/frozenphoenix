@@ -21,7 +21,7 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency } from "@/lib/utils";
-import { formatDate } from "@/lib/locale";
+import { formatDate } from "@/lib/formatters/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import { EmptyState } from "@/components/layouts/empty-state";
 import {

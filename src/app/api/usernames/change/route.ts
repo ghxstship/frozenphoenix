@@ -6,7 +6,7 @@ import {
     checkUsernameAvailable,
     isWithinChangeCooldown,
     USERNAME_CHANGE_COOLDOWN_DAYS,
-} from "@/lib/username-utils";
+} from "@/lib/formatters/username-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**

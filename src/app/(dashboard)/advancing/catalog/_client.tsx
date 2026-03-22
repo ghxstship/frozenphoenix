@@ -5,7 +5,7 @@ import { ChevronRight, Package, Plus } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { OperationalDashboardShell } from "@/components/shells";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_CATALOG_ITEM_CONFIG } from "@/config/create-entity-configs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

@@ -4,7 +4,7 @@
    that fall back to en-US for missing keys.
    ═══════════════════════════════════════════════════════════════ */
 
-import type { SupportedLocale } from "@/lib/locale";
+import type { SupportedLocale } from "@/lib/formatters/locale";
 import type { PartialTranslationDictionary, TranslationDictionary } from "../types";
 import { enUS } from "./en-US";
 import { enGB } from "./en-GB";

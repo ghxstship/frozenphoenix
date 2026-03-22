@@ -29,7 +29,7 @@ import {
     X,
 } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_SCENARIO_CONFIG } from "@/config/create-entity-configs";
 import { useScenarios } from "@/lib/supabase";
 import {

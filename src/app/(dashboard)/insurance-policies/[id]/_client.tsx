@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import { formatCurrency } from "@/lib/utils";
-import { formatDate } from "@/lib/locale";
+import { formatDate } from "@/lib/formatters/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import { Calendar, CheckCircle2, DollarSign, FileText, Shield } from "lucide-react";
 

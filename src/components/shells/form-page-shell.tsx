@@ -25,7 +25,7 @@ import { CurrencyInput, DatePicker, FormField, Select, Textarea } from "@/compon
 import { Checkbox } from "@/components/ui/checkbox";
 import { BackLink } from "@/components/ui/back-link";
 import { FormSection } from "@/components/layouts/form-layout";
-import { PermissionGate } from "@/components/permission-guard";
+import { PermissionGate } from "@/components/app/permission-guard";
 import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Plus, Trash2 } from "lucide-react";
 import { useEntityMeta } from "@/hooks/use-entity-meta";
 import type { FormFieldDef, FormPageConfig, FormWizardStepDef } from "@/types/form-page-config";

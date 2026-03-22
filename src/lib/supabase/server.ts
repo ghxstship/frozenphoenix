@@ -38,8 +38,9 @@ export async function getServerSupabase(): Promise<ServerClient> {
 }
 
 /**
- * Server-side dynamic table accessor. Scopes the `never` cast to one place
- * so API routes with runtime table names don't need `(supabase as any)`.
+ * @internal Server-side dynamic table accessor. Returns `any` intentionally —
+ * Supabase's generated types require exact table-name literals, but runtime
+ * table names are strings. This single boundary keeps all call-sites type-safe.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function serverFromTable(client: ServerClient, table: string): any {

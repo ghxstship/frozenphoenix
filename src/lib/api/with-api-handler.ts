@@ -26,8 +26,8 @@ import { ApiErrors, generateRequestId } from "@/lib/api-utils";
 import { hasPermission } from "@/config/rbac";
 import type { PermissionLevel } from "@/types";
 import { logger } from "@/lib/logger";
-import { getClientId, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
-import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME, validateCsrf } from "@/lib/csrf";
+import { getClientId, rateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
+import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME, validateCsrf } from "@/lib/security/csrf";
 import { resolveRoleAndOrg } from "./auth-resolver";
 
 // ─── Shared Mutation Rate Limiter ────────────────────────────

@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { supabaseAnonKey, supabaseUrl } from "./config";
-import { CSRF_COOKIE_NAME, generateCsrfToken } from "@/lib/csrf";
+import { CSRF_COOKIE_NAME, generateCsrfToken } from "@/lib/security/csrf";
 
 // ─── Performance: Static constants hoisted out of request path ──────
 const PUBLIC_EXACT_PATHS = new Set(["/", "/login", "/signup", "/forgot-password"]);

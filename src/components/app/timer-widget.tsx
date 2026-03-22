@@ -119,7 +119,7 @@ export function TimerWidget() {
 
         if (hours > 0) {
             try {
-                const { getCsrfToken, CSRF_HEADER_NAME } = await import("@/lib/csrf");
+                const { getCsrfToken, CSRF_HEADER_NAME } = await import("@/lib/security/csrf");
                 const csrfToken = getCsrfToken();
                 await fetch("/api/time-entries", {
                     method: "POST",

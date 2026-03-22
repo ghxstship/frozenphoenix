@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useAdvanceTemplates } from "@/lib/supabase/hooks-advancing";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_ADVANCE_TEMPLATE_CONFIG } from "@/config/create-entity-configs";
 
 export function AdvancingTemplatesPageClient() {

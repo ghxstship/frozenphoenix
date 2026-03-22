@@ -35,7 +35,6 @@ export function AdvanceApprovalPanel({
     const [showRejectForm, setShowRejectForm] = React.useState(false);
 
     const canApprove = status === "submitted" || status === "in_review";
-    const canReject = canApprove; // eslint-disable-line @typescript-eslint/no-unused-vars -- reserved for future per-field reject
 
     async function handleAction(action: string, body?: Record<string, unknown>) {
         setLoading(action);

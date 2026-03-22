@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { ApiErrors } from "@/lib/api-utils";
 import { usernameCheckSchema } from "@/lib/validation/schemas";
-import { checkUsernameAvailable, generateUsernameSuggestions } from "@/lib/username-utils";
+import {
+    checkUsernameAvailable,
+    generateUsernameSuggestions,
+} from "@/lib/formatters/username-utils";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 /**

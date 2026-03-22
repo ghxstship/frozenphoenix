@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { AuthLayout, PasswordInput } from "@/components/auth";
-import { mapAuthError, validatePassword } from "@/lib/auth-utils";
+import { mapAuthError, validatePassword } from "@/features/auth/utils/auth-utils";
 import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 
 function ResetPasswordForm() {

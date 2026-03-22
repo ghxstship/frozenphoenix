@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_BUDGET_LINE_ITEM_CONFIG } from "@/config/create-entity-configs";
 import {
     useBudget,

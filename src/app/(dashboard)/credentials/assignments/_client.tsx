@@ -9,7 +9,7 @@ import { useCredentialAssignments, useCredentialTypes } from "@/lib/supabase/hoo
 import type { CredentialAssignmentStatus } from "@/types";
 import { BadgeCheck, Download, Plus, QrCode, Upload, Users } from "lucide-react";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_CREDENTIAL_ASSIGNMENT_CONFIG } from "@/config/create-entity-configs";
 
 interface AssignmentRow {

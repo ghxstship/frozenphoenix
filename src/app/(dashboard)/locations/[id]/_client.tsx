@@ -19,7 +19,7 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { EntityLink } from "@/components/linked-records";
-import { PermissionGate } from "@/components/permission-guard";
+import { PermissionGate } from "@/components/app/permission-guard";
 import { LOCATION_TYPE_CONFIG } from "@/config/production-config";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatCurrency, formatDate } from "@/lib/utils";

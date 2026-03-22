@@ -26,7 +26,7 @@ import {
     Zap,
 } from "lucide-react";
 import { useSlaPolicies, useSlaStatus } from "@/lib/supabase";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_SLA_POLICY_CONFIG } from "@/config/create-entity-configs";
 
 type SlaTab = "policies" | "active" | "metrics";

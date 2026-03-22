@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { Button } from "@/components/ui/button";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_EVENT_CONFIG } from "@/config/create-entity-configs";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Badge } from "@/components/ui/badge";

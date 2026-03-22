@@ -42,7 +42,7 @@ import { ApiErrors, generateRequestId, parseAndValidate } from "@/lib/api-utils"
 import { hasPermission } from "@/config/rbac";
 import type { PermissionLevel } from "@/types";
 import { logger } from "@/lib/logger";
-import { getClientId, rateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { getClientId, rateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
 import type { StateMachineDefinition } from "@/lib/state-machine";
 import { validateTransition } from "@/lib/state-machine";
 import { resolveRoleAndOrg } from "./auth-resolver";
@@ -127,8 +127,7 @@ export interface CrudConfig {
     /** Default sort */
     defaultSort?: SortConfig;
     /** State machine definition for lifecycle transitions */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    stateMachine?: StateMachineDefinition<any>;
+    stateMachine?: StateMachineDefinition<string>;
     /** Column name that holds the status (default: "status") */
     statusColumn?: string;
     /** Use soft delete via deleted_at column (default: true) */
@@ -174,15 +173,30 @@ export interface CrudHandlers {
     ) => Promise<NextResponse>;
 }
 
-// ─── Apply Filters ───────────────────────────────────────────
+/**
+ * Minimal interface for Supabase PostgREST query builders.
+ * Used in `applyFilters` to type the chainable query without importing
+ * Supabase's internal generic types (which require knowledge of the table
+ * schema at compile time — unavailable with runtime table names).
+ */
+interface SupabaseQueryLike {
+    eq(column: string, value: string): SupabaseQueryLike;
+    neq(column: string, value: string): SupabaseQueryLike;
+    gt(column: string, value: string): SupabaseQueryLike;
+    gte(column: string, value: string): SupabaseQueryLike;
+    lt(column: string, value: string): SupabaseQueryLike;
+    lte(column: string, value: string): SupabaseQueryLike;
+    like(column: string, value: string): SupabaseQueryLike;
+    ilike(column: string, value: string): SupabaseQueryLike;
+    in(column: string, values: string[]): SupabaseQueryLike;
+    is(column: string, value: null | string): SupabaseQueryLike;
+}
 
 function applyFilters(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    query: any,
+    query: SupabaseQueryLike,
     url: URL,
     filters: FilterConfig[]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): any {
+): SupabaseQueryLike {
     for (const filter of filters) {
         const paramName = filter.param ?? filter.column;
         const value = url.searchParams.get(paramName);
@@ -256,8 +270,7 @@ interface ResolvedConfig {
     filters: FilterConfig[];
     searchColumns: string[];
     defaultSort: SortConfig;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    stateMachine?: StateMachineDefinition<any>;
+    stateMachine?: StateMachineDefinition<string>;
     statusColumn: string;
     softDelete: boolean;
     orgColumn: string;

@@ -8,8 +8,8 @@ import {
     getDefaultLocale,
     getLanguageTag,
     getTextDirection,
-} from "@/lib/locale";
-import type { SupportedLocale } from "@/lib/locale";
+} from "@/lib/formatters/locale";
+import type { SupportedLocale } from "@/lib/formatters/locale";
 
 describe("getTextDirection", () => {
     it("returns rtl for Arabic", () => {

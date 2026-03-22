@@ -8,7 +8,7 @@
 
 import type { LucideIcon } from "lucide-react";
 import type { FieldConfig, FieldType } from "@/components/data-view/field-renderers";
-import type { CreateEntityConfig } from "@/components/create-entity-dialog";
+import type { CreateEntityConfig } from "@/components/app/create-entity-dialog";
 import type { BadgeVariant } from "@/config/ui-variants";
 import type { ViewMode } from "@/components/ui/view-switcher";
 import type { QuickViewConfig } from "@/types/detail-page-config";

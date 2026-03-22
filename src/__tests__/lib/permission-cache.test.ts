@@ -3,7 +3,7 @@ import {
     type CachedPermission,
     cachedPermissionCheck,
     permissionCache,
-} from "@/lib/permission-cache";
+} from "@/lib/security/permission-cache";
 
 beforeEach(() => {
     permissionCache.clear();

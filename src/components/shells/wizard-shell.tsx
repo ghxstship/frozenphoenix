@@ -15,7 +15,7 @@
 
 import React, { useCallback, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { PermissionGate } from "@/components/permission-guard";
+import { PermissionGate } from "@/components/app/permission-guard";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

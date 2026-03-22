@@ -4,7 +4,7 @@
    connectivity is restored.
    ═══════════════════════════════════════════════════════════════ */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
     clearQueue,
     enqueueScan,
@@ -72,14 +72,6 @@ export function useOfflineSync(): UseOfflineSyncReturn {
         return () => clearInterval(interval);
     }, []);
 
-    // Auto-replay when coming back online
-    useEffect(() => {
-        if (isOnline && pendingCount > 0 && !isSyncing) {
-            void syncNowInternal();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isOnline]);
-
     const syncNowInternal = useCallback(async () => {
         if (isSyncing) return;
         setIsSyncing(true);
@@ -93,6 +85,17 @@ export function useOfflineSync(): UseOfflineSyncReturn {
             setIsSyncing(false);
         }
     }, [isSyncing]);
+
+    // Stable ref to syncNowInternal so the effect doesn't re-trigger on every render
+    const syncNowRef = useRef(syncNowInternal);
+    syncNowRef.current = syncNowInternal;
+
+    // Auto-replay when coming back online
+    useEffect(() => {
+        if (isOnline && pendingCount > 0 && !isSyncing) {
+            void syncNowRef.current();
+        }
+    }, [isOnline, pendingCount, isSyncing]);
 
     const queueScan = useCallback(
         async (scan: Omit<QueuedScan, "id" | "createdAt" | "retries">) => {

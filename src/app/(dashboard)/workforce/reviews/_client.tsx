@@ -1,6 +1,6 @@
 "use client";
 
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_WORKER_REVIEW_CONFIG } from "@/config/create-entity-configs";
 import { OperationalDashboardShell } from "@/components/shells";
 import { Badge } from "@/components/ui/badge";

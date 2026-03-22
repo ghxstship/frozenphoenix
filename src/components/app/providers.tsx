@@ -6,19 +6,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/lib/supabase/auth-context";
 import { SettingsProvider } from "@/lib/settings/settings-provider";
 import { AccessibilityProvider } from "@/components/accessibility";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/app/theme-provider";
 import { ToastProvider } from "@/components/ui/toast";
-import { ErrorBoundary } from "@/components/error-boundary";
-import { NetworkStatusProvider } from "@/components/network-status";
+import { ErrorBoundary } from "@/components/app/error-boundary";
+import { NetworkStatusProvider } from "@/components/app/network-status";
 import { ConfirmDialogProvider } from "@/components/ui/confirm-dialog";
 
 // Performance: Dynamic imports for overlay components that aren't needed at initial render.
 // CommandBar only opens on Cmd+K; CookieConsent shows once per visitor.
-const CommandBar = dynamic(() => import("@/components/command-bar").then((m) => m.CommandBar), {
+const CommandBar = dynamic(() => import("@/components/app/command-bar").then((m) => m.CommandBar), {
     ssr: false,
 });
 const CookieConsent = dynamic(
-    () => import("@/components/cookie-consent").then((m) => m.CookieConsent),
+    () => import("@/components/app/cookie-consent").then((m) => m.CookieConsent),
     { ssr: false }
 );
 

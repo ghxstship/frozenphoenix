@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -36,12 +37,12 @@ export function CatalogItemCard({ item, onAddToCart, className }: CatalogItemCar
             {/* Thumbnail */}
             {thumbnailUrl ? (
                 <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg bg-muted">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- dynamic external URLs from Supabase Storage */}
-                    <img
+                    <Image
                         src={thumbnailUrl}
                         alt={name}
-                        className="h-full w-full object-cover"
-                        loading="lazy"
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover"
                     />
                 </div>
             ) : (

@@ -6,8 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthLayout } from "@/components/auth";
-import { mapAuthError } from "@/lib/auth-utils";
-import { csrfHeaders } from "@/lib/csrf";
+import { mapAuthError } from "@/features/auth/utils/auth-utils";
+import { csrfHeaders } from "@/lib/security/csrf";
 import {
     AlertCircle,
     ArrowRight,

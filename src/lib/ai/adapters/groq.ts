@@ -1,8 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
-   AI Copilot — Groq Adapter (Stub)
+   AI Copilot — Groq Adapter
+   STATUS: NOT IMPLEMENTED
    
-   Implements IModelProvider interface. Activate on demand by
-   providing a Groq API key in admin settings.
+   Implements IModelProvider interface with model metadata.
+   Core methods (chat, complete) throw NotImplementedError.
+   Activate by wiring groq-sdk and implementing the methods below.
    ═══════════════════════════════════════════════════════════════ */
 
 import type {
@@ -61,6 +63,17 @@ const GROQ_MODELS: ModelDefinition[] = [
     },
 ];
 
+class NotImplementedError extends Error {
+    constructor(method: string) {
+        super(
+            `GroqAdapter.${method}() is not implemented. ` +
+                `Wire groq-sdk and implement this method to activate.`
+        );
+        this.name = "NotImplementedError";
+    }
+}
+
+/** @experimental — Model metadata is complete; core methods are not yet wired. */
 export class GroqAdapter implements IModelProvider {
     readonly providerKey = "groq" as const;
     readonly displayName = "Groq";
@@ -85,14 +98,11 @@ export class GroqAdapter implements IModelProvider {
         _messages: ChatMessage[],
         _options?: CompletionOptions
     ): AsyncGenerator<CopilotChunk, void, undefined> {
-        throw new Error(
-            "Groq adapter is a stub. Install groq-sdk and implement " +
-                "the full adapter to activate. API key is stored and ready."
-        );
+        throw new NotImplementedError("chat");
     }
 
     async complete(_prompt: string, _options?: CompletionOptions): Promise<string> {
-        throw new Error("Groq adapter is a stub. Implement to activate.");
+        throw new NotImplementedError("complete");
     }
 
     async embed(_input: string | string[]): Promise<EmbeddingResult[]> {

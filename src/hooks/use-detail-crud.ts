@@ -12,6 +12,10 @@ interface DetailCrudOptions {
     entityLabel: string;
     entityKey?: string;
     listPath: string;
+    /**
+     * @internal `any` is intentional — function params are contravariant.
+     * Using `unknown` would prevent assigning concrete UseMutationResult hooks.
+     */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     useUpdateHook: () => { mutateAsync: (vars: any) => Promise<any>; isPending: boolean };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -37,8 +41,7 @@ export function useDetailCrud({
         async (updates: Record<string, unknown>) => {
             // Optimistic update: apply changes to cache immediately
             const cacheKey = entityKey ? [entityKey, entityId] : undefined;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            let previousData: any;
+            let previousData: unknown;
             if (cacheKey) {
                 previousData = queryClient.getQueryData(cacheKey);
                 if (previousData) {
@@ -60,7 +63,8 @@ export function useDetailCrud({
                 logger.error(`Failed to update ${entityLabel}`, { error });
                 addToast({
                     title: `Failed to update ${entityLabel}`,
-                    description: error instanceof Error ? error.message : "An unexpected error occurred.",
+                    description:
+                        error instanceof Error ? error.message : "An unexpected error occurred.",
                     variant: "destructive",
                 });
             }
@@ -87,7 +91,8 @@ export function useDetailCrud({
             logger.error(`Failed to delete ${entityLabel}`, { error });
             addToast({
                 title: `Failed to delete ${entityLabel}`,
-                description: error instanceof Error ? error.message : "An unexpected error occurred.",
+                description:
+                    error instanceof Error ? error.message : "An unexpected error occurred.",
                 variant: "destructive",
             });
         }

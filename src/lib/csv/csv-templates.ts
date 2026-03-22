@@ -60,9 +60,18 @@ function buildRegistry(): Record<string, CsvEntityTemplate> {
     const registry: Record<string, CsvEntityTemplate> = {};
 
     for (const [entityKey, config] of Object.entries(ENTITY_CONFIGS)) {
+        // When multiple entityKeys share a DB table (e.g. vendor + vendor_onboarding
+        // → vendors), reuse the first template so that key/table lookups return the
+        // same object reference.
+        if (config.table in registry) {
+            if (entityKey !== config.table) {
+                registry[entityKey] = registry[config.table]!;
+            }
+            continue;
+        }
+
         const override = CSV_TEMPLATE_OVERRIDES[entityKey];
         const template = generateCsvTemplate(config, config.createSchema, override);
-        // Key by table name (plural) for backward compatibility with API routes
         registry[config.table] = template;
         // Also key by entityKey (singular) — this is what ListPageShell passes
         // to CsvExportButton / CsvImportDialog via config.entityKey

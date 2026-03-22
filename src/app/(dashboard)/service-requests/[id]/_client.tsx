@@ -11,7 +11,7 @@ import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDate } from "@/lib/locale";
+import { formatDate } from "@/lib/formatters/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import { ArrowRightLeft, CheckCircle2, Headphones } from "lucide-react";
 

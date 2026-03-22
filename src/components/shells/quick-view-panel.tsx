@@ -28,7 +28,7 @@ import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { ChevronDown, ChevronUp, ExternalLink, Pencil } from "lucide-react";
 import type { QuickViewConfig } from "@/types/detail-page-config";
 import type { ListRowActionDef } from "@/types/list-page-config";
-import { computeStatValue, getNestedValue } from "@/lib/record-utils";
+import { computeStatValue, getNestedValue } from "@/lib/formatters/record-utils";
 import { useEntityMeta } from "@/hooks/use-entity-meta";
 import type { EntityRecord } from "@/types/entity";
 

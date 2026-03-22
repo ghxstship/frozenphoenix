@@ -13,14 +13,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { formatDate as formatDisplayDate } from "@/lib/locale";
+import { formatDate as formatDisplayDate } from "@/lib/formatters/locale";
 import {
     useCreateResourceBooking,
     useResourceBookings,
     useUpdateResourceBooking,
 } from "@/lib/supabase";
 import { useCrewMembers } from "@/lib/supabase";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_RESOURCE_BOOKING_CONFIG } from "@/config/create-entity-configs";
 import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";

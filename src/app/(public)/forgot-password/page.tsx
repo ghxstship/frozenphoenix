@@ -5,7 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { AuthFormField, AuthLayout, BotProtection, useBotProtection } from "@/components/auth";
-import { mapAuthError } from "@/lib/auth-utils";
+import { mapAuthError } from "@/features/auth/utils/auth-utils";
 import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, Mail } from "lucide-react";
 
 export default function ForgotPasswordPage() {

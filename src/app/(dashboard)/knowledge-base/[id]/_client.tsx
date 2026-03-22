@@ -38,7 +38,7 @@ import {
     Users,
     X,
 } from "lucide-react";
-import { PermissionGate } from "@/components/permission-guard";
+import { PermissionGate } from "@/components/app/permission-guard";
 
 const CATEGORY_ICONS: Record<string, typeof BookOpen> = {
     sop: FileText,

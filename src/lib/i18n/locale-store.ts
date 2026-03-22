@@ -6,7 +6,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { SupportedLocale, TextDirection } from "@/lib/locale";
+import type { SupportedLocale, TextDirection } from "@/lib/formatters/locale";
 
 interface LocaleStore {
     locale: SupportedLocale;

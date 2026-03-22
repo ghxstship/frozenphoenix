@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDecks, useProjects } from "@/lib/supabase";
 import { useCreateDeck } from "@/lib/supabase/hooks-documents";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_DECK_CONFIG } from "@/config/create-entity-configs";
 import type { Project, ProjectPhase, ProjectStatus } from "@/types";
 import { formatDate } from "@/lib/utils";

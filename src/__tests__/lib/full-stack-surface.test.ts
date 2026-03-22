@@ -23,13 +23,9 @@ function fileExists(relativePath: string): boolean {
 
 describe("API Route Surface Area", () => {
     const API_ROUTES = [
-        // WS-02: Production Lifecycle
-        "src/app/api/projects/route.ts",
-        "src/app/api/projects/[id]/route.ts",
-        "src/app/api/tasks/route.ts",
-        "src/app/api/tasks/[id]/route.ts",
-        "src/app/api/contracts/route.ts",
-        "src/app/api/contracts/[id]/route.ts",
+        // Catch-all entity CRUD (replaces per-entity routes for projects, tasks, etc.)
+        "src/app/api/entities/[entity]/route.ts",
+        "src/app/api/entities/[entity]/[id]/route.ts",
 
         // WS-03: Approval & Governance
         "src/app/api/approval-engine/initiate/route.ts",
@@ -48,12 +44,6 @@ describe("API Route Surface Area", () => {
         "src/app/api/advancing/[id]/items/[itemId]/status/route.ts",
         "src/app/api/advancing/templates/route.ts",
         "src/app/api/advancing/catalog/search/route.ts",
-
-        // WS-04: Finance & Billing
-        "src/app/api/invoices/route.ts",
-        "src/app/api/invoices/[id]/route.ts",
-        "src/app/api/vendors/route.ts",
-        "src/app/api/vendors/[id]/route.ts",
 
         // WS-08: Messaging & Comms
         "src/app/api/conversations/route.ts",
@@ -228,7 +218,7 @@ describe("Core Library Surface Area", () => {
         "src/lib/state-machines/index.ts",
         "src/lib/state-machines/registry.ts",
         "src/lib/approval-engine.ts",
-        "src/lib/auth-utils.ts",
+        "src/features/auth/utils/auth-utils.ts",
         "src/lib/supabase/hooks-core.ts",
         "src/lib/supabase/middleware.ts",
         "src/lib/supabase/realtime.ts",

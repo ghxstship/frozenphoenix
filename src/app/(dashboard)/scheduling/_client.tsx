@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo, useState } from "react";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_SHIFT_CONFIG } from "@/config/create-entity-configs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { useCrewMembers, useProjects, useShifts } from "@/lib/supabase";
 import { useCrewUtilization } from "@/lib/supabase";
 import { useResourceBookings } from "@/lib/supabase";
-import { formatDate } from "@/lib/locale";
+import { formatDate } from "@/lib/formatters/locale";
 import type { CrewMember, Project, ProjectPhase, ProjectStatus } from "@/types";
 import {
     AlertTriangle,

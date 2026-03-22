@@ -10,8 +10,8 @@ import { NextResponse } from "next/server";
 import { supabaseAnonKey, supabaseUrl } from "@/lib/supabase/config";
 import { serverFromTable } from "@/lib/supabase/server";
 import type { ServerClient } from "@/lib/supabase/server";
-import { cachedPermissionCheck } from "@/lib/permission-cache";
-import type { CachedPermission } from "@/lib/permission-cache";
+import { cachedPermissionCheck } from "@/lib/security/permission-cache";
+import type { CachedPermission } from "@/lib/security/permission-cache";
 import { hasPermission as hasStaticPermission } from "@/config/rbac";
 import type { PermissionLevel } from "@/types";
 

@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
-import { formatDate } from "@/lib/locale";
+import { formatDate } from "@/lib/formatters/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import { DollarSign, Pause, Play, RefreshCw } from "lucide-react";
 

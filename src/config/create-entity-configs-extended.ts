@@ -1,4 +1,4 @@
-import type { CreateEntityConfig } from "@/components/create-entity-dialog";
+import type { CreateEntityConfig } from "@/components/app/create-entity-dialog";
 import { FK_LOOKUP_CONFIGS } from "@/config/entity-lookup-configs";
 import {
     ACCOUNT_RISK_LEVEL_MAP,

@@ -1,7 +1,7 @@
 "use client";
 
 import { logger } from "@/lib/logger";
-import { formatDate } from "@/lib/locale";
+import { formatDate } from "@/lib/formatters/locale";
 
 import React, { useCallback, useState } from "react";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";

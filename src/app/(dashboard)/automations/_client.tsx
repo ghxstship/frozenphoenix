@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_AUTOMATION_CONFIG } from "@/config/create-entity-configs";
 import { OperationalDashboardShell } from "@/components/shells";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
@@ -13,7 +13,7 @@ import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { WORKFLOW_STATUS_MAP, type WorkflowStatusType } from "@/config/domain-config";
 import { formatDate } from "@/lib/utils";
-import { formatDateTime as formatLocaleDateTime } from "@/lib/locale";
+import { formatDateTime as formatLocaleDateTime } from "@/lib/formatters/locale";
 import {
     Activity,
     ArrowRight,

@@ -19,7 +19,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
 import { ApiErrors, generateRequestId } from "@/lib/api-utils";
-import { rateLimit as createRateLimiter, getClientId, rateLimitResponse } from "@/lib/rate-limit";
+import {
+    rateLimit as createRateLimiter,
+    getClientId,
+    rateLimitResponse,
+} from "@/lib/security/rate-limit";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -76,10 +80,7 @@ function getLimiter(config: RateLimitConfig): ReturnType<typeof createRateLimite
  * - Optional rate limiting
  * - Top-level error boundary
  */
-export function withRouteHandler(
-    handler: RouteHandlerFn,
-    options?: RouteHandlerOptions,
-) {
+export function withRouteHandler(handler: RouteHandlerFn, options?: RouteHandlerOptions) {
     // Pre-create limiter if rate limiting is enabled
     const rateLimitConfig = options?.rateLimit
         ? typeof options.rateLimit === "object"
@@ -90,7 +91,7 @@ export function withRouteHandler(
 
     return async function wrappedHandler(
         req: NextRequest,
-        routeCtx?: { params: Promise<Record<string, string>> },
+        routeCtx?: { params: Promise<Record<string, string>> }
     ): Promise<NextResponse> {
         const requestId = generateRequestId();
         const log = logger.child({

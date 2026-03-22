@@ -20,7 +20,7 @@ import {
     recordFailedAttempt,
     resetRateLimit,
     validateRedirectUrl,
-} from "@/lib/auth-utils";
+} from "@/features/auth/utils/auth-utils";
 import { signInWithMagicLink } from "@/lib/supabase/auth-actions";
 import { logAuthEvent } from "@/lib/supabase/auth-audit";
 import { AlertCircle, CheckCircle2, Loader2, Mail, Sparkles } from "lucide-react";

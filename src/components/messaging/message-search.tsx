@@ -4,7 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { SearchInput } from "@/components/ui/search-input";
 import { Avatar } from "@/components/ui/avatar";
-import { formatRelativeTime } from "@/lib/locale";
+import { formatRelativeTime } from "@/lib/formatters/locale";
 import { Hash, MessageSquare, Search, Users } from "lucide-react";
 
 interface SearchResult {

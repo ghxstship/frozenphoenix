@@ -70,8 +70,8 @@ const DataMap = dynamic(() =>
 const DataWorkload = dynamic(() =>
     import("@/components/data-view/data-workload").then((m) => m.DataWorkload)
 ) as unknown as React.ComponentType<DataWorkloadProps>;
-import { PermissionGate } from "@/components/permission-guard";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { PermissionGate } from "@/components/app/permission-guard";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
 import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
 import { QuickViewPanel } from "@/components/shells/quick-view-panel";
@@ -89,7 +89,7 @@ import {
 import { apiCreate, apiDelete, apiUpdate } from "@/lib/api/client";
 import { humanizeSnakeCase } from "@/lib/utils";
 import { useConfirm } from "@/components/ui/confirm-dialog";
-import { matchesSearch, toDataTableColumn } from "@/lib/record-utils";
+import { matchesSearch, toDataTableColumn } from "@/lib/formatters/record-utils";
 import { useEntityMeta } from "@/hooks/use-entity-meta";
 import type { EntityRecord } from "@/types/entity";
 

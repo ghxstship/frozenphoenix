@@ -5,7 +5,7 @@ import { useDetailCrud } from "@/hooks/use-detail-crud";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { Briefcase, HardHat, Mail, Phone } from "lucide-react";
-import { PermissionGate } from "@/components/permission-guard";
+import { PermissionGate } from "@/components/app/permission-guard";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 
 const CONFIG: DetailPageConfig = {

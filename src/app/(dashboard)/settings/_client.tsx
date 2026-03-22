@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { csrfHeaders } from "@/lib/csrf";
+import { csrfHeaders } from "@/lib/security/csrf";
 import { getInitials } from "@/lib/utils";
 import { SettingsPageShell } from "@/components/shells/settings-page-shell";
 import type { SettingsPageConfig } from "@/types/settings-page-config";
@@ -11,8 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { useSettings } from "@/lib/settings/settings-provider";
-import { PermissionGate } from "@/components/permission-guard";
-import { useTheme } from "@/components/theme-provider";
+import { PermissionGate } from "@/components/app/permission-guard";
+import { useTheme } from "@/components/app/theme-provider";
 import type { SettingCategory } from "@/types/settings";
 import {
     AtSign,

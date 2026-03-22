@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDateTime } from "@/lib/locale";
+import { formatDateTime } from "@/lib/formatters/locale";
 
 import { useCallback, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";

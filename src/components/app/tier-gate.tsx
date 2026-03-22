@@ -11,7 +11,7 @@
 
 import React from "react";
 import { useTierGate } from "@/hooks/use-tier-gate";
-import { UpsellCard } from "@/components/upsell-card";
+import { UpsellCard } from "@/components/app/upsell-card";
 import type { EntitlementPath } from "@/config/tier-entitlements";
 
 interface TierGateProps {

@@ -12,7 +12,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { FieldRenderer } from "@/components/data-view/field-renderers";
 import type { DetailFieldDef } from "@/types/detail-page-config";
-import { getNestedValue } from "@/lib/record-utils";
+import { getNestedValue } from "@/lib/formatters/record-utils";
 import type { EntityRecord } from "@/types/entity";
 
 interface FieldGridProps {

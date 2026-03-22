@@ -13,7 +13,7 @@ import {
     PasswordInput,
     useBotProtection,
 } from "@/components/auth";
-import { mapAuthError, validatePassword } from "@/lib/auth-utils";
+import { mapAuthError, validatePassword } from "@/features/auth/utils/auth-utils";
 import { AlertCircle, ArrowLeft, Building2, CheckCircle2, Loader2, Mail, User } from "lucide-react";
 
 function SignupForm() {

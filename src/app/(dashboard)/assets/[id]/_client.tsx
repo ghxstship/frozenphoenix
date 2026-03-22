@@ -1,7 +1,7 @@
 "use client";
 
 import { logger } from "@/lib/logger";
-import { enumLabel, SCAN_ACTION_LABELS } from "@/lib/enum-labels";
+import { enumLabel, SCAN_ACTION_LABELS } from "@/lib/formatters/enum-labels";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {

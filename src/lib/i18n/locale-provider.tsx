@@ -11,7 +11,8 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo } from "react";
-import type { SupportedLocale } from "@/lib/locale";
+import type { SupportedLocale } from "@/lib/formatters/locale";
+import { logger } from "@/lib/logger";
 import { getLanguageTagForLocale, getTextDirectionForLocale, useLocaleStore } from "./locale-store";
 import { getDictionary } from "./dictionaries";
 import type { TranslationDictionary, TranslationNamespace } from "./types";
@@ -102,8 +103,7 @@ export function useTranslation<NS extends TranslationNamespace>(namespace: NS) {
             if (typeof value !== "string") {
                 // Fallback: return the key itself (development aid)
                 if (process.env.NODE_ENV === "development") {
-                    // eslint-disable-next-line no-console
-                    console.warn(`[i18n] Missing key: ${namespace}.${key} for locale ${locale}`);
+                    logger.warn(`[i18n] Missing key: ${namespace}.${key} for locale ${locale}`);
                 }
                 return key;
             }

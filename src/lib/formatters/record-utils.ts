@@ -40,6 +40,7 @@ export function matchesSearch(record: EntityRecord, search: string, keys: string
 // ─── Stat Value Resolution ───────────────────────────────────
 
 interface StatDefLike {
+    /** @internal `any` is intentional — contravariant param; callers pass entity-specific compute fns. */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compute?: (data: any) => string | number;
     accessorKey?: string;

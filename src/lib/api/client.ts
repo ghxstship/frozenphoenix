@@ -15,7 +15,7 @@
    - ERROR:  { error: { message, code?, details? } }
    ═══════════════════════════════════════════════════════════════ */
 
-import { CSRF_HEADER_NAME, getCsrfToken } from "@/lib/csrf";
+import { CSRF_HEADER_NAME, getCsrfToken } from "@/lib/security/csrf";
 
 // ─── Response Types ─────────────────────────────────────────
 

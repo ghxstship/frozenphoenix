@@ -1,8 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
-   AI Copilot — Mistral Adapter (Stub)
+   AI Copilot — Mistral Adapter
+   STATUS: NOT IMPLEMENTED
    
-   Implements IModelProvider interface. Activate on demand by
-   providing a Mistral API key in admin settings.
+   Implements IModelProvider interface with model metadata.
+   Core methods (chat, complete, embed) throw NotImplementedError.
+   Activate by wiring @mistralai/mistralai and implementing below.
    ═══════════════════════════════════════════════════════════════ */
 
 import type {
@@ -61,6 +63,17 @@ const MISTRAL_MODELS: ModelDefinition[] = [
     },
 ];
 
+class NotImplementedError extends Error {
+    constructor(method: string) {
+        super(
+            `MistralAdapter.${method}() is not implemented. ` +
+                `Wire @mistralai/mistralai and implement this method to activate.`
+        );
+        this.name = "NotImplementedError";
+    }
+}
+
+/** @experimental — Model metadata is complete; core methods are not yet wired. */
 export class MistralAdapter implements IModelProvider {
     readonly providerKey = "mistral" as const;
     readonly displayName = "Mistral AI";
@@ -85,18 +98,15 @@ export class MistralAdapter implements IModelProvider {
         _messages: ChatMessage[],
         _options?: CompletionOptions
     ): AsyncGenerator<CopilotChunk, void, undefined> {
-        throw new Error(
-            "Mistral adapter is a stub. Install @mistralai/mistralai and implement " +
-                "the full adapter to activate. API key is stored and ready."
-        );
+        throw new NotImplementedError("chat");
     }
 
     async complete(_prompt: string, _options?: CompletionOptions): Promise<string> {
-        throw new Error("Mistral adapter is a stub. Implement to activate.");
+        throw new NotImplementedError("complete");
     }
 
     async embed(_input: string | string[]): Promise<EmbeddingResult[]> {
-        throw new Error("Mistral adapter is a stub. Implement to activate.");
+        throw new NotImplementedError("embed");
     }
 
     async moderate(_content: string): Promise<ModerationResult> {

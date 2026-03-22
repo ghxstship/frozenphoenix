@@ -28,31 +28,27 @@ const NO_OP_WRITE_RESULT = {
 function createNoOpQueryBuilder(isWrite: boolean) {
     const result = isWrite ? NO_OP_WRITE_RESULT : NO_OP_READ_RESULT;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handler: ProxyHandler<any> = {
+    const handler: ProxyHandler<object> = {
         get(_target, prop) {
             if (prop === "then") {
                 return (resolve: (v: typeof result) => void) => resolve(result);
             }
             // Every chained method (.select, .eq, .order, etc.) returns the proxy
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return (..._args: any[]) => new Proxy(() => {}, handler);
+            return (..._args: unknown[]) => new Proxy(() => {}, handler);
         },
     };
 
     return new Proxy(() => {}, handler);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function createNoOpClient(): any {
+/** @internal — No-op Supabase client for unconfigured environments. */
+function createNoOpClient() {
     let warnedOnce = false;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handler: ProxyHandler<any> = {
+    const handler: ProxyHandler<object> = {
         get(_target, prop) {
             if (prop === "from") {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                return (_table: any) => {
+                return (_table: string) => {
                     if (!warnedOnce) {
                         logger.warn("Supabase not configured — queries return empty results.", {
                             hint: "Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local",
@@ -69,8 +65,7 @@ function createNoOpClient(): any {
                                 method === "update" ||
                                 method === "delete" ||
                                 method === "upsert";
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            return (..._a: any[]) => createNoOpQueryBuilder(isWrite);
+                            return (..._a: unknown[]) => createNoOpQueryBuilder(isWrite);
                         },
                     };
                     return new Proxy(() => {}, tableHandler);
@@ -78,8 +73,7 @@ function createNoOpClient(): any {
             }
 
             if (prop === "rpc") {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                return (..._args: any[]) => createNoOpQueryBuilder(false);
+                return (..._args: unknown[]) => createNoOpQueryBuilder(false);
             }
 
             if (
@@ -92,16 +86,17 @@ function createNoOpClient(): any {
             }
 
             // Fallback: return a no-op function for any unknown property
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return (..._args: any[]) => new Proxy(() => {}, handler);
+            return (..._args: unknown[]) => new Proxy(() => {}, handler);
         },
     };
 
-    return new Proxy(() => {}, handler);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new Proxy(() => {}, handler) as any;
 }
 
 // ─── Singleton no-op client (created once, reused) ───
-let noOpClient: ReturnType<typeof createNoOpClient> | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let noOpClient: any = null;
 
 function getNoOpClient() {
     if (!noOpClient) noOpClient = createNoOpClient();
@@ -137,9 +132,10 @@ export function getSupabase() {
 }
 
 /**
- * Dynamic table accessor for hooks that accept runtime table names.
- * The `any` cast is scoped to this single helper; all call-sites stay
- * type-safe via return-type annotations.
+ * @internal Dynamic table accessor for hooks that accept runtime table names.
+ * Returns `any` intentionally — Supabase's generated types require exact
+ * table-name literals, but runtime table names are strings. This single
+ * boundary keeps all call-sites type-safe via return-type annotations.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function fromTable(table: string): any {

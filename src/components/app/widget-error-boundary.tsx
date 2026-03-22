@@ -12,7 +12,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import React from "react";
-import { ErrorBoundary } from "@/components/error-boundary";
+import { ErrorBoundary } from "@/components/app/error-boundary";
 
 interface WidgetErrorBoundaryProps {
     children: React.ReactNode;

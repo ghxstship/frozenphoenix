@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import { useEmailMessages } from "@/lib/supabase";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_EMAIL_ACCOUNT_CONFIG } from "@/config/create-entity-configs";
 import { SettingsPageShell } from "@/components/shells/settings-page-shell";
 import type { SettingsPageConfig } from "@/types/settings-page-config";

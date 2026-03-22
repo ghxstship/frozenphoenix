@@ -16,7 +16,7 @@
 
 import React, { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { PermissionGate } from "@/components/permission-guard";
+import { PermissionGate } from "@/components/app/permission-guard";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatsGrid } from "@/components/ui/stats-grid";
@@ -38,7 +38,7 @@ import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { Inbox } from "lucide-react";
 import { SHELLS_STRINGS } from "@/lib/i18n/shells-strings";
 import type { DashboardFilterDef, DashboardPageConfig } from "@/types/dashboard-page-config";
-import { computeStatValue, matchesSearch } from "@/lib/record-utils";
+import { computeStatValue, matchesSearch } from "@/lib/formatters/record-utils";
 import type { EntityRecord } from "@/types/entity";
 
 // ─── Types ───────────────────────────────────────────────────

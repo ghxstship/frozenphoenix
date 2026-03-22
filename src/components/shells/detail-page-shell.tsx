@@ -24,14 +24,14 @@ import type { DetailLayoutProps } from "@/components/layouts/detail-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatsGrid } from "@/components/ui/stats-grid";
-import { PermissionGate } from "@/components/permission-guard";
+import { PermissionGate } from "@/components/app/permission-guard";
 import { FieldGrid } from "@/components/shells/field-grid";
 import { RelatedEntitiesSection } from "@/components/shells/related-entities";
 import { RecordChatter } from "@/components/activity";
 import { LayoutList } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import type { TabBarItem } from "@/components/ui/tab-bar";
-import { computeStatValue, getNestedValue } from "@/lib/record-utils";
+import { computeStatValue, getNestedValue } from "@/lib/formatters/record-utils";
 import { useEntityMeta } from "@/hooks/use-entity-meta";
 import type { EntityRecord } from "@/types/entity";
 

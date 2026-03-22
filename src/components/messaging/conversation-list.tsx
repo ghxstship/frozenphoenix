@@ -6,7 +6,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Hash, Lock, Megaphone, Plus, Search, Users } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { ConversationListItem } from "@/types/messaging";
-import { formatRelativeTime } from "@/lib/locale";
+import { formatRelativeTime } from "@/lib/formatters/locale";
 import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 
 interface ConversationListProps {

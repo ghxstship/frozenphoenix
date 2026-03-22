@@ -4,7 +4,7 @@ import React from "react";
 import { capitalize } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSettings } from "@/lib/settings/settings-provider";
-import { PermissionGate } from "@/components/permission-guard";
+import { PermissionGate } from "@/components/app/permission-guard";
 import {
     ACCENT_PRESETS,
     ANIMATION_PRESETS,
@@ -14,7 +14,7 @@ import {
     FONT_SIZE_PRESETS,
     SHADOW_PRESETS,
     useTheme,
-} from "@/components/theme-provider";
+} from "@/components/app/theme-provider";
 import type {
     AccentColor,
     AnimationSpeed,
@@ -24,7 +24,7 @@ import type {
     FontSizeScale,
     GlassEffect,
     ShadowIntensity,
-} from "@/components/theme-provider";
+} from "@/components/app/theme-provider";
 import type { SettingCategory } from "@/types/settings";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { SettingsCategorySection } from "../_components/settings-category-section";
@@ -395,4 +395,4 @@ export function AppearanceTab({ handleSaveSetting }: AppearanceTabProps) {
 }
 
 // Re-export the LayoutDensity type needed by the component
-import type { LayoutDensity } from "@/components/theme-provider";
+import type { LayoutDensity } from "@/components/app/theme-provider";

@@ -14,7 +14,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { MetricCard } from "@/components/ui/metric-card";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { ApprovalFlow } from "@/components/ui/approval-flow";
-import { useCreateAction } from "@/components/create-entity-dialog";
+import { useCreateAction } from "@/components/app/create-entity-dialog";
 import { formatCurrency } from "@/lib/utils";
 import {
     AlertTriangle,

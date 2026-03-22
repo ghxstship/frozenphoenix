@@ -10,7 +10,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_CUSTOM_FIELD_CONFIG } from "@/config/create-entity-configs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

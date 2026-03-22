@@ -20,7 +20,7 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { ChevronRight, LayoutList } from "lucide-react";
 import type { RelatedEntityDef } from "@/types/detail-page-config";
-import { toDataTableColumn } from "@/lib/record-utils";
+import { toDataTableColumn } from "@/lib/formatters/record-utils";
 import { useEntityMeta } from "@/hooks/use-entity-meta";
 import type { EntityRecord } from "@/types/entity";
 

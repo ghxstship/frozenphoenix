@@ -11,7 +11,7 @@ import {
     mapAuthError,
     validatePassword,
     validateRedirectUrl,
-} from "@/lib/auth-utils";
+} from "@/features/auth/utils/auth-utils";
 
 // ═══════════════════════════════════════════════════════════════
 // REDIRECT VALIDATION (Open Redirect Prevention)

@@ -16,10 +16,12 @@ import type { CsvEntityTemplate, CsvFieldDef, CsvFieldType } from "./csv-templat
 
 // ─── Zod v4 Introspection Helpers ───────────────────────────
 //
-// Zod v4 does not expose typeName or internal def properties on
-// the public TypeScript types. We use `any` casts to introspect
-// the runtime structure, which is stable across Zod 3 & 4.
-
+// Zod v4 does not expose `_def` or `typeName` on public TypeScript types.
+// Runtime introspection of the internal schema structure requires `any`
+// casts. This is stable across Zod 3 & 4 and is the standard approach
+// used by the Zod ecosystem (e.g. zod-to-json-schema).
+//
+// The `any` usage is scoped to this section only.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /** Read the internal `_def` of any Zod schema. */
@@ -27,10 +29,46 @@ function getDef(schema: any): any {
     return schema?._def ?? null;
 }
 
-/** Read the Zod type discriminator string. */
+/**
+ * Read the Zod type discriminator string.
+ * Zod v3: `_def.typeName` = "ZodObject"
+ * Zod v4: `_def.type` = "object"
+ * We normalize to v3 format for consistency.
+ */
 function getTypeName(schema: any): string | null {
-    return getDef(schema)?.typeName ?? null;
+    const def = getDef(schema);
+    if (!def) return null;
+    // Zod v3
+    if (def.typeName) return def.typeName;
+    // Zod v4 — normalize to v3-style names
+    if (def.type) return ZOD_V4_TO_V3[def.type] ?? null;
+    return null;
 }
+
+/** Map Zod v4 `_def.type` strings to their v3 `_def.typeName` equivalents. */
+const ZOD_V4_TO_V3: Record<string, string> = {
+    object: "ZodObject",
+    string: "ZodString",
+    number: "ZodNumber",
+    boolean: "ZodBoolean",
+    enum: "ZodEnum",
+    optional: "ZodOptional",
+    nullable: "ZodNullable",
+    default: "ZodDefault",
+    catch: "ZodCatch",
+    readonly: "ZodReadonly",
+    effects: "ZodEffects",
+    pipeline: "ZodPipeline",
+    lazy: "ZodLazy",
+    union: "ZodUnion",
+    array: "ZodArray",
+    record: "ZodRecord",
+    tuple: "ZodTuple",
+    literal: "ZodLiteral",
+    branded: "ZodBranded",
+    intersection: "ZodIntersection",
+    nativeEnum: "ZodNativeEnum",
+};
 
 /**
  * Unwrap Zod wrappers (optional, default, nullable, pipe, effects,
@@ -388,6 +426,7 @@ export function generateCsvTemplate(
 /**
  * Extract the shape from a Zod schema.
  * Handles z.object, effects, lazy, intersections, and partials.
+ * Supports both Zod v3 (def.typeName, def.shape()) and Zod v4 (def.type, def.shape).
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractShape(schema: z.ZodSchema): Record<string, any> | null {
@@ -395,9 +434,15 @@ function extractShape(schema: z.ZodSchema): Record<string, any> | null {
     const def = (schema as any)?._def;
     if (!def) return null;
 
-    switch (def.typeName) {
+    const typeName = getTypeName(schema);
+
+    switch (typeName) {
         case "ZodObject":
-            return def.shape() as Record<string, unknown>;
+            // Zod v3: def.shape() is a function. Zod v4: def.shape is a plain object.
+            if (typeof def.shape === "function") {
+                return def.shape() as Record<string, unknown>;
+            }
+            return def.shape as Record<string, unknown>;
         case "ZodEffects":
             return extractShape(def.schema);
         case "ZodLazy":

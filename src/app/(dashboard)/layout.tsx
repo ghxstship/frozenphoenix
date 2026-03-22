@@ -9,7 +9,7 @@ import { SkipLinks } from "@/components/accessibility";
 import { SIDEBAR_WIDTH, useSidebar } from "@/hooks/use-sidebar";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { BREAKPOINTS } from "@/config/design-tokens";
-import { ErrorBoundary } from "@/components/error-boundary";
+import { ErrorBoundary } from "@/components/app/error-boundary";
 import { EmailCollectionBanner } from "@/components/auth";
 import { PageTransition } from "@/components/ui/page-transition";
 import { useCopilotContext } from "@/hooks/use-copilot-context";

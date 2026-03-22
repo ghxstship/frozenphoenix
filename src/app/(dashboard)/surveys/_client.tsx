@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { enumLabel, SURVEY_TYPE_LABELS } from "@/lib/enum-labels";
+import { enumLabel, SURVEY_TYPE_LABELS } from "@/lib/formatters/enum-labels";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

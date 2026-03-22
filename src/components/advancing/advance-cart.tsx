@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -79,12 +80,13 @@ export function AdvanceCart({ isOpen, onClose, onCheckout, className }: AdvanceC
                             <li key={item.catalog_item_id} className="flex gap-3 px-4 py-3">
                                 {/* Thumbnail */}
                                 {item.thumbnail_url ? (
-                                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-muted">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
+                                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-muted">
+                                        <Image
                                             src={item.thumbnail_url}
                                             alt={item.name}
-                                            className="h-full w-full object-cover"
+                                            fill
+                                            sizes="56px"
+                                            className="object-cover"
                                         />
                                     </div>
                                 ) : (

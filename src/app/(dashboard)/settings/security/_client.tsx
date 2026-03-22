@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PasswordInput } from "@/components/auth";
-import { mapAuthError, validatePassword } from "@/lib/auth-utils";
+import { mapAuthError, validatePassword } from "@/features/auth/utils/auth-utils";
 import {
     AlertCircle,
     CheckCircle2,

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { Clock, Package, Plus, Tag, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -66,12 +67,13 @@ export function CatalogItemDetail({
                     <div className="flex flex-col gap-4 p-6">
                         {/* Thumbnail */}
                         {Boolean(rec.thumbnail_url) && (
-                            <div className="aspect-video w-full overflow-hidden rounded-md bg-muted">
-                                {/* eslint-disable-next-line @next/next/no-img-element -- dynamic external URLs from Supabase Storage */}
-                                <img
+                            <div className="relative aspect-video w-full overflow-hidden rounded-md bg-muted">
+                                <Image
                                     src={String(rec.thumbnail_url)}
                                     alt={String(rec.name)}
-                                    className="h-full w-full object-cover"
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 480px"
+                                    className="object-cover"
                                 />
                             </div>
                         )}

@@ -15,7 +15,7 @@ import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import { CREATIVE_BRIEF_TYPE_MAP } from "@/config/domain-config";
 import { formatCurrency } from "@/lib/utils";
-import { formatDate } from "@/lib/locale";
+import { formatDate } from "@/lib/formatters/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     Calendar,

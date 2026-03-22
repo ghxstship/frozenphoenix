@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { QUICK_REACTIONS } from "@/types/messaging";
 import type { MessageWithSender, ReactionAggregate } from "@/types/messaging";
-import { formatRelativeTime } from "@/lib/locale";
+import { formatRelativeTime } from "@/lib/formatters/locale";
 import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 
 interface MessageBubbleProps {

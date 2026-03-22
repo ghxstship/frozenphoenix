@@ -12,7 +12,7 @@ import { Activity, AlertTriangle, CheckCircle2, Clock, Radio, Users } from "luci
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useLiveEventInstances } from "@/lib/supabase";
 import { useCreateLiveEventInstance } from "@/lib/supabase/hooks-live-ops";
-import { CreateEntityDialog, useCreateAction } from "@/components/create-entity-dialog";
+import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_LIVE_EVENT_INSTANCE_CONFIG } from "@/config/create-entity-configs";
 import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";

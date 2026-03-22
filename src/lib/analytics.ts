@@ -1,17 +1,16 @@
 /* ═══════════════════════════════════════════════════════════════
-   ANALYTICS — FIND-038 Remediation
-   ═══════════════════════════════════════════════════════════════
+   ANALYTICS — Consent-gated Provider
+   STATUS: NO-OP — Awaiting PostHog (or equivalent) integration
    
-   Consent-gated analytics integration. Currently stubs PostHog.
-   Only initializes when the user has granted analytics consent
-   via the cookie consent banner (FIND-024).
+   When ready to activate:
+   1. Install posthog-js: `npm install posthog-js`
+   2. Initialize in init() with NEXT_PUBLIC_POSTHOG_KEY
+   3. Wire identify/capture/page/reset to posthog SDK calls
    
-   Usage:
-     import { analytics } from "@/lib/analytics";
-     analytics.capture("page_viewed", { path: "/dashboard" });
+   All call-sites already use this module — no import changes needed.
    ═══════════════════════════════════════════════════════════════ */
 
-import { hasConsent } from "@/components/cookie-consent";
+import { hasConsent } from "@/components/app/cookie-consent";
 
 type AnalyticsProperties = Record<string, string | number | boolean | null>;
 
@@ -23,10 +22,7 @@ interface AnalyticsProvider {
     reset(): void;
 }
 
-// ─── PostHog stub ────────────────────────────────────────────
-// Replace with actual PostHog SDK when ready:
-//   npm install posthog-js
-//   import posthog from "posthog-js";
+// ─── No-op Provider ──────────────────────────────────────────
 
 let initialized = false;
 
@@ -41,54 +37,33 @@ function getPostHogKey(): string | undefined {
     return undefined;
 }
 
-const posthogStub: AnalyticsProvider = {
+const noOpProvider: AnalyticsProvider = {
     init() {
         if (initialized || !isEnabled()) return;
-        const key = getPostHogKey();
-        if (!key) return;
-
-        // When PostHog SDK is installed, initialize here:
-        // posthog.init(key, {
-        //     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com",
-        //     loaded: (ph) => { if (!isEnabled()) ph.opt_out_capturing(); },
-        //     capture_pageview: false, // We handle this manually
-        //     capture_pageleave: true,
-        //     persistence: "localStorage+cookie",
-        // });
-
+        if (!getPostHogKey()) return;
         initialized = true;
     },
 
-    identify(userId: string, traits?: AnalyticsProperties) {
+    identify(_userId: string, _traits?: AnalyticsProperties) {
         if (!isEnabled() || !initialized) return;
-        void userId;
-        void traits;
-        // posthog.identify(userId, traits);
     },
 
-    capture(event: string, properties?: AnalyticsProperties) {
+    capture(_event: string, _properties?: AnalyticsProperties) {
         if (!isEnabled() || !initialized) return;
-        void event;
-        void properties;
-        // posthog.capture(event, properties);
     },
 
-    page(name?: string, properties?: AnalyticsProperties) {
+    page(_name?: string, _properties?: AnalyticsProperties) {
         if (!isEnabled() || !initialized) return;
-        void name;
-        void properties;
-        // posthog.capture("$pageview", { ...properties, $current_url: window.location.href });
     },
 
     reset() {
         if (!initialized) return;
-        // posthog.reset();
         initialized = false;
     },
 };
 
 // ─── Public API ──────────────────────────────────────────────
-export const analytics: AnalyticsProvider = posthogStub;
+export const analytics: AnalyticsProvider = noOpProvider;
 
 // Listen for consent changes to initialize/teardown
 if (typeof window !== "undefined") {

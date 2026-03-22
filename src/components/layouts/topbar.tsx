@@ -8,7 +8,7 @@ import { capitalize, cn, getInitials } from "@/lib/utils";
 import { NotificationBell } from "@/components/notifications";
 import { createClient } from "@/lib/supabase/client";
 import { useSidebar } from "@/hooks/use-sidebar";
-import { useTheme } from "@/components/theme-provider";
+import { useTheme } from "@/components/app/theme-provider";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { useMessaging } from "@/hooks/use-messaging";
 import { useUnreadCounts } from "@/lib/supabase/hooks-messaging";
@@ -34,7 +34,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { SupportedLocale } from "@/lib/locale";
+import type { SupportedLocale } from "@/lib/formatters/locale";
 import type { PermissionLevel } from "@/types";
 import type { LucideIcon } from "lucide-react";
 import {

@@ -103,8 +103,8 @@ describe("Navigation RBAC Filtering", () => {
         expect(liveOps).toBeDefined();
     });
 
-    it("navigation config has 11 sections total (10 + 1 contextual)", () => {
-        expect(navigationConfig).toHaveLength(11);
+    it("navigation config has 13 sections total (12 + 1 contextual)", () => {
+        expect(navigationConfig).toHaveLength(13);
     });
 
     it("no section is empty after exec filtering", () => {

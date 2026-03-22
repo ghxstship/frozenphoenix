@@ -14,7 +14,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import React, { useMemo } from "react";
-import { PermissionGate } from "@/components/permission-guard";
+import { PermissionGate } from "@/components/app/permission-guard";
 import { PageHeader } from "@/components/ui/page-header";
 import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";

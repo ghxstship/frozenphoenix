@@ -5,7 +5,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { csrfHeaders } from "@/lib/csrf";
+import { csrfHeaders } from "@/lib/security/csrf";
 
 // ─── Types ───────────────────────────────────────────────────
 

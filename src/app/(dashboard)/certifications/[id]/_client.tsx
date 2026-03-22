@@ -8,7 +8,7 @@ import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CERT_TYPE_LABELS } from "@/config/ui-variants";
-import { formatDate } from "@/lib/locale";
+import { formatDate } from "@/lib/formatters/locale";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertTriangle,

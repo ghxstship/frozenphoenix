@@ -37,7 +37,7 @@ export default function DashboardError({
                         <RefreshCw className="h-4 w-4 mr-1" />
                         Try Again
                     </Button>
-                    <Button variant="default" onClick={() => window.location.assign("/home")}>
+                    <Button variant="default" onClick={() => window.location.assign("/dashboard")}>
                         <Home className="h-4 w-4 mr-1" />
                         Go to Dashboard
                     </Button>

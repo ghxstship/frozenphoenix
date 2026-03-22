@@ -37,16 +37,14 @@ import {
 import Link from "next/link";
 
 export function DashboardPageClient() {
-    const { data: sbProjects, isLoading: loadingProjects } = useProjects();
-    const { data: sbDeals, isLoading: loadingDeals } = useDeals();
+    const { data: sbProjects } = useProjects();
+    const { data: sbDeals } = useDeals();
     const { data: sbNotifications } = useNotifications();
     const { data: sbApprovals } = useApprovals();
     const { data: sbCrew } = useCrewMembers();
     const { data: myTasks } = useMyTasks();
     const { data: myTaskCounts } = useMyTaskCounts();
     const { data: myDocs } = useDocuments();
-
-    const isLoading = loadingProjects || loadingDeals;
 
     // Transform Supabase data or fall back to mock data
     const projects = (sbProjects ?? []).map((p) => ({
@@ -397,5 +395,5 @@ export function DashboardPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} isLoading={isLoading} />;
+    return <OperationalDashboardShell config={config} />;
 }

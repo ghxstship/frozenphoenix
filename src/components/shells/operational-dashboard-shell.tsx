@@ -140,7 +140,9 @@ export function OperationalDashboardShell({
         config.emptyState?.description ?? SHELLS_STRINGS.dashboard_no_data_desc;
 
     // Loading state — must be after all hooks
-    if (isLoading) return <LoadingState />;
+    // Note: We do NOT return early. The shell chrome (header, actions) renders
+    // immediately for perceived performance. Only the data-dependent content
+    // area shows a skeleton while loading.
 
     return (
         <PermissionGate
@@ -153,34 +155,44 @@ export function OperationalDashboardShell({
                     {config.headerActions}
                 </PageHeader>
 
-                {/* Stats */}
+                {/* Stats — show skeleton placeholders while loading */}
                 {statValues && statValues.length > 0 && (
                     <StatsGrid>
                         {statValues.map((s) => (
-                            <StatCard key={s.label} title={s.label} value={s.value} icon={s.icon} />
+                            <StatCard
+                                key={s.label}
+                                title={s.label}
+                                value={isLoading ? "—" : s.value}
+                                icon={s.icon}
+                            />
                         ))}
                     </StatsGrid>
                 )}
 
                 {/* Alerts */}
-                {activeAlerts.map((alert, i) => {
-                    const message =
-                        typeof alert.message === "function" ? alert.message(data) : alert.message;
-                    return (
-                        <AlertBanner
-                            key={i}
-                            message={message}
-                            severity={alert.severity ?? "warning"}
-                            icon={alert.icon}
-                        />
-                    );
-                })}
+                {!isLoading &&
+                    activeAlerts.map((alert, i) => {
+                        const message =
+                            typeof alert.message === "function"
+                                ? alert.message(data)
+                                : alert.message;
+                        return (
+                            <AlertBanner
+                                key={i}
+                                message={message}
+                                severity={alert.severity ?? "warning"}
+                                icon={alert.icon}
+                            />
+                        );
+                    })}
 
                 {/* After-stats slot */}
                 {config.afterStatsSlot}
 
-                {/* Content slot override */}
-                {config.contentSlot ? (
+                {/* Content: show loading skeleton when data is still fetching */}
+                {isLoading ? (
+                    <LoadingState variant="table" rows={6} />
+                ) : config.contentSlot ? (
                     config.contentSlot
                 ) : (
                     <>

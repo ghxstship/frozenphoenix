@@ -29,7 +29,7 @@ const TYPE_FILTERS = [
 const STATUS_FILTERS = ["all", "draft", "published", "pending_review"] as const;
 
 export function DocumentsPageClient() {
-    const { data: sbDocs, isLoading } = useDocuments();
+    const { data: sbDocs } = useDocuments();
     const [search, setSearch] = useState("");
     const [typeFilter, setTypeFilter] = useQueryTabState({
         key: "type",
@@ -190,5 +190,5 @@ export function DocumentsPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} isLoading={isLoading} />;
+    return <OperationalDashboardShell config={config} />;
 }

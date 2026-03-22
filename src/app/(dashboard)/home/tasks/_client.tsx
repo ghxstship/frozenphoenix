@@ -24,7 +24,7 @@ import Link from "next/link";
 const STATUS_FILTERS = ["all", "active", "overdue", "completed"] as const;
 
 export function TasksHomePageClient() {
-    const { data: myTasks, isLoading } = useMyTasks();
+    const { data: myTasks } = useMyTasks();
     const { data: counts } = useMyTaskCounts();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useQueryTabState({
@@ -218,7 +218,7 @@ export function TasksHomePageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} isLoading={isLoading} />;
+    return <OperationalDashboardShell config={config} />;
 }
 
 function KpiCard({

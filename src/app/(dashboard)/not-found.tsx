@@ -16,7 +16,7 @@ export default function DashboardNotFound() {
                     </p>
                 </div>
                 <Button asChild variant="default">
-                    <Link href="/home">
+                    <Link href="/dashboard">
                         <Home className="h-4 w-4 mr-1" />
                         Go to Dashboard
                     </Link>

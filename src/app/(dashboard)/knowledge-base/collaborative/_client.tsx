@@ -22,6 +22,7 @@ import {
 import { useKnowledgeBaseArticles } from "@/lib/supabase";
 import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { getStatusVariant } from "@/config/ui-variants";
 
 interface CollaborativeDocument {
     id: string;
@@ -51,12 +52,6 @@ interface VersionEntry {
     additions: number;
     deletions: number;
 }
-
-const STATUS_BADGE: Record<string, "success" | "warning" | "default"> = {
-    draft: "warning",
-    published: "success",
-    locked: "default",
-};
 
 export function CollaborativeEditorPageClient() {
     const { data: sbArticles, isLoading } = useKnowledgeBaseArticles();
@@ -138,7 +133,7 @@ export function CollaborativeEditorPageClient() {
                                                     {doc.category}
                                                 </Badge>
                                                 <Badge
-                                                    variant={STATUS_BADGE[doc.status]}
+                                                    variant={getStatusVariant(doc.status)}
                                                     className="density-caption flex items-center gap-0.5"
                                                 >
                                                     {doc.status === "locked" ? (

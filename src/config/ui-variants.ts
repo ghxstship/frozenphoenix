@@ -396,6 +396,11 @@ export const STATUS_VARIANTS = {
     at_risk: "warning",
     delivered: "success",
     downloaded: "default",
+
+    // Compliance / SLA status
+    compliant: "success",
+    non_compliant: "destructive",
+    within_sla: "success",
 } as const satisfies Record<string, BadgeVariant>;
 
 export type StatusKey = keyof typeof STATUS_VARIANTS;

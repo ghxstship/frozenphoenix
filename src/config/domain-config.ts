@@ -64,6 +64,7 @@ import type {
     WorkPackageStatus,
 } from "@/types";
 import type { EnumConfig } from "./config-utils";
+import { toEnumMap } from "./config-utils";
 
 // ─── Deal Stages ───
 export const DEAL_STAGES: EnumConfig<DealStage>[] = [
@@ -85,10 +86,7 @@ export const DEAL_STAGES: EnumConfig<DealStage>[] = [
     { value: "lost", label: "Lost", variant: "destructive", description: "Deal lost" },
 ];
 
-export const DEAL_STAGE_MAP = Object.fromEntries(DEAL_STAGES.map((s) => [s.value, s])) as Record<
-    DealStage,
-    EnumConfig<DealStage>
->;
+export const DEAL_STAGE_MAP = toEnumMap(DEAL_STAGES);
 
 export const DEAL_STAGES_KANBAN: { id: DealStage; label: string; color: string }[] =
     DEAL_STAGES.map((stage) => ({
@@ -108,9 +106,7 @@ export const PROJECT_PHASES: EnumConfig<ProjectPhase>[] = [
     { value: "load_out", label: "Load-Out", variant: "ghost" },
 ];
 
-export const PROJECT_PHASE_MAP = Object.fromEntries(
-    PROJECT_PHASES.map((p) => [p.value, p])
-) as Record<ProjectPhase, EnumConfig<ProjectPhase>>;
+export const PROJECT_PHASE_MAP = toEnumMap(PROJECT_PHASES);
 
 export const PROJECT_PHASE_ORDER: ProjectPhase[] = PROJECT_PHASES.map((p) => p.value);
 
@@ -123,9 +119,7 @@ export const PROJECT_STATUSES: EnumConfig<ProjectStatus>[] = [
     { value: "cancelled", label: "Cancelled", variant: "destructive" },
 ];
 
-export const PROJECT_STATUS_MAP = Object.fromEntries(
-    PROJECT_STATUSES.map((s) => [s.value, s])
-) as Record<ProjectStatus, EnumConfig<ProjectStatus>>;
+export const PROJECT_STATUS_MAP = toEnumMap(PROJECT_STATUSES);
 
 // ─── Task Status ───
 export const TASK_STATUSES: EnumConfig<TaskStatus>[] = [
@@ -139,10 +133,7 @@ export const TASK_STATUSES: EnumConfig<TaskStatus>[] = [
     { value: "cancelled", label: "Cancelled", variant: "ghost" },
 ];
 
-export const TASK_STATUS_MAP = Object.fromEntries(TASK_STATUSES.map((s) => [s.value, s])) as Record<
-    TaskStatus,
-    EnumConfig<TaskStatus>
->;
+export const TASK_STATUS_MAP = toEnumMap(TASK_STATUSES);
 
 export const TASK_STATUS_ORDER: TaskStatus[] = TASK_STATUSES.map((s) => s.value);
 
@@ -155,9 +146,7 @@ export const TASK_PRIORITIES: EnumConfig<TaskPriority>[] = [
     { value: "urgent", label: "Urgent", variant: "destructive" },
 ];
 
-export const TASK_PRIORITY_MAP = Object.fromEntries(
-    TASK_PRIORITIES.map((p) => [p.value, p])
-) as Record<TaskPriority, EnumConfig<TaskPriority>>;
+export const TASK_PRIORITY_MAP = toEnumMap(TASK_PRIORITIES);
 
 // ─── Fabrication Status ───
 export const FABRICATION_STATUSES: EnumConfig<FabricationStatus>[] = [
@@ -169,9 +158,7 @@ export const FABRICATION_STATUSES: EnumConfig<FabricationStatus>[] = [
     { value: "complete", label: "Complete", variant: "success" },
 ];
 
-export const FABRICATION_STATUS_MAP = Object.fromEntries(
-    FABRICATION_STATUSES.map((s) => [s.value, s])
-) as Record<FabricationStatus, EnumConfig<FabricationStatus>>;
+export const FABRICATION_STATUS_MAP = toEnumMap(FABRICATION_STATUSES);
 
 // ─── Document Type ───
 export const DOCUMENT_TYPES: EnumConfig<DocumentType>[] = [
@@ -184,9 +171,7 @@ export const DOCUMENT_TYPES: EnumConfig<DocumentType>[] = [
     { value: "template", label: "Template", variant: "ghost" },
 ];
 
-export const DOCUMENT_TYPE_MAP = Object.fromEntries(
-    DOCUMENT_TYPES.map((t) => [t.value, t])
-) as Record<DocumentType, EnumConfig<DocumentType>>;
+export const DOCUMENT_TYPE_MAP = toEnumMap(DOCUMENT_TYPES);
 
 // ─── Document Status ───
 export const DOCUMENT_STATUSES: EnumConfig<DocumentStatus>[] = [
@@ -196,9 +181,7 @@ export const DOCUMENT_STATUSES: EnumConfig<DocumentStatus>[] = [
     { value: "archived", label: "Archived", variant: "secondary" },
 ];
 
-export const DOCUMENT_STATUS_MAP = Object.fromEntries(
-    DOCUMENT_STATUSES.map((s) => [s.value, s])
-) as Record<DocumentStatus, EnumConfig<DocumentStatus>>;
+export const DOCUMENT_STATUS_MAP = toEnumMap(DOCUMENT_STATUSES);
 
 // ─── Asset Condition ───
 export const ASSET_CONDITIONS: EnumConfig<AssetCondition>[] = [
@@ -210,9 +193,7 @@ export const ASSET_CONDITIONS: EnumConfig<AssetCondition>[] = [
     { value: "decommissioned", label: "Decommissioned", variant: "ghost" },
 ];
 
-export const ASSET_CONDITION_MAP = Object.fromEntries(
-    ASSET_CONDITIONS.map((c) => [c.value, c])
-) as Record<AssetCondition, EnumConfig<AssetCondition>>;
+export const ASSET_CONDITION_MAP = toEnumMap(ASSET_CONDITIONS);
 
 // ─── Certification Types ───
 export const CERTIFICATION_TYPES: EnumConfig<CertificationType>[] = [
@@ -225,9 +206,7 @@ export const CERTIFICATION_TYPES: EnumConfig<CertificationType>[] = [
     { value: "first_aid", label: "First Aid", variant: "success" },
 ];
 
-export const CERTIFICATION_TYPE_MAP = Object.fromEntries(
-    CERTIFICATION_TYPES.map((c) => [c.value, c])
-) as Record<CertificationType, EnumConfig<CertificationType>>;
+export const CERTIFICATION_TYPE_MAP = toEnumMap(CERTIFICATION_TYPES);
 
 // ─── Stakeholder Types ───
 export const STAKEHOLDER_TYPES: EnumConfig<StakeholderType>[] = [
@@ -237,9 +216,7 @@ export const STAKEHOLDER_TYPES: EnumConfig<StakeholderType>[] = [
     { value: "subcontractor", label: "Subcontractor", variant: "secondary" },
 ];
 
-export const STAKEHOLDER_TYPE_MAP = Object.fromEntries(
-    STAKEHOLDER_TYPES.map((t) => [t.value, t])
-) as Record<StakeholderType, EnumConfig<StakeholderType>>;
+export const STAKEHOLDER_TYPE_MAP = toEnumMap(STAKEHOLDER_TYPES);
 
 // ─── Permission Levels ───
 export const PERMISSION_LEVELS: EnumConfig<PermissionLevel>[] = [
@@ -276,9 +253,7 @@ export const PERMISSION_LEVELS: EnumConfig<PermissionLevel>[] = [
     },
 ];
 
-export const PERMISSION_LEVEL_MAP = Object.fromEntries(
-    PERMISSION_LEVELS.map((p) => [p.value, p])
-) as Record<PermissionLevel, EnumConfig<PermissionLevel>>;
+export const PERMISSION_LEVEL_MAP = toEnumMap(PERMISSION_LEVELS);
 
 // ─── Document Categories ───
 export type DocumentCategory = "site_map" | "nda" | "contract" | "blueprint" | "permit" | "other";
@@ -292,9 +267,7 @@ export const DOCUMENT_CATEGORIES: EnumConfig<DocumentCategory>[] = [
     { value: "other", label: "Other", variant: "ghost" },
 ];
 
-export const DOCUMENT_CATEGORY_MAP = Object.fromEntries(
-    DOCUMENT_CATEGORIES.map((c) => [c.value, c])
-) as Record<DocumentCategory, EnumConfig<DocumentCategory>>;
+export const DOCUMENT_CATEGORY_MAP = toEnumMap(DOCUMENT_CATEGORIES);
 
 // ─── Deck Types ───
 export type DeckType = "pitch" | "progress" | "wrap";
@@ -305,10 +278,7 @@ export const DECK_TYPES: EnumConfig<DeckType>[] = [
     { value: "wrap", label: "Wrap Deck", variant: "success" },
 ];
 
-export const DECK_TYPE_MAP = Object.fromEntries(DECK_TYPES.map((t) => [t.value, t])) as Record<
-    DeckType,
-    EnumConfig<DeckType>
->;
+export const DECK_TYPE_MAP = toEnumMap(DECK_TYPES);
 
 // ─── Notification Types ───
 export type NotificationType = "info" | "warning" | "error" | "success";
@@ -320,9 +290,7 @@ export const NOTIFICATION_TYPES: EnumConfig<NotificationType>[] = [
     { value: "success", label: "Success", variant: "success" },
 ];
 
-export const NOTIFICATION_TYPE_MAP = Object.fromEntries(
-    NOTIFICATION_TYPES.map((t) => [t.value, t])
-) as Record<NotificationType, EnumConfig<NotificationType>>;
+export const NOTIFICATION_TYPE_MAP = toEnumMap(NOTIFICATION_TYPES);
 
 // ─── Contract Status ───
 export type ContractStatusType =
@@ -344,9 +312,7 @@ export const CONTRACT_STATUSES: EnumConfig<ContractStatusType>[] = [
     { value: "renewed", label: "Renewed", variant: "default" },
 ];
 
-export const CONTRACT_STATUS_MAP = Object.fromEntries(
-    CONTRACT_STATUSES.map((s) => [s.value, s])
-) as Record<ContractStatusType, EnumConfig<ContractStatusType>>;
+export const CONTRACT_STATUS_MAP = toEnumMap(CONTRACT_STATUSES);
 
 // ─── Contract Types ───
 export type ContractType = "vendor" | "client" | "nda" | "msa" | "sow" | "amendment";
@@ -360,9 +326,7 @@ export const CONTRACT_TYPES: EnumConfig<ContractType>[] = [
     { value: "amendment", label: "Amendment", variant: "ghost" },
 ];
 
-export const CONTRACT_TYPE_MAP = Object.fromEntries(
-    CONTRACT_TYPES.map((t) => [t.value, t])
-) as Record<ContractType, EnumConfig<ContractType>>;
+export const CONTRACT_TYPE_MAP = toEnumMap(CONTRACT_TYPES);
 
 // ─── Invoice Delivery Status ───
 export type InvoiceDeliveryStatusType =
@@ -386,9 +350,7 @@ export const INVOICE_DELIVERY_STATUSES: EnumConfig<InvoiceDeliveryStatusType>[] 
     { value: "void", label: "Void", variant: "ghost" },
 ];
 
-export const INVOICE_DELIVERY_STATUS_MAP = Object.fromEntries(
-    INVOICE_DELIVERY_STATUSES.map((s) => [s.value, s])
-) as Record<InvoiceDeliveryStatusType, EnumConfig<InvoiceDeliveryStatusType>>;
+export const INVOICE_DELIVERY_STATUS_MAP = toEnumMap(INVOICE_DELIVERY_STATUSES);
 
 // ─── Call Sheet Status ───
 export type CallSheetStatusType =
@@ -406,9 +368,7 @@ export const CALL_SHEET_STATUSES: EnumConfig<CallSheetStatusType>[] = [
     { value: "archived", label: "Archived", variant: "secondary" },
 ];
 
-export const CALL_SHEET_STATUS_MAP = Object.fromEntries(
-    CALL_SHEET_STATUSES.map((s) => [s.value, s])
-) as Record<CallSheetStatusType, EnumConfig<CallSheetStatusType>>;
+export const CALL_SHEET_STATUS_MAP = toEnumMap(CALL_SHEET_STATUSES);
 
 // ─── Tech Sheet Status ───
 export type TechSheetStatusType = "draft" | "reviewed" | "approved" | "distributed" | "archived";
@@ -421,9 +381,7 @@ export const TECH_SHEET_STATUSES: EnumConfig<TechSheetStatusType>[] = [
     { value: "archived", label: "Archived", variant: "secondary" },
 ];
 
-export const TECH_SHEET_STATUS_MAP = Object.fromEntries(
-    TECH_SHEET_STATUSES.map((s) => [s.value, s])
-) as Record<TechSheetStatusType, EnumConfig<TechSheetStatusType>>;
+export const TECH_SHEET_STATUS_MAP = toEnumMap(TECH_SHEET_STATUSES);
 
 // ─── Workflow Status ───
 export type WorkflowStatusType = "draft" | "active" | "paused" | "archived";
@@ -435,9 +393,7 @@ export const WORKFLOW_STATUSES: EnumConfig<WorkflowStatusType>[] = [
     { value: "archived", label: "Archived", variant: "secondary" },
 ];
 
-export const WORKFLOW_STATUS_MAP = Object.fromEntries(
-    WORKFLOW_STATUSES.map((s) => [s.value, s])
-) as Record<WorkflowStatusType, EnumConfig<WorkflowStatusType>>;
+export const WORKFLOW_STATUS_MAP = toEnumMap(WORKFLOW_STATUSES);
 
 // ─── Workflow Instance Status ───
 export type WorkflowInstanceStatusType =
@@ -455,9 +411,7 @@ export const WORKFLOW_INSTANCE_STATUSES: EnumConfig<WorkflowInstanceStatusType>[
     { value: "escalated", label: "Escalated", variant: "warning" },
 ];
 
-export const WORKFLOW_INSTANCE_STATUS_MAP = Object.fromEntries(
-    WORKFLOW_INSTANCE_STATUSES.map((s) => [s.value, s])
-) as Record<WorkflowInstanceStatusType, EnumConfig<WorkflowInstanceStatusType>>;
+export const WORKFLOW_INSTANCE_STATUS_MAP = toEnumMap(WORKFLOW_INSTANCE_STATUSES);
 
 // ─── Lifecycle Approval Stages ───
 export type LifecycleStage =
@@ -567,9 +521,7 @@ export const LIFECYCLE_STAGES: EnumConfig<LifecycleStage>[] = [
     },
 ];
 
-export const LIFECYCLE_STAGE_MAP = Object.fromEntries(
-    LIFECYCLE_STAGES.map((s) => [s.value, s])
-) as Record<LifecycleStage, EnumConfig<LifecycleStage>>;
+export const LIFECYCLE_STAGE_MAP = toEnumMap(LIFECYCLE_STAGES);
 
 // ─── Signature Status ───
 export type SignatureStatusType = "pending" | "signed" | "declined" | "expired";
@@ -581,9 +533,7 @@ export const SIGNATURE_STATUSES: EnumConfig<SignatureStatusType>[] = [
     { value: "expired", label: "Expired", variant: "ghost" },
 ];
 
-export const SIGNATURE_STATUS_MAP = Object.fromEntries(
-    SIGNATURE_STATUSES.map((s) => [s.value, s])
-) as Record<SignatureStatusType, EnumConfig<SignatureStatusType>>;
+export const SIGNATURE_STATUS_MAP = toEnumMap(SIGNATURE_STATUSES);
 
 // ─── Opportunity Stages ───
 export type OpportunityStageType =
@@ -639,9 +589,7 @@ export const OPPORTUNITY_STAGES: EnumConfig<OpportunityStageType>[] = [
     { value: "on_hold", label: "On Hold", variant: "ghost", description: "Temporarily paused" },
 ];
 
-export const OPPORTUNITY_STAGE_MAP = Object.fromEntries(
-    OPPORTUNITY_STAGES.map((s) => [s.value, s])
-) as Record<OpportunityStageType, EnumConfig<OpportunityStageType>>;
+export const OPPORTUNITY_STAGE_MAP = toEnumMap(OPPORTUNITY_STAGES);
 
 export const OPPORTUNITY_STAGES_KANBAN: { id: string; label: string; color: string }[] =
     OPPORTUNITY_STAGES.map((stage) => ({
@@ -660,9 +608,7 @@ export const OPPORTUNITY_TYPES: EnumConfig<OpportunityTypeConfig>[] = [
     { value: "upsell", label: "Upsell", variant: "warning" },
 ];
 
-export const OPPORTUNITY_TYPE_MAP = Object.fromEntries(
-    OPPORTUNITY_TYPES.map((t) => [t.value, t])
-) as Record<OpportunityTypeConfig, EnumConfig<OpportunityTypeConfig>>;
+export const OPPORTUNITY_TYPE_MAP = toEnumMap(OPPORTUNITY_TYPES);
 
 // ─── Change Order Status ───
 export type ChangeOrderStatusType =
@@ -682,9 +628,7 @@ export const CHANGE_ORDER_STATUSES: EnumConfig<ChangeOrderStatusType>[] = [
     { value: "void", label: "Void", variant: "ghost" },
 ];
 
-export const CHANGE_ORDER_STATUS_MAP = Object.fromEntries(
-    CHANGE_ORDER_STATUSES.map((s) => [s.value, s])
-) as Record<ChangeOrderStatusType, EnumConfig<ChangeOrderStatusType>>;
+export const CHANGE_ORDER_STATUS_MAP = toEnumMap(CHANGE_ORDER_STATUSES);
 
 // ─── Change Order Types ───
 export type ChangeOrderTypeConfig =
@@ -702,9 +646,7 @@ export const CHANGE_ORDER_TYPES: EnumConfig<ChangeOrderTypeConfig>[] = [
     { value: "combined", label: "Combined", variant: "ghost" },
 ];
 
-export const CHANGE_ORDER_TYPE_MAP = Object.fromEntries(
-    CHANGE_ORDER_TYPES.map((t) => [t.value, t])
-) as Record<ChangeOrderTypeConfig, EnumConfig<ChangeOrderTypeConfig>>;
+export const CHANGE_ORDER_TYPE_MAP = toEnumMap(CHANGE_ORDER_TYPES);
 
 // ─── Revenue Schedule Status ───
 export type RevenueScheduleStatusType =
@@ -722,9 +664,7 @@ export const REVENUE_SCHEDULE_STATUSES: EnumConfig<RevenueScheduleStatusType>[] 
     { value: "reversed", label: "Reversed", variant: "destructive" },
 ];
 
-export const REVENUE_SCHEDULE_STATUS_MAP = Object.fromEntries(
-    REVENUE_SCHEDULE_STATUSES.map((s) => [s.value, s])
-) as Record<RevenueScheduleStatusType, EnumConfig<RevenueScheduleStatusType>>;
+export const REVENUE_SCHEDULE_STATUS_MAP = toEnumMap(REVENUE_SCHEDULE_STATUSES);
 
 // ─── Account Risk Levels ───
 export type AccountRiskLevelType = "low" | "medium" | "high" | "critical";
@@ -736,9 +676,7 @@ export const ACCOUNT_RISK_LEVELS: EnumConfig<AccountRiskLevelType>[] = [
     { value: "critical", label: "Critical", variant: "destructive" },
 ];
 
-export const ACCOUNT_RISK_LEVEL_MAP = Object.fromEntries(
-    ACCOUNT_RISK_LEVELS.map((r) => [r.value, r])
-) as Record<AccountRiskLevelType, EnumConfig<AccountRiskLevelType>>;
+export const ACCOUNT_RISK_LEVEL_MAP = toEnumMap(ACCOUNT_RISK_LEVELS);
 
 // ─── Creative Brief Status ───
 export type CreativeBriefStatusType =
@@ -762,9 +700,7 @@ export const CREATIVE_BRIEF_STATUSES: EnumConfig<CreativeBriefStatusType>[] = [
     { value: "archived", label: "Archived", variant: "ghost" },
 ];
 
-export const CREATIVE_BRIEF_STATUS_MAP = Object.fromEntries(
-    CREATIVE_BRIEF_STATUSES.map((s) => [s.value, s])
-) as Record<CreativeBriefStatusType, EnumConfig<CreativeBriefStatusType>>;
+export const CREATIVE_BRIEF_STATUS_MAP = toEnumMap(CREATIVE_BRIEF_STATUSES);
 
 // ─── Creative Brief Types ───
 export type CreativeBriefTypeConfig =
@@ -786,9 +722,7 @@ export const CREATIVE_BRIEF_TYPES: EnumConfig<CreativeBriefTypeConfig>[] = [
     { value: "experiential", label: "Experiential", variant: "success" },
 ];
 
-export const CREATIVE_BRIEF_TYPE_MAP = Object.fromEntries(
-    CREATIVE_BRIEF_TYPES.map((t) => [t.value, t])
-) as Record<CreativeBriefTypeConfig, EnumConfig<CreativeBriefTypeConfig>>;
+export const CREATIVE_BRIEF_TYPE_MAP = toEnumMap(CREATIVE_BRIEF_TYPES);
 
 // ─── Campaign Status ───
 export type CampaignStatusType =
@@ -816,9 +750,7 @@ export const CAMPAIGN_STATUSES: EnumConfig<CampaignStatusType>[] = [
     { value: "archived", label: "Archived", variant: "ghost" },
 ];
 
-export const CAMPAIGN_STATUS_MAP = Object.fromEntries(
-    CAMPAIGN_STATUSES.map((s) => [s.value, s])
-) as Record<CampaignStatusType, EnumConfig<CampaignStatusType>>;
+export const CAMPAIGN_STATUS_MAP = toEnumMap(CAMPAIGN_STATUSES);
 
 // ─── Campaign Asset Production Status ───
 export type CampaignAssetProductionStatusType =
@@ -840,9 +772,7 @@ export const CAMPAIGN_ASSET_PRODUCTION_STATUSES: EnumConfig<CampaignAssetProduct
     { value: "retired", label: "Retired", variant: "ghost" },
 ];
 
-export const CAMPAIGN_ASSET_PRODUCTION_STATUS_MAP = Object.fromEntries(
-    CAMPAIGN_ASSET_PRODUCTION_STATUSES.map((s) => [s.value, s])
-) as Record<CampaignAssetProductionStatusType, EnumConfig<CampaignAssetProductionStatusType>>;
+export const CAMPAIGN_ASSET_PRODUCTION_STATUS_MAP = toEnumMap(CAMPAIGN_ASSET_PRODUCTION_STATUSES);
 
 // ─── Creative Review Status ───
 export type CreativeReviewStatusType =
@@ -860,9 +790,7 @@ export const CREATIVE_REVIEW_STATUSES: EnumConfig<CreativeReviewStatusType>[] = 
     { value: "rejected", label: "Rejected", variant: "destructive" },
 ];
 
-export const CREATIVE_REVIEW_STATUS_MAP = Object.fromEntries(
-    CREATIVE_REVIEW_STATUSES.map((s) => [s.value, s])
-) as Record<CreativeReviewStatusType, EnumConfig<CreativeReviewStatusType>>;
+export const CREATIVE_REVIEW_STATUS_MAP = toEnumMap(CREATIVE_REVIEW_STATUSES);
 
 // ─── Brand Guideline Status ───
 export type BrandGuidelineStatusType = "draft" | "published" | "archived";
@@ -873,9 +801,7 @@ export const BRAND_GUIDELINE_STATUSES: EnumConfig<BrandGuidelineStatusType>[] = 
     { value: "archived", label: "Archived", variant: "secondary" },
 ];
 
-export const BRAND_GUIDELINE_STATUS_MAP = Object.fromEntries(
-    BRAND_GUIDELINE_STATUSES.map((s) => [s.value, s])
-) as Record<BrandGuidelineStatusType, EnumConfig<BrandGuidelineStatusType>>;
+export const BRAND_GUIDELINE_STATUS_MAP = toEnumMap(BRAND_GUIDELINE_STATUSES);
 
 // ─── User Lifecycle Status ───
 export const USER_LIFECYCLE_STATUSES: EnumConfig<UserLifecycleStatus>[] = [
@@ -918,9 +844,7 @@ export const USER_LIFECYCLE_STATUSES: EnumConfig<UserLifecycleStatus>[] = [
     },
 ];
 
-export const USER_LIFECYCLE_STATUS_MAP = Object.fromEntries(
-    USER_LIFECYCLE_STATUSES.map((s) => [s.value, s])
-) as Record<UserLifecycleStatus, EnumConfig<UserLifecycleStatus>>;
+export const USER_LIFECYCLE_STATUS_MAP = toEnumMap(USER_LIFECYCLE_STATUSES);
 
 // ─── Org Membership Status ───
 export const ORG_MEMBERSHIP_STATUSES: EnumConfig<OrgMembershipStatus>[] = [
@@ -931,9 +855,7 @@ export const ORG_MEMBERSHIP_STATUSES: EnumConfig<OrgMembershipStatus>[] = [
     { value: "revoked", label: "Revoked", variant: "destructive" },
 ];
 
-export const ORG_MEMBERSHIP_STATUS_MAP = Object.fromEntries(
-    ORG_MEMBERSHIP_STATUSES.map((s) => [s.value, s])
-) as Record<OrgMembershipStatus, EnumConfig<OrgMembershipStatus>>;
+export const ORG_MEMBERSHIP_STATUS_MAP = toEnumMap(ORG_MEMBERSHIP_STATUSES);
 
 // ─── Invitation Status ───
 export const INVITATION_STATUSES: EnumConfig<InvitationStatus>[] = [
@@ -943,9 +865,7 @@ export const INVITATION_STATUSES: EnumConfig<InvitationStatus>[] = [
     { value: "revoked", label: "Revoked", variant: "destructive" },
 ];
 
-export const INVITATION_STATUS_MAP = Object.fromEntries(
-    INVITATION_STATUSES.map((s) => [s.value, s])
-) as Record<InvitationStatus, EnumConfig<InvitationStatus>>;
+export const INVITATION_STATUS_MAP = toEnumMap(INVITATION_STATUSES);
 
 // ─── Onboarding Step Status ───
 export const ONBOARDING_STEP_STATUSES: EnumConfig<OnboardingStepStatus>[] = [
@@ -955,9 +875,7 @@ export const ONBOARDING_STEP_STATUSES: EnumConfig<OnboardingStepStatus>[] = [
     { value: "skipped", label: "Skipped", variant: "secondary" },
 ];
 
-export const ONBOARDING_STEP_STATUS_MAP = Object.fromEntries(
-    ONBOARDING_STEP_STATUSES.map((s) => [s.value, s])
-) as Record<OnboardingStepStatus, EnumConfig<OnboardingStepStatus>>;
+export const ONBOARDING_STEP_STATUS_MAP = toEnumMap(ONBOARDING_STEP_STATUSES);
 
 // ─── API Token Status ───
 export const API_TOKEN_STATUSES: EnumConfig<ApiTokenStatus>[] = [
@@ -966,9 +884,7 @@ export const API_TOKEN_STATUSES: EnumConfig<ApiTokenStatus>[] = [
     { value: "revoked", label: "Revoked", variant: "destructive" },
 ];
 
-export const API_TOKEN_STATUS_MAP = Object.fromEntries(
-    API_TOKEN_STATUSES.map((s) => [s.value, s])
-) as Record<ApiTokenStatus, EnumConfig<ApiTokenStatus>>;
+export const API_TOKEN_STATUS_MAP = toEnumMap(API_TOKEN_STATUSES);
 
 // ─── Access Grant Status ───
 export const ACCESS_GRANT_STATUSES: EnumConfig<AccessGrantStatus>[] = [
@@ -977,9 +893,7 @@ export const ACCESS_GRANT_STATUSES: EnumConfig<AccessGrantStatus>[] = [
     { value: "revoked", label: "Revoked", variant: "destructive" },
 ];
 
-export const ACCESS_GRANT_STATUS_MAP = Object.fromEntries(
-    ACCESS_GRANT_STATUSES.map((s) => [s.value, s])
-) as Record<AccessGrantStatus, EnumConfig<AccessGrantStatus>>;
+export const ACCESS_GRANT_STATUS_MAP = toEnumMap(ACCESS_GRANT_STATUSES);
 
 // ─── Compliance Policy Types ───
 export const COMPLIANCE_POLICY_TYPES: EnumConfig<CompliancePolicyType>[] = [
@@ -993,9 +907,7 @@ export const COMPLIANCE_POLICY_TYPES: EnumConfig<CompliancePolicyType>[] = [
     { value: "custom", label: "Custom", variant: "ghost" },
 ];
 
-export const COMPLIANCE_POLICY_TYPE_MAP = Object.fromEntries(
-    COMPLIANCE_POLICY_TYPES.map((t) => [t.value, t])
-) as Record<CompliancePolicyType, EnumConfig<CompliancePolicyType>>;
+export const COMPLIANCE_POLICY_TYPE_MAP = toEnumMap(COMPLIANCE_POLICY_TYPES);
 
 // ─── Live Event Phase ───
 export const LIVE_EVENT_PHASES: EnumConfig<LiveEventPhase>[] = [
@@ -1020,9 +932,7 @@ export const LIVE_EVENT_PHASES: EnumConfig<LiveEventPhase>[] = [
     { value: "wrapped", label: "Wrapped", variant: "ghost", description: "Post-event closeout" },
 ];
 
-export const LIVE_EVENT_PHASE_MAP = Object.fromEntries(
-    LIVE_EVENT_PHASES.map((p) => [p.value, p])
-) as Record<LiveEventPhase, EnumConfig<LiveEventPhase>>;
+export const LIVE_EVENT_PHASE_MAP = toEnumMap(LIVE_EVENT_PHASES);
 
 // ─── Command Layer ───
 export const COMMAND_LAYERS: EnumConfig<CommandLayer>[] = [
@@ -1031,9 +941,7 @@ export const COMMAND_LAYERS: EnumConfig<CommandLayer>[] = [
     { value: "operations", label: "Operations", variant: "info" },
 ];
 
-export const COMMAND_LAYER_MAP = Object.fromEntries(
-    COMMAND_LAYERS.map((l) => [l.value, l])
-) as Record<CommandLayer, EnumConfig<CommandLayer>>;
+export const COMMAND_LAYER_MAP = toEnumMap(COMMAND_LAYERS);
 
 // ─── Department Live Status ───
 export const DEPARTMENT_LIVE_STATUSES: EnumConfig<DepartmentLiveStatus>[] = [
@@ -1047,9 +955,7 @@ export const DEPARTMENT_LIVE_STATUSES: EnumConfig<DepartmentLiveStatus>[] = [
     { value: "wrapped", label: "Wrapped", variant: "ghost" },
 ];
 
-export const DEPARTMENT_LIVE_STATUS_MAP = Object.fromEntries(
-    DEPARTMENT_LIVE_STATUSES.map((s) => [s.value, s])
-) as Record<DepartmentLiveStatus, EnumConfig<DepartmentLiveStatus>>;
+export const DEPARTMENT_LIVE_STATUS_MAP = toEnumMap(DEPARTMENT_LIVE_STATUSES);
 
 // ─── Readiness Gate Status ───
 export const READINESS_GATE_STATUSES: EnumConfig<ReadinessGateStatus>[] = [
@@ -1060,9 +966,7 @@ export const READINESS_GATE_STATUSES: EnumConfig<ReadinessGateStatus>[] = [
     { value: "waived", label: "Waived", variant: "warning" },
 ];
 
-export const READINESS_GATE_STATUS_MAP = Object.fromEntries(
-    READINESS_GATE_STATUSES.map((s) => [s.value, s])
-) as Record<ReadinessGateStatus, EnumConfig<ReadinessGateStatus>>;
+export const READINESS_GATE_STATUS_MAP = toEnumMap(READINESS_GATE_STATUSES);
 
 // ─── ROS Cue Status ───
 export const ROS_CUE_STATUSES: EnumConfig<RosCueStatus>[] = [
@@ -1075,9 +979,7 @@ export const ROS_CUE_STATUSES: EnumConfig<RosCueStatus>[] = [
     { value: "held", label: "Held", variant: "destructive" },
 ];
 
-export const ROS_CUE_STATUS_MAP = Object.fromEntries(
-    ROS_CUE_STATUSES.map((s) => [s.value, s])
-) as Record<RosCueStatus, EnumConfig<RosCueStatus>>;
+export const ROS_CUE_STATUS_MAP = toEnumMap(ROS_CUE_STATUSES);
 
 // ─── Equipment Live Status ───
 export const EQUIPMENT_LIVE_STATUSES: EnumConfig<EquipmentLiveStatus>[] = [
@@ -1091,9 +993,7 @@ export const EQUIPMENT_LIVE_STATUSES: EnumConfig<EquipmentLiveStatus>[] = [
     { value: "loaded_out", label: "Loaded Out", variant: "ghost" },
 ];
 
-export const EQUIPMENT_LIVE_STATUS_MAP = Object.fromEntries(
-    EQUIPMENT_LIVE_STATUSES.map((s) => [s.value, s])
-) as Record<EquipmentLiveStatus, EnumConfig<EquipmentLiveStatus>>;
+export const EQUIPMENT_LIVE_STATUS_MAP = toEnumMap(EQUIPMENT_LIVE_STATUSES);
 
 // ─── FOH Zone Type ───
 export const FOH_ZONE_TYPES: EnumConfig<FohZoneType>[] = [
@@ -1109,9 +1009,7 @@ export const FOH_ZONE_TYPES: EnumConfig<FohZoneType>[] = [
     { value: "accessibility", label: "Accessibility", variant: "info" },
 ];
 
-export const FOH_ZONE_TYPE_MAP = Object.fromEntries(
-    FOH_ZONE_TYPES.map((t) => [t.value, t])
-) as Record<FohZoneType, EnumConfig<FohZoneType>>;
+export const FOH_ZONE_TYPE_MAP = toEnumMap(FOH_ZONE_TYPES);
 
 // ─── VIP Tier ───
 export const VIP_TIERS: EnumConfig<VipTier>[] = [
@@ -1121,10 +1019,7 @@ export const VIP_TIERS: EnumConfig<VipTier>[] = [
     { value: "platinum", label: "Platinum", variant: "info" },
 ];
 
-export const VIP_TIER_MAP = Object.fromEntries(VIP_TIERS.map((t) => [t.value, t])) as Record<
-    VipTier,
-    EnumConfig<VipTier>
->;
+export const VIP_TIER_MAP = toEnumMap(VIP_TIERS);
 
 // ─── Guest Incident Type ───
 export const GUEST_INCIDENT_TYPES: EnumConfig<GuestIncidentType>[] = [
@@ -1136,9 +1031,7 @@ export const GUEST_INCIDENT_TYPES: EnumConfig<GuestIncidentType>[] = [
     { value: "ejection", label: "Ejection", variant: "destructive" },
 ];
 
-export const GUEST_INCIDENT_TYPE_MAP = Object.fromEntries(
-    GUEST_INCIDENT_TYPES.map((t) => [t.value, t])
-) as Record<GuestIncidentType, EnumConfig<GuestIncidentType>>;
+export const GUEST_INCIDENT_TYPE_MAP = toEnumMap(GUEST_INCIDENT_TYPES);
 
 // ─── Guest Incident Severity ───
 export const GUEST_INCIDENT_SEVERITIES: EnumConfig<GuestIncidentSeverity>[] = [
@@ -1147,9 +1040,7 @@ export const GUEST_INCIDENT_SEVERITIES: EnumConfig<GuestIncidentSeverity>[] = [
     { value: "major", label: "Major", variant: "destructive" },
 ];
 
-export const GUEST_INCIDENT_SEVERITY_MAP = Object.fromEntries(
-    GUEST_INCIDENT_SEVERITIES.map((s) => [s.value, s])
-) as Record<GuestIncidentSeverity, EnumConfig<GuestIncidentSeverity>>;
+export const GUEST_INCIDENT_SEVERITY_MAP = toEnumMap(GUEST_INCIDENT_SEVERITIES);
 
 // ─── Strike Direction ───
 export const STRIKE_DIRECTIONS: EnumConfig<StrikeDirection>[] = [
@@ -1157,9 +1048,7 @@ export const STRIKE_DIRECTIONS: EnumConfig<StrikeDirection>[] = [
     { value: "strike", label: "Strike", variant: "warning" },
 ];
 
-export const STRIKE_DIRECTION_MAP = Object.fromEntries(
-    STRIKE_DIRECTIONS.map((d) => [d.value, d])
-) as Record<StrikeDirection, EnumConfig<StrikeDirection>>;
+export const STRIKE_DIRECTION_MAP = toEnumMap(STRIKE_DIRECTIONS);
 
 // ─── Reconciliation Status ───
 export const RECONCILIATION_STATUSES: EnumConfig<ReconciliationStatus>[] = [
@@ -1169,9 +1058,7 @@ export const RECONCILIATION_STATUSES: EnumConfig<ReconciliationStatus>[] = [
     { value: "write_off", label: "Write Off", variant: "ghost" },
 ];
 
-export const RECONCILIATION_STATUS_MAP = Object.fromEntries(
-    RECONCILIATION_STATUSES.map((s) => [s.value, s])
-) as Record<ReconciliationStatus, EnumConfig<ReconciliationStatus>>;
+export const RECONCILIATION_STATUS_MAP = toEnumMap(RECONCILIATION_STATUSES);
 
 // ─── Risk Level ───
 export const RISK_LEVELS: EnumConfig<RiskLevel>[] = [
@@ -1181,10 +1068,7 @@ export const RISK_LEVELS: EnumConfig<RiskLevel>[] = [
     { value: "critical", label: "Critical", variant: "destructive" },
 ];
 
-export const RISK_LEVEL_MAP = Object.fromEntries(RISK_LEVELS.map((r) => [r.value, r])) as Record<
-    RiskLevel,
-    EnumConfig<RiskLevel>
->;
+export const RISK_LEVEL_MAP = toEnumMap(RISK_LEVELS);
 
 // ─── OT Alert Level ───
 export const OT_ALERT_LEVELS: EnumConfig<OtAlertLevel>[] = [
@@ -1195,9 +1079,7 @@ export const OT_ALERT_LEVELS: EnumConfig<OtAlertLevel>[] = [
     { value: "critical", label: "Critical", variant: "destructive" },
 ];
 
-export const OT_ALERT_LEVEL_MAP = Object.fromEntries(
-    OT_ALERT_LEVELS.map((l) => [l.value, l])
-) as Record<OtAlertLevel, EnumConfig<OtAlertLevel>>;
+export const OT_ALERT_LEVEL_MAP = toEnumMap(OT_ALERT_LEVELS);
 
 // ─── Location Status (Spatial Hierarchy) ───
 export const LOCATION_STATUSES: EnumConfig<LocationStatus>[] = [
@@ -1210,9 +1092,7 @@ export const LOCATION_STATUSES: EnumConfig<LocationStatus>[] = [
     { value: "archived", label: "Archived", variant: "ghost" },
 ];
 
-export const LOCATION_STATUS_MAP = Object.fromEntries(
-    LOCATION_STATUSES.map((s) => [s.value, s])
-) as Record<LocationStatus, EnumConfig<LocationStatus>>;
+export const LOCATION_STATUS_MAP = toEnumMap(LOCATION_STATUSES);
 
 // ─── Space Booking Status ───
 export const SPACE_BOOKING_STATUSES: EnumConfig<SpaceBookingStatus>[] = [
@@ -1221,9 +1101,7 @@ export const SPACE_BOOKING_STATUSES: EnumConfig<SpaceBookingStatus>[] = [
     { value: "cancelled", label: "Cancelled", variant: "destructive" },
 ];
 
-export const SPACE_BOOKING_STATUS_MAP = Object.fromEntries(
-    SPACE_BOOKING_STATUSES.map((s) => [s.value, s])
-) as Record<SpaceBookingStatus, EnumConfig<SpaceBookingStatus>>;
+export const SPACE_BOOKING_STATUS_MAP = toEnumMap(SPACE_BOOKING_STATUSES);
 
 // ─── Location Compliance Doc Status ───
 export const LOC_COMPLIANCE_DOC_STATUSES: EnumConfig<LocComplianceDocStatus>[] = [
@@ -1234,9 +1112,7 @@ export const LOC_COMPLIANCE_DOC_STATUSES: EnumConfig<LocComplianceDocStatus>[] =
     { value: "rejected", label: "Rejected", variant: "destructive" },
 ];
 
-export const LOC_COMPLIANCE_DOC_STATUS_MAP = Object.fromEntries(
-    LOC_COMPLIANCE_DOC_STATUSES.map((s) => [s.value, s])
-) as Record<LocComplianceDocStatus, EnumConfig<LocComplianceDocStatus>>;
+export const LOC_COMPLIANCE_DOC_STATUS_MAP = toEnumMap(LOC_COMPLIANCE_DOC_STATUSES);
 
 // ─── Location Inspection Result ───
 export const LOCATION_INSPECTION_RESULTS: EnumConfig<LocationInspectionResult>[] = [
@@ -1246,9 +1122,7 @@ export const LOCATION_INSPECTION_RESULTS: EnumConfig<LocationInspectionResult>[]
     { value: "pending", label: "Pending", variant: "ghost" },
 ];
 
-export const LOCATION_INSPECTION_RESULT_MAP = Object.fromEntries(
-    LOCATION_INSPECTION_RESULTS.map((r) => [r.value, r])
-) as Record<LocationInspectionResult, EnumConfig<LocationInspectionResult>>;
+export const LOCATION_INSPECTION_RESULT_MAP = toEnumMap(LOCATION_INSPECTION_RESULTS);
 
 // ─── Reservation Status (Asset Logistics) ───
 export const RESERVATION_STATUSES: EnumConfig<ReservationStatus>[] = [
@@ -1260,9 +1134,7 @@ export const RESERVATION_STATUSES: EnumConfig<ReservationStatus>[] = [
     { value: "cancelled", label: "Cancelled", variant: "destructive" },
 ];
 
-export const RESERVATION_STATUS_MAP = Object.fromEntries(
-    RESERVATION_STATUSES.map((s) => [s.value, s])
-) as Record<ReservationStatus, EnumConfig<ReservationStatus>>;
+export const RESERVATION_STATUS_MAP = toEnumMap(RESERVATION_STATUSES);
 
 // ─── Kit Status ───
 export const KIT_STATUSES: EnumConfig<KitStatus>[] = [
@@ -1272,10 +1144,7 @@ export const KIT_STATUSES: EnumConfig<KitStatus>[] = [
     { value: "retired", label: "Retired", variant: "ghost" },
 ];
 
-export const KIT_STATUS_MAP = Object.fromEntries(KIT_STATUSES.map((s) => [s.value, s])) as Record<
-    KitStatus,
-    EnumConfig<KitStatus>
->;
+export const KIT_STATUS_MAP = toEnumMap(KIT_STATUSES);
 
 // ─── Load Plan Status ───
 export const LOAD_PLAN_STATUSES: EnumConfig<LoadPlanStatus>[] = [
@@ -1286,9 +1155,7 @@ export const LOAD_PLAN_STATUSES: EnumConfig<LoadPlanStatus>[] = [
     { value: "departed", label: "Departed", variant: "secondary" },
 ];
 
-export const LOAD_PLAN_STATUS_MAP = Object.fromEntries(
-    LOAD_PLAN_STATUSES.map((s) => [s.value, s])
-) as Record<LoadPlanStatus, EnumConfig<LoadPlanStatus>>;
+export const LOAD_PLAN_STATUS_MAP = toEnumMap(LOAD_PLAN_STATUSES);
 
 // ─── Inventory Audit Status ───
 export const INVENTORY_AUDIT_STATUSES: EnumConfig<InventoryAuditStatus>[] = [
@@ -1298,9 +1165,7 @@ export const INVENTORY_AUDIT_STATUSES: EnumConfig<InventoryAuditStatus>[] = [
     { value: "cancelled", label: "Cancelled", variant: "destructive" },
 ];
 
-export const INVENTORY_AUDIT_STATUS_MAP = Object.fromEntries(
-    INVENTORY_AUDIT_STATUSES.map((s) => [s.value, s])
-) as Record<InventoryAuditStatus, EnumConfig<InventoryAuditStatus>>;
+export const INVENTORY_AUDIT_STATUS_MAP = toEnumMap(INVENTORY_AUDIT_STATUSES);
 
 // ─── Damage Severity ───
 export const DAMAGE_SEVERITIES: EnumConfig<DamageSeverity>[] = [
@@ -1310,9 +1175,7 @@ export const DAMAGE_SEVERITIES: EnumConfig<DamageSeverity>[] = [
     { value: "write_off", label: "Write Off", variant: "destructive" },
 ];
 
-export const DAMAGE_SEVERITY_MAP = Object.fromEntries(
-    DAMAGE_SEVERITIES.map((s) => [s.value, s])
-) as Record<DamageSeverity, EnumConfig<DamageSeverity>>;
+export const DAMAGE_SEVERITY_MAP = toEnumMap(DAMAGE_SEVERITIES);
 
 // ─── Damage Resolution ───
 export const DAMAGE_RESOLUTIONS: EnumConfig<DamageResolution>[] = [
@@ -1323,9 +1186,7 @@ export const DAMAGE_RESOLUTIONS: EnumConfig<DamageResolution>[] = [
     { value: "insurance_claim", label: "Insurance Claim", variant: "secondary" },
 ];
 
-export const DAMAGE_RESOLUTION_MAP = Object.fromEntries(
-    DAMAGE_RESOLUTIONS.map((r) => [r.value, r])
-) as Record<DamageResolution, EnumConfig<DamageResolution>>;
+export const DAMAGE_RESOLUTION_MAP = toEnumMap(DAMAGE_RESOLUTIONS);
 
 // ─── Work Package Status (Production Lifecycle) ───
 export const WORK_PACKAGE_STATUSES: EnumConfig<WorkPackageStatus>[] = [
@@ -1340,9 +1201,7 @@ export const WORK_PACKAGE_STATUSES: EnumConfig<WorkPackageStatus>[] = [
     { value: "cancelled", label: "Cancelled", variant: "ghost" },
 ];
 
-export const WORK_PACKAGE_STATUS_MAP = Object.fromEntries(
-    WORK_PACKAGE_STATUSES.map((s) => [s.value, s])
-) as Record<WorkPackageStatus, EnumConfig<WorkPackageStatus>>;
+export const WORK_PACKAGE_STATUS_MAP = toEnumMap(WORK_PACKAGE_STATUSES);
 
 // ─── Production Run Status ───
 export const PRODUCTION_RUN_STATUSES: EnumConfig<ProductionRunStatus>[] = [
@@ -1356,9 +1215,7 @@ export const PRODUCTION_RUN_STATUSES: EnumConfig<ProductionRunStatus>[] = [
     { value: "waste_logged", label: "Waste Logged", variant: "info" },
 ];
 
-export const PRODUCTION_RUN_STATUS_MAP = Object.fromEntries(
-    PRODUCTION_RUN_STATUSES.map((s) => [s.value, s])
-) as Record<ProductionRunStatus, EnumConfig<ProductionRunStatus>>;
+export const PRODUCTION_RUN_STATUS_MAP = toEnumMap(PRODUCTION_RUN_STATUSES);
 
 // ─── BOM Type ───
 export const BOM_TYPES: EnumConfig<BomType>[] = [
@@ -1370,10 +1227,7 @@ export const BOM_TYPES: EnumConfig<BomType>[] = [
     { value: "bundle", label: "Bundle", variant: "ghost" },
 ];
 
-export const BOM_TYPE_MAP = Object.fromEntries(BOM_TYPES.map((t) => [t.value, t])) as Record<
-    BomType,
-    EnumConfig<BomType>
->;
+export const BOM_TYPE_MAP = toEnumMap(BOM_TYPES);
 
 // ─── BOM Status ───
 export const BOM_STATUSES: EnumConfig<BomStatus>[] = [
@@ -1383,10 +1237,7 @@ export const BOM_STATUSES: EnumConfig<BomStatus>[] = [
     { value: "archived", label: "Archived", variant: "ghost" },
 ];
 
-export const BOM_STATUS_MAP = Object.fromEntries(BOM_STATUSES.map((s) => [s.value, s])) as Record<
-    BomStatus,
-    EnumConfig<BomStatus>
->;
+export const BOM_STATUS_MAP = toEnumMap(BOM_STATUSES);
 
 // ─── QC Gate Type ───
 export const QC_GATE_TYPES: EnumConfig<QcGateType>[] = [
@@ -1405,9 +1256,7 @@ export const QC_GATE_TYPES: EnumConfig<QcGateType>[] = [
     { value: "general_qc", label: "General QC", variant: "default" },
 ];
 
-export const QC_GATE_TYPE_MAP = Object.fromEntries(
-    QC_GATE_TYPES.map((t) => [t.value, t])
-) as Record<QcGateType, EnumConfig<QcGateType>>;
+export const QC_GATE_TYPE_MAP = toEnumMap(QC_GATE_TYPES);
 
 // ─── QC Gate Status ───
 export const QC_GATE_STATUSES: EnumConfig<QcGateStatus>[] = [
@@ -1420,9 +1269,7 @@ export const QC_GATE_STATUSES: EnumConfig<QcGateStatus>[] = [
     { value: "waived", label: "Waived", variant: "ghost" },
 ];
 
-export const QC_GATE_STATUS_MAP = Object.fromEntries(
-    QC_GATE_STATUSES.map((s) => [s.value, s])
-) as Record<QcGateStatus, EnumConfig<QcGateStatus>>;
+export const QC_GATE_STATUS_MAP = toEnumMap(QC_GATE_STATUSES);
 
 // ─── Rights Type ───
 export const RIGHTS_TYPES: EnumConfig<RightsType>[] = [
@@ -1439,10 +1286,7 @@ export const RIGHTS_TYPES: EnumConfig<RightsType>[] = [
     { value: "trademark", label: "Trademark", variant: "warning" },
 ];
 
-export const RIGHTS_TYPE_MAP = Object.fromEntries(RIGHTS_TYPES.map((t) => [t.value, t])) as Record<
-    RightsType,
-    EnumConfig<RightsType>
->;
+export const RIGHTS_TYPE_MAP = toEnumMap(RIGHTS_TYPES);
 
 // ─── Rights License Status ───
 export const RIGHTS_LICENSE_STATUSES: EnumConfig<RightsLicenseStatus>[] = [
@@ -1453,9 +1297,7 @@ export const RIGHTS_LICENSE_STATUSES: EnumConfig<RightsLicenseStatus>[] = [
     { value: "renewal_needed", label: "Renewal Needed", variant: "warning" },
 ];
 
-export const RIGHTS_LICENSE_STATUS_MAP = Object.fromEntries(
-    RIGHTS_LICENSE_STATUSES.map((s) => [s.value, s])
-) as Record<RightsLicenseStatus, EnumConfig<RightsLicenseStatus>>;
+export const RIGHTS_LICENSE_STATUS_MAP = toEnumMap(RIGHTS_LICENSE_STATUSES);
 
 // ─── Rental Agreement Type ───
 export const RENTAL_AGREEMENT_TYPES: EnumConfig<RentalAgreementType>[] = [
@@ -1465,9 +1307,7 @@ export const RENTAL_AGREEMENT_TYPES: EnumConfig<RentalAgreementType>[] = [
     { value: "consignment", label: "Consignment", variant: "secondary" },
 ];
 
-export const RENTAL_AGREEMENT_TYPE_MAP = Object.fromEntries(
-    RENTAL_AGREEMENT_TYPES.map((t) => [t.value, t])
-) as Record<RentalAgreementType, EnumConfig<RentalAgreementType>>;
+export const RENTAL_AGREEMENT_TYPE_MAP = toEnumMap(RENTAL_AGREEMENT_TYPES);
 
 // ─── Rental Agreement Status ───
 export const RENTAL_AGREEMENT_STATUSES: EnumConfig<RentalAgreementStatus>[] = [
@@ -1480,9 +1320,7 @@ export const RENTAL_AGREEMENT_STATUSES: EnumConfig<RentalAgreementStatus>[] = [
     { value: "disputed", label: "Disputed", variant: "destructive" },
 ];
 
-export const RENTAL_AGREEMENT_STATUS_MAP = Object.fromEntries(
-    RENTAL_AGREEMENT_STATUSES.map((s) => [s.value, s])
-) as Record<RentalAgreementStatus, EnumConfig<RentalAgreementStatus>>;
+export const RENTAL_AGREEMENT_STATUS_MAP = toEnumMap(RENTAL_AGREEMENT_STATUSES);
 
 // ─── Activation Types ───
 export type ActivationType = "experiential" | "digital" | "sampling" | "sponsorship" | "retail";
@@ -1495,9 +1333,7 @@ export const ACTIVATION_TYPES: EnumConfig<ActivationType>[] = [
     { value: "retail", label: "Retail", variant: "default" },
 ];
 
-export const ACTIVATION_TYPE_MAP = Object.fromEntries(
-    ACTIVATION_TYPES.map((t) => [t.value, t])
-) as Record<ActivationType, EnumConfig<ActivationType>>;
+export const ACTIVATION_TYPE_MAP = toEnumMap(ACTIVATION_TYPES);
 
 // ─── Advance Types ───
 export type AdvanceType = "purchase" | "rental" | "service" | "labor" | "other";
@@ -1510,9 +1346,7 @@ export const ADVANCE_TYPES: EnumConfig<AdvanceType>[] = [
     { value: "other", label: "Other", variant: "ghost" },
 ];
 
-export const ADVANCE_TYPE_MAP = Object.fromEntries(
-    ADVANCE_TYPES.map((t) => [t.value, t])
-) as Record<AdvanceType, EnumConfig<AdvanceType>>;
+export const ADVANCE_TYPE_MAP = toEnumMap(ADVANCE_TYPES);
 
 // ─── Asset Categories ───
 export type AssetCategory =
@@ -1536,9 +1370,7 @@ export const ASSET_CATEGORIES: EnumConfig<AssetCategory>[] = [
     { value: "other", label: "Other", variant: "ghost" },
 ];
 
-export const ASSET_CATEGORY_MAP = Object.fromEntries(
-    ASSET_CATEGORIES.map((c) => [c.value, c])
-) as Record<AssetCategory, EnumConfig<AssetCategory>>;
+export const ASSET_CATEGORY_MAP = toEnumMap(ASSET_CATEGORIES);
 
 // ─── Brand Guideline Categories ───
 export type BrandGuidelineCategory =
@@ -1558,9 +1390,7 @@ export const BRAND_GUIDELINE_CATEGORIES: EnumConfig<BrandGuidelineCategory>[] = 
     { value: "other", label: "Other", variant: "ghost" },
 ];
 
-export const BRAND_GUIDELINE_CATEGORY_MAP = Object.fromEntries(
-    BRAND_GUIDELINE_CATEGORIES.map((c) => [c.value, c])
-) as Record<BrandGuidelineCategory, EnumConfig<BrandGuidelineCategory>>;
+export const BRAND_GUIDELINE_CATEGORY_MAP = toEnumMap(BRAND_GUIDELINE_CATEGORIES);
 
 // ─── Budget Line Item Categories ───
 export type BudgetLineCategory =
@@ -1586,9 +1416,7 @@ export const BUDGET_LINE_CATEGORIES: EnumConfig<BudgetLineCategory>[] = [
     { value: "overhead", label: "Overhead", variant: "ghost" },
 ];
 
-export const BUDGET_LINE_CATEGORY_MAP = Object.fromEntries(
-    BUDGET_LINE_CATEGORIES.map((c) => [c.value, c])
-) as Record<BudgetLineCategory, EnumConfig<BudgetLineCategory>>;
+export const BUDGET_LINE_CATEGORY_MAP = toEnumMap(BUDGET_LINE_CATEGORIES);
 
 // ─── Budget Status ───
 export type BudgetStatus = "draft" | "pending_approval" | "approved" | "active" | "closed";
@@ -1601,9 +1429,7 @@ export const BUDGET_STATUSES: EnumConfig<BudgetStatus>[] = [
     { value: "closed", label: "Closed", variant: "ghost" },
 ];
 
-export const BUDGET_STATUS_MAP = Object.fromEntries(
-    BUDGET_STATUSES.map((s) => [s.value, s])
-) as Record<BudgetStatus, EnumConfig<BudgetStatus>>;
+export const BUDGET_STATUS_MAP = toEnumMap(BUDGET_STATUSES);
 
 // ─── Checklist Types ───
 export type ChecklistType = "custom" | "safety" | "quality" | "setup" | "teardown";
@@ -1616,9 +1442,7 @@ export const CHECKLIST_TYPES: EnumConfig<ChecklistType>[] = [
     { value: "teardown", label: "Teardown", variant: "secondary" },
 ];
 
-export const CHECKLIST_TYPE_MAP = Object.fromEntries(
-    CHECKLIST_TYPES.map((t) => [t.value, t])
-) as Record<ChecklistType, EnumConfig<ChecklistType>>;
+export const CHECKLIST_TYPE_MAP = toEnumMap(CHECKLIST_TYPES);
 
 // ─── Clause Party ───
 export type ClauseParty = "client" | "vendor" | "company" | "both";
@@ -1630,9 +1454,7 @@ export const CLAUSE_PARTIES: EnumConfig<ClauseParty>[] = [
     { value: "both", label: "Both Parties", variant: "warning" },
 ];
 
-export const CLAUSE_PARTY_MAP = Object.fromEntries(
-    CLAUSE_PARTIES.map((p) => [p.value, p])
-) as Record<ClauseParty, EnumConfig<ClauseParty>>;
+export const CLAUSE_PARTY_MAP = toEnumMap(CLAUSE_PARTIES);
 
 // ─── Company Types ───
 export type CompanyType = "client" | "brand" | "agency" | "vendor" | "partner";
@@ -1645,9 +1467,7 @@ export const COMPANY_TYPES: EnumConfig<CompanyType>[] = [
     { value: "partner", label: "Partner", variant: "success" },
 ];
 
-export const COMPANY_TYPE_MAP = Object.fromEntries(
-    COMPANY_TYPES.map((t) => [t.value, t])
-) as Record<CompanyType, EnumConfig<CompanyType>>;
+export const COMPANY_TYPE_MAP = toEnumMap(COMPANY_TYPES);
 
 // ─── Creative Brief Types (Form) ───
 export type CreativeBriefFormType = "creative" | "production" | "marketing" | "event" | "social";
@@ -1660,9 +1480,7 @@ export const CREATIVE_BRIEF_FORM_TYPES: EnumConfig<CreativeBriefFormType>[] = [
     { value: "social", label: "Social", variant: "info" },
 ];
 
-export const CREATIVE_BRIEF_FORM_TYPE_MAP = Object.fromEntries(
-    CREATIVE_BRIEF_FORM_TYPES.map((t) => [t.value, t])
-) as Record<CreativeBriefFormType, EnumConfig<CreativeBriefFormType>>;
+export const CREATIVE_BRIEF_FORM_TYPE_MAP = toEnumMap(CREATIVE_BRIEF_FORM_TYPES);
 
 // ─── Digital Asset Classes ───
 export type DigitalAssetClass = "image" | "video" | "audio" | "document";
@@ -1674,9 +1492,7 @@ export const DIGITAL_ASSET_CLASSES: EnumConfig<DigitalAssetClass>[] = [
     { value: "document", label: "Document", variant: "default" },
 ];
 
-export const DIGITAL_ASSET_CLASS_MAP = Object.fromEntries(
-    DIGITAL_ASSET_CLASSES.map((c) => [c.value, c])
-) as Record<DigitalAssetClass, EnumConfig<DigitalAssetClass>>;
+export const DIGITAL_ASSET_CLASS_MAP = toEnumMap(DIGITAL_ASSET_CLASSES);
 
 // ─── Email Provider ───
 export type EmailProvider = "google" | "microsoft" | "imap";
@@ -1687,9 +1503,7 @@ export const EMAIL_PROVIDERS: EnumConfig<EmailProvider>[] = [
     { value: "imap", label: "IMAP / Other", variant: "ghost" },
 ];
 
-export const EMAIL_PROVIDER_MAP = Object.fromEntries(
-    EMAIL_PROVIDERS.map((p) => [p.value, p])
-) as Record<EmailProvider, EnumConfig<EmailProvider>>;
+export const EMAIL_PROVIDER_MAP = toEnumMap(EMAIL_PROVIDERS);
 
 // ─── Engineering Approval Entity Types ───
 export type EngineeringEntityType = "activation" | "location" | "asset" | "event";
@@ -1701,9 +1515,7 @@ export const ENGINEERING_ENTITY_TYPES: EnumConfig<EngineeringEntityType>[] = [
     { value: "event", label: "Event", variant: "warning" },
 ];
 
-export const ENGINEERING_ENTITY_TYPE_MAP = Object.fromEntries(
-    ENGINEERING_ENTITY_TYPES.map((t) => [t.value, t])
-) as Record<EngineeringEntityType, EnumConfig<EngineeringEntityType>>;
+export const ENGINEERING_ENTITY_TYPE_MAP = toEnumMap(ENGINEERING_ENTITY_TYPES);
 
 // ─── Estimate Status ───
 export type EstimateStatus = "draft" | "sent" | "accepted" | "rejected" | "expired";
@@ -1716,9 +1528,7 @@ export const ESTIMATE_STATUSES: EnumConfig<EstimateStatus>[] = [
     { value: "expired", label: "Expired", variant: "ghost" },
 ];
 
-export const ESTIMATE_STATUS_MAP = Object.fromEntries(
-    ESTIMATE_STATUSES.map((s) => [s.value, s])
-) as Record<EstimateStatus, EnumConfig<EstimateStatus>>;
+export const ESTIMATE_STATUS_MAP = toEnumMap(ESTIMATE_STATUSES);
 
 // ─── Expense Categories ───
 export type ExpenseCategory =
@@ -1740,9 +1550,7 @@ export const EXPENSE_CATEGORIES: EnumConfig<ExpenseCategory>[] = [
     { value: "other", label: "Other", variant: "ghost" },
 ];
 
-export const EXPENSE_CATEGORY_MAP = Object.fromEntries(
-    EXPENSE_CATEGORIES.map((c) => [c.value, c])
-) as Record<ExpenseCategory, EnumConfig<ExpenseCategory>>;
+export const EXPENSE_CATEGORY_MAP = toEnumMap(EXPENSE_CATEGORIES);
 
 // ─── Goal Types ───
 export type GoalType = "individual" | "team" | "company" | "project";
@@ -1754,10 +1562,7 @@ export const GOAL_TYPES: EnumConfig<GoalType>[] = [
     { value: "project", label: "Project", variant: "secondary" },
 ];
 
-export const GOAL_TYPE_MAP = Object.fromEntries(GOAL_TYPES.map((t) => [t.value, t])) as Record<
-    GoalType,
-    EnumConfig<GoalType>
->;
+export const GOAL_TYPE_MAP = toEnumMap(GOAL_TYPES);
 
 // ─── Incident Severity ───
 export type IncidentSeverity = "low" | "medium" | "high" | "critical";
@@ -1769,9 +1574,7 @@ export const INCIDENT_SEVERITIES: EnumConfig<IncidentSeverity>[] = [
     { value: "critical", label: "Critical", variant: "destructive" },
 ];
 
-export const INCIDENT_SEVERITY_MAP = Object.fromEntries(
-    INCIDENT_SEVERITIES.map((s) => [s.value, s])
-) as Record<IncidentSeverity, EnumConfig<IncidentSeverity>>;
+export const INCIDENT_SEVERITY_MAP = toEnumMap(INCIDENT_SEVERITIES);
 
 // ─── Integration Types ───
 export type IntegrationType =
@@ -1827,9 +1630,7 @@ export const INTEGRATION_TYPES: EnumConfig<IntegrationType>[] = [
     { value: "zapier", label: "Zapier", variant: "warning" },
 ];
 
-export const INTEGRATION_TYPE_MAP = Object.fromEntries(
-    INTEGRATION_TYPES.map((t) => [t.value, t])
-) as Record<IntegrationType, EnumConfig<IntegrationType>>;
+export const INTEGRATION_TYPE_MAP = toEnumMap(INTEGRATION_TYPES);
 
 // ─── Invoice Status ───
 export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "void";
@@ -1842,9 +1643,7 @@ export const INVOICE_STATUSES: EnumConfig<InvoiceStatus>[] = [
     { value: "void", label: "Void", variant: "ghost" },
 ];
 
-export const INVOICE_STATUS_MAP = Object.fromEntries(
-    INVOICE_STATUSES.map((s) => [s.value, s])
-) as Record<InvoiceStatus, EnumConfig<InvoiceStatus>>;
+export const INVOICE_STATUS_MAP = toEnumMap(INVOICE_STATUSES);
 
 // ─── KB Article Categories ───
 export type KbArticleCategory = "sop" | "checklist" | "template" | "guide" | "policy" | "training";
@@ -1858,9 +1657,7 @@ export const KB_ARTICLE_CATEGORIES: EnumConfig<KbArticleCategory>[] = [
     { value: "training", label: "Training", variant: "success" },
 ];
 
-export const KB_ARTICLE_CATEGORY_MAP = Object.fromEntries(
-    KB_ARTICLE_CATEGORIES.map((c) => [c.value, c])
-) as Record<KbArticleCategory, EnumConfig<KbArticleCategory>>;
+export const KB_ARTICLE_CATEGORY_MAP = toEnumMap(KB_ARTICLE_CATEGORIES);
 
 // ─── Lead Sources ───
 export type LeadSource = "website" | "referral" | "cold_outreach" | "event" | "social" | "other";
@@ -1874,10 +1671,7 @@ export const LEAD_SOURCES: EnumConfig<LeadSource>[] = [
     { value: "other", label: "Other", variant: "ghost" },
 ];
 
-export const LEAD_SOURCE_MAP = Object.fromEntries(LEAD_SOURCES.map((s) => [s.value, s])) as Record<
-    LeadSource,
-    EnumConfig<LeadSource>
->;
+export const LEAD_SOURCE_MAP = toEnumMap(LEAD_SOURCES);
 
 // ─── Opportunity Stages (Form) ───
 export type OpportunityFormStage =
@@ -1897,9 +1691,7 @@ export const OPPORTUNITY_FORM_STAGES: EnumConfig<OpportunityFormStage>[] = [
     { value: "closed_lost", label: "Closed Lost", variant: "destructive" },
 ];
 
-export const OPPORTUNITY_FORM_STAGE_MAP = Object.fromEntries(
-    OPPORTUNITY_FORM_STAGES.map((s) => [s.value, s])
-) as Record<OpportunityFormStage, EnumConfig<OpportunityFormStage>>;
+export const OPPORTUNITY_FORM_STAGE_MAP = toEnumMap(OPPORTUNITY_FORM_STAGES);
 
 // ─── Project Member Roles ───
 export type ProjectMemberRole = "member" | "lead" | "reviewer" | "contributor";
@@ -1911,9 +1703,7 @@ export const PROJECT_MEMBER_ROLES: EnumConfig<ProjectMemberRole>[] = [
     { value: "contributor", label: "Contributor", variant: "secondary" },
 ];
 
-export const PROJECT_MEMBER_ROLE_MAP = Object.fromEntries(
-    PROJECT_MEMBER_ROLES.map((r) => [r.value, r])
-) as Record<ProjectMemberRole, EnumConfig<ProjectMemberRole>>;
+export const PROJECT_MEMBER_ROLE_MAP = toEnumMap(PROJECT_MEMBER_ROLES);
 
 // ─── Project Template Categories ───
 export type ProjectTemplateCategory =
@@ -1933,9 +1723,7 @@ export const PROJECT_TEMPLATE_CATEGORIES: EnumConfig<ProjectTemplateCategory>[] 
     { value: "other", label: "Other", variant: "ghost" },
 ];
 
-export const PROJECT_TEMPLATE_CATEGORY_MAP = Object.fromEntries(
-    PROJECT_TEMPLATE_CATEGORIES.map((c) => [c.value, c])
-) as Record<ProjectTemplateCategory, EnumConfig<ProjectTemplateCategory>>;
+export const PROJECT_TEMPLATE_CATEGORY_MAP = toEnumMap(PROJECT_TEMPLATE_CATEGORIES);
 
 // ─── Purchase Order Status ───
 export type PurchaseOrderStatus = "draft" | "issued" | "received" | "closed";
@@ -1947,9 +1735,7 @@ export const PURCHASE_ORDER_STATUSES: EnumConfig<PurchaseOrderStatus>[] = [
     { value: "closed", label: "Closed", variant: "ghost" },
 ];
 
-export const PURCHASE_ORDER_STATUS_MAP = Object.fromEntries(
-    PURCHASE_ORDER_STATUSES.map((s) => [s.value, s])
-) as Record<PurchaseOrderStatus, EnumConfig<PurchaseOrderStatus>>;
+export const PURCHASE_ORDER_STATUS_MAP = toEnumMap(PURCHASE_ORDER_STATUSES);
 
 // ─── Purchase Requisition Status ───
 export type PurchaseRequisitionStatus = "draft" | "submitted" | "approved" | "ordered" | "received";
@@ -1962,9 +1748,7 @@ export const PURCHASE_REQUISITION_STATUSES: EnumConfig<PurchaseRequisitionStatus
     { value: "received", label: "Received", variant: "success" },
 ];
 
-export const PURCHASE_REQUISITION_STATUS_MAP = Object.fromEntries(
-    PURCHASE_REQUISITION_STATUSES.map((s) => [s.value, s])
-) as Record<PurchaseRequisitionStatus, EnumConfig<PurchaseRequisitionStatus>>;
+export const PURCHASE_REQUISITION_STATUS_MAP = toEnumMap(PURCHASE_REQUISITION_STATUSES);
 
 // ─── Quality Check Entity Types ───
 export type QualityCheckEntityType = "asset" | "shipment" | "activation" | "warehouse";
@@ -1976,9 +1760,7 @@ export const QUALITY_CHECK_ENTITY_TYPES: EnumConfig<QualityCheckEntityType>[] = 
     { value: "warehouse", label: "Warehouse", variant: "default" },
 ];
 
-export const QUALITY_CHECK_ENTITY_TYPE_MAP = Object.fromEntries(
-    QUALITY_CHECK_ENTITY_TYPES.map((t) => [t.value, t])
-) as Record<QualityCheckEntityType, EnumConfig<QualityCheckEntityType>>;
+export const QUALITY_CHECK_ENTITY_TYPE_MAP = toEnumMap(QUALITY_CHECK_ENTITY_TYPES);
 
 // ─── Saved View Types ───
 export type SavedViewType = "table" | "board" | "list" | "calendar" | "timeline" | "gantt";
@@ -1992,9 +1774,7 @@ export const SAVED_VIEW_TYPES: EnumConfig<SavedViewType>[] = [
     { value: "gantt", label: "Gantt", variant: "info" },
 ];
 
-export const SAVED_VIEW_TYPE_MAP = Object.fromEntries(
-    SAVED_VIEW_TYPES.map((t) => [t.value, t])
-) as Record<SavedViewType, EnumConfig<SavedViewType>>;
+export const SAVED_VIEW_TYPE_MAP = toEnumMap(SAVED_VIEW_TYPES);
 
 // ─── Scenario Types ───
 export type ScenarioType = "combined" | "budget" | "resource" | "timeline";
@@ -2006,9 +1786,7 @@ export const SCENARIO_TYPES: EnumConfig<ScenarioType>[] = [
     { value: "timeline", label: "Timeline", variant: "secondary" },
 ];
 
-export const SCENARIO_TYPE_MAP = Object.fromEntries(
-    SCENARIO_TYPES.map((t) => [t.value, t])
-) as Record<ScenarioType, EnumConfig<ScenarioType>>;
+export const SCENARIO_TYPE_MAP = toEnumMap(SCENARIO_TYPES);
 
 // ─── Service Request Categories ───
 export type ServiceRequestCategory =
@@ -2028,9 +1806,7 @@ export const SERVICE_REQUEST_CATEGORIES: EnumConfig<ServiceRequestCategory>[] = 
     { value: "other", label: "Other", variant: "ghost" },
 ];
 
-export const SERVICE_REQUEST_CATEGORY_MAP = Object.fromEntries(
-    SERVICE_REQUEST_CATEGORIES.map((c) => [c.value, c])
-) as Record<ServiceRequestCategory, EnumConfig<ServiceRequestCategory>>;
+export const SERVICE_REQUEST_CATEGORY_MAP = toEnumMap(SERVICE_REQUEST_CATEGORIES);
 
 // ─── Service Request Priority ───
 export type ServiceRequestPriority = "low" | "medium" | "high" | "urgent";
@@ -2042,9 +1818,7 @@ export const SERVICE_REQUEST_PRIORITIES: EnumConfig<ServiceRequestPriority>[] = 
     { value: "urgent", label: "Urgent", variant: "destructive" },
 ];
 
-export const SERVICE_REQUEST_PRIORITY_MAP = Object.fromEntries(
-    SERVICE_REQUEST_PRIORITIES.map((p) => [p.value, p])
-) as Record<ServiceRequestPriority, EnumConfig<ServiceRequestPriority>>;
+export const SERVICE_REQUEST_PRIORITY_MAP = toEnumMap(SERVICE_REQUEST_PRIORITIES);
 
 // ─── Shipment Status ───
 export type ShipmentStatus = "pending" | "in_transit" | "delivered" | "returned";
@@ -2056,9 +1830,7 @@ export const SHIPMENT_STATUSES: EnumConfig<ShipmentStatus>[] = [
     { value: "returned", label: "Returned", variant: "warning" },
 ];
 
-export const SHIPMENT_STATUS_MAP = Object.fromEntries(
-    SHIPMENT_STATUSES.map((s) => [s.value, s])
-) as Record<ShipmentStatus, EnumConfig<ShipmentStatus>>;
+export const SHIPMENT_STATUS_MAP = toEnumMap(SHIPMENT_STATUSES);
 
 // ─── SOW Status ───
 export type SowStatus = "draft" | "in_review" | "approved" | "active";
@@ -2070,10 +1842,7 @@ export const SOW_STATUSES: EnumConfig<SowStatus>[] = [
     { value: "active", label: "Active", variant: "success" },
 ];
 
-export const SOW_STATUS_MAP = Object.fromEntries(SOW_STATUSES.map((s) => [s.value, s])) as Record<
-    SowStatus,
-    EnumConfig<SowStatus>
->;
+export const SOW_STATUS_MAP = toEnumMap(SOW_STATUSES);
 
 // ─── Survey Types ───
 export type SurveyType = "csat" | "nps" | "post_event" | "post_project" | "custom";
@@ -2086,10 +1855,7 @@ export const SURVEY_TYPES: EnumConfig<SurveyType>[] = [
     { value: "custom", label: "Custom", variant: "ghost" },
 ];
 
-export const SURVEY_TYPE_MAP = Object.fromEntries(SURVEY_TYPES.map((t) => [t.value, t])) as Record<
-    SurveyType,
-    EnumConfig<SurveyType>
->;
+export const SURVEY_TYPE_MAP = toEnumMap(SURVEY_TYPES);
 
 // ─── Template Categories ───
 export type TemplateCategory =
@@ -2113,9 +1879,7 @@ export const TEMPLATE_CATEGORIES: EnumConfig<TemplateCategory>[] = [
     { value: "email", label: "Email", variant: "ghost" },
 ];
 
-export const TEMPLATE_CATEGORY_MAP = Object.fromEntries(
-    TEMPLATE_CATEGORIES.map((c) => [c.value, c])
-) as Record<TemplateCategory, EnumConfig<TemplateCategory>>;
+export const TEMPLATE_CATEGORY_MAP = toEnumMap(TEMPLATE_CATEGORIES);
 
 // ─── Vendor Categories ───
 export type VendorCategory =
@@ -2139,9 +1903,7 @@ export const VENDOR_CATEGORIES: EnumConfig<VendorCategory>[] = [
     { value: "other", label: "Other", variant: "ghost" },
 ];
 
-export const VENDOR_CATEGORY_MAP = Object.fromEntries(
-    VENDOR_CATEGORIES.map((c) => [c.value, c])
-) as Record<VendorCategory, EnumConfig<VendorCategory>>;
+export const VENDOR_CATEGORY_MAP = toEnumMap(VENDOR_CATEGORIES);
 
 // ─── Vehicle Types ───
 export type VehicleType = "box_truck" | "sprinter_van" | "flatbed" | "pickup" | "trailer" | "other";
@@ -2155,9 +1917,7 @@ export const VEHICLE_TYPES: EnumConfig<VehicleType>[] = [
     { value: "other", label: "Other", variant: "ghost" },
 ];
 
-export const VEHICLE_TYPE_MAP = Object.fromEntries(
-    VEHICLE_TYPES.map((t) => [t.value, t])
-) as Record<VehicleType, EnumConfig<VehicleType>>;
+export const VEHICLE_TYPE_MAP = toEnumMap(VEHICLE_TYPES);
 
 // ─── Warehouse Types ───
 export type WarehouseType = "primary" | "satellite" | "staging" | "vendor";
@@ -2169,9 +1929,7 @@ export const WAREHOUSE_TYPES: EnumConfig<WarehouseType>[] = [
     { value: "vendor", label: "Vendor", variant: "secondary" },
 ];
 
-export const WAREHOUSE_TYPE_MAP = Object.fromEntries(
-    WAREHOUSE_TYPES.map((t) => [t.value, t])
-) as Record<WarehouseType, EnumConfig<WarehouseType>>;
+export const WAREHOUSE_TYPE_MAP = toEnumMap(WAREHOUSE_TYPES);
 
 // ─── Work Order Priority ───
 export type WorkOrderPriority = "low" | "medium" | "high" | "urgent";
@@ -2183,9 +1941,7 @@ export const WORK_ORDER_PRIORITIES: EnumConfig<WorkOrderPriority>[] = [
     { value: "urgent", label: "Urgent", variant: "destructive" },
 ];
 
-export const WORK_ORDER_PRIORITY_MAP = Object.fromEntries(
-    WORK_ORDER_PRIORITIES.map((p) => [p.value, p])
-) as Record<WorkOrderPriority, EnumConfig<WorkOrderPriority>>;
+export const WORK_ORDER_PRIORITY_MAP = toEnumMap(WORK_ORDER_PRIORITIES);
 
 // ─── Worker Review Types ───
 export type WorkerReviewType = "periodic" | "project_end" | "mid_project";
@@ -2196,9 +1952,7 @@ export const WORKER_REVIEW_TYPES: EnumConfig<WorkerReviewType>[] = [
     { value: "mid_project", label: "Mid-Project", variant: "secondary" },
 ];
 
-export const WORKER_REVIEW_TYPE_MAP = Object.fromEntries(
-    WORKER_REVIEW_TYPES.map((t) => [t.value, t])
-) as Record<WorkerReviewType, EnumConfig<WorkerReviewType>>;
+export const WORKER_REVIEW_TYPE_MAP = toEnumMap(WORKER_REVIEW_TYPES);
 
 // ─── Worker Target Types ───
 export type WorkerTargetType = "employee" | "contractor" | "vendor" | "freelancer" | "intern";
@@ -2211,9 +1965,7 @@ export const WORKER_TARGET_TYPES: EnumConfig<WorkerTargetType>[] = [
     { value: "intern", label: "Intern", variant: "ghost" },
 ];
 
-export const WORKER_TARGET_TYPE_MAP = Object.fromEntries(
-    WORKER_TARGET_TYPES.map((t) => [t.value, t])
-) as Record<WorkerTargetType, EnumConfig<WorkerTargetType>>;
+export const WORKER_TARGET_TYPE_MAP = toEnumMap(WORKER_TARGET_TYPES);
 
 // ─── Workforce Status ───
 export type WorkforceStatus = "active" | "on_leave" | "inactive" | "terminated";
@@ -2225,9 +1977,7 @@ export const WORKFORCE_STATUSES: EnumConfig<WorkforceStatus>[] = [
     { value: "terminated", label: "Terminated", variant: "destructive" },
 ];
 
-export const WORKFORCE_STATUS_MAP = Object.fromEntries(
-    WORKFORCE_STATUSES.map((s) => [s.value, s])
-) as Record<WorkforceStatus, EnumConfig<WorkforceStatus>>;
+export const WORKFORCE_STATUS_MAP = toEnumMap(WORKFORCE_STATUSES);
 
 // ─── Messaging: Channel Categories ───
 export const CHANNEL_CATEGORIES = [
@@ -2260,9 +2010,9 @@ export const CHANNEL_CATEGORIES = [
 
 export type ChannelCategory = (typeof CHANNEL_CATEGORIES)[number]["value"];
 
-export const CHANNEL_CATEGORY_MAP = Object.fromEntries(
-    CHANNEL_CATEGORIES.map((c) => [c.value, c])
-) as Record<ChannelCategory, (typeof CHANNEL_CATEGORIES)[number]>;
+export const CHANNEL_CATEGORY_MAP = toEnumMap(
+    CHANNEL_CATEGORIES as unknown as EnumConfig<ChannelCategory>[]
+);
 
 // ─── Messaging: Conversation Types ───
 export const CONVERSATION_TYPES = [

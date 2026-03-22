@@ -26,30 +26,7 @@ import {
 import { useInvoices, useTasks } from "@/lib/supabase";
 import { useVendorComplianceDocuments, useWorkOrders } from "@/lib/supabase";
 import { TASK_STATUS_BG_CLASSES } from "@/config/ui-variants";
-
-const PRIORITY_BADGE: Record<string, "destructive" | "warning" | "ghost"> = {
-    high: "destructive",
-    medium: "warning",
-    low: "ghost",
-};
-
-const WO_STATUS_BADGE: Record<string, "default" | "info" | "warning" | "success" | "destructive"> =
-    {
-        in_progress: "warning",
-        completed: "success",
-        accepted: "info",
-        scheduled: "info",
-        assigned: "info",
-    };
-
-const INV_STATUS_BADGE: Record<string, "default" | "info" | "warning" | "success" | "destructive"> =
-    {
-        draft: "default",
-        submitted: "warning",
-        approved: "success",
-        paid: "success",
-        disputed: "destructive",
-    };
+import { getPriorityVariant, getStatusVariant } from "@/config/ui-variants";
 
 export function VendorPortalPageClient() {
     const { data: sbTasks, isLoading: tasksLoading } = useTasks();
@@ -174,7 +151,7 @@ export function VendorPortalPageClient() {
                                                 {wo.number}
                                             </span>
                                             <Badge
-                                                variant={WO_STATUS_BADGE[wo.status] || "default"}
+                                                variant={getStatusVariant(wo.status)}
                                                 className="density-caption"
                                             >
                                                 {wo.status.replaceAll("_", " ")}
@@ -223,7 +200,7 @@ export function VendorPortalPageClient() {
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm font-semibold">{inv.number}</span>
                                         <Badge
-                                            variant={INV_STATUS_BADGE[inv.status] || "default"}
+                                            variant={getStatusVariant(inv.status)}
                                             className="density-caption"
                                         >
                                             {inv.status}
@@ -282,7 +259,7 @@ export function VendorPortalPageClient() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Badge variant={PRIORITY_BADGE[task.priority] ?? "ghost"}>
+                                <Badge variant={getPriorityVariant(task.priority)}>
                                     {task.priority}
                                 </Badge>
                                 <Badge

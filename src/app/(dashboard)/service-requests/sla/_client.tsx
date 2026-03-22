@@ -28,6 +28,7 @@ import {
 import { useSlaPolicies, useSlaStatus } from "@/lib/supabase";
 import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_SLA_POLICY_CONFIG } from "@/config/create-entity-configs";
+import { getPriorityVariant, getStatusVariant } from "@/config/ui-variants";
 
 type SlaTab = "policies" | "active" | "metrics";
 
@@ -56,20 +57,6 @@ interface ActiveSla {
     timeRemainingMinutes: number;
     elapsedMinutes: number;
 }
-
-const PRIORITY_BADGE: Record<string, "destructive" | "warning" | "info" | "default"> = {
-    critical: "destructive",
-    high: "warning",
-    medium: "info",
-    low: "default",
-};
-
-const STATUS_BADGE: Record<string, "success" | "warning" | "destructive" | "info"> = {
-    within_sla: "success",
-    at_risk: "warning",
-    breached: "destructive",
-    resolved: "info",
-};
 
 function formatMinutes(min: number): string {
     if (min < 0) return `${Math.abs(min)}m overdue`;
@@ -207,13 +194,13 @@ export function SlaPageClient() {
                                                         {sla.ticketNumber}
                                                     </span>
                                                     <Badge
-                                                        variant={PRIORITY_BADGE[sla.priority]}
+                                                        variant={getPriorityVariant(sla.priority)}
                                                         className="density-caption"
                                                     >
                                                         {sla.priority}
                                                     </Badge>
                                                     <Badge
-                                                        variant={STATUS_BADGE[sla.status]}
+                                                        variant={getStatusVariant(sla.status)}
                                                         className="density-caption"
                                                     >
                                                         {sla.status.replace(/_/g, " ")}
@@ -273,7 +260,7 @@ export function SlaPageClient() {
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <Badge
-                                            variant={PRIORITY_BADGE[policy.priority]}
+                                            variant={getPriorityVariant(policy.priority)}
                                             className="density-caption"
                                         >
                                             {policy.priority}

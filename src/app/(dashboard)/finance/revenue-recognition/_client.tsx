@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useRevenueRecognitionEntries, useRevenueRecognitionSummary } from "@/lib/supabase";
 import { useCreateRevenueRecognition } from "@/lib/supabase/hooks-finance";
+import { getStatusVariant } from "@/config/ui-variants";
 
 type RevRecTab = "entries" | "summary" | "schedules";
 
@@ -52,13 +53,6 @@ interface RevenueSummary {
     deferredRevenue: number;
     unbilledRevenue: number;
 }
-
-const STATUS_BADGE: Record<string, "default" | "success" | "warning" | "info" | "destructive"> = {
-    recognized: "success",
-    deferred: "warning",
-    partial: "info",
-    pending_review: "default",
-};
 
 const METHOD_LABELS: Record<string, string> = {
     completed_contract: "Completed Contract",
@@ -181,7 +175,7 @@ export function RevenueRecognitionPageClient() {
                                                     {entry.invoiceNumber}
                                                 </span>
                                                 <Badge
-                                                    variant={STATUS_BADGE[entry.status]}
+                                                    variant={getStatusVariant(entry.status)}
                                                     className="density-caption"
                                                 >
                                                     {entry.status.replaceAll("_", " ")}

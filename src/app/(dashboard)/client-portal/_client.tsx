@@ -29,16 +29,7 @@ import {
 } from "lucide-react";
 import { useApprovals, useProjects } from "@/lib/supabase";
 import { useClientInvoices, useEstimates } from "@/lib/supabase";
-
-const EST_STATUS_BADGE: Record<string, "default" | "info" | "warning" | "success" | "destructive"> =
-    {
-        draft: "default",
-        sent: "info",
-        viewed: "info",
-        accepted: "success",
-        rejected: "destructive",
-        expired: "destructive",
-    };
+import { getStatusVariant } from "@/config/ui-variants";
 
 export function ClientPortalPageClient() {
     const [createOpen, openCreate, closeCreate] = useCreateAction();
@@ -227,7 +218,7 @@ export function ClientPortalPageClient() {
                                                 {est.number}
                                             </span>
                                             <Badge
-                                                variant={EST_STATUS_BADGE[est.status] || "default"}
+                                                variant={getStatusVariant(est.status)}
                                                 className="density-caption"
                                             >
                                                 {est.status}

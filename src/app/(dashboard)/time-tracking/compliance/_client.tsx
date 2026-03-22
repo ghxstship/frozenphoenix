@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useTimeTrackingCompliance, useTimeTrackingPolicy } from "@/lib/supabase";
 import { useCrewMembers } from "@/lib/supabase";
+import { getStatusVariant } from "@/config/ui-variants";
 
 interface CompliancePolicy {
     id: string;
@@ -59,18 +60,6 @@ interface WorkerCompliance {
     violations: number;
     status: "compliant" | "at_risk" | "non_compliant";
 }
-
-const SEVERITY_BADGE: Record<string, "destructive" | "warning" | "info"> = {
-    critical: "destructive",
-    warning: "warning",
-    info: "info",
-};
-
-const STATUS_BADGE: Record<string, "success" | "warning" | "destructive"> = {
-    compliant: "success",
-    at_risk: "warning",
-    non_compliant: "destructive",
-};
 
 export function TimeTrackingCompliancePageClient() {
     const { data: sbPolicies, isLoading: loadingPolicies } = useTimeTrackingPolicy();
@@ -252,7 +241,7 @@ export function TimeTrackingCompliancePageClient() {
                                                 {violation.workerName}
                                             </h4>
                                             <Badge
-                                                variant={SEVERITY_BADGE[violation.severity]}
+                                                variant={getStatusVariant(violation.severity)}
                                                 className="density-caption"
                                             >
                                                 {violation.severity}
@@ -303,7 +292,7 @@ export function TimeTrackingCompliancePageClient() {
                                         <div className="flex items-center gap-2">
                                             <h4 className="text-sm font-semibold">{worker.name}</h4>
                                             <Badge
-                                                variant={STATUS_BADGE[worker.status]}
+                                                variant={getStatusVariant(worker.status)}
                                                 className="density-caption"
                                             >
                                                 {worker.status.replaceAll("_", " ")}

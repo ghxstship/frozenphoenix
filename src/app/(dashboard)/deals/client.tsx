@@ -84,6 +84,6 @@ const config: ListPageConfig = {
     ],
 };
 
-export function DealsPageClient({ initialData }: { initialData: Record<string, unknown>[] }) {
-    return <ListPageShell config={config} data={initialData} isLoading={false} />;
+export function DealsPageClient() {
+    return <ListPageShell config={config} />;
 }

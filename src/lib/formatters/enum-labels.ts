@@ -31,13 +31,13 @@ export const SCAN_RESULT_LABELS: Record<string, string> = {
     capacity_reached: "Capacity Reached",
 };
 
-// ─── Survey Template Types ───
+// ─── Survey Template Types (derived from SSOT in domain-config) ───
+import { SURVEY_TYPE_MAP } from "@/config/domain-config";
+
 export const SURVEY_TYPE_LABELS: Record<string, string> = {
-    csat: "CSAT",
-    nps: "NPS",
+    ...Object.fromEntries(Object.values(SURVEY_TYPE_MAP).map((c) => [c.value, c.label])),
+    // Additional types not (yet) in domain-config enum
     ces: "CES",
-    custom: "Custom",
-    post_event: "Post Event",
     onboarding: "Onboarding",
     feedback: "Feedback",
 };

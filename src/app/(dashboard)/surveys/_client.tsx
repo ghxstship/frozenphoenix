@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { enumLabel, SURVEY_TYPE_LABELS } from "@/lib/formatters/enum-labels";
+import { SURVEY_TYPE_MAP } from "@/config/domain-config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,14 +60,6 @@ interface SurveyResponse {
     comments: string;
     submittedAt: string;
 }
-
-const TYPE_BADGE: Record<string, "default" | "info" | "warning" | "success"> = {
-    csat: "success",
-    nps: "info",
-    post_event: "warning",
-    post_project: "default",
-    custom: "default",
-};
 
 function StarRating({ rating }: { rating: number }) {
     return (
@@ -192,7 +185,16 @@ function SurveysContent({
                                                         </h3>
                                                         <div className="flex items-center gap-2 mt-1">
                                                             <Badge
-                                                                variant={TYPE_BADGE[template.type]}
+                                                                variant={
+                                                                    (SURVEY_TYPE_MAP[
+                                                                        template.type as keyof typeof SURVEY_TYPE_MAP
+                                                                    ]?.variant ?? "ghost") as
+                                                                        | "default"
+                                                                        | "info"
+                                                                        | "warning"
+                                                                        | "success"
+                                                                        | "ghost"
+                                                                }
                                                                 className="density-caption"
                                                             >
                                                                 {enumLabel(

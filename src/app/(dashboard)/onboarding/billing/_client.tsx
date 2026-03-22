@@ -19,7 +19,7 @@ import {
     Workflow,
     Zap,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { useBillingPlan, useSelectPlan } from "@/lib/supabase";
 import {
     formatTierPrice,
@@ -356,7 +356,7 @@ function BillingForm({
                                                         included
                                                         {entitlements.pricing.overagePerSeatCents >
                                                             0 &&
-                                                            ` · $${(entitlements.pricing.overagePerSeatCents / 100).toFixed(0)}/extra seat`}
+                                                            ` · ${formatCurrency(entitlements.pricing.overagePerSeatCents / 100)}/extra seat`}
                                                     </p>
                                                 )}
 

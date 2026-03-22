@@ -2,6 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { csrfHeaders } from "@/lib/security/csrf";
+import { formatCurrency } from "@/lib/utils";
+import { getStatusVariant } from "@/config/ui-variants";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +24,6 @@ import {
     Plus,
     RefreshCw,
     Save,
-    Settings2,
     Shield,
     Sparkles,
     Trash2,
@@ -698,7 +699,7 @@ function UsagePanel() {
                 <MetricCard label="Total Requests" value={totals.requests.toLocaleString()} />
                 <MetricCard label="Input Tokens" value={formatTokens(totals.input_tokens)} />
                 <MetricCard label="Output Tokens" value={formatTokens(totals.output_tokens)} />
-                <MetricCard label="Estimated Cost" value={`$${totals.cost.toFixed(2)}`} />
+                <MetricCard label="Estimated Cost" value={formatCurrency(totals.cost)} />
             </div>
 
             {usage.length > 0 ? (
@@ -1028,25 +1029,7 @@ function MetricCard({ label, value }: { label: string; value: string }) {
 }
 
 function StatusBadge({ status }: { status: string }) {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-        ready: "default",
-        processing: "outline",
-        failed: "destructive",
-        pending: "secondary",
-    };
-    return <Badge variant={variants[status] ?? "secondary"}>{status}</Badge>;
-}
-
-function _AccessDenied() {
-    return (
-        <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
-            <Settings2 className="h-10 w-10 text-muted-foreground" />
-            <h3 className="text-lg font-medium">Access Denied</h3>
-            <p className="text-sm text-muted-foreground">
-                You need executive access to manage AI settings.
-            </p>
-        </div>
-    );
+    return <Badge variant={getStatusVariant(status)}>{status}</Badge>;
 }
 
 // ─── Formatters ──────────────────────────────────────────────

@@ -1857,6 +1857,22 @@ export const SURVEY_TYPES: EnumConfig<SurveyType>[] = [
 
 export const SURVEY_TYPE_MAP = toEnumMap(SURVEY_TYPES);
 
+// ─── Revenue Recognition Methods ───
+export type RecognitionMethod =
+    | "completed_contract"
+    | "percentage_of_completion"
+    | "milestone"
+    | "time_and_materials";
+
+export const RECOGNITION_METHODS: EnumConfig<RecognitionMethod>[] = [
+    { value: "completed_contract", label: "Completed Contract", variant: "default" },
+    { value: "percentage_of_completion", label: "% of Completion", variant: "info" },
+    { value: "milestone", label: "Milestone", variant: "secondary" },
+    { value: "time_and_materials", label: "T&M", variant: "warning" },
+];
+
+export const RECOGNITION_METHOD_MAP = toEnumMap(RECOGNITION_METHODS);
+
 // ─── Template Categories ───
 export type TemplateCategory =
     | "proposal"

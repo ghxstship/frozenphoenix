@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useCredentialAssignments, useCredentialTypes } from "@/lib/supabase/hooks-credentialing";
 import type { CredentialAssignmentStatus } from "@/types";
 import { BadgeCheck, Download, Plus, QrCode, Upload, Users } from "lucide-react";
+import { getStatusVariant } from "@/config/ui-variants";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
 import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_CREDENTIAL_ASSIGNMENT_CONFIG } from "@/config/create-entity-configs";
@@ -26,16 +27,6 @@ interface AssignmentRow {
     credential_types: { name: string; category: string; color_hex: string | null } | null;
     created_at: string;
 }
-
-const STATUS_VARIANTS: Record<string, "success" | "info" | "warning" | "ghost" | "destructive"> = {
-    requested: "ghost",
-    approved: "info",
-    issued: "info",
-    checked_in: "success",
-    checked_out: "warning",
-    revoked: "destructive",
-    expired: "ghost",
-};
 
 const columns: ColumnDef<AssignmentRow>[] = [
     {
@@ -92,10 +83,7 @@ const columns: ColumnDef<AssignmentRow>[] = [
         render: (v) => {
             const s = String(v);
             return (
-                <Badge
-                    variant={STATUS_VARIANTS[s] ?? "ghost"}
-                    className="density-caption capitalize"
-                >
+                <Badge variant={getStatusVariant(s)} className="density-caption capitalize">
                     {s.replaceAll("_", " ")}
                 </Badge>
             );

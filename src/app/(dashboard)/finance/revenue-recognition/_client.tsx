@@ -27,6 +27,7 @@ import {
 import { useRevenueRecognitionEntries, useRevenueRecognitionSummary } from "@/lib/supabase";
 import { useCreateRevenueRecognition } from "@/lib/supabase/hooks-finance";
 import { getStatusVariant } from "@/config/ui-variants";
+import { RECOGNITION_METHOD_MAP } from "@/config/domain-config";
 
 type RevRecTab = "entries" | "summary" | "schedules";
 
@@ -53,13 +54,6 @@ interface RevenueSummary {
     deferredRevenue: number;
     unbilledRevenue: number;
 }
-
-const METHOD_LABELS: Record<string, string> = {
-    completed_contract: "Completed Contract",
-    percentage_of_completion: "% of Completion",
-    milestone: "Milestone",
-    time_and_materials: "T&M",
-};
 
 export function RevenueRecognitionPageClient() {
     const [activeTab, setActiveTab] = useQueryTabState<RevRecTab>({
@@ -181,7 +175,9 @@ export function RevenueRecognitionPageClient() {
                                                     {entry.status.replaceAll("_", " ")}
                                                 </Badge>
                                                 <Badge variant="ghost" className="density-caption">
-                                                    {METHOD_LABELS[entry.recognitionMethod]}
+                                                    {RECOGNITION_METHOD_MAP[
+                                                        entry.recognitionMethod as keyof typeof RECOGNITION_METHOD_MAP
+                                                    ]?.label ?? entry.recognitionMethod}
                                                 </Badge>
                                             </div>
                                         </div>

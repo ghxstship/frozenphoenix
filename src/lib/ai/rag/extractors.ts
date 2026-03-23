@@ -11,7 +11,7 @@ import { logger } from "@/lib/logger";
 
 export interface ExtractionResult {
     text: string;
-    pageCount?: number;
+    pageCount?: number | undefined;
     metadata: Record<string, unknown>;
 }
 
@@ -72,7 +72,13 @@ export async function extractText(buffer: Buffer, mimeType: string): Promise<Ext
 async function extractPdf(buffer: Buffer): Promise<ExtractionResult> {
     // Dynamic import to avoid bundling in client
     const pdfParseModule = await import("pdf-parse");
-    const pdfParse = (pdfParseModule as unknown as { default: (buf: Buffer) => Promise<{ text: string; numpages: number; info?: Record<string, string> }> }).default;
+    const pdfParse = (
+        pdfParseModule as unknown as {
+            default: (
+                buf: Buffer
+            ) => Promise<{ text: string; numpages: number; info?: Record<string, string> }>;
+        }
+    ).default;
 
     const result = await pdfParse(buffer);
 

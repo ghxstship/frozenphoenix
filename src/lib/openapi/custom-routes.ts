@@ -13,12 +13,12 @@ import { errorResponses } from "./shared-schemas";
 interface CustomOperation {
     operationId: string;
     summary: string;
-    description?: string;
+    description?: string | undefined;
     tags: string[];
-    parameters?: Record<string, unknown>[];
-    requestBody?: Record<string, unknown>;
+    parameters?: Record<string, unknown>[] | undefined;
+    requestBody?: Record<string, unknown> | undefined;
     responses: Record<string, Record<string, unknown>>;
-    security?: Record<string, unknown>[];
+    security?: Record<string, unknown>[] | undefined;
     "x-rbac-resource"?: string;
     "x-rbac-action"?: string;
 }

@@ -70,9 +70,9 @@ export function useMaskFields<T extends Record<string, unknown>>(data: T): T {
 interface PermissionGateProps {
     children: React.ReactNode;
     resource: string;
-    action?: "read" | "write" | "delete" | "manage";
-    fallback?: React.ReactNode;
-    silent?: boolean;
+    action?: "read" | "write" | "delete" | "manage" | undefined;
+    fallback?: React.ReactNode | undefined;
+    silent?: boolean | undefined;
 }
 
 export function PermissionGate({
@@ -132,13 +132,13 @@ export function PermissionGate({
 interface FieldGuardProps {
     children: React.ReactNode;
     field: string;
-    placeholder?: string;
+    placeholder?: string | undefined;
 }
 
 interface OwnerGateProps {
     children: React.ReactNode;
-    fallback?: React.ReactNode;
-    silent?: boolean;
+    fallback?: React.ReactNode | undefined;
+    silent?: boolean | undefined;
 }
 
 export function OwnerGate({ children, fallback, silent = false }: OwnerGateProps) {

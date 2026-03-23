@@ -6,19 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Inbox, LucideIcon } from "lucide-react";
 
 export interface EmptyStateProps {
-    icon?: LucideIcon;
+    icon?: LucideIcon | undefined;
     title: string;
-    description?: string;
-    action?: {
-        label: string;
-        onClick: () => void;
-    };
-    secondaryAction?: {
-        label: string;
-        onClick: () => void;
-    };
-    compact?: boolean;
-    className?: string;
+    description?: string | undefined;
+    action?:
+        | {
+              label: string;
+              onClick: () => void;
+          }
+        | undefined;
+    secondaryAction?:
+        | {
+              label: string;
+              onClick: () => void;
+          }
+        | undefined;
+    compact?: boolean | undefined;
+    className?: string | undefined;
 }
 
 export function EmptyState({

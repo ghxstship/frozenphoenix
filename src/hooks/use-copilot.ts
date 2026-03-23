@@ -12,8 +12,10 @@ interface CopilotMessage {
     role: "user" | "assistant" | "system";
     content: string;
     timestamp: number;
-    toolCalls?: Array<{ id: string; name: string; status: "pending" | "done"; result?: string }>;
-    isStreaming?: boolean;
+    toolCalls?:
+        | Array<{ id: string; name: string; status: "pending" | "done"; result?: string }>
+        | undefined;
+    isStreaming?: boolean | undefined;
 }
 
 interface CopilotState {

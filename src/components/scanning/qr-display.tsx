@@ -18,16 +18,12 @@ export interface QRDisplayProps {
     /** The data to encode in the QR code. */
     value: string;
     /** Display size in pixels. Default 200. */
-    size?: number;
-    /** Optional label rendered below the QR. */
-    label?: string;
-    /** Optional secondary label (e.g. barcode value). */
-    sublabel?: string;
-    /** Include download button. Default true. */
-    showDownload?: boolean;
-    /** Include print button. Default true. */
-    showPrint?: boolean;
-    className?: string;
+    size?: number | undefined; /** Optional label rendered below the QR. */
+    label?: string | undefined; /** Optional secondary label (e.g. barcode value). */
+    sublabel?: string | undefined; /** Include download button. Default true. */
+    showDownload?: boolean | undefined; /** Include print button. Default true. */
+    showPrint?: boolean | undefined;
+    className?: string | undefined;
 }
 
 export function QRDisplay({

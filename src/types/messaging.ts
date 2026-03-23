@@ -86,7 +86,7 @@ export interface MessageAttachment {
     file_type: string;
     file_size: number;
     url: string;
-    thumbnail_url?: string;
+    thumbnail_url?: string | undefined;
 }
 
 export interface MessageReaction {
@@ -132,8 +132,8 @@ export interface ChannelTemplateConfig {
     is_public: boolean;
     is_announcement_only: boolean;
     is_restricted: boolean;
-    required_role?: ConversationMemberRole;
-    required_credential_type?: string;
+    required_role?: ConversationMemberRole | undefined;
+    required_credential_type?: string | undefined;
 }
 
 // ─── Derived / View Types ────────────────────────────────────
@@ -180,40 +180,40 @@ export interface MessageWithSender extends Message {
 // ─── Payloads ────────────────────────────────────────────────
 
 export interface SendMessagePayload {
-    conversation_id?: string;
-    parent_message_id?: string;
+    conversation_id?: string | undefined;
+    parent_message_id?: string | undefined;
     body: string;
-    body_html?: string;
-    mentioned_user_ids?: string[];
-    attachments?: MessageAttachment[];
-    entity_type?: string;
-    entity_id?: string;
-    is_internal?: boolean;
-    priority?: MessagePriority;
-    is_mandatory_read?: boolean;
-    scheduled_at?: string;
+    body_html?: string | undefined;
+    mentioned_user_ids?: string[] | undefined;
+    attachments?: MessageAttachment[] | undefined;
+    entity_type?: string | undefined;
+    entity_id?: string | undefined;
+    is_internal?: boolean | undefined;
+    priority?: MessagePriority | undefined;
+    is_mandatory_read?: boolean | undefined;
+    scheduled_at?: string | undefined;
 }
 
 export interface CreateConversationPayload {
     type: ConversationType;
-    name?: string;
-    description?: string;
-    slug?: string;
-    is_public?: boolean;
-    is_announcement_only?: boolean;
-    category?: string;
-    event_id?: string;
-    project_id?: string;
+    name?: string | undefined;
+    description?: string | undefined;
+    slug?: string | undefined;
+    is_public?: boolean | undefined;
+    is_announcement_only?: boolean | undefined;
+    category?: string | undefined;
+    event_id?: string | undefined;
+    project_id?: string | undefined;
     member_ids: string[];
 }
 
 export interface UpdateConversationPayload {
-    name?: string;
-    description?: string;
-    is_public?: boolean;
-    is_announcement_only?: boolean;
-    is_archived?: boolean;
-    category?: string;
+    name?: string | undefined;
+    description?: string | undefined;
+    is_public?: boolean | undefined;
+    is_announcement_only?: boolean | undefined;
+    is_archived?: boolean | undefined;
+    category?: string | undefined;
 }
 
 // ─── Channel Categories (SSOT) ──────────────────────────────

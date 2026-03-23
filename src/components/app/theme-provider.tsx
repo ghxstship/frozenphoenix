@@ -27,21 +27,21 @@ import type { BrandColorPalette, BrandId } from "@/config/brands";
 // ─── Theme Token Override Shape ───
 
 export interface ThemeTokens {
-    primary?: string;
-    primaryForeground?: string;
-    secondary?: string;
-    secondaryForeground?: string;
-    accent?: string;
-    accentForeground?: string;
-    background?: string;
-    foreground?: string;
-    muted?: string;
-    mutedForeground?: string;
-    card?: string;
-    cardForeground?: string;
-    border?: string;
-    ring?: string;
-    radius?: string;
+    primary?: string | undefined;
+    primaryForeground?: string | undefined;
+    secondary?: string | undefined;
+    secondaryForeground?: string | undefined;
+    accent?: string | undefined;
+    accentForeground?: string | undefined;
+    background?: string | undefined;
+    foreground?: string | undefined;
+    muted?: string | undefined;
+    mutedForeground?: string | undefined;
+    card?: string | undefined;
+    cardForeground?: string | undefined;
+    border?: string | undefined;
+    ring?: string | undefined;
+    radius?: string | undefined;
 }
 
 export type ColorMode = "light" | "dark" | "system";
@@ -138,8 +138,8 @@ export const ANIMATION_PRESETS: Record<AnimationSpeed, { label: string; duration
 
 export interface ThemeConfig {
     colorMode: ColorMode;
-    brandId?: string;
-    tokens?: ThemeTokens;
+    brandId?: string | undefined;
+    tokens?: ThemeTokens | undefined;
 }
 
 // ─── Theme Store (Zustand + Persist) ───

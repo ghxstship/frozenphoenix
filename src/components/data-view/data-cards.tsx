@@ -16,13 +16,13 @@ import { ProgressField } from "./field-renderers";
 // ─── Card Field Definition ───
 export interface CardFieldDef<T> {
     id: string;
-    label?: string;
-    accessorKey?: keyof T;
-    accessorFn?: (row: T) => unknown;
-    fieldType?: FieldType;
-    fieldConfig?: Partial<FieldConfig>;
-    render?: (value: unknown, row: T) => React.ReactNode;
-    span?: 1 | 2;
+    label?: string | undefined;
+    accessorKey?: keyof T | undefined;
+    accessorFn?: ((row: T) => unknown) | undefined;
+    fieldType?: FieldType | undefined;
+    fieldConfig?: Partial<FieldConfig> | undefined;
+    render?: ((value: unknown, row: T) => React.ReactNode) | undefined;
+    span?: 1 | 2 | undefined;
 }
 
 // ─── Cards Props ───
@@ -31,22 +31,22 @@ export interface DataCardsProps<T> {
     keyField: keyof T;
     // Card content
     title: keyof T | ((row: T) => string);
-    subtitle?: keyof T | ((row: T) => string);
-    image?: keyof T | ((row: T) => string | undefined);
-    badge?: keyof T | ((row: T) => React.ReactNode);
-    progress?: keyof T | ((row: T) => number | undefined);
+    subtitle?: keyof T | ((row: T) => string) | undefined;
+    image?: keyof T | ((row: T) => string | undefined) | undefined;
+    badge?: keyof T | ((row: T) => React.ReactNode) | undefined;
+    progress?: keyof T | ((row: T) => number | undefined) | undefined;
     fields: CardFieldDef<T>[];
     // Actions
-    actions?: (row: T) => React.ReactNode;
-    onCardClick?: (row: T) => void;
+    actions?: ((row: T) => React.ReactNode) | undefined;
+    onCardClick?: ((row: T) => void) | undefined;
     // Layout
-    columns?: 1 | 2 | 3 | 4;
-    gap?: "sm" | "md" | "lg";
+    columns?: 1 | 2 | 3 | 4 | undefined;
+    gap?: "sm" | "md" | "lg" | undefined;
     // Styling
-    cardClassName?: string;
-    className?: string;
+    cardClassName?: string | undefined;
+    className?: string | undefined;
     // Empty state
-    emptyState?: React.ReactNode;
+    emptyState?: React.ReactNode | undefined;
 }
 
 export function DataCards<T extends Record<string, unknown>>({

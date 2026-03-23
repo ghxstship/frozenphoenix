@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { GoodsReceiptsDetailClient } from "./_client";
 
 export default async function GoodsReceiptsDetailPage({
@@ -6,5 +7,6 @@ export default async function GoodsReceiptsDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <GoodsReceiptsDetailClient id={id} />;
+    const initialRecord = await prefetchDetailRecord("goods_receipts", id);
+    return <GoodsReceiptsDetailClient id={id} initialRecord={initialRecord} />;
 }

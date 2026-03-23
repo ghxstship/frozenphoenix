@@ -46,7 +46,7 @@ export const PATCH = withApiHandlerParams(
                 edited_at: new Date().toISOString(),
             })
             .eq("id", messageId)
-            .select("*")
+            .select("id, channel_id, sender_id, body, edited_at, created_at")
             .single();
 
         if (error) {

@@ -19,23 +19,18 @@ export interface SettingsRowDef {
     /** Display label */
     label: string;
     /** Row description */
-    description?: string;
-    /** Icon */
-    icon?: LucideIcon;
-    /** Control type */
+    description?: string | undefined; /** Icon */
+    icon?: LucideIcon | undefined; /** Control type */
     type: "toggle" | "select" | "input" | "custom";
     /** Current value (for toggle/select/input) */
-    value?: unknown;
-    /** Options for select type */
-    options?: { value: string; label: string }[];
-    /** Placeholder for input type */
-    placeholder?: string;
-    /** Disabled state */
-    disabled?: boolean;
-    /** onChange handler */
-    onChange?: (value: unknown) => void;
-    /** Custom render function — overrides type-based rendering */
-    render?: () => React.ReactNode;
+    value?: unknown | undefined; /** Options for select type */
+    options?: { value: string; label: string }[] | undefined; /** Placeholder for input type */
+    placeholder?: string | undefined; /** Disabled state */
+    disabled?: boolean | undefined; /** onChange handler */
+    onChange?:
+        | ((value: unknown) => void)
+        | undefined; /** Custom render function — overrides type-based rendering */
+    render?: (() => React.ReactNode) | undefined;
 }
 
 // ─── Section Definition ─────────────────────────────────────
@@ -46,11 +41,9 @@ export interface SettingsSectionDef {
     /** Section title */
     title: string;
     /** Section description */
-    description?: string;
-    /** Setting rows in this section */
-    rows?: SettingsRowDef[];
-    /** Custom content — replaces rows when provided */
-    content?: React.ReactNode;
+    description?: string | undefined; /** Setting rows in this section */
+    rows?: SettingsRowDef[] | undefined; /** Custom content — replaces rows when provided */
+    content?: React.ReactNode | undefined;
 }
 
 // ─── Tab Definition ─────────────────────────────────────────
@@ -61,11 +54,11 @@ export interface SettingsTabDef {
     /** Tab label */
     label: string;
     /** Tab icon */
-    icon?: LucideIcon;
-    /** Sections within this tab */
-    sections?: SettingsSectionDef[];
-    /** Custom content — replaces sections when provided */
-    content?: React.ReactNode;
+    icon?: LucideIcon | undefined; /** Sections within this tab */
+    sections?:
+        | SettingsSectionDef[]
+        | undefined; /** Custom content — replaces sections when provided */
+    content?: React.ReactNode | undefined;
 }
 
 // ─── Main Config ────────────────────────────────────────────
@@ -74,30 +67,23 @@ export interface SettingsPageConfig {
     /** RBAC resource key for PermissionGate */
     resource: string;
     /** RBAC action (default: "read") */
-    action?: string;
-
+    action?: string | undefined;
     // ─── Header ───
     /** Page title */
     title: string;
     /** i18n key for title — when provided, resolved at runtime via t() */
-    titleKey?: string;
-    /** Page description */
-    description?: string;
-    /** i18n key for description */
-    descriptionKey?: string;
-    /** Page icon */
-    icon?: LucideIcon;
-    /** Header action buttons */
-    headerActions?: React.ReactNode;
-
+    titleKey?: string | undefined; /** Page description */
+    description?: string | undefined; /** i18n key for description */
+    descriptionKey?: string | undefined; /** Page icon */
+    icon?: LucideIcon | undefined; /** Header action buttons */
+    headerActions?: React.ReactNode | undefined;
     // ─── Tabs ───
     /** Tab definitions */
     tabs: SettingsTabDef[];
 
     // ─── Layout ───
     /** Tab orientation — "horizontal" (default) or "vertical" (sidebar nav) */
-    orientation?: "horizontal" | "vertical";
-
+    orientation?: "horizontal" | "vertical" | undefined;
     // ─── URL tab state key (default: "tab") ───
-    tabParamKey?: string;
+    tabParamKey?: string | undefined;
 }

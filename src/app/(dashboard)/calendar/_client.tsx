@@ -147,8 +147,8 @@ interface CalendarEvent {
     title: string;
     date: string;
     type: EventType;
-    projectName?: string;
-    status?: string;
+    projectName?: string | undefined;
+    status?: string | undefined;
 }
 
 const eventTypeConfig: Record<EventType, { color: string; icon: typeof CalendarIcon }> = {

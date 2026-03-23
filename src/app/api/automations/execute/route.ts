@@ -356,7 +356,9 @@ export const POST = withPermission("automations", "manage", async (request, { or
             supabase,
             "automations"
         )
-            .select("*")
+            .select(
+                "id, name, entity_type, trigger_type, status, conditions, actions, organization_id, created_at"
+            )
             .eq("status", "active")
             .eq("entity_type", entity_type)
             .eq("trigger_type", trigger_type)
@@ -384,7 +386,7 @@ export const POST = withPermission("automations", "manage", async (request, { or
                     status: conditionsMet ? "running" : "skipped",
                     organization_id: automation.organization_id,
                 })
-                .select()
+                .select("id, automation_id, status, created_at")
                 .single();
 
             if (!conditionsMet) {

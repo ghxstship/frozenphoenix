@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { ResilienceTargetsDetailClient } from "./_client";
 
 export default async function ResilienceTargetsDetailPage({
@@ -6,5 +7,6 @@ export default async function ResilienceTargetsDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <ResilienceTargetsDetailClient id={id} />;
+    const initialRecord = await prefetchDetailRecord("resilience_targets", id);
+    return <ResilienceTargetsDetailClient id={id} initialRecord={initialRecord} />;
 }

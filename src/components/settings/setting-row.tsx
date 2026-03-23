@@ -223,9 +223,9 @@ export function LockBadge({ locked }: { locked: boolean }) {
 interface FlagToggleProps {
     enabled: boolean;
     label: string;
-    description?: string;
+    description?: string | undefined;
     onToggle: (enabled: boolean) => void;
-    disabled?: boolean;
+    disabled?: boolean | undefined;
 }
 
 export function FlagToggle({ enabled, label, description, onToggle, disabled }: FlagToggleProps) {

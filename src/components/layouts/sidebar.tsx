@@ -60,13 +60,14 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
     pinnedPaths: string[];
     expandedItems: Record<string, boolean>;
     onToggleChildren: (path: string) => void;
-    depth?: number;
+    depth?: number | undefined;
 }) {
     const Icon = item.icon;
     const hasChildren = item.children && item.children.length > 0;
     const isChildActive =
         hasChildren &&
-        item.children!.some((c) => pathname === c.path || pathname.startsWith(c.path + "/"));
+        (item.children?.some((c) => pathname === c.path || pathname.startsWith(c.path + "/")) ??
+            false);
     const isManuallyExpanded = expandedItems[item.path] ?? false;
     const childrenOpen = isChildActive || isActive || isManuallyExpanded;
 
@@ -179,7 +180,7 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
                     )}
                 >
                     <div className="space-y-0.5 mt-0.5">
-                        {item.children!.map((child) => {
+                        {item.children?.map((child) => {
                             const childActive =
                                 pathname === child.path || pathname.startsWith(child.path + "/");
                             return (

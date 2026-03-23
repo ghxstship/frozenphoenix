@@ -13,7 +13,7 @@ interface AssignmentRowProps {
     credentialTypeColor: string | null;
     zoneAccess: string[];
     checkedInAt: string | null;
-    onClick?: () => void;
+    onClick?: (() => void) | undefined;
 }
 
 const STATUS_VARIANTS: Record<string, "success" | "info" | "warning" | "ghost" | "destructive"> = {

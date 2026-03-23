@@ -85,7 +85,7 @@ export const POST = withApiHandlerParams(
         )
             .update(updates)
             .eq("id", collabId)
-            .select()
+            .select("id, coi_status, updated_at")
             .single();
 
         if (updateError) {

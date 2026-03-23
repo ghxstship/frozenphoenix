@@ -20,22 +20,26 @@ import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
 
 export interface DetailLayoutProps {
     backHref: string;
-    backLabel?: string;
+    backLabel?: string | undefined;
     title: string;
-    subtitle?: string;
-    status?: string;
-    avatar?: React.ReactNode;
-    actions?: React.ReactNode;
-    menuItems?: { label: string; onClick: () => void; variant?: "default" | "destructive" }[];
-    tabs?: TabBarItem[];
-    activeTab?: string;
-    onTabChange?: (tabId: string) => void;
-    sidebar?: React.ReactNode;
-    /** Entity type for messaging context (e.g. "project", "event"). Enables MessagingButton when provided with entityId. */
-    entityType?: string;
-    /** Entity ID for messaging context. Enables MessagingButton when provided with entityType. */
-    entityId?: string;
-    className?: string;
+    subtitle?: string | undefined;
+    status?: string | undefined;
+    avatar?: React.ReactNode | undefined;
+    actions?: React.ReactNode | undefined;
+    menuItems?:
+        | { label: string; onClick: () => void; variant?: "default" | "destructive" }[]
+        | undefined;
+    tabs?: TabBarItem[] | undefined;
+    activeTab?: string | undefined;
+    onTabChange?: ((tabId: string) => void) | undefined;
+    sidebar?:
+        | React.ReactNode
+        | undefined; /** Entity type for messaging context (e.g. "project", "event"). Enables MessagingButton when provided with entityId. */
+    entityType?:
+        | string
+        | undefined; /** Entity ID for messaging context. Enables MessagingButton when provided with entityType. */
+    entityId?: string | undefined;
+    className?: string | undefined;
     children: React.ReactNode;
 }
 

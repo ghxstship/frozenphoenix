@@ -12,8 +12,8 @@ import type { PermissionLevel } from "@/types";
 import type { SwitcherItem } from "@/types/workspace-context";
 
 interface TeamSwitcherProps {
-    collapsed?: boolean;
-    isMobile?: boolean;
+    collapsed?: boolean | undefined;
+    isMobile?: boolean | undefined;
 }
 
 export function TeamSwitcher({ collapsed = false, isMobile = false }: TeamSwitcherProps) {

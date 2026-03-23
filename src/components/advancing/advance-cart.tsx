@@ -14,7 +14,7 @@ interface AdvanceCartProps {
     isOpen: boolean;
     onClose: () => void;
     onCheckout: () => void;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function AdvanceCart({ isOpen, onClose, onCheckout, className }: AdvanceCartProps) {

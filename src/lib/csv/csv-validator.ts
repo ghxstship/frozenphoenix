@@ -42,7 +42,9 @@ function isValidDate(value: string): boolean {
     const usMatch = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(value);
     if (usMatch) {
         const [, m, day, y] = usMatch;
-        const parsed = new Date(`${y}-${m!.padStart(2, "0")}-${day!.padStart(2, "0")}`);
+        const parsed = new Date(
+            `${y}-${(m ?? "").padStart(2, "0")}-${(day ?? "").padStart(2, "0")}`
+        );
         return !isNaN(parsed.getTime());
     }
     return false;
@@ -130,7 +132,7 @@ function coerceValue(value: string | null | undefined, fieldDef: CsvFieldDef): u
             const usMatch = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(trimmed);
             if (usMatch) {
                 const [, m, d, y] = usMatch;
-                return `${y}-${m!.padStart(2, "0")}-${d!.padStart(2, "0")}`;
+                return `${y}-${(m ?? "").padStart(2, "0")}-${(d ?? "").padStart(2, "0")}`;
             }
             return trimmed;
         }

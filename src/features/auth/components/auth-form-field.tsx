@@ -11,9 +11,9 @@ export interface AuthFormFieldProps extends Omit<
 > {
     fieldId: string;
     label: string;
-    icon?: LucideIcon;
-    error?: string;
-    description?: string;
+    icon?: LucideIcon | undefined;
+    error?: string | undefined;
+    description?: string | undefined;
 }
 
 export const AuthFormField = React.forwardRef<HTMLInputElement, AuthFormFieldProps>(

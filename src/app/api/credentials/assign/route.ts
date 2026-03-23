@@ -81,7 +81,7 @@ export const POST = withApiHandler(
                 created_by: user.id,
                 updated_by: user.id,
             } as Record<string, unknown>)
-            .select()
+            .select("id, pool_id, assignee_name, barcode_value, status, created_at")
             .single();
 
         if (error) {

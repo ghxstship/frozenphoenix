@@ -8,7 +8,7 @@ import { QUICK_REACTIONS } from "@/types/messaging";
 
 interface ReactionPickerProps {
     onSelect: (emoji: string) => void;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function ReactionPicker({ onSelect, className }: ReactionPickerProps) {

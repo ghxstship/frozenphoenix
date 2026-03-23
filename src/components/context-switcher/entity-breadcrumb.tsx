@@ -38,9 +38,9 @@ function extractSubPath(pathname: string, entityPrefix: string): string | undefi
 interface EntityBreadcrumbProps {
     pathname: string;
     /** Optional override names from fetched data */
-    clientName?: string;
-    projectName?: string;
-    activationName?: string;
+    clientName?: string | undefined;
+    projectName?: string | undefined;
+    activationName?: string | undefined;
 }
 
 export function EntityBreadcrumb({
@@ -74,9 +74,7 @@ export function EntityBreadcrumb({
         entityContext.type === "project" ||
         entityContext.type === "activation"
     ) {
-        segments.push(
-            <ClientSwitcher key="client" activeName={clientName} />
-        );
+        segments.push(<ClientSwitcher key="client" activeName={clientName} />);
     }
 
     // Project segment — shown for project and activation pages

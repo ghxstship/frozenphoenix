@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { LostReasonsDetailClient } from "./_client";
 
 export default async function LostReasonsDetailPage({
@@ -6,5 +7,6 @@ export default async function LostReasonsDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <LostReasonsDetailClient id={id} />;
+    const initialRecord = await prefetchDetailRecord("lost_reasons", id);
+    return <LostReasonsDetailClient id={id} initialRecord={initialRecord} />;
 }

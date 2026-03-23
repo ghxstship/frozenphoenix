@@ -26,9 +26,9 @@ const toastVariants = cva(
 export interface ToastData {
     id: string;
     title: string;
-    description?: string;
-    variant?: "default" | "success" | "warning" | "destructive" | "info";
-    duration?: number;
+    description?: string | undefined;
+    variant?: "default" | "success" | "warning" | "destructive" | "info" | undefined;
+    duration?: number | undefined;
     action?: {
         label: string;
         onClick: () => void;

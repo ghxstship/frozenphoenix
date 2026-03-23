@@ -32,11 +32,11 @@ TooltipContent.displayName = "TooltipContent";
 
 export interface TooltipProps {
     content: React.ReactNode;
-    side?: "top" | "right" | "bottom" | "left";
-    align?: "start" | "center" | "end";
-    delayDuration?: number;
+    side?: "top" | "right" | "bottom" | "left" | undefined;
+    align?: "start" | "center" | "end" | undefined;
+    delayDuration?: number | undefined;
     children: React.ReactNode;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function Tooltip({

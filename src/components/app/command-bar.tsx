@@ -10,7 +10,7 @@ import { ArrowRight, Clock, Command, MessageSquare, Search, Sparkles, X } from "
 import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
 
 interface CommandBarProps {
-    className?: string;
+    className?: string | undefined;
 }
 
 interface CommandItem {

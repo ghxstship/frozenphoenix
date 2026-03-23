@@ -10,7 +10,7 @@ interface PoolCapacityBarProps {
     colorHex: string | null;
     totalQuantity: number;
     allocatedCount: number;
-    compact?: boolean;
+    compact?: boolean | undefined;
 }
 
 export function PoolCapacityBar({

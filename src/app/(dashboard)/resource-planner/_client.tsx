@@ -32,16 +32,16 @@ interface ResourceBookingView {
     id: string;
     crewMemberId: string;
     crewMemberName: string;
-    projectId?: string;
-    projectName?: string;
-    placeholderName?: string;
+    projectId?: string | undefined;
+    projectName?: string | undefined;
+    placeholderName?: string | undefined;
     bookingType: BookingType;
     status: BookingStatus;
     startDate: string;
     endDate: string;
     hoursPerDay: number;
-    role?: string;
-    department?: string;
+    role?: string | undefined;
+    department?: string | undefined;
     hasConflict: boolean;
 }
 

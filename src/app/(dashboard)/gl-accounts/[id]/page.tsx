@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { GlAccountsDetailClient } from "./_client";
 
 export default async function GlAccountsDetailPage({
@@ -6,5 +7,6 @@ export default async function GlAccountsDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <GlAccountsDetailClient id={id} initialRecord={null} />;
+    const initialRecord = await prefetchDetailRecord("gl-accounts", id);
+    return <GlAccountsDetailClient id={id} initialRecord={initialRecord} />;
 }

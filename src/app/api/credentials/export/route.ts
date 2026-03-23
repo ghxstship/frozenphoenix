@@ -56,10 +56,14 @@ export const POST = withApiHandler(
                 );
                 break;
             case "credential_scan_log":
-                query = serverFromTable(sb, "credential_scan_log").select("*");
+                query = serverFromTable(sb, "credential_scan_log").select(
+                    "id, credential_id, scan_type, scanned_at, scanned_by, gate_id, event_id, result, organization_id"
+                );
                 break;
             case "pos_transactions":
-                query = serverFromTable(sb, "pos_transactions").select("*");
+                query = serverFromTable(sb, "pos_transactions").select(
+                    "id, transaction_type, amount, currency, payment_method, status, vendor_id, event_id, created_at, organization_id"
+                );
                 break;
             default:
                 return ApiErrors.badRequest(`Unsupported entity_type: ${entity_type}`);

@@ -68,13 +68,11 @@ export type AccountRiskLevel = "low" | "medium" | "high" | "critical";
 export interface Opportunity {
     id: string;
     companyId: string;
-    primaryContactId?: string;
-    leadId?: string;
-    pipelineId?: string;
-
+    primaryContactId?: string | undefined;
+    leadId?: string | undefined;
+    pipelineId?: string | undefined;
     name: string;
-    description?: string;
-
+    description?: string | undefined;
     type: OpportunityType;
     stage: OpportunityStage;
 
@@ -83,30 +81,25 @@ export interface Opportunity {
     weightedValue: number;
     currency: string;
 
-    expectedCloseDate?: string;
-    actualCloseDate?: string;
-
-    assignedTo?: string;
-    assignedToName?: string;
-
-    convertedToDealId?: string;
-    lostReasonId?: string;
-    lostReasonNote?: string;
-
-    competitor?: string;
-    nextStep?: string;
-    lastActivityAt?: string;
-
+    expectedCloseDate?: string | undefined;
+    actualCloseDate?: string | undefined;
+    assignedTo?: string | undefined;
+    assignedToName?: string | undefined;
+    convertedToDealId?: string | undefined;
+    lostReasonId?: string | undefined;
+    lostReasonNote?: string | undefined;
+    competitor?: string | undefined;
+    nextStep?: string | undefined;
+    lastActivityAt?: string | undefined;
     tags: string[];
 
     // Joined fields (from company/contact)
-    companyName?: string;
-    contactName?: string;
-    contactEmail?: string;
-
+    companyName?: string | undefined;
+    contactName?: string | undefined;
+    contactEmail?: string | undefined;
     organizationId: string;
-    createdBy?: string;
-    updatedBy?: string;
+    createdBy?: string | undefined;
+    updatedBy?: string | undefined;
     createdAt: string;
     updatedAt: string;
 }
@@ -119,18 +112,16 @@ export interface OpportunityActivity {
 
     type: OpportunityActivityType;
     subject: string;
-    description?: string;
-
-    contactId?: string;
-    contactName?: string;
-    performedBy?: string;
-    performedByName?: string;
+    description?: string | undefined;
+    contactId?: string | undefined;
+    contactName?: string | undefined;
+    performedBy?: string | undefined;
+    performedByName?: string | undefined;
     performedAt: string;
 
-    durationMinutes?: number;
-    outcome?: string;
-
-    metadata?: Record<string, unknown>;
+    durationMinutes?: number | undefined;
+    outcome?: string | undefined;
+    metadata?: Record<string, unknown> | undefined;
     organizationId: string;
     createdAt: string;
 }
@@ -140,46 +131,42 @@ export interface OpportunityActivity {
 export interface ChangeOrder {
     id: string;
     projectId: string;
-    sowId?: string;
+    sowId?: string | undefined;
     companyId: string;
 
     number: string;
     title: string;
-    description?: string;
-
+    description?: string | undefined;
     changeType: ChangeOrderType;
     valueImpact: number;
     scheduleImpactDays: number;
 
-    reason?: string;
-    businessCase?: string;
-
+    reason?: string | undefined;
+    businessCase?: string | undefined;
     status: ChangeOrderStatus;
-    requestedBy?: string;
-    requestedByName?: string;
+    requestedBy?: string | undefined;
+    requestedByName?: string | undefined;
     requestedAt: string;
-    reviewedBy?: string;
-    reviewedAt?: string;
-    approvedBy?: string;
-    approvedAt?: string;
-    clientApprovedBy?: string;
-    clientApprovedAt?: string;
-
-    scopeAdditions?: string;
-    scopeRemovals?: string;
+    reviewedBy?: string | undefined;
+    reviewedAt?: string | undefined;
+    approvedBy?: string | undefined;
+    approvedAt?: string | undefined;
+    clientApprovedBy?: string | undefined;
+    clientApprovedAt?: string | undefined;
+    scopeAdditions?: string | undefined;
+    scopeRemovals?: string | undefined;
     deliverablesAdded: Record<string, unknown>[];
     deliverablesRemoved: Record<string, unknown>[];
 
-    notes?: string;
+    notes?: string | undefined;
     tags: string[];
 
     // Joined fields
-    projectName?: string;
-    companyName?: string;
-
+    projectName?: string | undefined;
+    companyName?: string | undefined;
     organizationId: string;
-    createdBy?: string;
-    updatedBy?: string;
+    createdBy?: string | undefined;
+    updatedBy?: string | undefined;
     createdAt: string;
     updatedAt: string;
 }
@@ -191,16 +178,15 @@ export interface ChangeOrderLogEntry {
     changeOrderId: string;
 
     action: string;
-    fieldName?: string;
-    oldValue?: string;
-    newValue?: string;
-    changeSummary?: string;
-
-    performedBy?: string;
-    performedByName?: string;
+    fieldName?: string | undefined;
+    oldValue?: string | undefined;
+    newValue?: string | undefined;
+    changeSummary?: string | undefined;
+    performedBy?: string | undefined;
+    performedByName?: string | undefined;
     performedAt: string;
 
-    metadata?: Record<string, unknown>;
+    metadata?: Record<string, unknown> | undefined;
     organizationId: string;
 }
 
@@ -209,11 +195,10 @@ export interface ChangeOrderLogEntry {
 export interface RevenueSchedule {
     id: string;
     projectId: string;
-    dealId?: string;
-    sowDeliverableId?: string;
-    changeOrderId?: string;
-    clientInvoiceId?: string;
-
+    dealId?: string | undefined;
+    sowDeliverableId?: string | undefined;
+    changeOrderId?: string | undefined;
+    clientInvoiceId?: string | undefined;
     type: RevenueRecognitionType;
     description: string;
 
@@ -223,22 +208,19 @@ export interface RevenueSchedule {
     currency: string;
 
     scheduledDate: string;
-    invoicedAt?: string;
-    recognizedAt?: string;
-
+    invoicedAt?: string | undefined;
+    recognizedAt?: string | undefined;
     status: RevenueScheduleStatus;
     percentComplete: number;
 
-    notes?: string;
-
+    notes?: string | undefined;
     // Joined fields
-    projectName?: string;
-    dealTitle?: string;
-    deliverableName?: string;
-
+    projectName?: string | undefined;
+    dealTitle?: string | undefined;
+    deliverableName?: string | undefined;
     organizationId: string;
-    createdBy?: string;
-    updatedBy?: string;
+    createdBy?: string | undefined;
+    updatedBy?: string | undefined;
     createdAt: string;
     updatedAt: string;
 }
@@ -267,12 +249,10 @@ export interface AccountHealthScore {
     openOpportunityCount: number;
     overdueInvoiceCount: number;
 
-    notes?: string;
-    scoredBy?: string;
-
+    notes?: string | undefined;
+    scoredBy?: string | undefined;
     // Joined
-    companyName?: string;
-
+    companyName?: string | undefined;
     organizationId: string;
     createdAt: string;
 }
@@ -291,8 +271,8 @@ export interface AccountRevenueSummary {
     totalInvoiced: number;
     totalRecognized: number;
     totalCollected: number;
-    lastDealDate?: string;
-    lastOpportunityDate?: string;
+    lastDealDate?: string | undefined;
+    lastOpportunityDate?: string | undefined;
 }
 
 // ─── Pipeline Forecast (View projection) ───
@@ -321,25 +301,25 @@ export interface DealRevenue {
     probability: number;
     expectedCloseDate: string;
     assignedTo: string;
-    notes?: string;
+    notes?: string | undefined;
     createdAt: string;
     updatedAt: string;
 
     // New FK fields (migration 013)
-    companyId?: string;
-    contactId?: string;
-    opportunityId?: string;
-    contractedValue?: number;
-    contractId?: string;
-    closedAt?: string;
-    closedBy?: string;
+    companyId?: string | undefined;
+    contactId?: string | undefined;
+    opportunityId?: string | undefined;
+    contractedValue?: number | undefined;
+    contractId?: string | undefined;
+    closedAt?: string | undefined;
+    closedBy?: string | undefined;
     totalInvoiced: number;
     totalRecognized: number;
     totalCollected: number;
 
     // Joined
-    companyName?: string;
-    contactFullName?: string;
+    companyName?: string | undefined;
+    contactFullName?: string | undefined;
 }
 
 // ─── Project with Revenue Fields ───
@@ -348,7 +328,7 @@ export interface ProjectRevenue {
     id: string;
     name: string;
     client: string;
-    clientLogo?: string;
+    clientLogo?: string | undefined;
     status: string;
     currentPhase: string;
     startDate: string;
@@ -361,18 +341,16 @@ export interface ProjectRevenue {
     createdAt: string;
 
     // New FK fields (migration 013)
-    companyId?: string;
-    dealId?: string;
-    primaryContactId?: string;
-    contractedValue?: number;
+    companyId?: string | undefined;
+    dealId?: string | undefined;
+    primaryContactId?: string | undefined;
+    contractedValue?: number | undefined;
     changeOrderValue: number;
-    grossMarginPercent?: number;
-
+    grossMarginPercent?: number | undefined;
     // Computed
-    totalContracted?: number;
-
+    totalContracted?: number | undefined;
     // Joined
-    companyName?: string;
-    dealTitle?: string;
-    contactName?: string;
+    companyName?: string | undefined;
+    dealTitle?: string | undefined;
+    contactName?: string | undefined;
 }

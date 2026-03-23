@@ -9,24 +9,25 @@ import { SlidingIndicator } from "@/components/ui/sliding-indicator";
 export interface TabBarItem {
     id: string;
     label: string;
-    count?: number;
-    icon?: React.ReactNode;
-    disabled?: boolean;
+    count?: number | undefined;
+    icon?: React.ReactNode | undefined;
+    disabled?: boolean | undefined;
 }
 
 export interface TabBarProps {
     items: TabBarItem[];
     value: string;
     onValueChange: (value: string) => void;
-    size?: "sm" | "md";
-    variant?: "underline" | "pill";
-    orientation?: "horizontal" | "vertical";
-    ariaLabel?: string;
-    idPrefix?: string;
-    className?: string;
-    /** When set, syncs the active tab with a URL search parameter (e.g. "tab" → ?tab=value).
+    size?: "sm" | "md" | undefined;
+    variant?: "underline" | "pill" | undefined;
+    orientation?: "horizontal" | "vertical" | undefined;
+    ariaLabel?: string | undefined;
+    idPrefix?: string | undefined;
+    className?:
+        | string
+        | undefined; /** When set, syncs the active tab with a URL search parameter (e.g. "tab" → ?tab=value).
      *  Also persists to localStorage as fallback. URL takes precedence on mount. */
-    urlParam?: string;
+    urlParam?: string | undefined;
 }
 
 /**
@@ -260,8 +261,8 @@ export function TabBar({
 export interface TabPanelProps extends React.HTMLAttributes<HTMLDivElement> {
     value: string;
     activeValue: string;
-    tabId?: string;
-    idPrefix?: string;
+    tabId?: string | undefined;
+    idPrefix?: string | undefined;
 }
 
 export function TabPanel({

@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { EmailMessagesDetailClient } from "./_client";
 
 export default async function EmailMessagesDetailPage({
@@ -6,5 +7,6 @@ export default async function EmailMessagesDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <EmailMessagesDetailClient id={id} />;
+    const initialRecord = await prefetchDetailRecord("email_messages", id);
+    return <EmailMessagesDetailClient id={id} initialRecord={initialRecord} />;
 }

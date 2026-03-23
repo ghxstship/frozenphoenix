@@ -10,11 +10,11 @@ interface EntityLinkProps {
     entityType: EntityType;
     entityId: string;
     entityName: string;
-    status?: string;
-    showIcon?: boolean;
-    showType?: boolean;
-    size?: "sm" | "md" | "lg";
-    className?: string;
+    status?: string | undefined;
+    showIcon?: boolean | undefined;
+    showType?: boolean | undefined;
+    size?: "sm" | "md" | "lg" | undefined;
+    className?: string | undefined;
 }
 
 export function EntityLink({

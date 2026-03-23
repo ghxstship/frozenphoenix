@@ -29,7 +29,9 @@ export async function POST(
     // Validate token
     const tokenHash = createHash("sha256").update(token).digest("hex");
     const { data: pat, error: patError } = await serverFromTable(supabase, "portal_access_tokens")
-        .select("*")
+        .select(
+            "id, project_id, collaborator_id, organization_id, permissions, expires_at, revoked_at"
+        )
         .eq("token_hash", tokenHash)
         .eq("is_active", true)
         .single();
@@ -113,7 +115,7 @@ export async function POST(
         "project_crew_submissions"
     )
         .insert(rows as Record<string, unknown>[])
-        .select();
+        .select("id, first_name, last_name, role_title, status, created_at");
 
     if (insertError) {
         return ApiErrors.internalError("Failed to submit crew roster");

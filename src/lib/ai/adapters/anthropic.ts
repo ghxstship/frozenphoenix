@@ -101,13 +101,16 @@ export class AnthropicAdapter implements IModelProvider {
             input_schema: t.parameters as Anthropic.Tool.InputSchema,
         }));
 
+        const systemPrompt = systemMessage?.content ?? options?.system_prompt;
         const stream = this.client.messages.stream({
             model,
             max_tokens: options?.max_tokens ?? 4096,
-            temperature: options?.temperature,
-            top_p: options?.top_p,
-            stop_sequences: options?.stop_sequences,
-            system: systemMessage?.content ?? options?.system_prompt,
+            ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
+            ...(options?.top_p !== undefined ? { top_p: options.top_p } : {}),
+            ...(options?.stop_sequences !== undefined
+                ? { stop_sequences: options.stop_sequences }
+                : {}),
+            ...(systemPrompt ? { system: systemPrompt } : {}),
             messages: anthropicMessages,
             ...(tools && tools.length > 0 ? { tools } : {}),
         });
@@ -184,9 +187,9 @@ export class AnthropicAdapter implements IModelProvider {
         const response = await this.client.messages.create({
             model,
             max_tokens: options?.max_tokens ?? 4096,
-            temperature: options?.temperature,
-            top_p: options?.top_p,
-            system: options?.system_prompt,
+            ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
+            ...(options?.top_p !== undefined ? { top_p: options.top_p } : {}),
+            ...(options?.system_prompt ? { system: options.system_prompt } : {}),
             messages: [{ role: "user", content: prompt }],
         });
 

@@ -7,9 +7,9 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 
 interface VoiceMessagePlayerProps {
-    src?: string;
+    src?: string | undefined;
     durationSeconds: number;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function VoiceMessagePlayer({ src, durationSeconds, className }: VoiceMessagePlayerProps) {

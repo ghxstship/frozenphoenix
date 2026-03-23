@@ -19,13 +19,12 @@ export interface StateMachineTransition<TState extends string = string> {
     /** Target state */
     to: TState;
     /** Roles permitted to perform this transition */
-    roles?: PermissionLevel[];
-    /** Named guard condition — resolved at validation time via context */
-    guard?: string;
-    /** Human-readable label for the transition (used in UI) */
-    label?: string;
-    /** Side effects to trigger after successful transition */
-    sideEffects?: string[];
+    roles?:
+        | PermissionLevel[]
+        | undefined; /** Named guard condition — resolved at validation time via context */
+    guard?: string | undefined; /** Human-readable label for the transition (used in UI) */
+    label?: string | undefined; /** Side effects to trigger after successful transition */
+    sideEffects?: string[] | undefined;
 }
 
 export interface StateMachineDefinition<TState extends string = string> {
@@ -36,29 +35,29 @@ export interface StateMachineDefinition<TState extends string = string> {
     /** All valid states */
     states: readonly TState[];
     /** Terminal states — no outbound transitions allowed */
-    terminalStates?: readonly TState[];
-    /** All allowed transitions */
+    terminalStates?: readonly TState[] | undefined; /** All allowed transitions */
     transitions: StateMachineTransition<TState>[];
     /** Global side effects keyed by target state */
-    onEnter?: Partial<Record<TState, string[]>>;
-    /** Fields required to be non-null before entering a state */
-    requiredFields?: Partial<Record<TState, string[]>>;
+    onEnter?:
+        | Partial<Record<TState, string[]>>
+        | undefined; /** Fields required to be non-null before entering a state */
+    requiredFields?: Partial<Record<TState, string[]>> | undefined;
 }
 
 export interface TransitionContext {
     /** Current user's role */
     userRole: PermissionLevel;
     /** Entity data for guard evaluation */
-    entity?: Record<string, unknown>;
+    entity?: Record<string, unknown> | undefined;
     /** Named guard evaluators */
-    guards?: Record<string, (entity: Record<string, unknown>) => boolean>;
+    guards?: Record<string, (entity: Record<string, unknown>) => boolean> | undefined;
 }
 
 export interface TransitionResult {
     allowed: boolean;
-    reason?: string;
-    sideEffects?: string[];
-    requiredFields?: string[];
+    reason?: string | undefined;
+    sideEffects?: string[] | undefined;
+    requiredFields?: string[] | undefined;
 }
 
 // ─── Validation ───

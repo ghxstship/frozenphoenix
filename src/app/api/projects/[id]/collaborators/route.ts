@@ -124,7 +124,7 @@ export const POST = withApiHandlerParams(
                 notes: parsed.data.notes ?? null,
                 status: "invited",
             } as Record<string, unknown>)
-            .select()
+            .select("id, project_id, vendor_id, status, engagement_type, created_at")
             .single();
 
         if (collabError) {

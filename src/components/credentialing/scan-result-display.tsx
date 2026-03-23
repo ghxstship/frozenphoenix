@@ -9,10 +9,10 @@ import { ShieldAlert, ShieldCheck, XCircle } from "lucide-react";
 interface ScanResultDisplayProps {
     result: string;
     message: string;
-    assigneeName?: string;
-    credentialTypeName?: string;
-    credentialTypeColor?: string;
-    barcodeValue?: string;
+    assigneeName?: string | undefined;
+    credentialTypeName?: string | undefined;
+    credentialTypeColor?: string | undefined;
+    barcodeValue?: string | undefined;
 }
 
 const RESULT_CONFIG: Record<

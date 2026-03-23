@@ -108,16 +108,16 @@ export function useProjectCollaborator(projectId: string, collabId: string) {
 export interface InviteCollaboratorPayload {
     projectId: string;
     vendor_id: string;
-    engagement_type?: string;
-    scope_summary?: string;
-    notes?: string;
+    engagement_type?: string | undefined;
+    scope_summary?: string | undefined;
+    notes?: string | undefined;
     requirements?: {
         requirement_type: string;
         label: string;
-        description?: string;
-        deadline?: string;
-        is_blocking?: boolean;
-        custom_instructions?: string;
+        description?: string | undefined;
+        deadline?: string | undefined;
+        is_blocking?: boolean | undefined;
+        custom_instructions?: string | undefined;
     }[];
 }
 
@@ -181,13 +181,13 @@ export function useIssueContract() {
         }: {
             projectId: string;
             collabId: string;
-            title?: string;
-            contract_type?: string;
-            value?: number;
-            effective_date?: string;
-            expiration_date?: string;
-            description?: string;
-            contract_id?: string;
+            title?: string | undefined;
+            contract_type?: string | undefined;
+            value?: number | undefined;
+            effective_date?: string | undefined;
+            expiration_date?: string | undefined;
+            description?: string | undefined;
+            contract_id?: string | undefined;
         }) => jsonPost(`/api/projects/${projectId}/collaborators/${collabId}/issue-contract`, data),
         onSuccess: (_, v) => {
             qc.invalidateQueries({ queryKey: ["project_collaborators", v.projectId] });
@@ -205,9 +205,9 @@ export function useRequestCoi() {
         }: {
             projectId: string;
             collabId: string;
-            coverage_minimum?: number;
-            deadline?: string;
-            notes?: string;
+            coverage_minimum?: number | undefined;
+            deadline?: string | undefined;
+            notes?: string | undefined;
         }) => jsonPost(`/api/projects/${projectId}/collaborators/${collabId}/request-coi`, data),
         onSuccess: (_, v) => {
             qc.invalidateQueries({ queryKey: ["project_collaborators", v.projectId] });

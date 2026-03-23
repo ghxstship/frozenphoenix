@@ -18,18 +18,18 @@ import { ImageOff } from "lucide-react";
 
 export interface GalleryItem {
     id: string;
-    imageUrl?: string;
+    imageUrl?: string | undefined;
     title: string;
-    subtitle?: string;
-    status?: string;
+    subtitle?: string | undefined;
+    status?: string | undefined;
 }
 
 export interface DataGalleryProps {
     data: GalleryItem[];
-    aspectRatio?: "square" | "video" | "wide";
-    className?: string;
-    actions?: (item: GalleryItem) => React.ReactNode;
-    onItemClick?: (item: GalleryItem) => void;
+    aspectRatio?: "square" | "video" | "wide" | undefined;
+    className?: string | undefined;
+    actions?: ((item: GalleryItem) => React.ReactNode) | undefined;
+    onItemClick?: ((item: GalleryItem) => void) | undefined;
 }
 
 // ─── Aspect ratio map ───

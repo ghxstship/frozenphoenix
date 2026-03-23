@@ -14,26 +14,26 @@ import {
 
 interface StatusBadgeProps extends Omit<BadgeProps, "variant"> {
     status: string;
-    showLabel?: boolean;
-    customLabel?: string;
+    showLabel?: boolean | undefined;
+    customLabel?: string | undefined;
 }
 
 interface PriorityBadgeProps extends Omit<BadgeProps, "variant"> {
     priority: string;
-    showLabel?: boolean;
-    customLabel?: string;
+    showLabel?: boolean | undefined;
+    customLabel?: string | undefined;
 }
 
 interface ConditionBadgeProps extends Omit<BadgeProps, "variant"> {
     condition: string;
-    showLabel?: boolean;
-    customLabel?: string;
+    showLabel?: boolean | undefined;
+    customLabel?: string | undefined;
 }
 
 interface GenericBadgeProps extends Omit<BadgeProps, "variant"> {
     value: string;
-    variant?: BadgeVariant;
-    label?: string;
+    variant?: BadgeVariant | undefined;
+    label?: string | undefined;
 }
 
 /**

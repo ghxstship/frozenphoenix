@@ -13,7 +13,7 @@ export const GET = withApiHandler(
         const { data, error } = await serverFromTable(
             supabase,
             "revenue_recognition_summary"
-        ).select("*");
+        ).select("period, recognized, deferred, total, organization_id");
 
         if (error) {
             log.error("[GET /api/revenue-recognition-summary] failed", { error: error.message });

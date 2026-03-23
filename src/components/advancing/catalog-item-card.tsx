@@ -10,7 +10,7 @@ import type { CatalogItemStatus } from "@/types";
 interface CatalogItemCardProps {
     item: Record<string, unknown>;
     onAddToCart: () => void;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function CatalogItemCard({ item, onAddToCart, className }: CatalogItemCardProps) {

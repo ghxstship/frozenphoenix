@@ -72,10 +72,10 @@ export class OllamaAdapter implements IModelProvider {
             messages: ollamaMessages,
             stream: true,
             options: {
-                temperature: options?.temperature,
-                top_p: options?.top_p,
-                num_predict: options?.max_tokens,
-                stop: options?.stop_sequences,
+                ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
+                ...(options?.top_p !== undefined ? { top_p: options.top_p } : {}),
+                ...(options?.max_tokens !== undefined ? { num_predict: options.max_tokens } : {}),
+                ...(options?.stop_sequences ? { stop: options.stop_sequences } : {}),
             },
             ...(options?.json_mode ? { format: "json" } : {}),
             ...(tools && tools.length > 0 ? { tools } : {}),
@@ -124,11 +124,11 @@ export class OllamaAdapter implements IModelProvider {
         const response = await this.client.generate({
             model,
             prompt,
-            system: options?.system_prompt,
+            ...(options?.system_prompt ? { system: options.system_prompt } : {}),
             options: {
-                temperature: options?.temperature,
-                top_p: options?.top_p,
-                num_predict: options?.max_tokens,
+                ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
+                ...(options?.top_p !== undefined ? { top_p: options.top_p } : {}),
+                ...(options?.max_tokens !== undefined ? { num_predict: options.max_tokens } : {}),
             },
         });
 

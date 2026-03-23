@@ -12,7 +12,7 @@ import type { PermissionLevel } from "@/types";
 
 interface ClientSwitcherProps {
     /** Override the active client name displayed in the trigger */
-    activeName?: string;
+    activeName?: string | undefined;
 }
 
 export function ClientSwitcher({ activeName }: ClientSwitcherProps) {

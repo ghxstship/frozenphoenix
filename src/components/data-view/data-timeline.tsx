@@ -22,19 +22,19 @@ import { Button } from "@/components/ui/button";
 export interface TimelineItem {
     id: string;
     label: string;
-    sublabel?: string;
+    sublabel?: string | undefined;
     startDate: string;
     endDate: string;
-    progress?: number;
-    color?: string;
-    group?: string;
+    progress?: number | undefined;
+    color?: string | undefined;
+    group?: string | undefined;
 }
 
 export interface DataTimelineProps {
     data: TimelineItem[];
-    className?: string;
-    actions?: (item: TimelineItem) => React.ReactNode;
-    onItemClick?: (item: TimelineItem) => void;
+    className?: string | undefined;
+    actions?: ((item: TimelineItem) => React.ReactNode) | undefined;
+    onItemClick?: ((item: TimelineItem) => void) | undefined;
 }
 
 // ─── Helpers ───

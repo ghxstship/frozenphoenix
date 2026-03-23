@@ -11,11 +11,11 @@ import { ChevronRight, ExternalLink } from "lucide-react";
 
 interface LinkedRecordCardProps {
     record: LinkedRecord;
-    variant?: "compact" | "default" | "detailed";
-    showNavigation?: boolean;
-    metadata?: { label: string; value: string }[];
-    onClick?: () => void;
-    className?: string;
+    variant?: "compact" | "default" | "detailed" | undefined;
+    showNavigation?: boolean | undefined;
+    metadata?: { label: string; value: string }[] | undefined;
+    onClick?: (() => void) | undefined;
+    className?: string | undefined;
 }
 
 export function LinkedRecordCard({
@@ -114,12 +114,12 @@ interface LinkedRecordListProps {
     title: string;
     records: LinkedRecord[];
     entityType: EntityType;
-    emptyMessage?: string;
-    maxItems?: number;
-    showViewAll?: boolean;
-    viewAllHref?: string;
-    variant?: "compact" | "default";
-    className?: string;
+    emptyMessage?: string | undefined;
+    maxItems?: number | undefined;
+    showViewAll?: boolean | undefined;
+    viewAllHref?: string | undefined;
+    variant?: "compact" | "default" | undefined;
+    className?: string | undefined;
 }
 
 export function LinkedRecordList({

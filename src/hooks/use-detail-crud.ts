@@ -10,7 +10,7 @@ import { useToast } from "@/components/ui/toast";
 interface DetailCrudOptions {
     entityId: string;
     entityLabel: string;
-    entityKey?: string;
+    entityKey?: string | undefined;
     listPath: string;
     /**
      * @internal `any` is intentional — function params are contravariant.

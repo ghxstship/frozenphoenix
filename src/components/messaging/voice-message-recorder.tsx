@@ -8,9 +8,9 @@ import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 
 interface VoiceMessageRecorderProps {
     onSend: (blob: Blob, durationSeconds: number) => void;
-    disabled?: boolean;
-    maxDurationSeconds?: number;
-    className?: string;
+    disabled?: boolean | undefined;
+    maxDurationSeconds?: number | undefined;
+    className?: string | undefined;
 }
 
 type RecordingState = "idle" | "requesting" | "recording" | "stopped";

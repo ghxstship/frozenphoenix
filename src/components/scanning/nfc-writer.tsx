@@ -19,12 +19,10 @@ export interface NfcWriterProps {
     /** The value to write to the NFC tag */
     value: string;
     /** Display label for the tag contents */
-    label?: string;
-    /** Called after a successful write */
-    onWriteComplete?: (serialNumber: string) => void;
-    /** Called on write failure */
-    onWriteError?: (error: Error) => void;
-    className?: string;
+    label?: string | undefined; /** Called after a successful write */
+    onWriteComplete?: ((serialNumber: string) => void) | undefined; /** Called on write failure */
+    onWriteError?: ((error: Error) => void) | undefined;
+    className?: string | undefined;
 }
 
 type WriteStatus = "idle" | "waiting" | "writing" | "success" | "error";
@@ -57,9 +55,10 @@ export function NfcWriter({
         setErrorMessage("");
 
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const NDEFReader = (window as any).NDEFReader;
-            const reader = new NDEFReader();
+            // §2.2: Web NFC types declared in src/types/web-nfc.d.ts
+            const NDEFReaderCtor = window.NDEFReader;
+            if (!NDEFReaderCtor) return;
+            const reader = new NDEFReaderCtor();
 
             await reader.write({
                 records: [

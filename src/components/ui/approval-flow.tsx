@@ -14,16 +14,16 @@ export interface ApprovalStep {
     label: string;
     assigneeName: string;
     status: StepStatus;
-    completedAt?: string;
-    notes?: string;
+    completedAt?: string | undefined;
+    notes?: string | undefined;
 }
 
 interface ApprovalFlowProps {
     steps: ApprovalStep[];
-    onApprove?: (stepId: string) => void;
-    onReject?: (stepId: string, reason?: string) => void;
-    isSubmitting?: boolean;
-    className?: string;
+    onApprove?: ((stepId: string) => void) | undefined;
+    onReject?: ((stepId: string, reason?: string) => void) | undefined;
+    isSubmitting?: boolean | undefined;
+    className?: string | undefined;
 }
 
 const STATUS_CONFIG: Record<

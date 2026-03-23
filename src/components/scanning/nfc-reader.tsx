@@ -21,9 +21,9 @@ export interface NfcReadResult {
 
 export interface NfcReaderProps {
     onRead: (result: NfcReadResult) => void;
-    onError?: (error: string) => void;
-    enabled?: boolean;
-    className?: string;
+    onError?: ((error: string) => void) | undefined;
+    enabled?: boolean | undefined;
+    className?: string | undefined;
 }
 
 /** Check if Web NFC API is available in the current browser. */
@@ -45,9 +45,10 @@ export function NfcReader({ onRead, onError, enabled = true, className }: NfcRea
         abortRef.current = controller;
 
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const NDEFReader = (window as any).NDEFReader;
-            const reader = new NDEFReader();
+            // §2.2: Web NFC types declared in src/types/web-nfc.d.ts
+            const NDEFReaderCtor = window.NDEFReader;
+            if (!NDEFReaderCtor) return;
+            const reader = new NDEFReaderCtor();
 
             setIsReading(true);
             setStatus("reading");
@@ -56,22 +57,19 @@ export function NfcReader({ onRead, onError, enabled = true, className }: NfcRea
 
             reader.addEventListener(
                 "reading",
-                (event: {
-                    serialNumber: string;
-                    message: { records: Array<{ recordType: string; data: ArrayBuffer }> };
-                }) => {
-                    const records = Array.from(event.message.records).map(
-                        (record: { recordType: string; data: ArrayBuffer }) => {
-                            let data = "";
-                            try {
+                (event: NDEFReadingEvent) => {
+                    const records = Array.from(event.message.records).map((record) => {
+                        let data = "";
+                        try {
+                            if (record.data) {
                                 const decoder = new TextDecoder();
                                 data = decoder.decode(record.data);
-                            } catch {
-                                data = "";
                             }
-                            return { recordType: record.recordType, data };
+                        } catch {
+                            data = "";
                         }
-                    );
+                        return { recordType: record.recordType, data };
+                    });
 
                     playSuccessBeep();
                     triggerHaptic(200);

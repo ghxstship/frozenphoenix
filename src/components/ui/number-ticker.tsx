@@ -5,9 +5,9 @@ import { useMotion } from "@/hooks/use-motion";
 
 interface NumberTickerProps {
     value: number;
-    duration?: number;
-    formatFn?: (value: number) => string;
-    className?: string;
+    duration?: number | undefined;
+    formatFn?: ((value: number) => string) | undefined;
+    className?: string | undefined;
 }
 
 export function NumberTicker({ value, duration = 600, formatFn, className }: NumberTickerProps) {
@@ -59,5 +59,9 @@ export function NumberTicker({ value, duration = 600, formatFn, className }: Num
                 maximumFractionDigits: 1,
             });
 
-    return <span className={className} aria-live="polite" aria-atomic="true">{formatted}</span>;
+    return (
+        <span className={className} aria-live="polite" aria-atomic="true">
+            {formatted}
+        </span>
+    );
 }

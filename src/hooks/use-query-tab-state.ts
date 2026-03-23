@@ -4,7 +4,7 @@ import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 interface UseQueryTabStateOptions<T extends string> {
-    key?: string;
+    key?: string | undefined;
     defaultValue: T;
     validValues: readonly T[];
 }

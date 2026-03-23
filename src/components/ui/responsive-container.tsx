@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 interface ResponsiveContainerProps {
     children: React.ReactNode;
-    className?: string;
+    className?: string | undefined;
 }
 
 /**
@@ -24,15 +24,15 @@ export function ResponsiveContainer({ children, className }: ResponsiveContainer
 
 interface ResponsiveGridProps {
     children: React.ReactNode;
-    className?: string;
+    className?: string | undefined;
     cols?: {
-        default?: number;
-        sm?: number;
-        md?: number;
-        lg?: number;
-        xl?: number;
+        default?: number | undefined;
+        sm?: number | undefined;
+        md?: number | undefined;
+        lg?: number | undefined;
+        xl?: number | undefined;
     };
-    gap?: "sm" | "md" | "lg";
+    gap?: "sm" | "md" | "lg" | undefined;
 }
 
 /**
@@ -108,10 +108,10 @@ export function ResponsiveGrid({
 
 interface ResponsiveStackProps {
     children: React.ReactNode;
-    className?: string;
-    direction?: "row" | "col";
-    reverseOnMobile?: boolean;
-    gap?: "sm" | "md" | "lg";
+    className?: string | undefined;
+    direction?: "row" | "col" | undefined;
+    reverseOnMobile?: boolean | undefined;
+    gap?: "sm" | "md" | "lg" | undefined;
 }
 
 /**
@@ -155,7 +155,7 @@ export function ResponsiveStack({
 interface HideOnProps {
     children: React.ReactNode;
     breakpoint: "xs" | "sm" | "md" | "lg" | "xl";
-    above?: boolean;
+    above?: boolean | undefined;
 }
 
 /**

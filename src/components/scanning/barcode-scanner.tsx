@@ -33,13 +33,13 @@ const ALL_FORMATS = [
 
 export interface BarcodeScannerProps {
     onScan: (value: string, format: string) => void;
-    onError?: (error: string) => void;
-    formats?: Html5QrcodeSupportedFormats[];
-    facingMode?: "environment" | "user";
-    showFileUpload?: boolean;
-    showTorch?: boolean;
-    className?: string;
-    disabled?: boolean;
+    onError?: ((error: string) => void) | undefined;
+    formats?: Html5QrcodeSupportedFormats[] | undefined;
+    facingMode?: "environment" | "user" | undefined;
+    showFileUpload?: boolean | undefined;
+    showTorch?: boolean | undefined;
+    className?: string | undefined;
+    disabled?: boolean | undefined;
 }
 
 export function BarcodeScanner({

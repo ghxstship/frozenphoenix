@@ -16,27 +16,27 @@ interface InitiateParams {
     workflowId: string;
     entityId: string;
     entityType: string;
-    entityName?: string;
-    context?: Record<string, unknown>;
+    entityName?: string | undefined;
+    context?: Record<string, unknown> | undefined;
 }
 
 interface DecideParams {
     instanceId: string;
     stepId: string;
     decision: "approved" | "rejected" | "delegated";
-    comments?: string;
-    delegateTo?: string;
+    comments?: string | undefined;
+    delegateTo?: string | undefined;
 }
 
 interface EscalateParams {
     instanceId: string;
     stepId: string;
-    reason?: string;
+    reason?: string | undefined;
 }
 
 interface CancelParams {
     instanceId: string;
-    reason?: string;
+    reason?: string | undefined;
 }
 
 interface InitiateResult {
@@ -46,12 +46,12 @@ interface InitiateResult {
 
 interface DecideResult {
     advanced: boolean;
-    nextStepId?: string;
+    nextStepId?: string | undefined;
     instanceStatus: string;
 }
 
 interface EscalateResult {
-    escalatedTo?: string;
+    escalatedTo?: string | undefined;
 }
 
 interface InstanceStatusResult {

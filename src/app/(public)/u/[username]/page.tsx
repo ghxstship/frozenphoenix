@@ -194,15 +194,15 @@ export default async function PublicUserProfilePage({
                                 .filter((m) => m.organizations)
                                 .map((m) => (
                                     <Link
-                                        key={m.organizations!.slug}
-                                        href={`/org/${m.organizations!.slug}`}
+                                        key={m.organizations?.slug}
+                                        href={`/org/${m.organizations?.slug}`}
                                         className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-accent/5 transition-colors"
                                     >
-                                        {m.organizations!.logo_url ? (
+                                        {m.organizations?.logo_url ? (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img
-                                                src={m.organizations!.logo_url}
-                                                alt={m.organizations!.name}
+                                                src={m.organizations?.logo_url ?? ""}
+                                                alt={m.organizations?.name ?? ""}
                                                 className="h-10 w-10 rounded-lg object-cover"
                                             />
                                         ) : (
@@ -212,7 +212,7 @@ export default async function PublicUserProfilePage({
                                         )}
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-semibold truncate">
-                                                {m.organizations!.name}
+                                                {m.organizations?.name}
                                             </p>
                                             <p className="text-xs text-muted-foreground capitalize">
                                                 {m.role}

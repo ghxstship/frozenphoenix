@@ -4,25 +4,20 @@ import React, { useState } from "react";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
-import { CsvExportDialog } from "./csv-export-dialog";
+import dynamic from "next/dynamic";
+const CsvExportDialog = dynamic(() => import("./csv-export-dialog").then((m) => m.CsvExportDialog));
 
 export interface CsvExportButtonProps {
     /** Entity name matching csv-templates registry (e.g., "companies", "deals") */
     entity: string;
     /** Optional filters to apply to the export query */
-    filters?: Record<string, unknown>;
-    /** Optional row limit (default: 10,000) */
-    limit?: number;
-    /** Button variant */
-    variant?: "default" | "outline" | "ghost" | "secondary";
-    /** Button size */
-    size?: "default" | "sm" | "lg" | "icon";
-    /** Optional custom label */
-    label?: string;
-    /** Optional className override */
-    className?: string;
-    /** Disable the button */
-    disabled?: boolean;
+    filters?: Record<string, unknown> | undefined; /** Optional row limit (default: 10,000) */
+    limit?: number | undefined; /** Button variant */
+    variant?: "default" | "outline" | "ghost" | "secondary" | undefined; /** Button size */
+    size?: "default" | "sm" | "lg" | "icon" | undefined; /** Optional custom label */
+    label?: string | undefined; /** Optional className override */
+    className?: string | undefined; /** Disable the button */
+    disabled?: boolean | undefined;
 }
 
 export function CsvExportButton({

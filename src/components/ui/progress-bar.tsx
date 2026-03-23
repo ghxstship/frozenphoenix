@@ -44,11 +44,11 @@ const progressFillVariants = cva("h-full rounded-full transition-all duration-30
 export interface ProgressBarProps
     extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof progressBarVariants> {
     value: number;
-    max?: number;
-    showLabel?: boolean;
-    labelPosition?: "right" | "inside" | "above";
-    formatLabel?: (value: number, max: number) => string;
-    animated?: boolean;
+    max?: number | undefined;
+    showLabel?: boolean | undefined;
+    labelPosition?: "right" | "inside" | "above" | undefined;
+    formatLabel?: ((value: number, max: number) => string) | undefined;
+    animated?: boolean | undefined;
 }
 
 export function ProgressBar({

@@ -82,7 +82,7 @@ export const POST = withApiHandler(
                 ...advanceData,
                 submitted_by: user.id,
             } as Record<string, unknown>)
-            .select()
+            .select("id, status, advance_type, amount, submitted_by, created_at")
             .single();
 
         if (advanceError) {

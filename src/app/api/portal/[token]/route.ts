@@ -26,7 +26,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
 
     // Look up the portal access token by hash (new table, use serverFromTable)
     const { data: pat, error: patError } = await serverFromTable(supabase, "portal_access_tokens")
-        .select("*")
+        .select(
+            "id, project_id, vendor_id, collaborator_id, organization_id, permissions, expires_at, revoked_at, use_count, token_hash, is_active"
+        )
         .eq("token_hash", tokenHash)
         .eq("is_active", true)
         .single();
@@ -110,7 +112,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
 
     // Fetch crew submissions for this collaborator (new table)
     const { data: crewSubmissions } = await serverFromTable(supabase, "project_crew_submissions")
-        .select("*")
+        .select(
+            "id, first_name, last_name, email, phone, role_title, department, status, needs_credentials, credential_type, needs_parking, needs_radio, needs_uniform, uniform_size, needs_travel, needs_lodging, dietary_restrictions, created_at"
+        )
         .eq("project_collaborator_id", collaboratorId)
         .is("deleted_at", null)
         .order("created_at", { ascending: true });

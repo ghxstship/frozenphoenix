@@ -6,11 +6,11 @@
 import type { FeatureFlag, FeatureFlagOverride } from "@/types/settings";
 
 interface FlagContext {
-    userId?: string;
-    orgId?: string;
-    role?: string;
-    environment?: string;
-    region?: string;
+    userId?: string | undefined;
+    orgId?: string | undefined;
+    role?: string | undefined;
+    environment?: string | undefined;
+    region?: string | undefined;
 }
 
 /**

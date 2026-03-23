@@ -11,8 +11,8 @@ export interface ApiErrorPayload {
     error: {
         code: string;
         message: string;
-        details?: Record<string, string[]>;
-        requestId?: string;
+        details?: Record<string, string[]> | undefined;
+        requestId?: string | undefined;
     };
 }
 

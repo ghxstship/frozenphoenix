@@ -32,9 +32,8 @@ interface QrGeneratorDialogProps {
     /** Display label (asset name, credential name, etc.) */
     label: string;
     /** Entity type for filename */
-    entityType?: "asset" | "credential";
-    /** Entity ID for filename */
-    entityId?: string;
+    entityType?: "asset" | "credential" | undefined; /** Entity ID for filename */
+    entityId?: string | undefined;
 }
 
 const SIZE_OPTIONS = [

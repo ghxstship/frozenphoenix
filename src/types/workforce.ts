@@ -72,38 +72,38 @@ export interface WorkerProfile {
     id: string;
     firstName: string;
     lastName: string;
-    preferredName?: string;
+    preferredName?: string | undefined;
     email: string;
-    phone?: string;
-    avatarUrl?: string;
-    emergencyContactName?: string;
-    emergencyContactRelationship?: string;
-    emergencyContactPhone?: string;
+    phone?: string | undefined;
+    avatarUrl?: string | undefined;
+    emergencyContactName?: string | undefined;
+    emergencyContactRelationship?: string | undefined;
+    emergencyContactPhone?: string | undefined;
     primaryClassification: WorkerClassification;
     taxClassification: TaxClassification;
     lifecycleStatus: WorkerLifecycleStatus;
-    lifecycleStatusChangedAt?: string;
-    initialEngagementDate?: string;
-    mostRecentEngagementDate?: string;
-    offboardingDate?: string;
+    lifecycleStatusChangedAt?: string | undefined;
+    initialEngagementDate?: string | undefined;
+    mostRecentEngagementDate?: string | undefined;
+    offboardingDate?: string | undefined;
     portalAccessEnabled: boolean;
-    primaryRole?: string;
+    primaryRole?: string | undefined;
     secondaryRoles: string[];
     skills: string[];
-    department?: string;
-    homeBase?: string;
+    department?: string | undefined;
+    homeBase?: string | undefined;
     willingToTravel: boolean;
-    travelRadius?: number;
+    travelRadius?: number | undefined;
     tags: string[];
     preferred: boolean;
     doNotEngage: boolean;
-    doNotEngageReason?: string;
+    doNotEngageReason?: string | undefined;
     createdAt: string;
     // Computed/joined
-    classifications?: WorkerClassificationRecord[];
-    activeEngagements?: number;
-    complianceScore?: number;
-    averageRating?: number;
+    classifications?: WorkerClassificationRecord[] | undefined;
+    activeEngagements?: number | undefined;
+    complianceScore?: number | undefined;
+    averageRating?: number | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -116,29 +116,29 @@ export interface WorkerClassificationRecord {
     classification: WorkerClassification;
     isActive: boolean;
     effectiveDate: string;
-    endDate?: string;
+    endDate?: string | undefined;
     taxClassification: TaxClassification;
     taxIdOnFile: boolean;
-    hourlyRate?: number;
-    overtimeRate?: number;
-    dayRate?: number;
+    hourlyRate?: number | undefined;
+    overtimeRate?: number | undefined;
+    dayRate?: number | undefined;
     rateType: string;
-    employeeId?: string;
+    employeeId?: string | undefined;
     benefitsEligible: boolean;
-    ptoAccrualRate?: number;
-    supervisorName?: string;
+    ptoAccrualRate?: number | undefined;
+    supervisorName?: string | undefined;
     isSeasonal: boolean;
-    seasonStartMonth?: number;
-    seasonEndMonth?: number;
+    seasonStartMonth?: number | undefined;
+    seasonEndMonth?: number | undefined;
     seasonsCompleted: number;
     returningWorker: boolean;
-    contractStartDate?: string;
-    contractEndDate?: string;
+    contractStartDate?: string | undefined;
+    contractEndDate?: string | undefined;
     contractAutoRenew: boolean;
-    companyName?: string;
+    companyName?: string | undefined;
     paymentTermsDays: number;
     unionMember: boolean;
-    unionLocal?: string;
+    unionLocal?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -148,24 +148,24 @@ export interface WorkerClassificationRecord {
 export interface EngagementTerm {
     id: string;
     workerProfileId: string;
-    workerName?: string;
+    workerName?: string | undefined;
     classificationId: string;
-    projectId?: string;
-    projectName?: string;
-    workOrderId?: string;
+    projectId?: string | undefined;
+    projectName?: string | undefined;
+    workOrderId?: string | undefined;
     role: string;
-    department?: string;
+    department?: string | undefined;
     startDate: string;
-    endDate?: string;
+    endDate?: string | undefined;
     isOngoing: boolean;
     rate: number;
     rateType: string;
-    overtimeRate?: number;
-    notToExceed?: number;
-    estimatedHours?: number;
+    overtimeRate?: number | undefined;
+    notToExceed?: number | undefined;
+    estimatedHours?: number | undefined;
     status: string;
     isBillable: boolean;
-    billingCode?: string;
+    billingCode?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -176,7 +176,7 @@ export interface ComplianceTemplate {
     id: string;
     name: string;
     docType: string;
-    description?: string;
+    description?: string | undefined;
     appliesToClassifications: WorkerClassification[];
     scope: ComplianceScope;
     isRequired: boolean;
@@ -192,23 +192,23 @@ export interface ComplianceTemplate {
 export interface WorkerComplianceDoc {
     id: string;
     workerProfileId: string;
-    workerName?: string;
-    templateId?: string;
+    workerName?: string | undefined;
+    templateId?: string | undefined;
     docType: string;
     docName: string;
-    docNumber?: string;
-    documentUrl?: string;
-    issuedDate?: string;
-    expiryDate?: string;
+    docNumber?: string | undefined;
+    documentUrl?: string | undefined;
+    issuedDate?: string | undefined;
+    expiryDate?: string | undefined;
     submittedAt: string;
-    reviewedAt?: string;
+    reviewedAt?: string | undefined;
     status: string;
-    reviewedBy?: string;
-    rejectionReason?: string;
-    coverageAmount?: number;
-    policyNumber?: string;
-    carrierName?: string;
-    notes?: string;
+    reviewedBy?: string | undefined;
+    rejectionReason?: string | undefined;
+    coverageAmount?: number | undefined;
+    policyNumber?: string | undefined;
+    carrierName?: string | undefined;
+    notes?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -218,13 +218,13 @@ export interface WorkerComplianceDoc {
 export interface OnboardingStepTemplate {
     id: string;
     name: string;
-    description?: string;
+    description?: string | undefined;
     appliesToClassifications: WorkerClassification[];
     stepOrder: number;
     isRequired: boolean;
     defaultDueDays: number;
-    assigneeRole?: string;
-    linkedComplianceTemplateId?: string;
+    assigneeRole?: string | undefined;
+    linkedComplianceTemplateId?: string | undefined;
     autoCompleteOnDocApproval: boolean;
     isActive: boolean;
 }
@@ -232,48 +232,48 @@ export interface OnboardingStepTemplate {
 export interface WorkerOnboardingRun {
     id: string;
     workerProfileId: string;
-    workerName?: string;
-    classificationId?: string;
-    classification?: WorkerClassification;
+    workerName?: string | undefined;
+    classificationId?: string | undefined;
+    classification?: WorkerClassification | undefined;
     startedAt: string;
-    completedAt?: string;
-    targetCompletionDate?: string;
+    completedAt?: string | undefined;
+    targetCompletionDate?: string | undefined;
     status: LifecycleStepStatus;
     totalSteps: number;
     completedSteps: number;
-    notes?: string;
-    steps?: OnboardingStepProgress[];
+    notes?: string | undefined;
+    steps?: OnboardingStepProgress[] | undefined;
 }
 
 export interface OnboardingStepProgress {
     id: string;
     runId: string;
     templateStepId: string;
-    stepName?: string;
+    stepName?: string | undefined;
     status: LifecycleStepStatus;
-    dueDate?: string;
-    completedAt?: string;
-    completedByName?: string;
-    assignedToName?: string;
-    evidenceUrl?: string;
-    notes?: string;
+    dueDate?: string | undefined;
+    completedAt?: string | undefined;
+    completedByName?: string | undefined;
+    assignedToName?: string | undefined;
+    evidenceUrl?: string | undefined;
+    notes?: string | undefined;
 }
 
 export interface WorkerOffboardingRun {
     id: string;
     workerProfileId: string;
-    workerName?: string;
-    reason?: string;
-    isVoluntary?: boolean;
-    eligibleForRehire?: boolean;
+    workerName?: string | undefined;
+    reason?: string | undefined;
+    isVoluntary?: boolean | undefined;
+    eligibleForRehire?: boolean | undefined;
     startedAt: string;
-    completedAt?: string;
+    completedAt?: string | undefined;
     status: LifecycleStepStatus;
     totalSteps: number;
     completedSteps: number;
     exitInterviewCompleted: boolean;
-    exitInterviewNotes?: string;
-    notes?: string;
+    exitInterviewNotes?: string | undefined;
+    notes?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -283,31 +283,31 @@ export interface WorkerOffboardingRun {
 export interface WorkerReview {
     id: string;
     workerProfileId: string;
-    workerName?: string;
-    projectId?: string;
-    projectName?: string;
-    workOrderId?: string;
-    engagementTermId?: string;
+    workerName?: string | undefined;
+    projectId?: string | undefined;
+    projectName?: string | undefined;
+    workOrderId?: string | undefined;
+    engagementTermId?: string | undefined;
     reviewerId: string;
-    reviewerName?: string;
+    reviewerName?: string | undefined;
     reviewType: string;
     targetType: ReviewTargetType;
     overallRating: number;
-    qualityRating?: number;
-    timelinessRating?: number;
-    communicationRating?: number;
-    professionalismRating?: number;
-    reliabilityRating?: number;
-    safetyRating?: number;
-    strengths?: string;
-    areasForImprovement?: string;
-    goals?: string;
-    comments?: string;
-    wouldReengage?: boolean;
-    reviewPeriodStart?: string;
-    reviewPeriodEnd?: string;
+    qualityRating?: number | undefined;
+    timelinessRating?: number | undefined;
+    communicationRating?: number | undefined;
+    professionalismRating?: number | undefined;
+    reliabilityRating?: number | undefined;
+    safetyRating?: number | undefined;
+    strengths?: string | undefined;
+    areasForImprovement?: string | undefined;
+    goals?: string | undefined;
+    comments?: string | undefined;
+    wouldReengage?: boolean | undefined;
+    reviewPeriodStart?: string | undefined;
+    reviewPeriodEnd?: string | undefined;
     reviewDate: string;
-    acknowledgedAt?: string;
+    acknowledgedAt?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -317,19 +317,19 @@ export interface WorkerReview {
 export interface ClassificationAssessment {
     id: string;
     workerProfileId: string;
-    workerName?: string;
+    workerName?: string | undefined;
     assessmentMethod: ICAssessmentMethod;
     assessmentDate: string;
-    nextAssessmentDate?: string;
+    nextAssessmentDate?: string | undefined;
     result: ICAssessmentResult;
-    score?: number;
+    score?: number | undefined;
     factors: Record<string, unknown>;
     assessorId: string;
-    assessorName?: string;
-    rationale?: string;
-    recommendedAction?: string;
-    reclassifyTo?: WorkerClassification;
+    assessorName?: string | undefined;
+    rationale?: string | undefined;
+    recommendedAction?: string | undefined;
+    reclassifyTo?: WorkerClassification | undefined;
     reclassificationCompleted: boolean;
-    reclassificationDate?: string;
+    reclassificationDate?: string | undefined;
     supportingDocUrls: string[];
 }

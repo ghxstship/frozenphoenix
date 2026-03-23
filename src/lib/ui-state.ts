@@ -39,7 +39,12 @@ export function isEmpty<T>(state: DataState<T>): boolean {
     return state.status === "empty";
 }
 
-export function hasData<T>(state: DataState<T>): state is { status: "success"; data: T } | { status: "refreshing"; data: T } | { status: "stale"; data: T } {
+export function hasData<T>(
+    state: DataState<T>
+): state is
+    | { status: "success"; data: T }
+    | { status: "refreshing"; data: T }
+    | { status: "stale"; data: T } {
     return state.status === "success" || state.status === "refreshing" || state.status === "stale";
 }
 
@@ -53,7 +58,10 @@ export function getData<T>(state: DataState<T>): T | undefined {
 
 export type PermissionState =
     | { granted: true }
-    | { granted: false; reason: "unauthenticated" | "unauthorized" | "forbidden" | "feature_disabled" };
+    | {
+          granted: false;
+          reason: "unauthenticated" | "unauthorized" | "forbidden" | "feature_disabled";
+      };
 
 export function isGranted(state: PermissionState): state is { granted: true } {
     return state.granted;
@@ -142,7 +150,7 @@ export function toError<T>(error: string, retryable = true): DataState<T> {
 }
 
 export function toEmpty<T>(message?: string): DataState<T> {
-    return { status: "empty", message };
+    return { status: "empty", ...(message ? { message } : {}) } as DataState<T>;
 }
 
 export function toRefreshing<T>(data: T): DataState<T> {

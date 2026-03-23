@@ -9,11 +9,11 @@ interface CopilotInputProps {
     value: string;
     onChange: (value: string) => void;
     onSubmit: (message: string) => void;
-    onStop?: () => void;
-    isStreaming?: boolean;
-    disabled?: boolean;
-    placeholder?: string;
-    className?: string;
+    onStop?: (() => void) | undefined;
+    isStreaming?: boolean | undefined;
+    disabled?: boolean | undefined;
+    placeholder?: string | undefined;
+    className?: string | undefined;
 }
 
 export function CopilotInput({

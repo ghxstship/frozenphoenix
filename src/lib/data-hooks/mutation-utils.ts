@@ -38,7 +38,7 @@ interface OptimisticMutationOptions<TData, TVariables> {
     entityType: string;
     // Optimistic update: modify the cache before the mutation completes
     optimisticUpdate?: (variables: TVariables, oldData: TData[] | undefined) => TData[];
-    onSuccessMessage?: string;
+    onSuccessMessage?: string | undefined;
 }
 
 export function useOptimisticMutation<TData, TVariables>(

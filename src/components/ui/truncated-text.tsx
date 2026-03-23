@@ -10,13 +10,17 @@ import { Tooltip } from "@/components/ui/tooltip";
 
 interface TruncatedTextProps {
     children: string;
-    className?: string;
-    /** Maximum number of CSS lines before truncating (default: 1) */
-    maxLines?: 1 | 2 | 3;
-    /** Tooltip placement side (default: "top") */
-    side?: "top" | "bottom" | "left" | "right";
-    /** HTML element to render (default: "span") */
-    as?: "span" | "p" | "h1" | "h2" | "h3" | "h4" | "div";
+    className?:
+        | string
+        | undefined; /** Maximum number of CSS lines before truncating (default: 1) */
+    maxLines?: 1 | 2 | 3 | undefined; /** Tooltip placement side (default: "top") */
+    side?:
+        | "top"
+        | "bottom"
+        | "left"
+        | "right"
+        | undefined; /** HTML element to render (default: "span") */
+    as?: "span" | "p" | "h1" | "h2" | "h3" | "h4" | "div" | undefined;
 }
 
 const LINE_CLAMP: Record<number, string> = {

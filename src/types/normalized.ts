@@ -11,7 +11,7 @@ export interface CertificationRecord {
     type: CertificationType;
     issuedDate: string;
     expiryDate: string;
-    documentUrl?: string;
+    documentUrl?: string | undefined;
 }
 
 // ─── Crew Member (3NF — no embedded certifications) ───
@@ -21,7 +21,7 @@ export interface CrewMemberNormalized {
     email: string;
     phone: string;
     role: string;
-    avatar?: string;
+    avatar?: string | undefined;
     hourlyRate: number;
     status: "available" | "assigned" | "unavailable";
 }
@@ -61,86 +61,128 @@ export interface WorkOrderNormalized {
 export interface InvoiceNormalized {
     id: string;
     vendorId: string;
-    purchaseOrderId?: string;
-    workOrderId?: string;
+    purchaseOrderId?: string | undefined;
+    workOrderId?: string | undefined;
     amount: number;
     status: "pending" | "approved" | "paid" | "disputed";
     invoiceDate: string;
     dueDate: string;
-    variance?: number;
+    variance?: number | undefined;
 }
 
 // ─── Consolidated Task (unified tasks + production_tasks) ───
-export type ConsolidatedTaskStatus = "backlog" | "todo" | "in_progress" | "review" | "done" | "blocked" | "completed" | "cancelled";
+export type ConsolidatedTaskStatus =
+    | "backlog"
+    | "todo"
+    | "in_progress"
+    | "review"
+    | "done"
+    | "blocked"
+    | "completed"
+    | "cancelled";
 export type ConsolidatedTaskPriority = "critical" | "high" | "medium" | "low" | "urgent";
-export type ProductionPhase = "discovery" | "design" | "pre_production" | "procurement" | "fabrication" | "logistics" | "load_in" | "rehearsal" | "show" | "strike" | "load_out" | "wrap";
-export type Department = "production" | "construction" | "technical" | "fabrication" | "print" | "scenic" | "props" | "av" | "lighting" | "rigging" | "food_beverage" | "staffing" | "logistics" | "finance" | "creative";
+export type ProductionPhase =
+    | "discovery"
+    | "design"
+    | "pre_production"
+    | "procurement"
+    | "fabrication"
+    | "logistics"
+    | "load_in"
+    | "rehearsal"
+    | "show"
+    | "strike"
+    | "load_out"
+    | "wrap";
+export type Department =
+    | "production"
+    | "construction"
+    | "technical"
+    | "fabrication"
+    | "print"
+    | "scenic"
+    | "props"
+    | "av"
+    | "lighting"
+    | "rigging"
+    | "food_beverage"
+    | "staffing"
+    | "logistics"
+    | "finance"
+    | "creative";
 
 export interface ConsolidatedTask {
     id: string;
     projectId: string;
-    parentId?: string;
+    parentId?: string | undefined;
     title: string;
-    description?: string;
+    description?: string | undefined;
     status: ConsolidatedTaskStatus;
     priority: ConsolidatedTaskPriority;
-    assigneeId?: string;
+    assigneeId?: string | undefined;
     phase: string;
-    fabricationStatus?: string;
-    materialCost?: number;
-    startDate?: string;
-    dueDate?: string;
-    completedAt?: string;
+    fabricationStatus?: string | undefined;
+    materialCost?: number | undefined;
+    startDate?: string | undefined;
+    dueDate?: string | undefined;
+    completedAt?: string | undefined;
     createdAt: string;
     updatedAt: string;
     // Production-extended fields
-    department?: Department;
-    reviewerId?: string;
-    vendorId?: string;
-    deliverables?: string[];
-    acceptanceCriteria?: string[];
-    estimatedHours?: number;
-    actualHours?: number;
-    locationId?: string;
-    activationId?: string;
-    eventId?: string;
-    impactIfDelayed?: string;
-    percentComplete?: number;
-    blockers?: string[];
-    milestoneId?: string;
-    sowDeliverableId?: string;
-    createdBy?: string;
-    updatedBy?: string;
+    department?: Department | undefined;
+    reviewerId?: string | undefined;
+    vendorId?: string | undefined;
+    deliverables?: string[] | undefined;
+    acceptanceCriteria?: string[] | undefined;
+    estimatedHours?: number | undefined;
+    actualHours?: number | undefined;
+    locationId?: string | undefined;
+    activationId?: string | undefined;
+    eventId?: string | undefined;
+    impactIfDelayed?: string | undefined;
+    percentComplete?: number | undefined;
+    blockers?: string[] | undefined;
+    milestoneId?: string | undefined;
+    sowDeliverableId?: string | undefined;
+    createdBy?: string | undefined;
+    updatedBy?: string | undefined;
     organizationId: string;
 }
 
 // ─── Consolidated Milestone (unified milestones + production_milestones) ───
-export type ConsolidatedMilestoneStatus = "pending" | "in_progress" | "completed" | "overdue" | "pending_approval" | "approved" | "rejected";
+export type ConsolidatedMilestoneStatus =
+    | "pending"
+    | "in_progress"
+    | "completed"
+    | "overdue"
+    | "pending_approval"
+    | "approved"
+    | "rejected";
 
 export interface ConsolidatedMilestone {
     id: string;
     projectId: string;
     name: string;
-    description?: string;
+    description?: string | undefined;
     dueDate: string;
-    completedAt?: string;
+    completedAt?: string | undefined;
     status: ConsolidatedMilestoneStatus;
     deliverables: string[];
     approvalRequired: boolean;
-    approvalId?: string;
+    approvalId?: string | undefined;
     organizationId: string;
     createdAt: string;
     updatedAt: string;
     // Production-extended fields
-    phase?: ProductionPhase;
-    ownerId?: string;
-    approverIds?: string[];
-    isCriticalPath?: boolean;
-    clientFacing?: boolean;
-    paymentTrigger?: boolean;
-    paymentAmount?: number;
-    createdBy?: string;
-    updatedBy?: string;
+    phase?: ProductionPhase | undefined;
+    ownerId?: string | undefined;
+    approverIds?: string[] | undefined;
+    isCriticalPath?: boolean | undefined;
+    clientFacing?: boolean | undefined;
+    paymentTrigger?: boolean | undefined;
+    paymentAmount?: number | undefined;
+    createdBy?: string | undefined;
+    updatedBy?: string | undefined;
 }
 
 // ─── Junction: Activation ↔ Asset ───
@@ -150,11 +192,11 @@ export interface ActivationAsset {
     id: string;
     activationId: string;
     assetId: string;
-    role?: string;
+    role?: string | undefined;
     quantity: number;
-    notes?: string;
+    notes?: string | undefined;
     assignedAt: string;
-    returnedAt?: string;
+    returnedAt?: string | undefined;
     status: JunctionAssetStatus;
     organizationId: string;
     createdAt: string;
@@ -166,11 +208,11 @@ export interface EventAsset {
     id: string;
     eventId: string;
     assetId: string;
-    role?: string;
+    role?: string | undefined;
     quantity: number;
-    notes?: string;
+    notes?: string | undefined;
     assignedAt: string;
-    returnedAt?: string;
+    returnedAt?: string | undefined;
     status: JunctionAssetStatus;
     organizationId: string;
     createdAt: string;
@@ -182,9 +224,9 @@ export interface ActivityAsset {
     id: string;
     activityId: string;
     assetId: string;
-    role?: string;
+    role?: string | undefined;
     quantity: number;
-    notes?: string;
+    notes?: string | undefined;
     organizationId: string;
     createdAt: string;
     updatedAt: string;
@@ -196,8 +238,8 @@ export interface ActivityConsumable {
     activityId: string;
     consumableId: string;
     estimatedQuantity: number;
-    actualQuantity?: number;
-    notes?: string;
+    actualQuantity?: number | undefined;
+    notes?: string | undefined;
     organizationId: string;
     createdAt: string;
     updatedAt: string;

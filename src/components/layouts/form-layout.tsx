@@ -10,22 +10,22 @@ import { ChevronDown, ChevronLeft, Loader2 } from "lucide-react";
 export interface FormSectionConfig {
     id: string;
     title: string;
-    description?: string;
+    description?: string | undefined;
 }
 
 export interface FormLayoutProps {
     backHref: string;
-    backLabel?: string;
+    backLabel?: string | undefined;
     title: string;
-    description?: string;
-    sections?: FormSectionConfig[];
+    description?: string | undefined;
+    sections?: FormSectionConfig[] | undefined;
     onSubmit: (e: React.FormEvent) => void;
-    onCancel?: () => void;
-    submitLabel?: string;
-    cancelLabel?: string;
-    isSubmitting?: boolean;
-    isValid?: boolean;
-    className?: string;
+    onCancel?: (() => void) | undefined;
+    submitLabel?: string | undefined;
+    cancelLabel?: string | undefined;
+    isSubmitting?: boolean | undefined;
+    isValid?: boolean | undefined;
+    className?: string | undefined;
     children: React.ReactNode;
 }
 
@@ -125,10 +125,10 @@ export function FormLayout({
 
 export interface FormSectionProps {
     title: string;
-    description?: string;
-    collapsible?: boolean;
-    defaultOpen?: boolean;
-    className?: string;
+    description?: string | undefined;
+    collapsible?: boolean | undefined;
+    defaultOpen?: boolean | undefined;
+    className?: string | undefined;
     children: React.ReactNode;
 }
 

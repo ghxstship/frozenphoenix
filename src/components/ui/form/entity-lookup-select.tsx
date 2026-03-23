@@ -11,19 +11,20 @@ export interface EntityLookupConfig {
     /** API route base path, e.g. "/api/projects" */
     apiPath: string;
     /** Field on the returned record to use as display label (default: "name") */
-    labelField?: string;
-    /** Secondary field for disambiguation (e.g. "email", "status") */
-    secondaryField?: string;
+    labelField?:
+        | string
+        | undefined; /** Secondary field for disambiguation (e.g. "email", "status") */
+    secondaryField?: string | undefined;
 }
 
 interface EntityLookupSelectProps {
-    id?: string;
+    id?: string | undefined;
     value: string;
     onChange: (value: string) => void;
     lookupConfig: EntityLookupConfig;
-    placeholder?: string;
-    disabled?: boolean;
-    className?: string;
+    placeholder?: string | undefined;
+    disabled?: boolean | undefined;
+    className?: string | undefined;
 }
 
 // ─── Component ──────────────────────────────────────────────

@@ -6,9 +6,9 @@ import { Bot, ChevronDown } from "lucide-react";
 
 interface ModelBadgeProps {
     modelName: string;
-    providerName?: string;
-    onClick?: () => void;
-    className?: string;
+    providerName?: string | undefined;
+    onClick?: (() => void) | undefined;
+    className?: string | undefined;
 }
 
 export function ModelBadge({ modelName, providerName, onClick, className }: ModelBadgeProps) {

@@ -16,6 +16,18 @@ const CONFIG: DetailPageConfig = {
     tabs: [],
 };
 
-export function PaymentApprovalsDetailClient({ id }: { id: string }) {
-    return <DetailPageShell config={CONFIG} id={id} />;
+export function PaymentApprovalsDetailClient({
+    id,
+    initialRecord,
+}: {
+    id: string;
+    initialRecord?: Record<string, unknown> | null;
+}) {
+    return (
+        <DetailPageShell
+            config={CONFIG}
+            id={id}
+            record={initialRecord as Record<string, unknown> | undefined}
+        />
+    );
 }

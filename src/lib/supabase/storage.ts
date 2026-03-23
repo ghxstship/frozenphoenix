@@ -34,9 +34,9 @@ export interface UploadOptions {
     bucket: StorageBucket;
     path: string;
     file: File | Blob;
-    contentType?: string;
-    upsert?: boolean;
-    cacheControl?: string;
+    contentType?: string | undefined;
+    upsert?: boolean | undefined;
+    cacheControl?: string | undefined;
 }
 
 export interface UploadResult {
@@ -48,14 +48,14 @@ export interface UploadResult {
 export interface SignedUrlOptions {
     bucket: StorageBucket;
     path: string;
-    expiresIn?: number; // seconds, default 3600
-    download?: boolean | string;
+    expiresIn?: number | undefined; // seconds, default 3600
+    download?: boolean | string | undefined;
     transform?: {
-        width?: number;
-        height?: number;
-        quality?: number;
-        format?: "origin";
-        resize?: "cover" | "contain" | "fill";
+        width?: number | undefined;
+        height?: number | undefined;
+        quality?: number | undefined;
+        format?: "origin" | undefined;
+        resize?: "cover" | "contain" | "fill" | undefined;
     };
 }
 
@@ -176,10 +176,10 @@ export async function listFiles(
     bucket: StorageBucket,
     folderPath?: string,
     options?: {
-        limit?: number;
-        offset?: number;
-        sortBy?: { column: string; order: "asc" | "desc" };
-        search?: string;
+        limit?: number | undefined;
+        offset?: number | undefined;
+        sortBy?: { column: string; order: "asc" | "desc" } | undefined;
+        search?: string | undefined;
     }
 ): Promise<StorageFile[]> {
     const supabase = getSupabase();
@@ -239,10 +239,10 @@ export function useListFiles(
     bucket: StorageBucket,
     folderPath?: string,
     options?: {
-        limit?: number;
-        offset?: number;
-        sortBy?: { column: string; order: "asc" | "desc" };
-        search?: string;
+        limit?: number | undefined;
+        offset?: number | undefined;
+        sortBy?: { column: string; order: "asc" | "desc" } | undefined;
+        search?: string | undefined;
     }
 ) {
     return useQuery({
@@ -262,8 +262,8 @@ export function useSignedUrl(
             getSignedUrl({
                 bucket,
                 path,
-                expiresIn: options?.expiresIn,
-                transform: options?.transform,
+                ...(options?.expiresIn !== undefined ? { expiresIn: options.expiresIn } : {}),
+                ...(options?.transform ? { transform: options.transform } : {}),
             }),
         enabled: !!path,
         staleTime: ((options?.expiresIn ?? 3600) - 60) * 1000, // Refetch 60s before expiry

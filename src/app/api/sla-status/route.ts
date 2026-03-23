@@ -10,7 +10,9 @@ export const GET = withApiHandler(
         rbac: { resource: "sla_policies", action: "read" },
     },
     async (_request, { supabase, log }) => {
-        const { data, error } = await serverFromTable(supabase, "sla_status").select("*");
+        const { data, error } = await serverFromTable(supabase, "sla_status").select(
+            "id, policy_name, entity_type, entity_id, status, due_at, breached, organization_id"
+        );
 
         if (error) {
             log.error("[GET /api/sla-status] failed", { error: error.message });

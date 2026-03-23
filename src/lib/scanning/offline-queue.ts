@@ -10,7 +10,7 @@ export interface QueuedScan {
     method: "POST" | "PUT";
     createdAt: string;
     retries: number;
-    lastError?: string;
+    lastError?: string | undefined;
 }
 
 const DB_NAME = "frozen-phoenix-scan-queue";

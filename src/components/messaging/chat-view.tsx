@@ -21,13 +21,13 @@ interface ChatViewProps {
     conversation: ConversationListItem | null;
     messages: MessageWithSender[];
     currentUserId: string;
-    isLoading?: boolean;
-    hasMore?: boolean;
-    onLoadMore?: () => void;
+    isLoading?: boolean | undefined;
+    hasMore?: boolean | undefined;
+    onLoadMore?: (() => void) | undefined;
     onSend: (payload: {
         body: string;
-        mentioned_user_ids?: string[];
-        priority?: MessagePriority;
+        mentioned_user_ids?: string[] | undefined;
+        priority?: MessagePriority | undefined;
     }) => void;
     onReact: (messageId: string, emoji: string) => void;
     onPin: (messageId: string, pin: boolean) => void;
@@ -36,17 +36,17 @@ interface ChatViewProps {
     onThreadOpen: (messageId: string) => void;
     onReply: (message: MessageWithSender) => void;
     onBack: () => void;
-    replyTo?: { messageId: string; body: string; senderName: string } | null;
-    onCancelReply?: () => void;
-    draft?: string;
-    onDraftChange?: (text: string) => void;
-    composerExtraActions?: React.ReactNode;
-    headerExtraContent?: React.ReactNode;
-    onTranslate?: (messageId: string, body: string, targetLanguage: string) => void;
-    translatingMessageId?: string | null;
-    translatedTexts?: Record<string, string>;
-    onClearTranslation?: (messageId: string) => void;
-    className?: string;
+    replyTo?: { messageId: string; body: string; senderName: string } | null | undefined;
+    onCancelReply?: (() => void) | undefined;
+    draft?: string | undefined;
+    onDraftChange?: ((text: string) => void) | undefined;
+    composerExtraActions?: React.ReactNode | undefined;
+    headerExtraContent?: React.ReactNode | undefined;
+    onTranslate?: ((messageId: string, body: string, targetLanguage: string) => void) | undefined;
+    translatingMessageId?: string | null | undefined;
+    translatedTexts?: Record<string, string> | undefined;
+    onClearTranslation?: ((messageId: string) => void) | undefined;
+    className?: string | undefined;
 }
 
 export function ChatView({

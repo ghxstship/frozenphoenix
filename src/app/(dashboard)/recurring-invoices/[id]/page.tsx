@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { RecurringInvoiceDetailClient } from "./_client";
 
 export default async function RecurringInvoiceDetailPage({
@@ -6,5 +7,6 @@ export default async function RecurringInvoiceDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <RecurringInvoiceDetailClient id={id} initialRecord={null} />;
+    const initialRecord = await prefetchDetailRecord("recurring-invoices", id);
+    return <RecurringInvoiceDetailClient id={id} initialRecord={initialRecord} />;
 }

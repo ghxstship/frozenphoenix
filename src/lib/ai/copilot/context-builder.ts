@@ -29,19 +29,17 @@ export interface CopilotContext {
     /** Active workspace context slug */
     workspaceContext: string;
     /** Current page route (e.g. /projects/[id]) */
-    currentRoute?: string;
-    /** Entity context injected from the current page */
-    pageContext?: PageEntityContext;
-    /** User permissions for tool filtering */
+    currentRoute?: string | undefined; /** Entity context injected from the current page */
+    pageContext?: PageEntityContext | undefined; /** User permissions for tool filtering */
     permissions: Array<{ resource: string; actions: string[] }>;
 }
 
 export interface PageEntityContext {
     entityType: string;
-    entityId?: string;
-    entityName?: string;
-    entityStatus?: string;
-    additionalContext?: Record<string, unknown>;
+    entityId?: string | undefined;
+    entityName?: string | undefined;
+    entityStatus?: string | undefined;
+    additionalContext?: Record<string, unknown> | undefined;
 }
 
 export interface BuiltContext {

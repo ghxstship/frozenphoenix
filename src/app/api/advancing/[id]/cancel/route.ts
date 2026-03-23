@@ -40,7 +40,7 @@ export const POST = withApiHandlerParams(
         const { data, error } = await serverFromTable(supabase, "production_advances")
             .update({ status: "cancelled" } as Record<string, unknown>)
             .eq("id", id)
-            .select()
+            .select("id, status, updated_at")
             .single();
 
         if (error) {

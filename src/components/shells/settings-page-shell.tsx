@@ -39,7 +39,7 @@ import type {
 export interface SettingsPageShellProps {
     config: SettingsPageConfig;
     /** Children override — when provided, replaces all tab content */
-    children?: React.ReactNode;
+    children?: React.ReactNode | undefined;
 }
 
 // ─── Row Renderer ────────────────────────────────────────────

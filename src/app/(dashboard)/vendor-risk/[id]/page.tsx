@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { VendorRiskDetailClient } from "./_client";
 
 export default async function VendorRiskDetailPage({
@@ -6,5 +7,6 @@ export default async function VendorRiskDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <VendorRiskDetailClient id={id} />;
+    const initialRecord = await prefetchDetailRecord("vendor_risk_scores", id);
+    return <VendorRiskDetailClient id={id} initialRecord={initialRecord} />;
 }

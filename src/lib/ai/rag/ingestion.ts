@@ -33,7 +33,7 @@ export interface IngestionParams {
     /** Source type classification */
     sourceType: DocumentSourceType;
     /** Optional Supabase storage path */
-    storagePath?: string;
+    storagePath?: string | undefined;
 }
 
 export interface IngestionResult {
@@ -41,7 +41,7 @@ export interface IngestionResult {
     chunkCount: number;
     totalTokens: number;
     status: "ready" | "failed";
-    error?: string;
+    error?: string | undefined;
 }
 
 // ─── Public API ──────────────────────────────────────────────

@@ -14,8 +14,8 @@ interface ProviderConnectionCardProps {
     webhookUrl: string | null;
     lastSyncAt: string | null;
     errorCount: number;
-    onSyncNow?: () => void;
-    onConfigure?: () => void;
+    onSyncNow?: (() => void) | undefined;
+    onConfigure?: (() => void) | undefined;
 }
 
 const PROVIDER_ICONS: Record<string, string> = {

@@ -5,7 +5,13 @@
    Supabase-backed CRUD for settings, feature flags, roles, brands
    ═══════════════════════════════════════════════════════════════ */
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+    useMutation,
+    type UseMutationResult,
+    useQuery,
+    useQueryClient,
+    type UseQueryResult,
+} from "@tanstack/react-query";
 import { fromTable } from "@/lib/supabase/client";
 import type {
     AccessAuditLogEntry,
@@ -20,7 +26,7 @@ import type {
 
 // ─── Setting Definitions ───
 
-export function useSettingDefinitions(category?: string) {
+export function useSettingDefinitions(category?: string): UseQueryResult<SettingDefinition[]> {
     return useQuery({
         queryKey: ["setting_definitions", category],
         queryFn: async () => {
@@ -41,7 +47,10 @@ export function useSettingDefinitions(category?: string) {
 
 // ─── Settings (Scoped Values) ───
 
-export function useSettingsForScope(scopeType: string, scopeId: string | null) {
+export function useSettingsForScope(
+    scopeType: string,
+    scopeId: string | null
+): UseQueryResult<(SettingValue & { setting_definitions: SettingDefinition })[]> {
     return useQuery({
         queryKey: ["settings", scopeType, scopeId],
         queryFn: async () => {
@@ -60,7 +69,17 @@ export function useSettingsForScope(scopeType: string, scopeId: string | null) {
     });
 }
 
-export function useUpsertSetting() {
+export function useUpsertSetting(): UseMutationResult<
+    SettingValue,
+    Error,
+    {
+        definition_id: string;
+        scope_type: string;
+        scope_id: string | null;
+        value: unknown;
+        changed_by: string;
+    }
+> {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (params: {
@@ -92,14 +111,23 @@ export function useUpsertSetting() {
     });
 }
 
-export function useLockSetting() {
+export function useLockSetting(): UseMutationResult<
+    SettingValue,
+    Error,
+    {
+        settingId: string;
+        locked: boolean;
+        lockedBy: string;
+        reason?: string | undefined;
+    }
+> {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (params: {
             settingId: string;
             locked: boolean;
             lockedBy: string;
-            reason?: string;
+            reason?: string | undefined;
         }) => {
             const { data, error } = await fromTable("settings")
                 .update({
@@ -122,7 +150,7 @@ export function useLockSetting() {
 
 // ─── Settings Change Log ───
 
-export function useSettingsChangeLog(settingId?: string) {
+export function useSettingsChangeLog(settingId?: string): UseQueryResult<SettingChangeLogEntry[]> {
     return useQuery({
         queryKey: ["settings_change_log", settingId],
         queryFn: async () => {
@@ -142,7 +170,7 @@ export function useSettingsChangeLog(settingId?: string) {
 
 // ─── Feature Flags ───
 
-export function useFeatureFlags() {
+export function useFeatureFlags(): UseQueryResult<FeatureFlag[]> {
     return useQuery({
         queryKey: ["feature_flags"],
         queryFn: async () => {
@@ -153,7 +181,7 @@ export function useFeatureFlags() {
     });
 }
 
-export function useFeatureFlagOverrides(flagId?: string) {
+export function useFeatureFlagOverrides(flagId?: string): UseQueryResult<FeatureFlagOverride[]> {
     return useQuery({
         queryKey: ["feature_flag_overrides", flagId],
         queryFn: async () => {
@@ -170,7 +198,11 @@ export function useFeatureFlagOverrides(flagId?: string) {
     });
 }
 
-export function useCreateFeatureFlag() {
+export function useCreateFeatureFlag(): UseMutationResult<
+    FeatureFlag,
+    Error,
+    Partial<FeatureFlag> & { key: string; label: string }
+> {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (params: Partial<FeatureFlag> & { key: string; label: string }) => {
@@ -187,7 +219,11 @@ export function useCreateFeatureFlag() {
     });
 }
 
-export function useUpdateFeatureFlag() {
+export function useUpdateFeatureFlag(): UseMutationResult<
+    FeatureFlag,
+    Error,
+    { id: string } & Partial<FeatureFlag>
+> {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (params: { id: string } & Partial<FeatureFlag>) => {
@@ -206,7 +242,19 @@ export function useUpdateFeatureFlag() {
     });
 }
 
-export function useUpsertFlagOverride() {
+export function useUpsertFlagOverride(): UseMutationResult<
+    FeatureFlagOverride,
+    Error,
+    {
+        flag_id: string;
+        scope_type: string;
+        scope_id: string;
+        value: unknown;
+        reason?: string | undefined;
+        created_by?: string | undefined;
+        expires_at?: string | undefined;
+    }
+> {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (params: {
@@ -214,9 +262,9 @@ export function useUpsertFlagOverride() {
             scope_type: string;
             scope_id: string;
             value: unknown;
-            reason?: string;
-            created_by?: string;
-            expires_at?: string;
+            reason?: string | undefined;
+            created_by?: string | undefined;
+            expires_at?: string | undefined;
         }) => {
             const { data, error } = await fromTable("feature_flag_overrides")
                 .upsert(
@@ -245,7 +293,9 @@ export function useUpsertFlagOverride() {
 
 // ─── Role Definitions ───
 
-export function useRoleDefinitions(orgId?: string) {
+export function useRoleDefinitions(
+    orgId?: string
+): UseQueryResult<(RoleDefinition & { permission_grants: PermissionGrant[] })[]> {
     return useQuery({
         queryKey: ["role_definitions", orgId],
         queryFn: async () => {
@@ -263,16 +313,27 @@ export function useRoleDefinitions(orgId?: string) {
     });
 }
 
-export function useCreateRole() {
+export function useCreateRole(): UseMutationResult<
+    RoleDefinition,
+    Error,
+    {
+        organization_id: string;
+        key: string;
+        label: string;
+        description?: string | undefined;
+        parent_role_id?: string | undefined;
+        priority?: number | undefined;
+    }
+> {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (params: {
             organization_id: string;
             key: string;
             label: string;
-            description?: string;
-            parent_role_id?: string;
-            priority?: number;
+            description?: string | undefined;
+            parent_role_id?: string | undefined;
+            priority?: number | undefined;
         }) => {
             const { data, error } = await fromTable("role_definitions")
                 .insert({
@@ -290,7 +351,11 @@ export function useCreateRole() {
     });
 }
 
-export function useUpdateRole() {
+export function useUpdateRole(): UseMutationResult<
+    RoleDefinition,
+    Error,
+    { id: string } & Partial<RoleDefinition>
+> {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (params: { id: string } & Partial<RoleDefinition>) => {
@@ -310,15 +375,25 @@ export function useUpdateRole() {
     });
 }
 
-export function useUpsertPermissionGrant() {
+export function useUpsertPermissionGrant(): UseMutationResult<
+    PermissionGrant,
+    Error,
+    {
+        role_definition_id: string;
+        resource: string;
+        action: string;
+        scope_type?: string | undefined;
+        scope_id?: string | undefined;
+    }
+> {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (params: {
             role_definition_id: string;
             resource: string;
             action: string;
-            scope_type?: string;
-            scope_id?: string;
+            scope_type?: string | undefined;
+            scope_id?: string | undefined;
         }) => {
             const { data, error } = await fromTable("permission_grants")
                 .upsert(
@@ -342,7 +417,7 @@ export function useUpsertPermissionGrant() {
     });
 }
 
-export function useDeletePermissionGrant() {
+export function useDeletePermissionGrant(): UseMutationResult<void, Error, string> {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (grantId: string) => {
@@ -357,7 +432,7 @@ export function useDeletePermissionGrant() {
 
 // ─── Access Audit Log ───
 
-export function useAccessAuditLog(limit = 50) {
+export function useAccessAuditLog(limit = 50): UseQueryResult<AccessAuditLogEntry[]> {
     return useQuery({
         queryKey: ["access_audit_log", limit],
         queryFn: async () => {
@@ -373,7 +448,9 @@ export function useAccessAuditLog(limit = 50) {
 
 // ─── Notification Preferences ───
 
-export function useNotificationPreferences(userId: string | null) {
+export function useNotificationPreferences(
+    userId: string | null
+): UseQueryResult<Record<string, unknown> | null> {
     return useQuery({
         queryKey: ["notification_preferences", userId],
         queryFn: async () => {
@@ -389,17 +466,29 @@ export function useNotificationPreferences(userId: string | null) {
     });
 }
 
-export function useUpsertNotificationPreferences() {
+export function useUpsertNotificationPreferences(): UseMutationResult<
+    Record<string, unknown>,
+    Error,
+    {
+        user_id: string;
+        email_enabled?: boolean | undefined;
+        push_enabled?: boolean | undefined;
+        sms_enabled?: boolean | undefined;
+        in_app_enabled?: boolean | undefined;
+        categories?: Record<string, unknown> | undefined;
+        category_preferences?: Record<string, unknown> | undefined;
+    }
+> {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (params: {
             user_id: string;
-            email_enabled?: boolean;
-            push_enabled?: boolean;
-            sms_enabled?: boolean;
-            in_app_enabled?: boolean;
-            categories?: Record<string, unknown>;
-            category_preferences?: Record<string, unknown>;
+            email_enabled?: boolean | undefined;
+            push_enabled?: boolean | undefined;
+            sms_enabled?: boolean | undefined;
+            in_app_enabled?: boolean | undefined;
+            categories?: Record<string, unknown> | undefined;
+            category_preferences?: Record<string, unknown> | undefined;
         }) => {
             const categories = params.categories ?? params.category_preferences;
             const { data, error } = await fromTable("notification_preferences")
@@ -427,7 +516,7 @@ export function useUpsertNotificationPreferences() {
 
 // ─── Brands ───
 
-export function useBrands() {
+export function useBrands(): UseQueryResult<Record<string, unknown>[]> {
     return useQuery({
         queryKey: ["brands"],
         queryFn: async () => {
@@ -440,7 +529,7 @@ export function useBrands() {
 
 // ─── User Sessions ───
 
-export function useUserSessions(userId: string | null) {
+export function useUserSessions(userId: string | null): UseQueryResult<Record<string, unknown>[]> {
     return useQuery({
         queryKey: ["user_sessions", userId],
         queryFn: async () => {
@@ -456,7 +545,7 @@ export function useUserSessions(userId: string | null) {
     });
 }
 
-export function useRevokeSession() {
+export function useRevokeSession(): UseMutationResult<void, Error, string> {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (sessionId: string) => {

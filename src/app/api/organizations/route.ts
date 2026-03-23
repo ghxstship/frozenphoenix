@@ -12,7 +12,9 @@ export const GET = withApiHandler(
     },
     async (_request, { supabase, log }) => {
         const { data, error } = await serverFromTable(supabase, "organizations")
-            .select("*")
+            .select(
+                "id, name, slug, industry, default_timezone, default_currency, logo_url, created_at, updated_at"
+            )
             .order("name");
 
         if (error) {
@@ -68,7 +70,9 @@ export const POST = withApiHandler(
                 ...(timezone && { default_timezone: timezone }),
                 ...(currency && { default_currency: currency }),
             })
-            .select("*")
+            .select(
+                "id, name, slug, industry, default_timezone, default_currency, logo_url, created_at, updated_at"
+            )
             .single();
 
         if (orgError) {

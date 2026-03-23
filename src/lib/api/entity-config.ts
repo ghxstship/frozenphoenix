@@ -72,14 +72,13 @@ export interface EntityConfig {
     queryKey: string[];
     /** State machine definition (if entity has lifecycle) */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    stateMachine?: StateMachineDefinition<any>;
-    /** Column that holds status (default: "status") */
+    stateMachine?:
+        | StateMachineDefinition<any>
+        | undefined; /** Column that holds status (default: "status") */
     statusColumn: string;
     /** Zod create schema */
-    createSchema?: ZodSchema;
-    /** Zod update schema */
-    updateSchema?: ZodSchema;
-    /** Supabase select for list queries */
+    createSchema?: ZodSchema | undefined; /** Zod update schema */
+    updateSchema?: ZodSchema | undefined; /** Supabase select for list queries */
     selectList: string;
     /** Supabase select for detail queries */
     selectDetail: string;
@@ -92,7 +91,7 @@ export interface EntityConfig {
     /** Icon name (Lucide) */
     icon: string;
     /** Related entity keys for cache invalidation */
-    relatedKeys?: string[][];
+    relatedKeys?: string[][] | undefined;
 }
 
 // ─── Config Definitions ──────────────────────────────────────
@@ -165,6 +164,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         resource: "deals",
         slug: "deals",
         stateMachine: DEAL_MACHINE,
+        selectList:
+            "id, title, company_name, contact_name, stage, value, probability, expected_close_date, status, owner_id, created_at",
+        selectDetail:
+            "id, title, company_name, contact_name, contact_email, stage, value, probability, expected_close_date, status, owner_id, source, notes, lost_reason, won_date, created_at, updated_at, organization_id",
         searchColumns: ["title", "company_name", "contact_name"],
         icon: "Handshake",
     }),
@@ -205,6 +208,9 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         resource: "vendors",
         slug: "vendors",
         stateMachine: VENDOR_MACHINE,
+        selectList: "id, name, contact_name, email, phone, category, status, rating, created_at",
+        selectDetail:
+            "id, name, contact_name, email, phone, category, status, rating, website, address, city, state, zip, country, tax_id, payment_terms, notes, created_at, updated_at, organization_id",
         searchColumns: ["name", "contact_name", "category"],
         icon: "Building2",
         softDelete: false,
@@ -218,6 +224,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         resource: "assets",
         slug: "assets",
         stateMachine: ASSET_MACHINE,
+        selectList:
+            "id, name, barcode, category, status, location, condition, serial_number, assigned_to, created_at",
+        selectDetail:
+            "id, name, barcode, category, status, location, condition, serial_number, assigned_to, purchase_date, purchase_price, warranty_expiry, manufacturer, model, notes, created_at, updated_at, organization_id",
         searchColumns: ["name", "barcode", "category"],
         icon: "Package",
     }),
@@ -229,6 +239,9 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         table: "crew_members",
         resource: "crew",
         slug: "crew",
+        selectList: "id, name, email, role, department, status, phone, avatar_url, created_at",
+        selectDetail:
+            "id, name, email, role, department, status, phone, avatar_url, hire_date, hourly_rate, emergency_contact, skills, certifications, notes, created_at, updated_at, organization_id",
         searchColumns: ["name", "email", "role"],
         icon: "Users",
         softDelete: false,
@@ -242,6 +255,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         resource: "opportunities",
         slug: "opportunities",
         stateMachine: OPPORTUNITY_MACHINE,
+        selectList:
+            "id, title, account_name, stage, value, probability, expected_close_date, status, owner_id, created_at",
+        selectDetail:
+            "id, title, account_name, stage, value, probability, expected_close_date, status, owner_id, source, description, created_at, updated_at, organization_id",
         searchColumns: ["title", "account_name"],
         icon: "Target",
     }),
@@ -526,6 +543,9 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         table: "team_members",
         resource: "team_members",
         slug: "team-members",
+        selectList: "id, user_id, team_id, role, joined_at, status",
+        selectDetail:
+            "id, user_id, team_id, role, joined_at, status, user_profiles(display_name, email, avatar_url)",
         searchColumns: [],
         icon: "UserPlus",
         softDelete: false,
@@ -585,6 +605,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         resource: "leads",
         slug: "leads",
         stateMachine: LEAD_MACHINE,
+        selectList:
+            "id, first_name, last_name, email, company_name, status, source, score, created_at",
+        selectDetail:
+            "id, first_name, last_name, email, phone, company_name, status, source, score, job_title, notes, converted_at, created_at, updated_at, organization_id",
         searchColumns: ["first_name", "last_name", "email", "company_name"],
         icon: "UserPlus",
     }),
@@ -596,6 +620,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         table: "locations",
         resource: "locations",
         slug: "locations",
+        selectList:
+            "id, name, address_street1, city, state, country, status, type, capacity, created_at",
+        selectDetail:
+            "id, name, address_street1, address_street2, city, state, zip, country, status, type, capacity, latitude, longitude, notes, created_at, updated_at, organization_id",
         searchColumns: ["name", "address_street1", "city"],
         icon: "MapPin",
     }),
@@ -687,6 +715,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         table: "recurring_invoices",
         resource: "recurring_invoices",
         slug: "recurring-invoices",
+        selectList:
+            "id, description, amount, frequency, status, next_due_date, vendor_id, created_at",
+        selectDetail:
+            "id, description, amount, frequency, status, next_due_date, vendor_id, last_sent_date, notes, created_at, updated_at, organization_id",
         searchColumns: ["description"],
         icon: "Repeat",
     }),
@@ -776,6 +808,9 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         table: "digital_assets",
         resource: "digital_assets",
         slug: "digital-assets",
+        selectList: "id, name, file_type, file_size, status, category, tags, created_at",
+        selectDetail:
+            "id, name, description, file_type, file_size, file_url, status, category, tags, metadata, created_at, updated_at, organization_id",
         searchColumns: ["name", "description"],
         icon: "Image",
     }),
@@ -787,6 +822,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         table: "insurance_policies",
         resource: "insurance_policies",
         slug: "insurance-policies",
+        selectList:
+            "id, policy_number, provider, type, status, coverage_amount, expiry_date, created_at",
+        selectDetail:
+            "id, policy_number, provider, type, status, coverage_amount, premium, expiry_date, start_date, notes, created_at, updated_at, organization_id",
         searchColumns: ["policy_number", "provider"],
         icon: "Shield",
     }),
@@ -798,6 +837,9 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         table: "knowledge_articles",
         resource: "kb",
         slug: "knowledge-base",
+        selectList: "id, title, category, status, author_id, published_at, created_at",
+        selectDetail:
+            "id, title, content, category, status, author_id, published_at, tags, created_at, updated_at, organization_id",
         searchColumns: ["title", "content"],
         icon: "BookOpen",
     }),
@@ -810,6 +852,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         resource: "payments",
         slug: "payments",
         stateMachine: PAYMENT_MACHINE,
+        selectList:
+            "id, reference_number, amount, status, payment_method, payment_date, vendor_id, invoice_id, created_at",
+        selectDetail:
+            "id, reference_number, amount, status, payment_method, payment_date, vendor_id, invoice_id, notes, created_at, updated_at, organization_id",
         searchColumns: ["reference_number"],
         icon: "Wallet",
     }),
@@ -821,6 +867,9 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         table: "rate_cards",
         resource: "rate_cards",
         slug: "rate-cards",
+        selectList: "id, name, role, rate, currency, unit, effective_date, created_at",
+        selectDetail:
+            "id, name, role, rate, currency, unit, effective_date, expiry_date, notes, created_at, updated_at, organization_id",
         searchColumns: ["name"],
         icon: "CreditCard",
         softDelete: false,

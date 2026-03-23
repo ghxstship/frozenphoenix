@@ -7,7 +7,7 @@ import { Sparkles } from "lucide-react";
 interface CopilotSuggestionsProps {
     suggestions: string[];
     onSelect: (suggestion: string) => void;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function CopilotSuggestions({ suggestions, onSelect, className }: CopilotSuggestionsProps) {

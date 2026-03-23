@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { ChecklistsDetailClient } from "./_client";
 
 export default async function ChecklistsDetailPage({
@@ -6,5 +7,6 @@ export default async function ChecklistsDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <ChecklistsDetailClient id={id} />;
+    const initialRecord = await prefetchDetailRecord("job_checklists", id);
+    return <ChecklistsDetailClient id={id} initialRecord={initialRecord} />;
 }

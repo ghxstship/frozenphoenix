@@ -26,10 +26,10 @@ export interface InitiatePayload {
     workflowId: string;
     entityId: string;
     entityType: string;
-    entityName?: string;
+    entityName?: string | undefined;
     organizationId: string;
     initiatedBy: string;
-    context?: Record<string, unknown>;
+    context?: Record<string, unknown> | undefined;
 }
 
 export interface DecidePayload {
@@ -37,22 +37,22 @@ export interface DecidePayload {
     stepId: string;
     approverId: string;
     decision: ApprovalDecision;
-    comments?: string;
-    delegateTo?: string;
+    comments?: string | undefined;
+    delegateTo?: string | undefined;
 }
 
 export interface EscalatePayload {
     instanceId: string;
     stepId: string;
     escalatedBy: string;
-    reason?: string;
+    reason?: string | undefined;
 }
 
 export interface EngineResult<T = unknown> {
     success: boolean;
-    data?: T;
-    error?: string;
-    code?: string;
+    data?: T | undefined;
+    error?: string | undefined;
+    code?: string | undefined;
 }
 
 // ─── Core Engine ─────────────────────────────────────────────
@@ -150,7 +150,7 @@ export async function initiateWorkflow(
 
     // 5. Create initial step approval(s)
     const assignErr = await assignStepApprovals(supabase, instance.id, firstStep, {
-        entityName: payload.entityName,
+        ...(payload.entityName ? { entityName: payload.entityName } : {}),
         workflowName: workflow.name,
         organizationId: payload.organizationId,
     });
@@ -630,12 +630,15 @@ async function advanceToNextStep(
             .select("entity_name, organization_id, approval_workflows(name)")
             .eq("id", instance.id)
             .single();
+        const entityName = wfCtx?.entity_name as string | null;
+        const wfName = (wfCtx?.approval_workflows as unknown as Record<string, unknown>)?.name as
+            | string
+            | null;
+        const orgId = wfCtx?.organization_id as string | null;
         await assignStepApprovals(supabase, instance.id, nextStepFull, {
-            entityName: (wfCtx?.entity_name as string) ?? undefined,
-            workflowName:
-                ((wfCtx?.approval_workflows as unknown as Record<string, unknown>)
-                    ?.name as string) ?? undefined,
-            organizationId: (wfCtx?.organization_id as string) ?? undefined,
+            ...(entityName ? { entityName } : {}),
+            ...(wfName ? { workflowName: wfName } : {}),
+            ...(orgId ? { organizationId: orgId } : {}),
         });
     }
 

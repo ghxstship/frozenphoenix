@@ -20,14 +20,14 @@ export interface SendEmailParams {
     to: string | string[];
     subject: string;
     html: string;
-    from?: string;
-    replyTo?: string;
+    from?: string | undefined;
+    replyTo?: string | undefined;
 }
 
 export interface SendEmailResult {
     sent: boolean;
-    fallback?: "logged";
-    error?: string;
+    fallback?: "logged" | undefined;
+    error?: string | undefined;
 }
 
 /**
@@ -95,9 +95,9 @@ export function escapeHtml(str: string): string {
  */
 export function wrapEmailLayout(params: {
     title: string;
-    preheader?: string;
+    preheader?: string | undefined;
     body: string;
-    footer?: string;
+    footer?: string | undefined;
 }): string {
     const { title, preheader, body, footer } = params;
 
@@ -143,9 +143,9 @@ ${footerBlock}
 export function buildTransactionalEmail(params: {
     heading: string;
     message: string;
-    ctaLabel?: string;
-    ctaUrl?: string;
-    footerNote?: string;
+    ctaLabel?: string | undefined;
+    ctaUrl?: string | undefined;
+    footerNote?: string | undefined;
 }): string {
     const { heading, message, ctaLabel, ctaUrl, footerNote } = params;
 

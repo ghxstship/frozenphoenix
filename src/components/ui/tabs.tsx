@@ -35,9 +35,9 @@ export function Tabs({
     value: string;
     onValueChange: (v: string) => void;
     children: React.ReactNode;
-    className?: string;
-    idPrefix?: string;
-    orientation?: "horizontal" | "vertical";
+    className?: string | undefined;
+    idPrefix?: string | undefined;
+    orientation?: "horizontal" | "vertical" | undefined;
 }) {
     const reactId = React.useId();
     const generatedIdPrefix = React.useMemo(() => `tabs-${reactId.replace(/:/g, "")}`, [reactId]);
@@ -69,9 +69,9 @@ export function TabsList({
     orientation,
 }: {
     children: React.ReactNode;
-    className?: string;
-    ariaLabel?: string;
-    orientation?: "horizontal" | "vertical";
+    className?: string | undefined;
+    ariaLabel?: string | undefined;
+    orientation?: "horizontal" | "vertical" | undefined;
 }) {
     const {
         value: selectedValue,
@@ -170,7 +170,7 @@ export function TabsTrigger({
 }: {
     value: string;
     children: React.ReactNode;
-    className?: string;
+    className?: string | undefined;
 }) {
     const {
         value: selectedValue,
@@ -207,7 +207,7 @@ export function TabsContent({
 }: {
     value: string;
     children: React.ReactNode;
-    className?: string;
+    className?: string | undefined;
 }) {
     const { value: selectedValue, idPrefix } = React.useContext(TabsContext);
     if (selectedValue !== value) return null;

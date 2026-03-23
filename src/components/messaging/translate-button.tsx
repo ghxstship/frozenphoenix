@@ -29,10 +29,10 @@ interface TranslateButtonProps {
     messageId: string;
     body: string;
     onTranslate: (messageId: string, body: string, targetLanguage: string) => void;
-    isTranslating?: boolean;
-    translatedText?: string | null;
-    onShowOriginal?: () => void;
-    className?: string;
+    isTranslating?: boolean | undefined;
+    translatedText?: string | null | undefined;
+    onShowOriginal?: (() => void) | undefined;
+    className?: string | undefined;
 }
 
 export function TranslateButton({

@@ -32,7 +32,9 @@ export const GET = withApiHandler(
         }
 
         const query = serverFromTable(supabase, "settings_change_requests")
-            .select("*")
+            .select(
+                "id, organization_id, setting_key, scope_type, scope_id, current_value, proposed_value, reason, status, requested_by, reviewed_by, review_comment, reviewed_at, created_at"
+            )
             .eq("organization_id", orgId)
             .order("created_at", { ascending: false })
             .limit(50);
@@ -104,7 +106,9 @@ export const POST = withApiHandler(
                 reason: reason || null,
                 requested_by: user.id,
             })
-            .select("*")
+            .select(
+                "id, organization_id, setting_key, scope_type, scope_id, current_value, proposed_value, reason, status, requested_by, reviewed_by, review_comment, reviewed_at, created_at"
+            )
             .single();
 
         if (error) {

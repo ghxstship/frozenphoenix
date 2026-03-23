@@ -37,13 +37,11 @@ type FormData = Record<string, unknown>;
 export interface FormPageShellProps {
     config: FormPageConfig;
     /** Pre-fetched record for edit mode — bypasses built-in fetch */
-    record?: FormData | null;
-    /** Loading state for externally-provided record */
-    isLoading?: boolean;
-    /** External submit handler — receives transformed form data */
+    record?: FormData | null | undefined; /** Loading state for externally-provided record */
+    isLoading?: boolean | undefined; /** External submit handler — receives transformed form data */
     onSubmit: (data: FormData) => void | Promise<void>;
     /** Whether the external submit is pending */
-    isSubmitting?: boolean;
+    isSubmitting?: boolean | undefined;
 }
 
 // ─── Field Renderer ─────────────────────────────────────────
@@ -517,7 +515,7 @@ function FormPageShellInner({
     isSubmitting,
 }: {
     config: FormPageConfig;
-    record?: FormData | null;
+    record?: FormData | null | undefined;
     onSubmit: (data: FormData) => void | Promise<void>;
     isSubmitting: boolean;
 }) {
@@ -598,7 +596,7 @@ function FormPageShellInner({
                 const payload = config.transformSubmit
                     ? config.transformSubmit(formData)
                     : formData;
-                await onSubmit(payload);
+                await onSubmit(payload ?? formData);
 
                 if (config.successRedirect) {
                     router.push(config.successRedirect);

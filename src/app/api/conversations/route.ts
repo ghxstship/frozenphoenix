@@ -58,7 +58,9 @@ export const GET = withApiHandler(
             admin!,
             "conversations"
         )
-            .select("*")
+            .select(
+                "id, organization_id, type, name, slug, description, is_public, is_announcement_only, is_archived, category, event_id, project_id, created_by, last_message_at, created_at"
+            )
             .in("id", convIds)
             .eq("is_archived", false)
             .order("last_message_at", { ascending: false, nullsFirst: false });
@@ -218,7 +220,9 @@ export const POST = withApiHandler(
                     );
 
                     const { data: existingDm } = await serverFromTable(admin!, "conversations")
-                        .select("*")
+                        .select(
+                            "id, organization_id, type, name, slug, description, is_public, is_announcement_only, is_archived, category, event_id, project_id, created_by, last_message_at, created_at"
+                        )
                         .in("id", sharedConvIds)
                         .eq("type", "dm")
                         .eq("is_archived", false)
@@ -250,7 +254,9 @@ export const POST = withApiHandler(
                 project_id: project_id ?? null,
                 created_by: user.id,
             })
-            .select("*")
+            .select(
+                "id, organization_id, type, name, slug, description, is_public, is_announcement_only, is_archived, category, event_id, project_id, created_by, last_message_at, created_at"
+            )
             .single();
 
         if (convErr) {

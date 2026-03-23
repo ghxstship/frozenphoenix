@@ -21,8 +21,8 @@ interface SearchResult {
 }
 
 interface MessageSearchProps {
-    onSelectResult?: (result: SearchResult) => void;
-    className?: string;
+    onSelectResult?: ((result: SearchResult) => void) | undefined;
+    className?: string | undefined;
 }
 
 export function MessageSearch({ onSelectResult, className }: MessageSearchProps) {

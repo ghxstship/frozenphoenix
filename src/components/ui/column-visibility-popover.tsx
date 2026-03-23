@@ -18,7 +18,7 @@ export interface ColumnVisibilityItem {
     id: string;
     header: string;
     visible: boolean;
-    sticky?: boolean;
+    sticky?: boolean | undefined;
 }
 
 export interface ColumnVisibilityPopoverProps {

@@ -14,7 +14,7 @@ import type { AdvancePriority, AdvanceType } from "@/types";
 interface AdvanceCheckoutProps {
     onBack: () => void;
     onSuccess: (advanceId: string) => void;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function AdvanceCheckout({ onBack, onSuccess, className }: AdvanceCheckoutProps) {

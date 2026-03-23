@@ -2,7 +2,7 @@
 
 import { logger } from "@/lib/logger";
 import React, { useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
@@ -59,8 +59,8 @@ import {
     Users,
 } from "lucide-react";
 
-function ProjectAssignmentsTab({ projectId }: { projectId: string }) {
-    const { data: assignments, isLoading } = useProjectAssignments({ project_id: projectId });
+function ProjectAssignmentsTab({ id }: { id: string }) {
+    const { data: assignments, isLoading } = useProjectAssignments({ project_id: id });
 
     if (isLoading) {
         return (
@@ -134,8 +134,8 @@ function ProjectAssignmentsTab({ projectId }: { projectId: string }) {
     );
 }
 
-function StakeholderProjectsTab({ projectId }: { projectId: string }) {
-    const { data: links, isLoading } = useStakeholderProjects({ project_id: projectId });
+function StakeholderProjectsTab({ id }: { id: string }) {
+    const { data: links, isLoading } = useStakeholderProjects({ project_id: id });
 
     if (isLoading) {
         return (
@@ -212,8 +212,8 @@ function StakeholderProjectsTab({ projectId }: { projectId: string }) {
     );
 }
 
-function CommTemplatesTab({ projectId }: { projectId: string }) {
-    const { data: templates, isLoading } = useProjectCommTemplates(projectId);
+function CommTemplatesTab({ id }: { id: string }) {
+    const { data: templates, isLoading } = useProjectCommTemplates(id);
 
     if (isLoading) {
         return (
@@ -294,19 +294,23 @@ const BASE_CONFIG: DetailPageConfig = {
     tabs: [],
 };
 
-export function ProjectDetailPageClient() {
-    const params = useParams();
+export function ProjectDetailPageClient({
+    id,
+    initialRecord,
+}: {
+    id: string;
+    initialRecord?: Record<string, unknown> | null;
+}) {
     const router = useRouter();
-    const projectId = params.id as string;
     const [addTaskOpen, setAddTaskOpen] = useState(false);
     const [taskTitle, setTaskTitle] = useState("");
     const updateProject = useUpdateProject();
     const deleteProject = useDeleteProject();
     const createTask = useCreateTask();
 
-    const { data: project, isLoading } = useProject(projectId);
-    const { data: sbActivity } = useRecordActivityLog("project", projectId);
-    const { data: sbComments } = useRecordComments("project", projectId);
+    const { data: project, isLoading } = useProject(id);
+    const { data: sbActivity } = useRecordActivityLog("project", id);
+    const { data: sbComments } = useRecordComments("project", id);
     const createComment = useCreateRecordComment();
 
     const activityItems: ActivityItem[] = useMemo(
@@ -338,7 +342,7 @@ export function ProjectDetailPageClient() {
     const handleArchive = async () => {
         try {
             await updateProject.mutateAsync({
-                id: projectId,
+                id: id,
                 status: "completed",
             } as unknown as Parameters<typeof updateProject.mutateAsync>[0]);
         } catch (error) {
@@ -348,7 +352,7 @@ export function ProjectDetailPageClient() {
 
     const handleDelete = async () => {
         try {
-            await deleteProject.mutateAsync(projectId);
+            await deleteProject.mutateAsync(id);
             router.push("/projects");
         } catch (error) {
             logger.error("Failed to delete project", { error });
@@ -359,7 +363,7 @@ export function ProjectDetailPageClient() {
         if (!taskTitle.trim()) return;
         try {
             await createTask.mutateAsync({
-                project_id: projectId,
+                project_id: id,
                 title: taskTitle,
                 status: "todo",
                 priority: "medium",
@@ -371,21 +375,21 @@ export function ProjectDetailPageClient() {
             logger.error("Failed to add task", { error });
         }
     };
-    const { data: sbTasks } = useTasks({ project_id: projectId });
-    const { data: sbCollaborators } = useProjectCollaborators(projectId);
+    const { data: sbTasks } = useTasks({ project_id: id });
+    const { data: sbCollaborators } = useProjectCollaborators(id);
     const projectCollaborators = (sbCollaborators ?? []) as Record<string, unknown>[];
     const issueContract = useIssueContract();
     const requestCoi = useRequestCoi();
-    const { data: sbBudgetLines } = useBudgetLineItems({ project_id: projectId });
+    const { data: sbBudgetLines } = useBudgetLineItems({ project_id: id });
     const { data: sbApprovals } = useApprovals();
     const { data: sbStakeholders } = useStakeholders();
     const projectTasks = sbTasks ?? [];
     const projectApprovals = (sbApprovals ?? []).filter(
-        (a: Record<string, unknown>) => a.project_id === projectId
+        (a: Record<string, unknown>) => a.project_id === id
     );
     const projectStakeholders = (sbStakeholders ?? []).filter((s: Record<string, unknown>) => {
-        const pIds = s.project_ids ?? s.projectIds;
-        return Array.isArray(pIds) ? pIds.includes(projectId) : false;
+        const pIds = s.project_ids ?? s.ids;
+        return Array.isArray(pIds) ? pIds.includes(id) : false;
     });
 
     const phaseConfig = project
@@ -403,7 +407,7 @@ export function ProjectDetailPageClient() {
     const handleAddComment = async (content: string) => {
         await createComment.mutateAsync({
             entity_type: "project",
-            entity_id: projectId,
+            entity_id: id,
             author_id: "u1",
             body: content,
         });
@@ -630,10 +634,7 @@ export function ProjectDetailPageClient() {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-base">Team Members</CardTitle>
-                            <Button
-                                size="sm"
-                                onClick={() => router.push(`/crew/new?projectId=${projectId}`)}
-                            >
+                            <Button size="sm" onClick={() => router.push(`/crew/new?id=${id}`)}>
                                 Add Member
                             </Button>
                         </CardHeader>
@@ -645,8 +646,7 @@ export function ProjectDetailPageClient() {
                                     description="Add team members to this project"
                                     action={{
                                         label: "Add Member",
-                                        onClick: () =>
-                                            router.push(`/crew/new?projectId=${projectId}`),
+                                        onClick: () => router.push(`/crew/new?id=${id}`),
                                     }}
                                 />
                             ) : (
@@ -702,10 +702,7 @@ export function ProjectDetailPageClient() {
                                 <Handshake className="h-4 w-4" />
                                 Collaborators
                             </CardTitle>
-                            <Button
-                                size="sm"
-                                onClick={() => router.push(`/advancing?projectId=${projectId}`)}
-                            >
+                            <Button size="sm" onClick={() => router.push(`/advancing?id=${id}`)}>
                                 Invite Collaborator
                             </Button>
                         </CardHeader>
@@ -717,8 +714,7 @@ export function ProjectDetailPageClient() {
                                     description="Invite vendors and partners to collaborate on this project"
                                     action={{
                                         label: "Invite Collaborator",
-                                        onClick: () =>
-                                            router.push(`/advancing?projectId=${projectId}`),
+                                        onClick: () => router.push(`/advancing?id=${id}`),
                                     }}
                                 />
                             ) : (
@@ -757,7 +753,7 @@ export function ProjectDetailPageClient() {
                                                         disabled={issueContract.isPending}
                                                         onClick={() =>
                                                             issueContract.mutate({
-                                                                projectId,
+                                                                projectId: id,
                                                                 collabId: String(collab.id),
                                                             })
                                                         }
@@ -771,7 +767,7 @@ export function ProjectDetailPageClient() {
                                                         disabled={requestCoi.isPending}
                                                         onClick={() =>
                                                             requestCoi.mutate({
-                                                                projectId,
+                                                                projectId: id,
                                                                 collabId: String(collab.id),
                                                             })
                                                         }
@@ -930,17 +926,17 @@ export function ProjectDetailPageClient() {
             {
                 id: "assignments",
                 label: "Assignments",
-                content: <ProjectAssignmentsTab projectId={projectId} />,
+                content: <ProjectAssignmentsTab id={id} />,
             },
             {
                 id: "stakeholder-links",
                 label: "Stakeholder Links",
-                content: <StakeholderProjectsTab projectId={projectId} />,
+                content: <StakeholderProjectsTab id={id} />,
             },
             {
                 id: "comm-templates",
                 label: "Comm Templates",
-                content: <CommTemplatesTab projectId={projectId} />,
+                content: <CommTemplatesTab id={id} />,
             },
             {
                 id: "chatter",
@@ -949,7 +945,7 @@ export function ProjectDetailPageClient() {
                 content: (
                     <RecordChatter
                         recordType="project"
-                        recordId={projectId}
+                        recordId={id}
                         activityItems={activityItems}
                         comments={chatterComments}
                         currentUserId="u1"
@@ -967,13 +963,13 @@ export function ProjectDetailPageClient() {
         <>
             <DetailPageShell
                 config={config}
-                id={projectId}
+                id={id}
                 record={record}
-                isLoading={isLoading}
+                isLoading={isLoading && !initialRecord}
                 menuItems={[
                     {
                         label: "Duplicate Project",
-                        onClick: () => router.push(`/projects/new?duplicateFrom=${projectId}`),
+                        onClick: () => router.push(`/projects/new?duplicateFrom=${id}`),
                     },
                     {
                         label: updateProject.isPending ? "Archiving..." : "Archive Project",
@@ -991,7 +987,7 @@ export function ProjectDetailPageClient() {
                     </div>
                 }
                 actions={
-                    <Button onClick={() => router.push(`/projects/${projectId}/edit`)}>
+                    <Button onClick={() => router.push(`/projects/${id}/edit`)}>
                         <Edit className="h-4 w-4" />
                         Edit
                     </Button>

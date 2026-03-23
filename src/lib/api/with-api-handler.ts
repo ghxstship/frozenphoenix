@@ -57,13 +57,14 @@ export interface HandlerOptions {
     /** Route path for logging */
     route: string;
     /** If true, applies mutation rate limiting (default: false) */
-    mutation?: boolean;
-    /** If true, applies stricter auth rate limiting (default: false) */
-    authRoute?: boolean;
-    /** RBAC check — if provided, enforced before handler runs */
-    rbac?: { resource: string; action: "read" | "write" | "delete" };
-    /** If true, skips auth check (for public/internal endpoints) */
-    skipAuth?: boolean;
+    mutation?:
+        | boolean
+        | undefined; /** If true, applies stricter auth rate limiting (default: false) */
+    authRoute?: boolean | undefined; /** RBAC check — if provided, enforced before handler runs */
+    rbac?:
+        | { resource: string; action: "read" | "write" | "delete" }
+        | undefined; /** If true, skips auth check (for public/internal endpoints) */
+    skipAuth?: boolean | undefined;
 }
 
 type HandlerFn = (
@@ -165,7 +166,7 @@ export function withApiHandler(
                 log,
                 requestId,
                 supabase,
-                user: { id: user.id, email: user.email },
+                user: { id: user.id, ...(user.email ? { email: user.email } : {}) },
                 role,
                 orgId,
             });
@@ -270,7 +271,7 @@ export function withApiHandlerParams(
                     log,
                     requestId,
                     supabase,
-                    user: { id: user.id, email: user.email },
+                    user: { id: user.id, ...(user.email ? { email: user.email } : {}) },
                     role,
                     orgId,
                 },

@@ -11,11 +11,11 @@ import { MetricCard } from "@/components/ui/metric-card";
 interface StatCardProps {
     title: string;
     value: string | number;
-    change?: number;
-    changeSuffix?: string;
-    icon?: LucideIcon;
-    description?: string;
-    className?: string;
+    change?: number | undefined;
+    changeSuffix?: string | undefined;
+    icon?: LucideIcon | undefined;
+    description?: string | undefined;
+    className?: string | undefined;
 }
 
 export function StatCard({

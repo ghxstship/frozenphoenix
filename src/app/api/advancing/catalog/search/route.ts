@@ -19,7 +19,9 @@ export const GET = withApiHandler(
         }
 
         const { data, error } = await serverFromTable(supabase, "catalog_items")
-            .select("*")
+            .select(
+                "id, name, sku, description, category_id, unit_of_measure, default_unit_cost, thumbnail_url, is_active"
+            )
             .is("deleted_at", null)
             .textSearch("search_vector", q, { type: "websearch" })
             .limit(limit);

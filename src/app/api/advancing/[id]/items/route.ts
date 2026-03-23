@@ -69,7 +69,7 @@ export const POST = withApiHandlerParams(
                 advance_id: id,
                 ...parsed.data,
             } as Record<string, unknown>)
-            .select()
+            .select("id, name, description, quantity, status, created_at")
             .single();
 
         if (error) {

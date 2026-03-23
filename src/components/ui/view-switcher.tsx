@@ -46,7 +46,7 @@ interface ViewSwitcherProps {
     views: ViewMode[];
     value: ViewMode;
     onValueChange: (view: ViewMode) => void;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function ViewSwitcher({ views, value, onValueChange, className }: ViewSwitcherProps) {

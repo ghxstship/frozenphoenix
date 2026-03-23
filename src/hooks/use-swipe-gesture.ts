@@ -4,20 +4,17 @@ import { useCallback, useEffect, useRef } from "react";
 
 interface SwipeGestureOptions {
     /** Minimum distance (px) to trigger swipe. Default: 50 */
-    threshold?: number;
-    /** Minimum velocity (px/ms) to trigger swipe. Default: 0.3 */
-    velocityThreshold?: number;
-    /** Callbacks per direction */
-    onSwipeLeft?: () => void;
-    onSwipeRight?: () => void;
-    onSwipeUp?: () => void;
-    onSwipeDown?: () => void;
-    /** Whether to constrain to edge-only swipes (within edgeWidth px of screen edge) */
-    edgeOnly?: boolean;
-    /** Edge detection width in px. Default: 20 */
-    edgeWidth?: number;
-    /** Whether gesture is currently enabled. Default: true */
-    enabled?: boolean;
+    threshold?: number | undefined; /** Minimum velocity (px/ms) to trigger swipe. Default: 0.3 */
+    velocityThreshold?: number | undefined; /** Callbacks per direction */
+    onSwipeLeft?: (() => void) | undefined;
+    onSwipeRight?: (() => void) | undefined;
+    onSwipeUp?: (() => void) | undefined;
+    onSwipeDown?:
+        | (() => void)
+        | undefined; /** Whether to constrain to edge-only swipes (within edgeWidth px of screen edge) */
+    edgeOnly?: boolean | undefined; /** Edge detection width in px. Default: 20 */
+    edgeWidth?: number | undefined; /** Whether gesture is currently enabled. Default: true */
+    enabled?: boolean | undefined;
 }
 
 interface TouchState {

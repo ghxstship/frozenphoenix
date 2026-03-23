@@ -14,7 +14,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 
 export interface BudgetCheckResult {
     allowed: boolean;
-    reason?: string;
+    reason?: string | undefined;
     dailyRemaining: number;
     monthlyRemaining: number;
     maxContextAllowed: number;
@@ -23,7 +23,7 @@ export interface BudgetCheckResult {
 export interface BudgetCheckParams {
     userId: string;
     orgId: string;
-    roleId?: string;
+    roleId?: string | undefined;
     estimatedTokens: number;
 }
 
@@ -159,7 +159,7 @@ export interface LogUsageParams {
     userId: string;
     orgId: string;
     providerId: string;
-    modelId?: string;
+    modelId?: string | undefined;
     tokenCountInput: number;
     tokenCountOutput: number;
     estimatedCost: number;

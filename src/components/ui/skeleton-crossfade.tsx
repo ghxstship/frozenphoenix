@@ -7,7 +7,7 @@ interface SkeletonCrossfadeProps {
     isLoading: boolean;
     skeleton: React.ReactNode;
     children: React.ReactNode;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function SkeletonCrossfade({

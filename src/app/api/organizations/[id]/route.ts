@@ -14,7 +14,9 @@ export const GET = withApiHandlerParams(
         const { id } = await params;
 
         const { data, error } = await serverFromTable(supabase, "organizations")
-            .select("*")
+            .select(
+                "id, name, slug, industry, default_timezone, default_currency, logo_url, created_at, updated_at"
+            )
             .eq("id", id)
             .single();
 
@@ -57,7 +59,9 @@ export const PATCH = withApiHandlerParams(
         const { data, error } = await serverFromTable(supabase, "organizations")
             .update(payload)
             .eq("id", id)
-            .select("*")
+            .select(
+                "id, name, slug, industry, default_timezone, default_currency, logo_url, created_at, updated_at"
+            )
             .single();
 
         if (error) {

@@ -63,7 +63,7 @@ export interface ComplianceRequirement {
     id: string;
     name: string;
     docType: ComplianceDocType;
-    description?: string;
+    description?: string | undefined;
     appliesToVendorTypes: VendorType[];
     appliesToCategories: string[];
     isRequired: boolean;
@@ -77,22 +77,22 @@ export interface ComplianceRequirement {
 export interface VendorComplianceDoc {
     id: string;
     vendorId: string;
-    requirementId?: string;
+    requirementId?: string | undefined;
     docType: ComplianceDocType;
     docName: string;
-    docNumber?: string;
-    documentUrl?: string;
-    issuedDate?: string;
-    expiryDate?: string;
+    docNumber?: string | undefined;
+    documentUrl?: string | undefined;
+    issuedDate?: string | undefined;
+    expiryDate?: string | undefined;
     submittedAt: string;
-    reviewedAt?: string;
+    reviewedAt?: string | undefined;
     status: ComplianceDocStatus;
-    reviewedBy?: string;
-    rejectionReason?: string;
-    coverageAmount?: number;
-    policyNumber?: string;
-    carrierName?: string;
-    notes?: string;
+    reviewedBy?: string | undefined;
+    rejectionReason?: string | undefined;
+    coverageAmount?: number | undefined;
+    policyNumber?: string | undefined;
+    carrierName?: string | undefined;
+    notes?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -119,37 +119,37 @@ export type WorkOrderPriority = "low" | "normal" | "high" | "urgent" | "emergenc
 export interface WorkOrderFull {
     id: string;
     projectId: string;
-    projectName?: string;
-    locationId?: string;
-    locationName?: string;
+    projectName?: string | undefined;
+    locationId?: string | undefined;
+    locationName?: string | undefined;
     number: string;
     title: string;
-    description?: string;
-    vendorId?: string;
-    vendorName?: string;
+    description?: string | undefined;
+    vendorId?: string | undefined;
+    vendorName?: string | undefined;
     assignedCrewIds: string[];
-    supervisorId?: string;
-    category?: string;
-    department?: string;
-    phase?: string;
-    scheduledStart?: string;
-    scheduledEnd?: string;
-    actualStart?: string;
-    actualEnd?: string;
-    estimatedHours?: number;
-    actualHours?: number;
-    estimatedCost?: number;
-    actualCost?: number;
-    notToExceed?: number;
-    billingType?: string;
+    supervisorId?: string | undefined;
+    category?: string | undefined;
+    department?: string | undefined;
+    phase?: string | undefined;
+    scheduledStart?: string | undefined;
+    scheduledEnd?: string | undefined;
+    actualStart?: string | undefined;
+    actualEnd?: string | undefined;
+    estimatedHours?: number | undefined;
+    actualHours?: number | undefined;
+    estimatedCost?: number | undefined;
+    actualCost?: number | undefined;
+    notToExceed?: number | undefined;
+    billingType?: string | undefined;
     priority: WorkOrderPriority;
     status: WorkOrderStatus;
     isOpenForBids: boolean;
-    bidDeadline?: string;
-    maxBidders?: number;
+    bidDeadline?: string | undefined;
+    maxBidders?: number | undefined;
     requiresChecklistCompletion: boolean;
-    completedAt?: string;
-    completionNotes?: string;
+    completedAt?: string | undefined;
+    completionNotes?: string | undefined;
     completionPhotos: string[];
     createdAt: string;
 }
@@ -164,12 +164,12 @@ export interface WorkOrderBid {
     id: string;
     workOrderId: string;
     vendorId: string;
-    vendorName?: string;
+    vendorName?: string | undefined;
     bidAmount: number;
-    estimatedHours?: number;
-    proposedStart?: string;
-    proposedEnd?: string;
-    notes?: string;
+    estimatedHours?: number | undefined;
+    proposedStart?: string | undefined;
+    proposedEnd?: string | undefined;
+    notes?: string | undefined;
     status: BidStatus;
     submittedAt: string;
 }
@@ -192,20 +192,20 @@ export type DispatchStatus =
 export interface DispatchEntry {
     id: string;
     workOrderId: string;
-    workOrderTitle?: string;
-    vendorId?: string;
-    vendorName?: string;
-    crewMemberId?: string;
-    crewMemberName?: string;
-    role?: string;
+    workOrderTitle?: string | undefined;
+    vendorId?: string | undefined;
+    vendorName?: string | undefined;
+    crewMemberId?: string | undefined;
+    crewMemberName?: string | undefined;
+    role?: string | undefined;
     status: DispatchStatus;
-    dispatchedAt?: string;
-    arrivedAt?: string;
-    startedAt?: string;
-    completedAt?: string;
-    dispatchNotes?: string;
-    confirmedAt?: string;
-    declinedReason?: string;
+    dispatchedAt?: string | undefined;
+    arrivedAt?: string | undefined;
+    startedAt?: string | undefined;
+    completedAt?: string | undefined;
+    dispatchNotes?: string | undefined;
+    confirmedAt?: string | undefined;
+    declinedReason?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -217,24 +217,24 @@ export type VendorReviewType = "project_completion" | "periodic" | "incident" | 
 export interface VendorReview {
     id: string;
     vendorId: string;
-    vendorName?: string;
-    projectId?: string;
-    projectName?: string;
-    workOrderId?: string;
+    vendorName?: string | undefined;
+    projectId?: string | undefined;
+    projectName?: string | undefined;
+    workOrderId?: string | undefined;
     reviewerId: string;
-    reviewerName?: string;
+    reviewerName?: string | undefined;
     reviewType: VendorReviewType;
     overallRating: number;
-    qualityRating?: number;
-    timelinessRating?: number;
-    communicationRating?: number;
-    professionalismRating?: number;
-    valueRating?: number;
-    safetyRating?: number;
-    strengths?: string;
-    improvements?: string;
-    comments?: string;
-    wouldRehire?: boolean;
+    qualityRating?: number | undefined;
+    timelinessRating?: number | undefined;
+    communicationRating?: number | undefined;
+    professionalismRating?: number | undefined;
+    valueRating?: number | undefined;
+    safetyRating?: number | undefined;
+    strengths?: string | undefined;
+    improvements?: string | undefined;
+    comments?: string | undefined;
+    wouldRehire?: boolean | undefined;
     reviewDate: string;
 }
 
@@ -252,9 +252,9 @@ export type JobChecklistStatus =
 export interface ChecklistTemplate {
     id: string;
     name: string;
-    description?: string;
-    category?: string;
-    department?: string;
+    description?: string | undefined;
+    category?: string | undefined;
+    department?: string | undefined;
     items: ChecklistItemDef[];
     isActive: boolean;
     usageCount: number;
@@ -263,36 +263,36 @@ export interface ChecklistTemplate {
 export interface ChecklistItemDef {
     id: string;
     title: string;
-    description?: string;
+    description?: string | undefined;
     required: boolean;
     order: number;
 }
 
 export interface JobChecklist {
     id: string;
-    templateId?: string;
-    workOrderId?: string;
-    projectId?: string;
-    assignedToId?: string;
-    vendorId?: string;
+    templateId?: string | undefined;
+    workOrderId?: string | undefined;
+    projectId?: string | undefined;
+    assignedToId?: string | undefined;
+    vendorId?: string | undefined;
     title: string;
     items: ChecklistItem[];
     status: JobChecklistStatus;
     totalItems: number;
     completedItems: number;
     completionPercent: number;
-    dueDate?: string;
-    completedAt?: string;
+    dueDate?: string | undefined;
+    completedAt?: string | undefined;
 }
 
 export interface ChecklistItem {
     id: string;
     title: string;
     completed: boolean;
-    completedAt?: string;
-    completedBy?: string;
-    notes?: string;
-    photoUrl?: string;
+    completedAt?: string | undefined;
+    completedBy?: string | undefined;
+    notes?: string | undefined;
+    photoUrl?: string | undefined;
     required: boolean;
 }
 
@@ -311,14 +311,14 @@ export type EstimateStatus =
 
 export interface Estimate {
     id: string;
-    companyId?: string;
-    companyName?: string;
-    contactId?: string;
-    contactName?: string;
-    dealId?: string;
+    companyId?: string | undefined;
+    companyName?: string | undefined;
+    contactId?: string | undefined;
+    contactName?: string | undefined;
+    dealId?: string | undefined;
     number: string;
     title: string;
-    description?: string;
+    description?: string | undefined;
     lineItems: EstimateLineItem[];
     subtotal: number;
     discountPercent: number;
@@ -327,27 +327,27 @@ export interface Estimate {
     taxAmount: number;
     total: number;
     currency: string;
-    validUntil?: string;
-    proposedStartDate?: string;
-    proposedEndDate?: string;
+    validUntil?: string | undefined;
+    proposedStartDate?: string | undefined;
+    proposedEndDate?: string | undefined;
     status: EstimateStatus;
-    sentAt?: string;
-    viewedAt?: string;
-    acceptedAt?: string;
-    rejectedAt?: string;
+    sentAt?: string | undefined;
+    viewedAt?: string | undefined;
+    acceptedAt?: string | undefined;
+    rejectedAt?: string | undefined;
     signatureRequired: boolean;
-    signedBy?: string;
-    signedAt?: string;
-    convertedProjectId?: string;
-    internalNotes?: string;
-    clientNotes?: string;
+    signedBy?: string | undefined;
+    signedAt?: string | undefined;
+    convertedProjectId?: string | undefined;
+    internalNotes?: string | undefined;
+    clientNotes?: string | undefined;
     createdAt: string;
 }
 
 export interface EstimateLineItem {
     id: string;
     name: string;
-    description?: string;
+    description?: string | undefined;
     qty: number;
     unit: string;
     unitPrice: number;
@@ -370,19 +370,19 @@ export type JobCostType =
 export interface JobCostEntry {
     id: string;
     projectId: string;
-    projectName?: string;
-    workOrderId?: string;
+    projectName?: string | undefined;
+    workOrderId?: string | undefined;
     costType: JobCostType;
     description: string;
-    vendorId?: string;
-    vendorName?: string;
-    crewMemberId?: string;
-    crewMemberName?: string;
+    vendorId?: string | undefined;
+    vendorName?: string | undefined;
+    crewMemberId?: string | undefined;
+    crewMemberName?: string | undefined;
     quantity: number;
     unit: string;
     unitCost: number;
     totalCost: number;
-    budgetedAmount?: number;
+    budgetedAmount?: number | undefined;
     costDate: string;
     billable: boolean;
     billed: boolean;
@@ -398,15 +398,15 @@ export type CommDirection = "inbound" | "outbound";
 export interface VendorCommunication {
     id: string;
     vendorId: string;
-    vendorName?: string;
-    workOrderId?: string;
-    projectId?: string;
+    vendorName?: string | undefined;
+    workOrderId?: string | undefined;
+    projectId?: string | undefined;
     channel: CommChannel;
     direction: CommDirection;
-    subject?: string;
+    subject?: string | undefined;
     body: string;
-    senderName?: string;
-    readAt?: string;
+    senderName?: string | undefined;
+    readAt?: string | undefined;
     attachmentUrls: string[];
     createdAt: string;
 }
@@ -442,36 +442,36 @@ export type ServiceRequestPriority = "low" | "normal" | "high" | "urgent" | "eme
 
 export interface ServiceRequest {
     id: string;
-    companyId?: string;
-    companyName?: string;
-    contactId?: string;
-    contactName?: string;
-    requesterName?: string;
-    requesterEmail?: string;
-    requesterPhone?: string;
+    companyId?: string | undefined;
+    companyName?: string | undefined;
+    contactId?: string | undefined;
+    contactName?: string | undefined;
+    requesterName?: string | undefined;
+    requesterEmail?: string | undefined;
+    requesterPhone?: string | undefined;
     title: string;
-    description?: string;
-    category?: string;
-    serviceType?: string;
-    locationName?: string;
-    locationNotes?: string;
-    preferredDate?: string;
-    preferredTimeStart?: string;
-    preferredTimeEnd?: string;
+    description?: string | undefined;
+    category?: string | undefined;
+    serviceType?: string | undefined;
+    locationName?: string | undefined;
+    locationNotes?: string | undefined;
+    preferredDate?: string | undefined;
+    preferredTimeStart?: string | undefined;
+    preferredTimeEnd?: string | undefined;
     isFlexible: boolean;
     priority: ServiceRequestPriority;
     status: ServiceRequestStatus;
     source: ServiceRequestSource;
     requiresAssessment: boolean;
-    assessmentDate?: string;
-    assessmentNotes?: string;
-    assessedByName?: string;
+    assessmentDate?: string | undefined;
+    assessmentNotes?: string | undefined;
+    assessedByName?: string | undefined;
     attachmentUrls: string[];
-    convertedToType?: "estimate" | "work_order" | "project" | "deal";
-    convertedToId?: string;
-    convertedAt?: string;
-    assignedToId?: string;
-    assignedToName?: string;
-    internalNotes?: string;
+    convertedToType?: "estimate" | "work_order" | "project" | "deal" | undefined;
+    convertedToId?: string | undefined;
+    convertedAt?: string | undefined;
+    assignedToId?: string | undefined;
+    assignedToName?: string | undefined;
+    internalNotes?: string | undefined;
     createdAt: string;
 }

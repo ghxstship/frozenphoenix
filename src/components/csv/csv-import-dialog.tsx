@@ -40,9 +40,9 @@ interface ImportResult {
     status: "completed" | "partial" | "failed";
     total_rows: number;
     imported_rows: number;
-    skipped_rows?: number;
-    error_rows?: number;
-    errors?: FieldError[];
+    skipped_rows?: number | undefined;
+    error_rows?: number | undefined;
+    errors?: FieldError[] | undefined;
 }
 
 export interface CsvImportDialogProps {
@@ -53,7 +53,7 @@ export interface CsvImportDialogProps {
     /** Called when dialog should close */
     onOpenChange: (open: boolean) => void;
     /** Called after successful import to refresh data */
-    onImportComplete?: () => void;
+    onImportComplete?: (() => void) | undefined;
 }
 
 // ─── Constants ───

@@ -13,7 +13,7 @@ interface SearchResult {
     id: string;
     type: string;
     name: string;
-    subtitle?: string;
+    subtitle?: string | undefined;
     url: string;
 }
 

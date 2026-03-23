@@ -39,7 +39,9 @@ export const GET = withApiHandlerParams(
         if (!membership) {
             // Check if public
             const { data: conv } = await serverFromTable(admin!, "conversations")
-                .select("*")
+                .select(
+                    "id, organization_id, type, name, slug, description, is_public, is_announcement_only, is_archived, category, event_id, project_id, created_by, last_message_at, created_at"
+                )
                 .eq("id", id)
                 .eq("is_public", true)
                 .single();
@@ -48,7 +50,9 @@ export const GET = withApiHandlerParams(
         }
 
         const { data: conversation, error } = await serverFromTable(admin!, "conversations")
-            .select("*")
+            .select(
+                "id, organization_id, type, name, slug, description, is_public, is_announcement_only, is_archived, category, event_id, project_id, created_by, last_message_at, created_at"
+            )
             .eq("id", id)
             .single();
 
@@ -94,7 +98,9 @@ export const PATCH = withApiHandlerParams(
         const { data: updated, error } = await serverFromTable(admin!, "conversations")
             .update(parsed.data)
             .eq("id", id)
-            .select("*")
+            .select(
+                "id, organization_id, type, name, slug, description, is_public, is_announcement_only, is_archived, category, event_id, project_id, created_by, last_message_at, created_at"
+            )
             .single();
 
         if (error) {

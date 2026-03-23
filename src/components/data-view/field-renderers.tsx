@@ -65,28 +65,23 @@ export type FieldType =
 
 export interface FieldConfig {
     type: FieldType;
-    label?: string;
-    // For status/priority fields
-    variantMap?: Record<string, BadgeVariant>;
-    labelMap?: Record<string, string>;
-    // For progress fields
-    showPercentage?: boolean;
-    colorThresholds?: { value: number; color: string }[];
-    // For user fields
-    showAvatar?: boolean;
-    showName?: boolean;
-    // For date fields
-    format?: string;
-    // For custom rendering
-    render?: (value: unknown) => React.ReactNode;
+    label?: string | undefined; // For status/priority fields
+    variantMap?: Record<string, BadgeVariant> | undefined;
+    labelMap?: Record<string, string> | undefined; // For progress fields
+    showPercentage?: boolean | undefined;
+    colorThresholds?: { value: number; color: string }[] | undefined; // For user fields
+    showAvatar?: boolean | undefined;
+    showName?: boolean | undefined; // For date fields
+    format?: string | undefined; // For custom rendering
+    render?: ((value: unknown) => React.ReactNode) | undefined;
 }
 
 // ─── Status Field ───
 interface StatusFieldProps {
     value: string;
-    variantMap?: Record<string, BadgeVariant>;
-    labelMap?: Record<string, string>;
-    size?: "sm" | "md";
+    variantMap?: Record<string, BadgeVariant> | undefined;
+    labelMap?: Record<string, string> | undefined;
+    size?: "sm" | "md" | undefined;
 }
 
 export function StatusField({ value, variantMap, labelMap, size = "sm" }: StatusFieldProps) {
@@ -109,8 +104,8 @@ export function StatusField({ value, variantMap, labelMap, size = "sm" }: Status
 // ─── Priority Field ───
 interface PriorityFieldProps {
     value: string;
-    showIcon?: boolean;
-    size?: "sm" | "md";
+    showIcon?: boolean | undefined;
+    size?: "sm" | "md" | undefined;
 }
 
 const priorityConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
@@ -139,10 +134,10 @@ export function PriorityField({ value, showIcon = true, size = "sm" }: PriorityF
 // ─── Progress Field ───
 interface ProgressFieldProps {
     value: number;
-    max?: number;
-    showPercentage?: boolean;
-    size?: "sm" | "md" | "lg";
-    colorThresholds?: { value: number; color: string }[];
+    max?: number | undefined;
+    showPercentage?: boolean | undefined;
+    size?: "sm" | "md" | "lg" | undefined;
+    colorThresholds?: { value: number; color: string }[] | undefined;
 }
 
 export function ProgressField({
@@ -189,10 +184,10 @@ export function ProgressField({
 // ─── Currency Field ───
 interface CurrencyFieldProps {
     value: number;
-    currency?: string;
-    showSign?: boolean;
-    compact?: boolean;
-    className?: string;
+    currency?: string | undefined;
+    showSign?: boolean | undefined;
+    compact?: boolean | undefined;
+    className?: string | undefined;
 }
 
 export function CurrencyField({
@@ -232,9 +227,9 @@ export function CurrencyField({
 // ─── Percentage Field ───
 interface PercentageFieldProps {
     value: number;
-    showIcon?: boolean;
-    colorCoded?: boolean;
-    className?: string;
+    showIcon?: boolean | undefined;
+    colorCoded?: boolean | undefined;
+    className?: string | undefined;
 }
 
 export function PercentageField({
@@ -268,10 +263,10 @@ export function PercentageField({
 // ─── Date Field ───
 interface DateFieldProps {
     value: string | Date | null | undefined;
-    format?: "short" | "medium" | "long" | "relative";
-    showIcon?: boolean;
-    showOverdue?: boolean;
-    className?: string;
+    format?: "short" | "medium" | "long" | "relative" | undefined;
+    showIcon?: boolean | undefined;
+    showOverdue?: boolean | undefined;
+    className?: string | undefined;
 }
 
 export function DateField({
@@ -306,12 +301,12 @@ export function DateField({
 // ─── User Field ───
 interface UserFieldProps {
     name: string;
-    avatar?: string;
-    email?: string;
-    showAvatar?: boolean;
-    showName?: boolean;
-    size?: "sm" | "md" | "lg";
-    className?: string;
+    avatar?: string | undefined;
+    email?: string | undefined;
+    showAvatar?: boolean | undefined;
+    showName?: boolean | undefined;
+    size?: "sm" | "md" | "lg" | undefined;
+    className?: string | undefined;
 }
 
 export function UserField({
@@ -339,9 +334,9 @@ export function UserField({
 // ─── Users Field (Multiple) ───
 interface UsersFieldProps {
     users: { name: string; avatar?: string }[];
-    max?: number;
-    size?: "sm" | "md";
-    className?: string;
+    max?: number | undefined;
+    size?: "sm" | "md" | undefined;
+    className?: string | undefined;
 }
 
 export function UsersField({ users, max = 3, size = "sm", className }: UsersFieldProps) {
@@ -376,10 +371,10 @@ export function UsersField({ users, max = 3, size = "sm", className }: UsersFiel
 // ─── Boolean Field ───
 interface BooleanFieldProps {
     value: boolean;
-    trueLabel?: string;
-    falseLabel?: string;
-    showLabel?: boolean;
-    variant?: "icon" | "badge" | "text";
+    trueLabel?: string | undefined;
+    falseLabel?: string | undefined;
+    showLabel?: boolean | undefined;
+    variant?: "icon" | "badge" | "text" | undefined;
 }
 
 export function BooleanField({
@@ -422,9 +417,9 @@ export function BooleanField({
 // ─── Rating Field ───
 interface RatingFieldProps {
     value: number;
-    max?: number;
-    showValue?: boolean;
-    size?: "sm" | "md";
+    max?: number | undefined;
+    showValue?: boolean | undefined;
+    size?: "sm" | "md" | undefined;
 }
 
 export function RatingField({ value, max = 5, showValue = true, size = "sm" }: RatingFieldProps) {
@@ -455,8 +450,8 @@ export function RatingField({ value, max = 5, showValue = true, size = "sm" }: R
 // ─── Tags Field ───
 interface TagsFieldProps {
     tags: string[] | { label: string; color?: string }[];
-    max?: number;
-    size?: "sm" | "md";
+    max?: number | undefined;
+    size?: "sm" | "md" | undefined;
 }
 
 export function TagsField({ tags, max = 3, size = "sm" }: TagsFieldProps) {
@@ -486,8 +481,8 @@ export function TagsField({ tags, max = 3, size = "sm" }: TagsFieldProps) {
 // ─── Email Field ───
 interface EmailFieldProps {
     value: string;
-    showIcon?: boolean;
-    asLink?: boolean;
+    showIcon?: boolean | undefined;
+    asLink?: boolean | undefined;
 }
 
 export function EmailField({ value, showIcon = true, asLink = true }: EmailFieldProps) {
@@ -504,8 +499,8 @@ export function EmailField({ value, showIcon = true, asLink = true }: EmailField
 // ─── Phone Field ───
 interface PhoneFieldProps {
     value: string;
-    showIcon?: boolean;
-    asLink?: boolean;
+    showIcon?: boolean | undefined;
+    asLink?: boolean | undefined;
 }
 
 export function PhoneField({ value, showIcon = true, asLink = true }: PhoneFieldProps) {
@@ -522,9 +517,9 @@ export function PhoneField({ value, showIcon = true, asLink = true }: PhoneField
 // ─── URL Field ───
 interface URLFieldProps {
     value: string;
-    label?: string;
-    showIcon?: boolean;
-    external?: boolean;
+    label?: string | undefined;
+    showIcon?: boolean | undefined;
+    external?: boolean | undefined;
 }
 
 export function URLField({ value, label, showIcon = true, external = true }: URLFieldProps) {
@@ -547,7 +542,7 @@ export function URLField({ value, label, showIcon = true, external = true }: URL
 // ─── Location Field ───
 interface LocationFieldProps {
     value: string;
-    showIcon?: boolean;
+    showIcon?: boolean | undefined;
 }
 
 export function LocationField({ value, showIcon = true }: LocationFieldProps) {
@@ -568,7 +563,7 @@ export function EmptyField({ placeholder = "—" }: { placeholder?: string }) {
 interface FieldRendererProps {
     value: unknown;
     config: FieldConfig;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function FieldRenderer({ value, config, className }: FieldRendererProps) {

@@ -1,12 +1,12 @@
 "use client";
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { OperationalDashboardShell } from "@/components/shells";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { useInvoices, usePurchaseOrders } from "@/lib/supabase";
 import { formatCurrency } from "@/lib/utils";
 import { AlertTriangle, CheckCircle2, DollarSign, Receipt } from "lucide-react";
 import type { Invoice, PurchaseOrder } from "@/types";
@@ -148,29 +148,41 @@ const poColumns: ColumnDef<PurchaseOrder>[] = [
     },
 ];
 
-export function FinancePageClient() {
-    const { data: sbPOs, isLoading: loadingPOs } = usePurchaseOrders();
-    const { data: sbInvoices, isLoading: loadingInvoices } = useInvoices();
+interface FinanceData {
+    purchaseOrders: Array<Record<string, unknown>>;
+    invoices: Array<Record<string, unknown>>;
+}
 
-    const pos: PurchaseOrder[] = (sbPOs ?? []).map((po) => ({
-        id: po.id,
-        projectId: po.project_id,
-        vendorId: po.vendor_id,
-        vendorName: (po as { vendors?: { name: string } }).vendors?.name || "",
-        totalAmount: po.total_amount,
+function useFinanceData() {
+    return useQuery<FinanceData>({
+        queryKey: ["finance-bff"],
+        queryFn: async () => {
+            const res = await fetch("/api/finance");
+            if (!res.ok) throw new Error(`Finance BFF failed: ${res.status}`);
+            return res.json();
+        },
+        staleTime: 30_000,
+    });
+}
+
+export function FinancePageClient() {
+    const { data, isLoading } = useFinanceData();
+
+    const pos: PurchaseOrder[] = (data?.purchaseOrders ?? []).map((po) => ({
+        id: po.id as string,
+        projectId: po.project_id as string,
+        vendorId: po.vendor_id as string,
+        vendorName: (po.vendors as { name: string } | null)?.name || "",
+        totalAmount: po.total_amount as number,
         status: po.status as PurchaseOrder["status"],
-        issuedDate: po.issued_date,
+        issuedDate: po.issued_date as string,
         items: (
-            (
-                po as {
-                    purchase_order_items?: Array<{
-                        description: string;
-                        quantity: number;
-                        unit_price: number;
-                        total: number;
-                    }>;
-                }
-            ).purchase_order_items || []
+            (po.purchase_order_items as Array<{
+                description: string;
+                quantity: number;
+                unit_price: number;
+                total: number;
+            }>) || []
         ).map((item) => ({
             description: item.description,
             quantity: item.quantity,
@@ -179,19 +191,17 @@ export function FinancePageClient() {
         })),
     }));
 
-    const invoices: Invoice[] = (sbInvoices ?? []).map((inv) => ({
-        id: inv.id,
-        vendorId: inv.vendor_id,
-        vendorName: (inv as { vendors?: { name: string } }).vendors?.name || "",
-        purchaseOrderId: inv.purchase_order_id ?? undefined,
-        amount: inv.amount,
+    const invoices: Invoice[] = (data?.invoices ?? []).map((inv) => ({
+        id: inv.id as string,
+        vendorId: inv.vendor_id as string,
+        vendorName: (inv.vendors as { name: string } | null)?.name || "",
+        purchaseOrderId: (inv.purchase_order_id as string) ?? undefined,
+        amount: inv.amount as number,
         status: inv.status as Invoice["status"],
-        invoiceDate: inv.invoice_date,
-        dueDate: inv.due_date,
-        variance: inv.variance ?? undefined,
+        invoiceDate: inv.invoice_date as string,
+        dueDate: inv.due_date as string,
+        variance: (inv.variance as number) ?? undefined,
     }));
-
-    const isLoading = loadingPOs || loadingInvoices;
 
     const totalPO = pos.reduce((sum, po) => sum + po.totalAmount, 0);
     const totalInvoiced = invoices.reduce((sum, inv) => sum + inv.amount, 0);

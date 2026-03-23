@@ -14,8 +14,8 @@ interface RelationshipGroup {
     entityType: EntityType;
     label: string;
     records: LinkedRecord[];
-    canCreate?: boolean;
-    createHref?: string;
+    canCreate?: boolean | undefined;
+    createHref?: string | undefined;
 }
 
 interface RelationshipBrowserProps {
@@ -24,10 +24,10 @@ interface RelationshipBrowserProps {
         id: string;
         name: string;
     };
-    parentRecords?: LinkedRecord[];
-    childGroups?: RelationshipGroup[];
-    relatedGroups?: RelationshipGroup[];
-    className?: string;
+    parentRecords?: LinkedRecord[] | undefined;
+    childGroups?: RelationshipGroup[] | undefined;
+    relatedGroups?: RelationshipGroup[] | undefined;
+    className?: string | undefined;
 }
 
 export function RelationshipBrowser({

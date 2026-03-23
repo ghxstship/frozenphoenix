@@ -11,16 +11,16 @@ type MetricVariant = "default" | "success" | "warning" | "danger" | "info";
 interface MetricCardProps {
     label: string;
     value: string | number;
-    previousValue?: string | number;
-    change?: number;
-    changeSuffix?: string;
-    icon?: LucideIcon;
-    unit?: string;
-    description?: string;
-    variant?: MetricVariant;
-    threshold?: { warning: number; danger: number };
-    sparkline?: number[];
-    className?: string;
+    previousValue?: string | number | undefined;
+    change?: number | undefined;
+    changeSuffix?: string | undefined;
+    icon?: LucideIcon | undefined;
+    unit?: string | undefined;
+    description?: string | undefined;
+    variant?: MetricVariant | undefined;
+    threshold?: { warning: number; danger: number } | undefined;
+    sparkline?: number[] | undefined;
+    className?: string | undefined;
 }
 
 const VARIANT_STYLES: Record<MetricVariant, string> = {

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 interface SkipLinkProps {
     href: string;
     children: React.ReactNode;
-    className?: string;
+    className?: string | undefined;
 }
 
 /**

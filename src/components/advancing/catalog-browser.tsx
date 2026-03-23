@@ -20,10 +20,10 @@ interface CatalogBrowserProps {
         name: string;
         sku: string;
         unit_cost: number;
-        thumbnail_url?: string;
+        thumbnail_url?: string | undefined;
         is_critical_path: boolean;
     }) => void;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function CatalogBrowser({ onAddItem, className }: CatalogBrowserProps) {

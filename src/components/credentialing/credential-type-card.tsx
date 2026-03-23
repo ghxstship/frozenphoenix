@@ -13,7 +13,7 @@ interface CredentialTypeCardProps {
     tierLevel: number;
     isActive: boolean;
     defaultZoneAccess: string[];
-    onClick?: () => void;
+    onClick?: (() => void) | undefined;
 }
 
 export function CredentialTypeCard({

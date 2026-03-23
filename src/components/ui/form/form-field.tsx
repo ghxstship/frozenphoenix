@@ -5,11 +5,11 @@ import { cn } from "@/lib/utils";
 
 export interface FormFieldProps {
     label: string;
-    htmlFor?: string;
-    description?: string;
-    error?: string;
-    required?: boolean;
-    className?: string;
+    htmlFor?: string | undefined;
+    description?: string | undefined;
+    error?: string | undefined;
+    required?: boolean | undefined;
+    className?: string | undefined;
     children: React.ReactNode;
 }
 
@@ -38,7 +38,14 @@ export function FormField({
                 {required && <span className="text-destructive ml-1">*</span>}
             </label>
             {React.Children.map(children, (child) => {
-                if (React.isValidElement<{ id?: string; "aria-describedby"?: string; "aria-invalid"?: boolean }>(child)) {
+                if (
+                    React.isValidElement<{
+                        id?: string;
+                        "aria-describedby"?: string;
+                        "aria-invalid"?: boolean;
+                    }>(child)
+                ) {
+                    // @ts-expect-error — React.cloneElement types lack | undefined on optional props under exactOptionalPropertyTypes
                     return React.cloneElement(child, {
                         id: child.props.id ?? fieldId,
                         "aria-describedby": child.props["aria-describedby"] ?? describedBy,
@@ -48,10 +55,14 @@ export function FormField({
                 return child;
             })}
             {description && !error && (
-                <p id={descriptionId} className="text-xs text-muted-foreground">{description}</p>
+                <p id={descriptionId} className="text-xs text-muted-foreground">
+                    {description}
+                </p>
             )}
             {error && (
-                <p id={errorId} className="text-xs text-destructive" role="alert">{error}</p>
+                <p id={errorId} className="text-xs text-destructive" role="alert">
+                    {error}
+                </p>
             )}
         </div>
     );

@@ -25,7 +25,7 @@ export const POST = withApiHandlerParams(
             .update(updates)
             .eq("id", itemId)
             .eq("advance_id", id)
-            .select()
+            .select("id, status, quantity_confirmed, updated_at")
             .single();
 
         if (error) {

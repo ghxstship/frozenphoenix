@@ -123,9 +123,9 @@ function sendInviteEmails(
     data: Array<{
         id: string;
         email: string;
-        role?: string | null;
+        role?: string | null | undefined;
         token: string;
-        invite_type?: string;
+        invite_type?: string | undefined;
         [key: string]: unknown;
     }> | null,
     orgName: string | null,

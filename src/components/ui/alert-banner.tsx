@@ -8,9 +8,9 @@ type Severity = "warning" | "info" | "destructive";
 
 interface AlertBannerProps {
     message: React.ReactNode;
-    severity?: Severity;
-    icon?: React.ComponentType<{ className?: string }>;
-    className?: string;
+    severity?: Severity | undefined;
+    icon?: React.ComponentType<{ className?: string }> | undefined;
+    className?: string | undefined;
 }
 
 export function AlertBanner({

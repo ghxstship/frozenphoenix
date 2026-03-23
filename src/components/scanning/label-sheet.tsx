@@ -16,17 +16,15 @@ export interface LabelItem {
     /** Value to encode in QR (barcode, ID, etc.) */
     qrValue: string;
     /** Optional subtitle (category, location, etc.) */
-    subtitle?: string;
+    subtitle?: string | undefined;
 }
 
 interface LabelSheetProps {
     items: LabelItem[];
     /** QR code size in px (default 96) */
-    qrSize?: number;
-    /** Columns per row (default 3) */
-    columns?: number;
-    /** Show print button (default true) */
-    showPrintButton?: boolean;
+    qrSize?: number | undefined; /** Columns per row (default 3) */
+    columns?: number | undefined; /** Show print button (default true) */
+    showPrintButton?: boolean | undefined;
 }
 
 export function LabelSheet({

@@ -17,9 +17,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { useScanDevice } from "@/hooks/use-scan-device";
-import { BarcodeScanner } from "./barcode-scanner";
+const BarcodeScanner = dynamic(() => import("./barcode-scanner").then((m) => m.BarcodeScanner), {
+    ssr: false,
+});
 import { isNfcSupported, NfcReader } from "./nfc-reader";
 import type { NfcReadResult } from "./nfc-reader";
 import { SCANNING_STRINGS } from "@/lib/i18n/scanning-strings";
@@ -33,20 +36,18 @@ export interface ScanInputProps {
     /** Called when a value is scanned or entered. */
     onScan: (value: string, method: ScanMethod) => void;
     /** Placeholder text for the input. */
-    placeholder?: string;
-    /** Whether to show the camera toggle. Auto-detected if undefined. */
-    showCamera?: boolean;
-    /** Whether to show the NFC toggle. Auto-detected if undefined. */
-    showNfc?: boolean;
-    /** Whether to auto-submit on Enter key. Default true. */
-    submitOnEnter?: boolean;
-    /** Whether to clear input after scan. Default true. */
-    clearOnScan?: boolean;
-    /** Disable all inputs. */
-    disabled?: boolean;
-    /** Auto-focus the text input on mount. Default true. */
-    autoFocus?: boolean;
-    className?: string;
+    placeholder?:
+        | string
+        | undefined; /** Whether to show the camera toggle. Auto-detected if undefined. */
+    showCamera?:
+        | boolean
+        | undefined; /** Whether to show the NFC toggle. Auto-detected if undefined. */
+    showNfc?: boolean | undefined; /** Whether to auto-submit on Enter key. Default true. */
+    submitOnEnter?: boolean | undefined; /** Whether to clear input after scan. Default true. */
+    clearOnScan?: boolean | undefined; /** Disable all inputs. */
+    disabled?: boolean | undefined; /** Auto-focus the text input on mount. Default true. */
+    autoFocus?: boolean | undefined;
+    className?: string | undefined;
 }
 
 export function ScanInput({

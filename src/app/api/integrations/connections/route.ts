@@ -17,7 +17,9 @@ export const GET = withApiHandler(
         const isActive = url.searchParams.get("is_active");
 
         let query = serverFromTable(supabase, "provider_connections")
-            .select("*")
+            .select(
+                "id, provider_type, display_name, event_id, is_active, sync_direction, webhook_url, last_sync_at, created_at, created_by"
+            )
             .order("created_at", { ascending: false });
 
         if (providerType) query = query.eq("provider_type", providerType);
@@ -83,7 +85,7 @@ export const POST = withApiHandler(
                 created_by: user.id,
                 updated_by: user.id,
             } as Record<string, unknown>)
-            .select()
+            .select("id, provider_type, display_name, event_id, is_active, webhook_url, created_at")
             .single();
 
         if (error) {

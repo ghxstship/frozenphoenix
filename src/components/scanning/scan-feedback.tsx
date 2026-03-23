@@ -27,10 +27,11 @@ export interface ScanFeedbackProps {
     message: string;
     visible: boolean;
     /** Called when feedback should auto-hide. Parent sets visible=false. */
-    onDismiss?: () => void;
-    /** Auto-hide after this many ms. 0 = never. Default 3000. */
-    autoHideMs?: number;
-    className?: string;
+    onDismiss?:
+        | (() => void)
+        | undefined; /** Auto-hide after this many ms. 0 = never. Default 3000. */
+    autoHideMs?: number | undefined;
+    className?: string | undefined;
 }
 
 const RESULT_CONFIG: Record<

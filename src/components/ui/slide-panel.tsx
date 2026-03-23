@@ -11,11 +11,11 @@ import { X } from "lucide-react";
 interface SlidePanelProps {
     open: boolean;
     onClose: () => void;
-    title?: string;
-    side?: "right" | "left";
-    width?: string;
+    title?: string | undefined;
+    side?: "right" | "left" | undefined;
+    width?: string | undefined;
     children: React.ReactNode;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function SlidePanel({

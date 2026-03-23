@@ -42,7 +42,7 @@ const SLIDE_CLASSES: Record<Side, string> = {
 };
 
 interface SheetContentProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
-    side?: Side;
+    side?: Side | undefined;
 }
 
 const SheetContent = React.forwardRef<

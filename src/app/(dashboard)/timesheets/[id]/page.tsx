@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { TimesheetsDetailClient } from "./_client";
 
 export default async function TimesheetsDetailPage({
@@ -6,5 +7,6 @@ export default async function TimesheetsDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <TimesheetsDetailClient id={id} />;
+    const initialRecord = await prefetchDetailRecord("timesheets", id);
+    return <TimesheetsDetailClient id={id} initialRecord={initialRecord} />;
 }

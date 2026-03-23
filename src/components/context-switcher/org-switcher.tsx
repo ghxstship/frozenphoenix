@@ -12,8 +12,8 @@ import type { PermissionLevel } from "@/types";
 import type { SwitcherItem } from "@/types/workspace-context";
 
 interface OrgSwitcherProps {
-    collapsed?: boolean;
-    isMobile?: boolean;
+    collapsed?: boolean | undefined;
+    isMobile?: boolean | undefined;
 }
 
 export function OrgSwitcher({ collapsed = false, isMobile = false }: OrgSwitcherProps) {

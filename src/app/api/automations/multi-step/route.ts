@@ -49,6 +49,7 @@ export const POST = withApiHandler(
         }
 
         // Fetch trigger record
+        // §2.2 trust boundary: entityType comes from automation config — runtime-resolved table name
         const { data: record, error: recordErr } = await serverFromTable(supabase, entityType)
             .select("*")
             .eq("id", trigger_record_id)
@@ -76,7 +77,7 @@ export const POST = withApiHandler(
             step: number;
             action: string;
             status: string;
-            detail?: string;
+            detail?: string | undefined;
         }> = [];
         let currentRecord = record as Record<string, unknown>;
 
@@ -151,6 +152,7 @@ export const POST = withApiHandler(
 
                 // If the action updated a field, refresh the record for subsequent steps
                 if (actionType === "update_field") {
+                    // §2.2 trust boundary: entityType resolved at runtime — need full refreshed row
                     const { data: refreshed } = await serverFromTable(supabase, entityType)
                         .select("*")
                         .eq("id", trigger_record_id)

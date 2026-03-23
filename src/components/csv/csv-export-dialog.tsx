@@ -41,9 +41,8 @@ export interface CsvExportDialogProps {
     /** Called when dialog should close */
     onOpenChange: (open: boolean) => void;
     /** Optional filters to apply to the export query */
-    filters?: Record<string, unknown>;
-    /** Optional row limit (default: 10,000) */
-    limit?: number;
+    filters?: Record<string, unknown> | undefined; /** Optional row limit (default: 10,000) */
+    limit?: number | undefined;
 }
 
 // ─── Constants ───
@@ -152,7 +151,7 @@ export function CsvExportDialog({
 
             if (!response.ok) {
                 const errorData = (await response.json().catch(() => null)) as {
-                    error?: { message?: string };
+                    error?: { message?: string } | undefined;
                 } | null;
                 throw new Error(errorData?.error?.message ?? `Preview failed (${response.status})`);
             }
@@ -187,7 +186,7 @@ export function CsvExportDialog({
 
             if (!response.ok) {
                 const errorData = (await response.json().catch(() => null)) as {
-                    error?: { message?: string };
+                    error?: { message?: string } | undefined;
                 } | null;
                 throw new Error(errorData?.error?.message ?? `Export failed (${response.status})`);
             }

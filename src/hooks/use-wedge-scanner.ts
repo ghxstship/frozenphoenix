@@ -11,15 +11,13 @@ export interface UseWedgeScannerOptions {
     /** Called when a wedge scan is detected */
     onScan: (value: string) => void;
     /** Whether the hook is active (default true) */
-    enabled?: boolean;
-    /** Max milliseconds between keystrokes to consider them part of a scan (default 50) */
-    maxKeystrokeGap?: number;
-    /** Minimum characters for a valid scan (default 4) */
-    minLength?: number;
-    /** Prefix characters that indicate a scan start (optional) */
-    prefix?: string;
-    /** Suffix characters that indicate a scan end (default: Enter) */
-    suffix?: string;
+    enabled?:
+        | boolean
+        | undefined; /** Max milliseconds between keystrokes to consider them part of a scan (default 50) */
+    maxKeystrokeGap?: number | undefined; /** Minimum characters for a valid scan (default 4) */
+    minLength?: number | undefined; /** Prefix characters that indicate a scan start (optional) */
+    prefix?: string | undefined; /** Suffix characters that indicate a scan end (default: Enter) */
+    suffix?: string | undefined;
 }
 
 /**

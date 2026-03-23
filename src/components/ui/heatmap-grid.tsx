@@ -10,26 +10,26 @@ import { useBreakpoint } from "@/hooks/use-media-query";
 interface HeatmapRow {
     id: string;
     label: string;
-    sublabel?: string;
-    avatar?: string;
+    sublabel?: string | undefined;
+    avatar?: string | undefined;
     cells: HeatmapCell[];
 }
 
 interface HeatmapCell {
     value: number;
-    label?: string;
-    tooltip?: string;
+    label?: string | undefined;
+    tooltip?: string | undefined;
 }
 
 interface HeatmapGridProps {
     rows: HeatmapRow[];
     columnLabels: string[];
-    maxValue?: number;
-    formatValue?: (value: number) => string;
-    colorScale?: "utilization" | "heat" | "divergent";
-    emptyLabel?: string;
-    className?: string;
-    onCellClick?: (rowId: string, colIndex: number) => void;
+    maxValue?: number | undefined;
+    formatValue?: ((value: number) => string) | undefined;
+    colorScale?: "utilization" | "heat" | "divergent" | undefined;
+    emptyLabel?: string | undefined;
+    className?: string | undefined;
+    onCellClick?: ((rowId: string, colIndex: number) => void) | undefined;
 }
 
 function getUtilizationColor(percent: number): string {

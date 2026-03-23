@@ -19,9 +19,9 @@ import type { PricingTier } from "@/config/tier-entitlements";
 interface UpsellCardProps {
     requiredTier: PricingTier;
     requiredTierName: string;
-    featureLabel?: string;
-    className?: string;
-    compact?: boolean;
+    featureLabel?: string | undefined;
+    className?: string | undefined;
+    compact?: boolean | undefined;
 }
 
 export function UpsellCard({

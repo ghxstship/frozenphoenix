@@ -8,15 +8,15 @@ interface BurnChartPoint {
     label: string;
     planned: number;
     actual: number;
-    forecast?: number;
+    forecast?: number | undefined;
 }
 
 interface BurnChartProps {
     data: BurnChartPoint[];
     budgetTotal: number;
-    formatValue?: (value: number) => string;
-    className?: string;
-    height?: number;
+    formatValue?: ((value: number) => string) | undefined;
+    className?: string | undefined;
+    height?: number | undefined;
 }
 
 export function BurnChart({

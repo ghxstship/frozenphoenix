@@ -34,7 +34,9 @@ export const POST = withApiHandlerParams(
             supabase,
             "settings_change_requests"
         )
-            .select("*")
+            .select(
+                "id, organization_id, setting_key, scope_type, scope_id, current_value, proposed_value, status, requested_by"
+            )
             .eq("id", requestId)
             .single();
 
@@ -75,7 +77,9 @@ export const POST = withApiHandlerParams(
                 reviewed_at: new Date().toISOString(),
             })
             .eq("id", requestId)
-            .select("*")
+            .select(
+                "id, organization_id, setting_key, scope_type, scope_id, current_value, proposed_value, reason, status, requested_by, reviewed_by, review_comment, reviewed_at, created_at"
+            )
             .single();
 
         if (updateErr) {

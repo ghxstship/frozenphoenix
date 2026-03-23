@@ -39,24 +39,24 @@ export interface CreateFieldDef {
         | "textarea"
         | "currency"
         | "entity-lookup";
-    placeholder?: string;
-    required?: boolean;
-    description?: string;
-    options?: SelectOption[];
-    defaultValue?: string | number;
-    min?: number;
-    max?: number;
-    step?: number;
-    lookupConfig?: EntityLookupConfig;
+    placeholder?: string | undefined;
+    required?: boolean | undefined;
+    description?: string | undefined;
+    options?: SelectOption[] | undefined;
+    defaultValue?: string | number | undefined;
+    min?: number | undefined;
+    max?: number | undefined;
+    step?: number | undefined;
+    lookupConfig?: EntityLookupConfig | undefined;
 }
 
 // ─── Entity Form Config ───
 
 export interface CreateEntityConfig {
     entityName: string;
-    description?: string;
+    description?: string | undefined;
     fields: CreateFieldDef[];
-    size?: "sm" | "md" | "lg";
+    size?: "sm" | "md" | "lg" | undefined;
 }
 
 // ─── Hook: sync ?action=create to dialog open state ───
@@ -89,7 +89,7 @@ interface CreateEntityDialogProps {
     config: CreateEntityConfig;
     open: boolean;
     onClose: () => void;
-    onSubmit?: (values: Record<string, unknown>) => Promise<void> | void;
+    onSubmit?: (values: Record<string, unknown>) => Promise<void> | void | undefined;
 }
 
 export function CreateEntityDialog({ config, open, onClose, onSubmit }: CreateEntityDialogProps) {
@@ -126,8 +126,10 @@ export function CreateEntityDialog({ config, open, onClose, onSubmit }: CreateEn
     // Dirty-state tracking
     const isDirty = useMemo(() => {
         const initial = initialValuesRef.current;
-        return Object.keys(values).some((key) => values[key] !== initial[key]) ||
-            Object.keys(initial).some((key) => values[key] !== initial[key]);
+        return (
+            Object.keys(values).some((key) => values[key] !== initial[key]) ||
+            Object.keys(initial).some((key) => values[key] !== initial[key])
+        );
     }, [values]);
 
     const setValue = useCallback((key: string, value: unknown) => {
@@ -169,7 +171,9 @@ export function CreateEntityDialog({ config, open, onClose, onSubmit }: CreateEn
             } catch (err) {
                 // Show error inline in the dialog
                 setSubmitError(
-                    err instanceof Error ? err.message : "An unexpected error occurred. Please try again."
+                    err instanceof Error
+                        ? err.message
+                        : "An unexpected error occurred. Please try again."
                 );
             } finally {
                 setSubmitting(false);

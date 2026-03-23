@@ -44,25 +44,20 @@ export interface QuickViewPanelProps {
     /** Currently selected record ID */
     recordId: string | null;
     /** Record key used as title (default: "name") */
-    titleKey?: string;
-    /** Record key for subtitle */
-    subtitleKey?: string;
-    /** Record key for status badge */
-    statusKey?: string;
-    /** Custom title resolver */
-    titleFn?: (record: EntityRecord) => string;
-    /** Custom subtitle resolver */
-    subtitleFn?: (record: EntityRecord) => string;
-    /** Custom status resolver */
-    statusFn?: (record: EntityRecord) => string;
-    /** Row actions to render in the action strip */
-    rowActions?: ListRowActionDef[];
-    /** All record IDs in current filtered list (for prev/next navigation) */
-    recordIds?: string[];
-    /** Navigate to a different record */
-    onNavigate?: (recordId: string) => void;
-    /** Page icon */
-    icon?: React.ComponentType<{ className?: string }>;
+    titleKey?: string | undefined; /** Record key for subtitle */
+    subtitleKey?: string | undefined; /** Record key for status badge */
+    statusKey?: string | undefined; /** Custom title resolver */
+    titleFn?: ((record: EntityRecord) => string) | undefined; /** Custom subtitle resolver */
+    subtitleFn?: ((record: EntityRecord) => string) | undefined; /** Custom status resolver */
+    statusFn?:
+        | ((record: EntityRecord) => string)
+        | undefined; /** Row actions to render in the action strip */
+    rowActions?:
+        | ListRowActionDef[]
+        | undefined; /** All record IDs in current filtered list (for prev/next navigation) */
+    recordIds?: string[] | undefined; /** Navigate to a different record */
+    onNavigate?: ((recordId: string) => void) | undefined; /** Page icon */
+    icon?: React.ComponentType<{ className?: string }> | undefined;
 }
 
 // ─── Component ───────────────────────────────────────────────

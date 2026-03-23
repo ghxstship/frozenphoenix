@@ -1,6 +1,5 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -93,19 +92,21 @@ const CONDITION_OPERATORS = [
     { value: "is_not_empty", label: "Is Not Empty" },
 ];
 
-export function AutomationDetailPageClient() {
-    const params = useParams();
-    const automationId = params.id as string;
-
+export function AutomationDetailPageClient({
+    id,
+    initialRecord,
+}: {
+    id: string;
+    initialRecord?: Record<string, unknown> | null;
+}) {
     const { data: allAutomations, isLoading: isListLoading } = useAutomations();
-    const { data: automationDetail, isLoading: isDetailLoading } =
-        useAutomationWithRules(automationId);
-    const { data: logs } = useAutomationLogs(automationId);
+    const { data: automationDetail, isLoading: isDetailLoading } = useAutomationWithRules(id);
+    const { data: logs } = useAutomationLogs(id);
 
     const isLoading = isListLoading || isDetailLoading;
     const automation = automationDetail
         ? (automationDetail as Record<string, unknown>)
-        : ((allAutomations ?? []).find((a: Record<string, unknown>) => a.id === automationId) as
+        : ((allAutomations ?? []).find((a: Record<string, unknown>) => a.id === id) as
               | Record<string, unknown>
               | undefined);
 
@@ -176,7 +177,7 @@ export function AutomationDetailPageClient() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    automation_id: automationId,
+                    automation_id: id,
                     rules: rules.map((r) => ({
                         trigger_type: r.trigger_type,
                         conditions: r.conditions,
@@ -691,9 +692,9 @@ export function AutomationDetailPageClient() {
     return (
         <DetailPageShell
             config={config}
-            id={automationId}
+            id={id}
             record={automation ?? null}
-            isLoading={isLoading}
+            isLoading={isLoading && !initialRecord}
             actions={
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => setIsDryRun(!isDryRun)}>

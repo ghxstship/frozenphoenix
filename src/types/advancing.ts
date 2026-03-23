@@ -85,15 +85,15 @@ export interface CatalogCategory {
     deleted_at: string | null;
     created_at: string;
     updated_at: string;
-    children?: CatalogCategory[];
+    children?: CatalogCategory[] | undefined;
 }
 
 export interface CatalogItemSpecifications {
-    make?: string;
-    model?: string;
-    dimensions?: string;
-    weight?: string;
-    power_requirements?: string;
+    make?: string | undefined;
+    model?: string | undefined;
+    dimensions?: string | undefined;
+    weight?: string | undefined;
+    power_requirements?: string | undefined;
     [key: string]: unknown;
 }
 
@@ -157,7 +157,7 @@ export interface CatalogItemModifier {
     deleted_at: string | null;
     created_at: string;
     updated_at: string;
-    options?: CatalogModifierOption[];
+    options?: CatalogModifierOption[] | undefined;
 }
 
 export interface CatalogModifierOption {
@@ -214,8 +214,8 @@ export interface CatalogItemWithOverride extends CatalogItem {
     org_lead_time_days: number | null;
     org_minimum_order_quantity: number | null;
     org_pricing_notes: string | null;
-    category?: CatalogCategory;
-    modifiers?: CatalogItemModifier[];
+    category?: CatalogCategory | undefined;
+    modifiers?: CatalogItemModifier[] | undefined;
 }
 
 // ─── Advance Entities ───
@@ -323,9 +323,9 @@ export interface AdvanceStatusHistory {
 export interface AdvanceTemplateItem {
     catalog_item_id: string;
     quantity: number;
-    selected_modifiers?: SelectedModifier[];
-    notes?: string;
-    is_critical_path?: boolean;
+    selected_modifiers?: SelectedModifier[] | undefined;
+    notes?: string | undefined;
+    is_critical_path?: boolean | undefined;
 }
 
 export interface AdvanceTemplate {
@@ -347,45 +347,51 @@ export interface AdvanceTemplate {
 // ─── Join Types (for React Query hooks) ───
 
 export interface ProductionAdvanceWithJoins extends ProductionAdvance {
-    events?: { name: string } | null;
-    projects?: { name: string } | null;
-    submitted_by_profile?: { name: string; avatar_url: string | null } | null;
-    point_of_contact_profile?: { name: string; avatar_url: string | null } | null;
-    approved_by_profile?: { name: string } | null;
-    items?: ProductionAdvanceItemWithJoins[];
+    events?: { name: string } | null | undefined;
+    projects?: { name: string } | null | undefined;
+    submitted_by_profile?: { name: string; avatar_url: string | null } | null | undefined;
+    point_of_contact_profile?: { name: string; avatar_url: string | null } | null | undefined;
+    approved_by_profile?: { name: string } | null | undefined;
+    items?: ProductionAdvanceItemWithJoins[] | undefined;
 }
 
 export interface ProductionAdvanceItemWithJoins extends ProductionAdvanceItem {
-    catalog_items?: { name: string; sku: string | null; thumbnail_url: string | null } | null;
-    catalog_categories?: { name: string; slug: string; category_type: CatalogCategoryType } | null;
-    locations?: { name: string } | null;
-    vendors?: { name: string } | null;
-    assigned_to_profile?: { name: string } | null;
+    catalog_items?:
+        | { name: string; sku: string | null; thumbnail_url: string | null }
+        | null
+        | undefined;
+    catalog_categories?:
+        | { name: string; slug: string; category_type: CatalogCategoryType }
+        | null
+        | undefined;
+    locations?: { name: string } | null | undefined;
+    vendors?: { name: string } | null | undefined;
+    assigned_to_profile?: { name: string } | null | undefined;
 }
 
 // ─── Advance Cart Types (client-side Zustand store — lightweight) ───
 
 export interface AdvanceCartItem {
     catalog_item_id: string;
-    category_id?: string;
+    category_id?: string | undefined;
     name: string;
-    sku?: string;
-    thumbnail_url?: string;
-    vendor_id?: string;
+    sku?: string | undefined;
+    thumbnail_url?: string | undefined;
+    vendor_id?: string | undefined;
     quantity: number;
     unit_cost: number;
-    selected_modifiers?: SelectedModifier[];
-    item_specifications?: Record<string, unknown>;
-    notes?: string | null;
+    selected_modifiers?: SelectedModifier[] | undefined;
+    item_specifications?: Record<string, unknown> | undefined;
+    notes?: string | null | undefined;
     is_critical_path: boolean;
-    delivery_zone?: string;
-    delivery_location?: string;
-    location_id?: string;
-    scheduled_delivery?: string;
-    start_date?: string;
-    end_date?: string;
-    operational_purpose?: string;
-    special_requests?: string;
+    delivery_zone?: string | undefined;
+    delivery_location?: string | undefined;
+    location_id?: string | undefined;
+    scheduled_delivery?: string | undefined;
+    start_date?: string | undefined;
+    end_date?: string | undefined;
+    operational_purpose?: string | undefined;
+    special_requests?: string | undefined;
 }
 
 export interface AdvanceCartState {
@@ -398,9 +404,9 @@ export interface AdvanceCartState {
     description: string;
     total_items: number;
     total_estimated_cost: number;
-    service_start_date?: string;
-    service_end_date?: string;
-    source_template_id?: string;
+    service_start_date?: string | undefined;
+    service_end_date?: string | undefined;
+    source_template_id?: string | undefined;
 }
 
 // ─── Cart Types (client-side Zustand store) ───
@@ -444,91 +450,91 @@ export interface CartState {
 
 export interface CreateAdvanceRequest {
     event_id: string;
-    project_id?: string;
+    project_id?: string | undefined;
     title: string;
-    description?: string;
+    description?: string | undefined;
     advance_type: AdvanceType;
-    priority?: AdvancePriority;
-    service_start_date?: string;
-    service_end_date?: string;
-    internal_notes?: string;
-    client_notes?: string;
-    source_template_id?: string;
+    priority?: AdvancePriority | undefined;
+    service_start_date?: string | undefined;
+    service_end_date?: string | undefined;
+    internal_notes?: string | undefined;
+    client_notes?: string | undefined;
+    source_template_id?: string | undefined;
     items: CreateAdvanceItemRequest[];
 }
 
 export interface CreateAdvanceItemRequest {
     catalog_item_id: string;
-    category_id?: string;
+    category_id?: string | undefined;
     quantity_requested: number;
     unit_cost: number;
-    selected_modifiers?: SelectedModifier[];
-    item_specifications?: Record<string, unknown>;
-    vendor_id?: string;
-    notes?: string;
-    is_critical_path?: boolean;
-    delivery_zone?: string;
-    delivery_location?: string;
-    location_id?: string;
-    scheduled_delivery?: string;
-    start_date?: string;
-    end_date?: string;
-    operational_purpose?: string;
-    special_requests?: string;
+    selected_modifiers?: SelectedModifier[] | undefined;
+    item_specifications?: Record<string, unknown> | undefined;
+    vendor_id?: string | undefined;
+    notes?: string | undefined;
+    is_critical_path?: boolean | undefined;
+    delivery_zone?: string | undefined;
+    delivery_location?: string | undefined;
+    location_id?: string | undefined;
+    scheduled_delivery?: string | undefined;
+    start_date?: string | undefined;
+    end_date?: string | undefined;
+    operational_purpose?: string | undefined;
+    special_requests?: string | undefined;
 }
 
 export interface UpdateAdvanceRequest {
-    title?: string;
-    description?: string;
-    advance_type?: AdvanceType;
-    priority?: AdvancePriority;
-    service_start_date?: string;
-    service_end_date?: string;
-    point_of_contact?: string;
-    internal_notes?: string;
-    client_notes?: string;
+    title?: string | undefined;
+    description?: string | undefined;
+    advance_type?: AdvanceType | undefined;
+    priority?: AdvancePriority | undefined;
+    service_start_date?: string | undefined;
+    service_end_date?: string | undefined;
+    point_of_contact?: string | undefined;
+    internal_notes?: string | undefined;
+    client_notes?: string | undefined;
 }
 
 export interface AdvanceStatusTransitionRequest {
     status: AdvanceStatus;
-    reason?: string;
+    reason?: string | undefined;
 }
 
 export interface AdvanceItemStatusTransitionRequest {
     status: AdvanceItemStatus;
-    reason?: string;
-    quantity_confirmed?: number;
+    reason?: string | undefined;
+    quantity_confirmed?: number | undefined;
 }
 
 // ─── Filter/Query Types ───
 
 export interface AdvanceListFilters {
-    status?: AdvanceStatus | AdvanceStatus[];
-    advance_type?: AdvanceType;
-    priority?: AdvancePriority;
-    event_id?: string;
-    project_id?: string;
-    submitted_by?: string;
-    search?: string;
-    date_from?: string;
-    date_to?: string;
-    sort_by?: "created_at" | "updated_at" | "total_estimated_cost" | "advance_number";
-    sort_order?: "asc" | "desc";
-    page?: number;
-    per_page?: number;
+    status?: AdvanceStatus | AdvanceStatus[] | undefined;
+    advance_type?: AdvanceType | undefined;
+    priority?: AdvancePriority | undefined;
+    event_id?: string | undefined;
+    project_id?: string | undefined;
+    submitted_by?: string | undefined;
+    search?: string | undefined;
+    date_from?: string | undefined;
+    date_to?: string | undefined;
+    sort_by?: "created_at" | "updated_at" | "total_estimated_cost" | "advance_number" | undefined;
+    sort_order?: "asc" | "desc" | undefined;
+    page?: number | undefined;
+    per_page?: number | undefined;
 }
 
 export interface CatalogSearchFilters {
-    category_id?: string;
-    category_type?: CatalogCategoryType;
-    search?: string;
-    status?: CatalogItemStatus;
-    is_critical_path?: boolean;
-    tags?: string[];
-    min_cost?: number;
-    max_cost?: number;
-    sort_by?: "name" | "default_unit_cost" | "sort_order" | "created_at";
-    sort_order?: "asc" | "desc";
-    page?: number;
-    per_page?: number;
+    category_id?: string | undefined;
+    category_type?: CatalogCategoryType | undefined;
+    search?: string | undefined;
+    status?: CatalogItemStatus | undefined;
+    is_critical_path?: boolean | undefined;
+    tags?: string[] | undefined;
+    min_cost?: number | undefined;
+    max_cost?: number | undefined;
+    sort_by?: "name" | "default_unit_cost" | "sort_order" | "created_at" | undefined;
+    sort_order?: "asc" | "desc" | undefined;
+    page?: number | undefined;
+    per_page?: number | undefined;
 }

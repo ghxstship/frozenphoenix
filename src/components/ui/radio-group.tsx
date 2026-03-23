@@ -7,8 +7,8 @@ import { Circle } from "lucide-react";
 interface RadioGroupContextValue {
     value: string;
     onValueChange: (value: string) => void;
-    name?: string;
-    disabled?: boolean;
+    name?: string | undefined;
+    disabled?: boolean | undefined;
 }
 
 const RadioGroupContext = React.createContext<RadioGroupContextValue>({
@@ -19,10 +19,10 @@ const RadioGroupContext = React.createContext<RadioGroupContextValue>({
 export interface RadioGroupProps {
     value: string;
     onValueChange: (value: string) => void;
-    name?: string;
-    disabled?: boolean;
-    orientation?: "horizontal" | "vertical";
-    className?: string;
+    name?: string | undefined;
+    disabled?: boolean | undefined;
+    orientation?: "horizontal" | "vertical" | undefined;
+    className?: string | undefined;
     children: React.ReactNode;
 }
 
@@ -54,10 +54,10 @@ export function RadioGroup({
 
 export interface RadioGroupItemProps {
     value: string;
-    id?: string;
-    disabled?: boolean;
-    className?: string;
-    children?: React.ReactNode;
+    id?: string | undefined;
+    disabled?: boolean | undefined;
+    className?: string | undefined;
+    children?: React.ReactNode | undefined;
 }
 
 export function RadioGroupItem({
@@ -66,43 +66,50 @@ export function RadioGroupItem({
     disabled: itemDisabled,
     className,
 }: RadioGroupItemProps) {
-    const { value: selectedValue, onValueChange, name, disabled: groupDisabled } =
-        React.useContext(RadioGroupContext);
+    const {
+        value: selectedValue,
+        onValueChange,
+        name,
+        disabled: groupDisabled,
+    } = React.useContext(RadioGroupContext);
     const isChecked = selectedValue === value;
     const isDisabled = itemDisabled || groupDisabled;
 
-    const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
-        const group = (e.currentTarget as HTMLElement).closest("[role='radiogroup']");
-        if (!group) return;
-        const items = Array.from(
-            group.querySelectorAll<HTMLElement>("[role='radio']:not([disabled])")
-        );
-        const currentIndex = items.indexOf(e.currentTarget as HTMLElement);
-        if (currentIndex < 0) return;
+    const handleKeyDown = React.useCallback(
+        (e: React.KeyboardEvent) => {
+            const group = (e.currentTarget as HTMLElement).closest("[role='radiogroup']");
+            if (!group) return;
+            const items = Array.from(
+                group.querySelectorAll<HTMLElement>("[role='radio']:not([disabled])")
+            );
+            const currentIndex = items.indexOf(e.currentTarget as HTMLElement);
+            if (currentIndex < 0) return;
 
-        let nextIndex: number | null = null;
-        switch (e.key) {
-            case "ArrowDown":
-            case "ArrowRight":
-                e.preventDefault();
-                nextIndex = (currentIndex + 1) % items.length;
-                break;
-            case "ArrowUp":
-            case "ArrowLeft":
-                e.preventDefault();
-                nextIndex = (currentIndex - 1 + items.length) % items.length;
-                break;
-            default:
-                return;
-        }
+            let nextIndex: number | null = null;
+            switch (e.key) {
+                case "ArrowDown":
+                case "ArrowRight":
+                    e.preventDefault();
+                    nextIndex = (currentIndex + 1) % items.length;
+                    break;
+                case "ArrowUp":
+                case "ArrowLeft":
+                    e.preventDefault();
+                    nextIndex = (currentIndex - 1 + items.length) % items.length;
+                    break;
+                default:
+                    return;
+            }
 
-        const nextItem = items[nextIndex];
-        if (nextItem) {
-            const nextValue = nextItem.dataset.radioValue;
-            if (nextValue) onValueChange(nextValue);
-            nextItem.focus();
-        }
-    }, [onValueChange]);
+            const nextItem = items[nextIndex];
+            if (nextItem) {
+                const nextValue = nextItem.dataset.radioValue;
+                if (nextValue) onValueChange(nextValue);
+                nextItem.focus();
+            }
+        },
+        [onValueChange]
+    );
 
     return (
         <button

@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils";
 
 interface OverlineTextProps {
     children: React.ReactNode;
-    as?: "p" | "span" | "h3" | "h4" | "div";
-    visualCaps?: boolean;
-    className?: string;
+    as?: "p" | "span" | "h3" | "h4" | "div" | undefined;
+    visualCaps?: boolean | undefined;
+    className?: string | undefined;
 }
 
 /**

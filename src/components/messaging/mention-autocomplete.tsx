@@ -7,7 +7,7 @@ import { Avatar } from "@/components/ui/avatar";
 export interface MentionUser {
     id: string;
     name: string;
-    avatar_url?: string | null;
+    avatar_url?: string | null | undefined;
 }
 
 interface MentionAutocompleteProps {
@@ -15,7 +15,7 @@ interface MentionAutocompleteProps {
     users: MentionUser[];
     onSelect: (user: MentionUser) => void;
     onClose: () => void;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function MentionAutocomplete({

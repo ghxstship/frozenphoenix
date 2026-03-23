@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 interface SlidingIndicatorProps {
     containerRef: React.RefObject<HTMLElement | null>;
     activeSelector: string;
-    className?: string;
-    layoutDirection?: "horizontal" | "vertical";
+    className?: string | undefined;
+    layoutDirection?: "horizontal" | "vertical" | undefined;
 }
 
 export function SlidingIndicator({

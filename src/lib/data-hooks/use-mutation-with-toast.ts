@@ -6,10 +6,10 @@ import { useNetworkStatus } from "@/components/app/network-status";
 
 interface MutationWithToastOptions<TData, TVariables> {
     mutationFn: (variables: TVariables) => Promise<TData>;
-    invalidateKeys?: string[][];
-    successMessage?: string;
-    errorMessage?: string;
-    onSuccess?: (data: TData) => void;
+    invalidateKeys?: string[][] | undefined;
+    successMessage?: string | undefined;
+    errorMessage?: string | undefined;
+    onSuccess?: ((data: TData) => void) | undefined;
 }
 
 export function useMutationWithToast<TData, TVariables>({

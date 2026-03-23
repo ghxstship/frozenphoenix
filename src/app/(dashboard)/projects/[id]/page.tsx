@@ -1,11 +1,8 @@
-import { Suspense } from "react";
-import { LoadingState } from "@/components/layouts/loading-state";
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { ProjectDetailPageClient } from "./_client";
 
-export default async function ProjectDetailPage() {
-    return (
-        <Suspense fallback={<LoadingState />}>
-            <ProjectDetailPageClient />
-        </Suspense>
-    );
+export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const initialRecord = await prefetchDetailRecord("projects", id);
+    return <ProjectDetailPageClient id={id} initialRecord={initialRecord} />;
 }

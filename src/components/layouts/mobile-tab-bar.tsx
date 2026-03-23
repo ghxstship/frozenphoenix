@@ -17,7 +17,7 @@ interface MobileTab {
     icon: LucideIcon;
     path: string;
     /** If true, this tab opens the sidebar drawer instead of navigating */
-    openDrawer?: boolean;
+    openDrawer?: boolean | undefined;
 }
 
 const MOBILE_TABS: MobileTab[] = [

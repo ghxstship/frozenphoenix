@@ -104,7 +104,12 @@ export type CreativeReviewStatus =
 
 export type KpiMetricType = "percentage" | "count" | "currency" | "ratio" | "duration";
 
-export type AttributionModel = "first_touch" | "last_touch" | "linear" | "time_decay" | "position_based";
+export type AttributionModel =
+    | "first_touch"
+    | "last_touch"
+    | "linear"
+    | "time_decay"
+    | "position_based";
 
 export type BrandLevel = "primary" | "sub_brand" | "market_variant" | "co_brand";
 
@@ -219,7 +224,7 @@ export interface DeliverableManifestItem {
     type: string;
     quantity: number;
     specs: string;
-    channel?: string;
+    channel?: string | undefined;
 }
 
 export interface BudgetBreakdownItem {
@@ -236,7 +241,7 @@ export interface KpiDefinition {
     metric: string;
     target: number;
     measurement_method: string;
-    attribution_model?: AttributionModel;
+    attribution_model?: AttributionModel | undefined;
 }
 
 // ─── Campaigns ───────────────────────────────────────────────
@@ -383,15 +388,15 @@ export interface AssetChannelDeployment {
 // ─── Composite Types ─────────────────────────────────────────
 
 export interface CampaignWithBrief extends Campaign {
-    brief?: CreativeBrief | null;
+    brief?: CreativeBrief | null | undefined;
 }
 
 export interface CampaignAssetWithReviews extends CampaignAsset {
-    reviews?: CreativeReview[];
+    reviews?: CreativeReview[] | undefined;
 }
 
 export interface BrandGuidelineWithSections extends BrandGuideline {
-    sections?: BrandGuidelineSection[];
+    sections?: BrandGuidelineSection[] | undefined;
 }
 
 export interface CampaignOverview {

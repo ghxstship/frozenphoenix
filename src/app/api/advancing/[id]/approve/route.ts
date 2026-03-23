@@ -35,7 +35,7 @@ export const POST = withApiHandlerParams(
                 approved_by: user.id,
             } as Record<string, unknown>)
             .eq("id", id)
-            .select()
+            .select("id, status, approved_by, updated_at")
             .single();
 
         if (error) {

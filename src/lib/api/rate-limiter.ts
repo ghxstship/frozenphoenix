@@ -34,8 +34,8 @@ if (typeof setInterval !== "undefined") {
 
 export interface RateLimitConfig {
     maxRequests: number;
-    windowMs?: number;
-    keyPrefix?: string;
+    windowMs?: number | undefined;
+    keyPrefix?: string | undefined;
 }
 
 export interface RateLimitResult {

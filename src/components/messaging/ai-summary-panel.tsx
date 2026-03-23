@@ -14,9 +14,9 @@ interface AISummaryPanelProps {
     onGenerate: () => void;
     isGenerating: boolean;
     result: AISummaryResult | null | undefined;
-    error?: string | null;
+    error?: string | null | undefined;
     onDismiss: () => void;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function AISummaryPanel({

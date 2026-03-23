@@ -30,8 +30,8 @@ const chipVariants = cva(
 
 export interface ChipProps
     extends React.HTMLAttributes<HTMLSpanElement>, VariantProps<typeof chipVariants> {
-    onRemove?: () => void;
-    icon?: React.ReactNode;
+    onRemove?: (() => void) | undefined;
+    icon?: React.ReactNode | undefined;
 }
 
 export function Chip({ className, variant, size, onRemove, icon, children, ...props }: ChipProps) {

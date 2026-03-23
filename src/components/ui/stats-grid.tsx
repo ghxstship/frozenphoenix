@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 interface StatsGridProps {
     children: React.ReactNode;
-    className?: string;
+    className?: string | undefined;
 }
 
 /**

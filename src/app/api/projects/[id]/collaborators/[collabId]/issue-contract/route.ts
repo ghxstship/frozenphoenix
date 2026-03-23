@@ -80,7 +80,7 @@ export const POST = withApiHandlerParams(
                     organization_id: orgId,
                     created_by: user.id,
                 } as Record<string, unknown>)
-                .select()
+                .select("id, number, title, type, status, created_at")
                 .single();
 
             if (contractError) {
@@ -122,7 +122,7 @@ export const POST = withApiHandlerParams(
                 contract_id: contractId,
             } as Record<string, unknown>)
             .eq("id", collabId)
-            .select()
+            .select("id, contract_status, contract_id, updated_at")
             .single();
 
         if (updateError) {

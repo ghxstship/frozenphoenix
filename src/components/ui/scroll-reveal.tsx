@@ -6,11 +6,11 @@ import { SCROLL_REVEAL } from "@/config/design-tokens";
 import { useReducedMotion } from "@/hooks/use-media-query";
 
 interface ScrollRevealProps extends React.HTMLAttributes<HTMLDivElement> {
-    animation?: "fade-up" | "fade-in" | "slide-right" | "scale-in";
-    threshold?: number;
-    rootMargin?: string;
-    delay?: number;
-    once?: boolean;
+    animation?: "fade-up" | "fade-in" | "slide-right" | "scale-in" | undefined;
+    threshold?: number | undefined;
+    rootMargin?: string | undefined;
+    delay?: number | undefined;
+    once?: boolean | undefined;
 }
 
 export function ScrollReveal({

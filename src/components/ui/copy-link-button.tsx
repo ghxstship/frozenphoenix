@@ -4,11 +4,14 @@ import React, { useCallback, useState } from "react";
 import { Check, Copy } from "lucide-react";
 
 interface CopyLinkButtonProps {
-    label?: string;
-    title?: string;
+    label?: string | undefined;
+    title?: string | undefined;
 }
 
-export function CopyLinkButton({ label = "Share", title = "Copy link to clipboard" }: CopyLinkButtonProps) {
+export function CopyLinkButton({
+    label = "Share",
+    title = "Copy link to clipboard",
+}: CopyLinkButtonProps) {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = useCallback(async () => {

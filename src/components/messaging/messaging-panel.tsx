@@ -92,7 +92,7 @@ export function MessagingPanel() {
     const draftKey = activeConversationId ?? "new";
 
     const handleSend = React.useCallback(
-        (payload: { body: string; mentioned_user_ids?: string[] }) => {
+        (payload: { body: string; mentioned_user_ids?: string[] | undefined }) => {
             if (!activeConversationId) return;
             sendMessage.mutate({
                 conversation_id: activeConversationId,

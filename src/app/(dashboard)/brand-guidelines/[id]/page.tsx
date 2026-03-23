@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { BrandGuidelineDetailClient } from "./_client";
 
 export default async function BrandGuidelineDetailPage({
@@ -6,5 +7,6 @@ export default async function BrandGuidelineDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <BrandGuidelineDetailClient id={id} initialRecord={null} />;
+    const initialRecord = await prefetchDetailRecord("brand-guidelines", id);
+    return <BrandGuidelineDetailClient id={id} initialRecord={initialRecord} />;
 }

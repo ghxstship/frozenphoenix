@@ -26,7 +26,9 @@ export const GET = withApiHandlerParams(
         const { id: projectId, templateId } = await params;
 
         const { data, error } = await serverFromTable(supabase, "project_comm_templates")
-            .select("*")
+            .select(
+                "id, project_id, template_key, name, description, subject, body_html, body_text, available_variables, is_active, is_default, created_at"
+            )
             .eq("id", templateId)
             .eq("project_id", projectId)
             .is("deleted_at", null)
@@ -69,7 +71,7 @@ export const PATCH = withApiHandlerParams(
             .update(updates)
             .eq("id", templateId)
             .eq("project_id", projectId)
-            .select()
+            .select("id, name, subject, body_html, is_active, is_default, updated_at")
             .single();
 
         if (error) {

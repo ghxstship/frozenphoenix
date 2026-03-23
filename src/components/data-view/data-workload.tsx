@@ -22,20 +22,20 @@ import { AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 export interface WorkloadAllocation {
     id: string;
     resource: string;
-    resourceAvatar?: string;
+    resourceAvatar?: string | undefined;
     startDate: string;
     endDate: string;
-    hours?: number;
-    category?: string;
-    color?: string;
+    hours?: number | undefined;
+    category?: string | undefined;
+    color?: string | undefined;
 }
 
 export interface DataWorkloadProps {
     data: WorkloadAllocation[];
-    capacityHoursPerDay?: number;
-    className?: string;
-    actions?: (item: WorkloadAllocation) => React.ReactNode;
-    onItemClick?: (item: WorkloadAllocation) => void;
+    capacityHoursPerDay?: number | undefined;
+    className?: string | undefined;
+    actions?: ((item: WorkloadAllocation) => React.ReactNode) | undefined;
+    onItemClick?: ((item: WorkloadAllocation) => void) | undefined;
 }
 
 // ─── Helpers ───

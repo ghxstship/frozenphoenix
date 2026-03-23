@@ -29,14 +29,13 @@ import {
 
 interface RateLimitConfig {
     /** Window duration in milliseconds. Default: 60_000 (1 min). */
-    windowMs?: number;
-    /** Maximum requests per window. Default: 30. */
-    max?: number;
+    windowMs?: number | undefined; /** Maximum requests per window. Default: 30. */
+    max?: number | undefined;
 }
 
 interface RouteHandlerOptions {
     /** Enable rate limiting for this route. Pass `true` for defaults or a config object. */
-    rateLimit?: boolean | RateLimitConfig;
+    rateLimit?: boolean | RateLimitConfig | undefined;
 }
 
 type Logger = ReturnType<typeof logger.child>;

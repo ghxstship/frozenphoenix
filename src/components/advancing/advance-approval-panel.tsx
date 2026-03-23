@@ -15,9 +15,9 @@ interface AdvanceApprovalPanelProps {
     title: string;
     totalEstimatedCost: number;
     totalItems: number;
-    submittedBy?: string;
-    submittedAt?: string;
-    onAction?: () => void;
+    submittedBy?: string | undefined;
+    submittedAt?: string | undefined;
+    onAction?: (() => void) | undefined;
 }
 
 export function AdvanceApprovalPanel({
@@ -42,7 +42,7 @@ export function AdvanceApprovalPanel({
             const res = await fetch(`/api/advancing/${advanceId}/${action}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: body ? JSON.stringify(body) : undefined,
+                body: body ? JSON.stringify(body) : null,
             });
             if (!res.ok) {
                 const err = await res.json();

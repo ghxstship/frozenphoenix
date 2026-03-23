@@ -18,7 +18,9 @@ export const GET = withApiHandlerParams(
         const { id } = await params;
 
         const { data, error } = await serverFromTable(supabase, "project_comm_templates")
-            .select("*")
+            .select(
+                "id, project_id, template_key, name, description, subject, body_html, body_text, available_variables, is_active, is_default, created_at"
+            )
             .eq("project_id", id)
             .is("deleted_at", null)
             .order("created_at", { ascending: true });
@@ -79,7 +81,7 @@ export const POST = withApiHandlerParams(
                 onConflict: "project_id,template_key",
                 ignoreDuplicates: true,
             })
-            .select();
+            .select("id, template_key, name, is_active, is_default, created_at");
 
         if (error) {
             log.error("[POST /api/projects/[id]/comm-templates]", { error });

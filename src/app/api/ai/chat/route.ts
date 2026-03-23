@@ -58,9 +58,12 @@ export const POST = withApiHandler(
         // 2. Parse request
         let body: {
             message: string;
-            conversation_id?: string;
-            model_id?: string;
-            page_context?: { entityType: string; entityId?: string; entityName?: string } | null;
+            conversation_id?: string | undefined;
+            model_id?: string | undefined;
+            page_context?:
+                | { entityType: string; entityId?: string; entityName?: string }
+                | null
+                | undefined;
         };
 
         try {

@@ -16,24 +16,11 @@ export type UserLifecycleStatus =
     | "pending_deletion"
     | "anonymized";
 
-export type OrgMembershipStatus =
-    | "invited"
-    | "active"
-    | "suspended"
-    | "expired"
-    | "revoked";
+export type OrgMembershipStatus = "invited" | "active" | "suspended" | "expired" | "revoked";
 
-export type InvitationStatus =
-    | "pending"
-    | "accepted"
-    | "expired"
-    | "revoked";
+export type InvitationStatus = "pending" | "accepted" | "expired" | "revoked";
 
-export type OnboardingStepStatus =
-    | "not_started"
-    | "in_progress"
-    | "completed"
-    | "skipped";
+export type OnboardingStepStatus = "not_started" | "in_progress" | "completed" | "skipped";
 
 export type LoginEventType =
     | "login_success"
@@ -110,20 +97,20 @@ export interface UserProfile {
     id: string;
     email: string;
     displayName: string;
-    avatarUrl?: string;
-    phone?: string;
-    jobTitle?: string;
-    bio?: string;
+    avatarUrl?: string | undefined;
+    phone?: string | undefined;
+    jobTitle?: string | undefined;
+    bio?: string | undefined;
     timezone: string;
     locale: string;
     dateFormat: string;
     lifecycleStatus: UserLifecycleStatus;
-    onboardingCompletedAt?: string;
-    lastActiveAt?: string;
-    deletedAt?: string;
-    anonymizedAt?: string;
-    deletionRequestedAt?: string;
-    deletionReason?: string;
+    onboardingCompletedAt?: string | undefined;
+    lastActiveAt?: string | undefined;
+    deletedAt?: string | undefined;
+    anonymizedAt?: string | undefined;
+    deletionRequestedAt?: string | undefined;
+    deletionReason?: string | undefined;
     createdAt: string;
     updatedAt: string;
 }
@@ -132,17 +119,17 @@ export interface OrgMembership {
     id: string;
     userId: string;
     organizationId: string;
-    organizationName?: string;
+    organizationName?: string | undefined;
     role: PermissionLevel;
     status: OrgMembershipStatus;
     isDefaultOrg: boolean;
-    invitedBy?: string;
-    invitedByName?: string;
-    invitedAt?: string;
-    joinedAt?: string;
-    expiresAt?: string;
-    suspendedAt?: string;
-    suspendedReason?: string;
+    invitedBy?: string | undefined;
+    invitedByName?: string | undefined;
+    invitedAt?: string | undefined;
+    joinedAt?: string | undefined;
+    expiresAt?: string | undefined;
+    suspendedAt?: string | undefined;
+    suspendedReason?: string | undefined;
     createdAt: string;
     updatedAt: string;
 }
@@ -150,20 +137,20 @@ export interface OrgMembership {
 export interface Invitation {
     id: string;
     organizationId: string;
-    organizationName?: string;
+    organizationName?: string | undefined;
     email: string;
     role: PermissionLevel;
     token: string;
     status: InvitationStatus;
     invitedBy: string;
-    invitedByName?: string;
-    personalMessage?: string;
+    invitedByName?: string | undefined;
+    personalMessage?: string | undefined;
     projectIds: string[];
     expiresAt: string;
-    acceptedAt?: string;
-    acceptedBy?: string;
-    revokedAt?: string;
-    revokedBy?: string;
+    acceptedAt?: string | undefined;
+    acceptedBy?: string | undefined;
+    revokedAt?: string | undefined;
+    revokedBy?: string | undefined;
     createdAt: string;
     updatedAt: string;
 }
@@ -173,7 +160,7 @@ export interface OnboardingStepDefinition {
     role: PermissionLevel | "all";
     stepKey: string;
     title: string;
-    description?: string;
+    description?: string | undefined;
     sortOrder: number;
     isRequired: boolean;
     isActive: boolean;
@@ -186,12 +173,12 @@ export interface UserOnboardingProgress {
     id: string;
     userId: string;
     stepDefinitionId: string;
-    stepTitle?: string;
-    stepKey?: string;
+    stepTitle?: string | undefined;
+    stepKey?: string | undefined;
     status: OnboardingStepStatus;
-    completedAt?: string;
-    skippedAt?: string;
-    metadata?: Record<string, unknown>;
+    completedAt?: string | undefined;
+    skippedAt?: string | undefined;
+    metadata?: Record<string, unknown> | undefined;
     createdAt: string;
     updatedAt: string;
 }
@@ -207,21 +194,21 @@ export interface UserPreference {
 
 export interface LoginAuditEntry {
     id: string;
-    userId?: string;
-    userEmail?: string;
-    userName?: string;
-    email?: string;
+    userId?: string | undefined;
+    userEmail?: string | undefined;
+    userName?: string | undefined;
+    email?: string | undefined;
     eventType: LoginEventType;
-    authMethod?: AuthMethod;
-    ipAddress?: string;
-    userAgent?: string;
-    deviceFingerprint?: string;
-    countryCode?: string;
-    city?: string;
+    authMethod?: AuthMethod | undefined;
+    ipAddress?: string | undefined;
+    userAgent?: string | undefined;
+    deviceFingerprint?: string | undefined;
+    countryCode?: string | undefined;
+    city?: string | undefined;
     success: boolean;
-    failureReason?: string;
-    sessionId?: string;
-    metadata?: Record<string, unknown>;
+    failureReason?: string | undefined;
+    sessionId?: string | undefined;
+    metadata?: Record<string, unknown> | undefined;
     createdAt: string;
 }
 
@@ -229,18 +216,18 @@ export interface UserSession {
     id: string;
     userId: string;
     sessionTokenHash: string;
-    ipAddress?: string;
-    userAgent?: string;
-    deviceName?: string;
-    deviceType?: DeviceType;
-    browser?: string;
-    os?: string;
-    countryCode?: string;
-    city?: string;
+    ipAddress?: string | undefined;
+    userAgent?: string | undefined;
+    deviceName?: string | undefined;
+    deviceType?: DeviceType | undefined;
+    browser?: string | undefined;
+    os?: string | undefined;
+    countryCode?: string | undefined;
+    city?: string | undefined;
     isCurrent: boolean;
     lastActiveAt: string;
     expiresAt: string;
-    revokedAt?: string;
+    revokedAt?: string | undefined;
     createdAt: string;
 }
 
@@ -248,18 +235,18 @@ export interface ApiToken {
     id: string;
     userId: string;
     name: string;
-    description?: string;
+    description?: string | undefined;
     tokenPrefix: string;
     tokenHash: string;
     scopes: string[];
     permissionLevel: PermissionLevel;
-    organizationId?: string;
+    organizationId?: string | undefined;
     status: ApiTokenStatus;
-    lastUsedAt?: string;
-    lastUsedIp?: string;
-    expiresAt?: string;
-    revokedAt?: string;
-    revokedBy?: string;
+    lastUsedAt?: string | undefined;
+    lastUsedIp?: string | undefined;
+    expiresAt?: string | undefined;
+    revokedAt?: string | undefined;
+    revokedBy?: string | undefined;
     createdAt: string;
     updatedAt: string;
 }
@@ -267,20 +254,20 @@ export interface ApiToken {
 export interface TemporaryAccessGrant {
     id: string;
     userId: string;
-    userName?: string;
+    userName?: string | undefined;
     organizationId: string;
     resourceType: string;
-    resourceId?: string;
+    resourceId?: string | undefined;
     permissionLevel: PermissionLevel;
     actions: string[];
     reason: string;
     grantedBy: string;
-    grantedByName?: string;
+    grantedByName?: string | undefined;
     status: AccessGrantStatus;
     startsAt: string;
     expiresAt: string;
-    revokedAt?: string;
-    revokedBy?: string;
+    revokedAt?: string | undefined;
+    revokedBy?: string | undefined;
     createdAt: string;
     updatedAt: string;
 }
@@ -288,17 +275,17 @@ export interface TemporaryAccessGrant {
 export interface RoleChangeLogEntry {
     id: string;
     userId: string;
-    userName?: string;
-    organizationId?: string;
-    organizationName?: string;
-    membershipId?: string;
+    userName?: string | undefined;
+    organizationId?: string | undefined;
+    organizationName?: string | undefined;
+    membershipId?: string | undefined;
     changeType: RoleChangeType;
-    oldValue?: string;
-    newValue?: string;
-    reason?: string;
-    changedBy?: string;
-    changedByName?: string;
-    metadata?: Record<string, unknown>;
+    oldValue?: string | undefined;
+    newValue?: string | undefined;
+    reason?: string | undefined;
+    changedBy?: string | undefined;
+    changedByName?: string | undefined;
+    metadata?: Record<string, unknown> | undefined;
     createdAt: string;
 }
 
@@ -308,10 +295,10 @@ export interface UserComplianceAck {
     policyType: CompliancePolicyType;
     policyVersion: string;
     policyTitle: string;
-    documentUrl?: string;
+    documentUrl?: string | undefined;
     acknowledgedAt: string;
-    ipAddress?: string;
-    userAgent?: string;
+    ipAddress?: string | undefined;
+    userAgent?: string | undefined;
     createdAt: string;
 }
 
@@ -320,10 +307,10 @@ export interface DataRetentionPolicy {
     entityType: string;
     retentionDays: number;
     actionOnExpiry: DataRetentionAction;
-    legalBasis?: string;
-    description?: string;
+    legalBasis?: string | undefined;
+    description?: string | undefined;
     isActive: boolean;
-    createdBy?: string;
+    createdBy?: string | undefined;
     createdAt: string;
     updatedAt: string;
 }
@@ -334,14 +321,14 @@ export interface EnhancedProjectMember {
     id: string;
     projectId: string;
     profileId: string;
-    profileName?: string;
-    role?: string;
+    profileName?: string | undefined;
+    role?: string | undefined;
     status: ProjectMemberStatus;
-    grantedBy?: string;
-    grantedByName?: string;
+    grantedBy?: string | undefined;
+    grantedByName?: string | undefined;
     grantedAt: string;
-    expiresAt?: string;
-    revokedAt?: string;
+    expiresAt?: string | undefined;
+    revokedAt?: string | undefined;
     createdAt: string;
 }
 
@@ -349,8 +336,8 @@ export interface EnhancedOrganization {
     id: string;
     name: string;
     slug: string;
-    logoUrl?: string;
-    ssoDomain?: string;
+    logoUrl?: string | undefined;
+    ssoDomain?: string | undefined;
     requireMfa: boolean;
     defaultRole: PermissionLevel;
     maxSessionsPerUser: number;
@@ -367,20 +354,20 @@ export interface EnhancedOrganization {
 
 export interface UserWithMemberships extends UserProfile {
     memberships: OrgMembership[];
-    defaultOrg?: OrgMembership;
+    defaultOrg?: OrgMembership | undefined;
 }
 
 export interface UserDirectoryEntry {
     id: string;
     displayName: string;
     email: string;
-    avatarUrl?: string;
-    jobTitle?: string;
+    avatarUrl?: string | undefined;
+    jobTitle?: string | undefined;
     lifecycleStatus: UserLifecycleStatus;
     role: PermissionLevel;
     organizationName: string;
-    lastActiveAt?: string;
-    onboardingCompletedAt?: string;
+    lastActiveAt?: string | undefined;
+    onboardingCompletedAt?: string | undefined;
     createdAt: string;
 }
 
@@ -392,7 +379,7 @@ export interface AccessReviewEntry {
     role: PermissionLevel;
     membershipStatus: OrgMembershipStatus;
     joinedAt: string;
-    lastActiveAt?: string;
+    lastActiveAt?: string | undefined;
     daysSinceActive: number;
     projectCount: number;
     hasExpiredGrants: boolean;

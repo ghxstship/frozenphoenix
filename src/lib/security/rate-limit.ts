@@ -22,9 +22,8 @@ import { NextResponse } from "next/server";
 
 interface RateLimitOptions {
     /** Window duration in milliseconds. Default: 60_000 (1 minute). */
-    windowMs?: number;
-    /** Maximum requests per window. Default: 30. */
-    max?: number;
+    windowMs?: number | undefined; /** Maximum requests per window. Default: 30. */
+    max?: number | undefined;
 }
 
 interface RateLimitResult {

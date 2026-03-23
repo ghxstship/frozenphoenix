@@ -96,8 +96,8 @@ export type FilterOperator =
 
 export interface FilterConfig {
     column: string;
-    param?: string;
-    operator?: FilterOperator;
+    param?: string | undefined;
+    operator?: FilterOperator | undefined;
 }
 
 export interface SortConfig {
@@ -111,40 +111,31 @@ export interface CrudConfig {
     /** RBAC resource name (from PERMISSION_MATRIX) */
     resource: string;
     /** Display name for error messages */
-    displayName?: string;
-    /** Select clause for list queries */
-    selectList?: string;
-    /** Select clause for detail queries */
-    selectDetail?: string;
-    /** Zod schema for create validation */
-    createSchema?: ZodSchema;
-    /** Zod schema for update validation */
-    updateSchema?: ZodSchema;
-    /** Allowed filters (query params → column filters) */
-    filters?: FilterConfig[];
-    /** Search column(s) for ?search= query param */
-    searchColumns?: string[];
-    /** Default sort */
-    defaultSort?: SortConfig;
-    /** State machine definition for lifecycle transitions */
-    stateMachine?: StateMachineDefinition<string>;
-    /** Column name that holds the status (default: "status") */
-    statusColumn?: string;
-    /** Use soft delete via deleted_at column (default: true) */
-    softDelete?: boolean;
-    /** Column used for organization scoping (default: "organization_id") */
-    orgColumn?: string;
-    /** Automatically inject created_by / updated_by user ID */
-    trackAuthor?: boolean;
-    /** Max results per page (default: 100) */
-    maxPerPage?: number;
-    /** Default results per page (default: 25) */
-    defaultPerPage?: number;
-    /** Custom select for count queries (avoids joins in count) */
-    selectCount?: string;
-    /** Columns that should only be set on create, never on update */
-    immutableColumns?: string[];
-    /** Hook: transform data before insert */
+    displayName?: string | undefined; /** Select clause for list queries */
+    selectList?: string | undefined; /** Select clause for detail queries */
+    selectDetail?: string | undefined; /** Zod schema for create validation */
+    createSchema?: ZodSchema | undefined; /** Zod schema for update validation */
+    updateSchema?: ZodSchema | undefined; /** Allowed filters (query params → column filters) */
+    filters?: FilterConfig[] | undefined; /** Search column(s) for ?search= query param */
+    searchColumns?: string[] | undefined; /** Default sort */
+    defaultSort?: SortConfig | undefined; /** State machine definition for lifecycle transitions */
+    stateMachine?:
+        | StateMachineDefinition<string>
+        | undefined; /** Column name that holds the status (default: "status") */
+    statusColumn?: string | undefined; /** Use soft delete via deleted_at column (default: true) */
+    softDelete?:
+        | boolean
+        | undefined; /** Column used for organization scoping (default: "organization_id") */
+    orgColumn?: string | undefined; /** Automatically inject created_by / updated_by user ID */
+    trackAuthor?: boolean | undefined; /** Max results per page (default: 100) */
+    maxPerPage?: number | undefined; /** Default results per page (default: 25) */
+    defaultPerPage?:
+        | number
+        | undefined; /** Custom select for count queries (avoids joins in count) */
+    selectCount?:
+        | string
+        | undefined; /** Columns that should only be set on create, never on update */
+    immutableColumns?: string[] | undefined; /** Hook: transform data before insert */
     beforeCreate?: (
         data: Record<string, unknown>,
         userId: string
@@ -265,12 +256,12 @@ interface ResolvedConfig {
     displayName: string;
     selectList: string;
     selectDetail: string;
-    createSchema?: ZodSchema;
-    updateSchema?: ZodSchema;
+    createSchema?: ZodSchema | undefined;
+    updateSchema?: ZodSchema | undefined;
     filters: FilterConfig[];
     searchColumns: string[];
     defaultSort: SortConfig;
-    stateMachine?: StateMachineDefinition<string>;
+    stateMachine?: StateMachineDefinition<string> | undefined;
     statusColumn: string;
     softDelete: boolean;
     orgColumn: string;
@@ -278,8 +269,8 @@ interface ResolvedConfig {
     maxPerPage: number;
     defaultPerPage: number;
     immutableColumns: string[];
-    beforeCreate?: CrudConfig["beforeCreate"];
-    beforeUpdate?: CrudConfig["beforeUpdate"];
+    beforeCreate?: CrudConfig["beforeCreate"] | undefined;
+    beforeUpdate?: CrudConfig["beforeUpdate"] | undefined;
     logPrefix: string;
 }
 

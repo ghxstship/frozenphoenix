@@ -27,7 +27,7 @@ import type { EntityRecord } from "@/types/entity";
 interface RelatedEntitiesSectionProps {
     def: RelatedEntityDef;
     parentId: string;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function RelatedEntitiesSection({ def, parentId, className }: RelatedEntitiesSectionProps) {
@@ -100,7 +100,7 @@ export function RelatedEntitiesSection({ def, parentId, className }: RelatedEnti
                         onRowClick={
                             def.linkPattern
                                 ? (row) => {
-                                      const href = def.linkPattern!.replace(
+                                      const href = (def.linkPattern ?? "").replace(
                                           "{id}",
                                           String(row.id ?? "")
                                       );

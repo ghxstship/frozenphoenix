@@ -15,16 +15,16 @@ type ChatterTab = "comments" | "activity";
 export interface RecordChatterProps {
     recordType: string;
     recordId: string;
-    activityItems?: ActivityItem[];
-    comments?: CommentItem[];
-    currentUserId?: string;
-    onAddComment?: (content: string) => Promise<void>;
-    onEditComment?: (id: string, content: string) => Promise<void>;
-    onDeleteComment?: (id: string) => Promise<void>;
-    defaultTab?: ChatterTab;
-    maxActivityItems?: number;
-    className?: string;
-    compact?: boolean;
+    activityItems?: ActivityItem[] | undefined;
+    comments?: CommentItem[] | undefined;
+    currentUserId?: string | undefined;
+    onAddComment?: (content: string) => Promise<void> | undefined;
+    onEditComment?: (id: string, content: string) => Promise<void> | undefined;
+    onDeleteComment?: (id: string) => Promise<void> | undefined;
+    defaultTab?: ChatterTab | undefined;
+    maxActivityItems?: number | undefined;
+    className?: string | undefined;
+    compact?: boolean | undefined;
 }
 
 export function RecordChatter({
@@ -76,10 +76,10 @@ export function RecordChatter({
                     ) : (
                         <CommentsSection
                             comments={comments}
-                            currentUserId={currentUserId}
-                            onAddComment={onAddComment}
-                            onEditComment={onEditComment}
-                            onDeleteComment={onDeleteComment}
+                            {...(currentUserId ? { currentUserId } : {})}
+                            {...(onAddComment ? { onAddComment } : {})}
+                            {...(onEditComment ? { onEditComment } : {})}
+                            {...(onDeleteComment ? { onDeleteComment } : {})}
                         />
                     )
                 ) : (

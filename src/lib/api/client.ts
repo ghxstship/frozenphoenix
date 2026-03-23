@@ -42,19 +42,19 @@ export interface ApiDeleteResponse {
 export interface ApiErrorResponse {
     error: {
         message: string;
-        code?: string;
-        details?: unknown;
+        code?: string | undefined;
+        details?: unknown | undefined;
     };
 }
 
 // ─── Query Parameter Helpers ────────────────────────────────
 
 export interface ListParams {
-    page?: number;
-    per_page?: number;
-    sort_by?: string;
-    sort_order?: "asc" | "desc";
-    search?: string;
+    page?: number | undefined;
+    per_page?: number | undefined;
+    sort_by?: string | undefined;
+    sort_order?: "asc" | "desc" | undefined;
+    search?: string | undefined;
     [key: string]: string | number | boolean | undefined;
 }
 
@@ -74,8 +74,7 @@ function buildQueryString(params?: ListParams): string {
 
 class ApiError extends Error {
     status: number;
-    code?: string;
-
+    code?: string | undefined;
     constructor(message: string, status: number, code?: string) {
         super(message);
         this.name = "ApiError";

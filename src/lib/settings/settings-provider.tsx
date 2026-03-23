@@ -123,7 +123,7 @@ function resolveSettings(
     return resolved;
 }
 
-export function SettingsProvider({ children }: { children: React.ReactNode }) {
+export function SettingsProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
     const { user, activeOrg } = useAuth();
     const [definitions, setDefinitions] = useState<SettingDefinition[]>([]);
     const [settingValues, setSettingValues] = useState<SettingValue[]>([]);

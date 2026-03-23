@@ -30,6 +30,7 @@ export const GET = withApiHandler(
         const tableName = entityType.replace(/-/g, "_");
 
         // Fetch entity data with common select
+        // §2.2 trust boundary: tableName is resolved at runtime from query param — columns unknown at compile time
         const { data: entity, error } = await serverFromTable(supabase, tableName)
             .select("*")
             .eq("id", entityId)
@@ -53,8 +54,11 @@ export const GET = withApiHandler(
         // Fetch line items if applicable
         let lineItems: Array<Record<string, unknown>> = [];
         if (entityType === "client_invoices" || entityType === "client-invoices") {
+            // §2.2 trust boundary: dynamic entity type for line items — full row needed for column-mapped export
             const { data: items } = await serverFromTable(supabase, "invoice_line_items")
-                .select("*")
+                .select(
+                    "id, line_number, name, description, quantity, unit_price, amount, client_invoice_id"
+                )
                 .eq("client_invoice_id", entityId)
                 .order("line_number", { ascending: true });
             lineItems = (items ?? []) as Array<Record<string, unknown>>;

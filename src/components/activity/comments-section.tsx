@@ -14,19 +14,19 @@ export interface CommentItem {
     id: string;
     authorId: string;
     authorName: string;
-    authorInitials?: string;
+    authorInitials?: string | undefined;
     content: string;
     createdAt: string;
-    updatedAt?: string;
+    updatedAt?: string | undefined;
 }
 
 export interface CommentsSectionProps {
     comments: CommentItem[];
-    currentUserId?: string;
-    onAddComment?: (content: string) => Promise<void>;
-    onEditComment?: (id: string, content: string) => Promise<void>;
-    onDeleteComment?: (id: string) => Promise<void>;
-    className?: string;
+    currentUserId?: string | undefined;
+    onAddComment?: (content: string) => Promise<void> | undefined;
+    onEditComment?: (id: string, content: string) => Promise<void> | undefined;
+    onDeleteComment?: (id: string) => Promise<void> | undefined;
+    className?: string | undefined;
 }
 
 export function CommentsSection({

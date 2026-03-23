@@ -17,10 +17,16 @@ import {
     TrendingUp,
     Users,
 } from "lucide-react";
-import { useCrewMembers, useDeals, useProjects } from "@/lib/supabase";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 type ForecastView = "revenue" | "utilization" | "budget" | "hiring";
+
+interface ForecastingData {
+    projects: Array<Record<string, unknown>>;
+    deals: Array<Record<string, unknown>>;
+    crew: Array<Record<string, unknown>>;
+}
 
 interface RevenueMonth {
     month: string;
@@ -85,6 +91,18 @@ const BUDGET_STATUS_CONFIG: Record<
     over_budget: { label: "Over Budget", variant: "destructive" },
 };
 
+function useForecastingData() {
+    return useQuery<ForecastingData>({
+        queryKey: ["forecasting-bff"],
+        queryFn: async () => {
+            const res = await fetch("/api/forecasting");
+            if (!res.ok) throw new Error(`Forecasting BFF failed: ${res.status}`);
+            return res.json();
+        },
+        staleTime: 30_000,
+    });
+}
+
 export function ForecastingPageClient() {
     const FORECAST_VIEWS = ["revenue", "utilization", "budget", "hiring"] as const;
     const [view, setView] = useQueryTabState({
@@ -93,16 +111,17 @@ export function ForecastingPageClient() {
         validValues: FORECAST_VIEWS,
     });
 
-    const { data: sbProjects, isLoading: loadingProjects } = useProjects();
-    const { data: sbDeals } = useDeals();
-    const { data: sbCrew } = useCrewMembers();
+    const { data, isLoading: loadingForecasting } = useForecastingData();
 
     const projects = useMemo(
-        () => (sbProjects ?? []) as Array<Record<string, unknown>>,
-        [sbProjects]
+        () => (data?.projects ?? []) as Array<Record<string, unknown>>,
+        [data?.projects]
     );
-    const deals = useMemo(() => (sbDeals ?? []) as Array<Record<string, unknown>>, [sbDeals]);
-    const crew = useMemo(() => (sbCrew ?? []) as Array<Record<string, unknown>>, [sbCrew]);
+    const deals = useMemo(
+        () => (data?.deals ?? []) as Array<Record<string, unknown>>,
+        [data?.deals]
+    );
+    const crew = useMemo(() => (data?.crew ?? []) as Array<Record<string, unknown>>, [data?.crew]);
 
     const revenueData: RevenueMonth[] = useMemo(() => {
         const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
@@ -559,5 +578,5 @@ export function ForecastingPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} isLoading={loadingProjects} />;
+    return <OperationalDashboardShell config={config} isLoading={loadingForecasting} />;
 }

@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { ClauseLibraryDetailClient } from "./_client";
 
 export default async function ClauseLibraryDetailPage({
@@ -6,5 +7,6 @@ export default async function ClauseLibraryDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <ClauseLibraryDetailClient id={id} />;
+    const initialRecord = await prefetchDetailRecord("contract_clauses", id);
+    return <ClauseLibraryDetailClient id={id} initialRecord={initialRecord} />;
 }

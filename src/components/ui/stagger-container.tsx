@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 import { STAGGER_SCALE, type StaggerScaleToken } from "@/config/design-tokens";
 
 export interface StaggerContainerProps extends React.HTMLAttributes<HTMLDivElement> {
-    stagger?: StaggerScaleToken;
-    animation?: "slide-up" | "fade-in" | "scale-in";
+    stagger?: StaggerScaleToken | undefined;
+    animation?: "slide-up" | "fade-in" | "scale-in" | undefined;
 }
 
 export function StaggerContainer({
@@ -44,8 +44,8 @@ export function StaggerContainer({
 
 export interface StaggerItemProps extends React.HTMLAttributes<HTMLDivElement> {
     index: number;
-    stagger?: StaggerScaleToken;
-    animation?: "slide-up" | "fade-in" | "scale-in";
+    stagger?: StaggerScaleToken | undefined;
+    animation?: "slide-up" | "fade-in" | "scale-in" | undefined;
 }
 
 export function StaggerItem({

@@ -11,17 +11,17 @@
 export interface AuditFields {
     createdAt: string;
     createdBy: string;
-    updatedAt?: string;
-    updatedBy?: string;
-    deletedAt?: string;
-    deletedBy?: string;
+    updatedAt?: string | undefined;
+    updatedBy?: string | undefined;
+    deletedAt?: string | undefined;
+    deletedBy?: string | undefined;
 }
 
 export interface LinkedRecord {
     id: string;
     type: EntityType;
     name: string;
-    status?: string;
+    status?: string | undefined;
 }
 
 export type EntityType =
@@ -96,11 +96,10 @@ export interface Project extends AuditFields {
     // WHEN
     startDate: string;
     endDate: string;
-    loadInDate?: string;
-    loadOutDate?: string;
-
+    loadInDate?: string | undefined;
+    loadOutDate?: string | undefined;
     // WHERE
-    primaryLocationId?: string;
+    primaryLocationId?: string | undefined;
     locationIds: string[];
 
     // WHY
@@ -117,8 +116,8 @@ export interface Project extends AuditFields {
     contingencyPercent: number;
 
     // Relationships
-    dealId?: string;
-    parentProjectId?: string;
+    dealId?: string | undefined;
+    parentProjectId?: string | undefined;
     childProjectIds: string[];
 }
 
@@ -162,39 +161,36 @@ export interface Location extends AuditFields {
     type: LocationType;
 
     // WHO
-    contactName?: string;
-    contactPhone?: string;
-    contactEmail?: string;
-    venueRepId?: string;
-
+    contactName?: string | undefined;
+    contactPhone?: string | undefined;
+    contactEmail?: string | undefined;
+    venueRepId?: string | undefined;
     // WHAT
-    description?: string;
-    capacity?: number;
-    squareFootage?: number;
+    description?: string | undefined;
+    capacity?: number | undefined;
+    squareFootage?: number | undefined;
     amenities: string[];
     restrictions: string[];
 
     // WHEN
-    accessStartDate?: string;
-    accessEndDate?: string;
+    accessStartDate?: string | undefined;
+    accessEndDate?: string | undefined;
     loadInWindows: TimeWindow[];
     loadOutWindows: TimeWindow[];
 
     // WHERE
     address: Address;
-    coordinates?: { lat: number; lng: number };
-    parkingInfo?: string;
-    dockInfo?: string;
-
+    coordinates?: { lat: number; lng: number } | undefined;
+    parkingInfo?: string | undefined;
+    dockInfo?: string | undefined;
     // WHY
     purpose: string;
 
     // HOW
-    dailyRate?: number;
-    totalCost?: number;
-    powerAvailable?: string;
-    internetAvailable?: boolean;
-
+    dailyRate?: number | undefined;
+    totalCost?: number | undefined;
+    powerAvailable?: string | undefined;
+    internetAvailable?: boolean | undefined;
     // IF/THEN
     insuranceRequired: boolean;
     permitsRequired: string[];
@@ -206,7 +202,7 @@ export interface Location extends AuditFields {
 
 export interface Address {
     street1: string;
-    street2?: string;
+    street2?: string | undefined;
     city: string;
     state: string;
     postalCode: string;
@@ -217,7 +213,7 @@ export interface TimeWindow {
     date: string;
     startTime: string;
     endTime: string;
-    notes?: string;
+    notes?: string | undefined;
 }
 
 // ─── Activation ───
@@ -254,23 +250,20 @@ export interface Activation extends AuditFields {
     operatingHours: TimeWindow[];
 
     // WHERE
-    floorPlanPosition?: { x: number; y: number };
-    zone?: string;
-
+    floorPlanPosition?: { x: number; y: number } | undefined;
+    zone?: string | undefined;
     // WHY
     experienceGoals: string[];
     targetAudience: string;
-    expectedFootfall?: number;
-
+    expectedFootfall?: number | undefined;
     // HOW
     budget: number;
-    powerRequirements?: string;
+    powerRequirements?: string | undefined;
     staffingRequirements: StaffingRequirement[];
 
     // IF/THEN
-    weatherContingency?: string;
-    backupPlan?: string;
-
+    weatherContingency?: string | undefined;
+    backupPlan?: string | undefined;
     // Relationships
     eventIds: string[];
     assetIds: string[];
@@ -298,9 +291,9 @@ export interface ActivationComponent {
         | "technology";
     quantity: number;
     status: "pending" | "ordered" | "fabricating" | "ready" | "installed";
-    assetId?: string;
-    vendorId?: string;
-    cost?: number;
+    assetId?: string | undefined;
+    vendorId?: string | undefined;
+    cost?: number | undefined;
 }
 
 export interface StaffingRequirement {
@@ -308,7 +301,7 @@ export interface StaffingRequirement {
     quantity: number;
     hoursPerDay: number;
     skillsRequired: string[];
-    notes?: string;
+    notes?: string | undefined;
 }
 
 // ─── Event ───
@@ -327,40 +320,36 @@ export interface Event extends AuditFields {
     id: string;
     projectId: string;
     locationId: string;
-    activationId?: string;
+    activationId?: string | undefined;
     name: string;
     type: EventType;
     status: "scheduled" | "confirmed" | "in_progress" | "completed" | "cancelled" | "postponed";
 
     // WHO
     producerId: string;
-    stageManagerId?: string;
-    attendeeCount?: number;
-    vipCount?: number;
-
+    stageManagerId?: string | undefined;
+    attendeeCount?: number | undefined;
+    vipCount?: number | undefined;
     // WHAT
     description: string;
     runOfShow: RunOfShowItem[];
 
     // WHEN
     date: string;
-    doorsTime?: string;
+    doorsTime?: string | undefined;
     startTime: string;
     endTime: string;
 
     // WHERE
-    specificLocation?: string;
-
+    specificLocation?: string | undefined;
     // WHY
     purpose: string;
 
     // HOW
-    budget?: number;
-
+    budget?: number | undefined;
     // IF/THEN
-    rainPlan?: string;
-    cancellationPolicy?: string;
-
+    rainPlan?: string | undefined;
+    cancellationPolicy?: string | undefined;
     // Relationships
     activityIds: string[];
     crewAssignmentIds: string[];
@@ -372,8 +361,8 @@ export interface RunOfShowItem {
     duration: number;
     description: string;
     responsibleParty: string;
-    notes?: string;
-    cueNumber?: string;
+    notes?: string | undefined;
+    cueNumber?: string | undefined;
 }
 
 // ─── Activity ───
@@ -392,7 +381,7 @@ export interface Activity extends AuditFields {
     id: string;
     projectId: string;
     eventId: string;
-    activationId?: string;
+    activationId?: string | undefined;
     name: string;
     type: ActivityType;
     status: "planned" | "ready" | "active" | "paused" | "completed" | "cancelled";
@@ -400,8 +389,7 @@ export interface Activity extends AuditFields {
     // WHO
     leadId: string;
     staffIds: string[];
-    participantCount?: number;
-
+    participantCount?: number | undefined;
     // WHAT
     description: string;
     requirements: string[];
@@ -409,11 +397,9 @@ export interface Activity extends AuditFields {
     // WHEN
     startTime: string;
     endTime: string;
-    frequency?: "once" | "hourly" | "continuous";
-
+    frequency?: "once" | "hourly" | "continuous" | undefined;
     // WHERE
-    specificLocation?: string;
-
+    specificLocation?: string | undefined;
     // WHY
     objective: string;
 
@@ -422,8 +408,7 @@ export interface Activity extends AuditFields {
     equipmentNeeded: string[];
 
     // IF/THEN
-    contingencyPlan?: string;
-
+    contingencyPlan?: string | undefined;
     // Relationships
     assetIds: string[];
     consumableIds: string[];
@@ -463,33 +448,30 @@ export type TaskPriority = "low" | "medium" | "high" | "urgent" | "critical";
 export interface ProductionTask extends AuditFields {
     id: string;
     projectId: string;
-    parentTaskId?: string;
+    parentTaskId?: string | undefined;
     department: Department;
     phase: ProductionPhase;
 
     // WHO
-    assigneeId?: string;
-    assigneeName?: string;
-    reviewerId?: string;
-    vendorId?: string;
-
+    assigneeId?: string | undefined;
+    assigneeName?: string | undefined;
+    reviewerId?: string | undefined;
+    vendorId?: string | undefined;
     // WHAT
     title: string;
-    description?: string;
+    description?: string | undefined;
     deliverables: string[];
     acceptanceCriteria: string[];
 
     // WHEN
-    startDate?: string;
-    dueDate?: string;
-    completedAt?: string;
-    estimatedHours?: number;
-    actualHours?: number;
-
+    startDate?: string | undefined;
+    dueDate?: string | undefined;
+    completedAt?: string | undefined;
+    estimatedHours?: number | undefined;
+    actualHours?: number | undefined;
     // WHERE
-    locationId?: string;
-    activationId?: string;
-
+    locationId?: string | undefined;
+    activationId?: string | undefined;
     // WHY
     priority: TaskPriority;
     impactIfDelayed: string;
@@ -504,7 +486,7 @@ export interface ProductionTask extends AuditFields {
     dependents: string[];
 
     // Relationships
-    milestoneId?: string;
+    milestoneId?: string | undefined;
     purchaseOrderIds: string[];
     assetIds: string[];
     attachmentIds: string[];
@@ -515,8 +497,7 @@ export interface Milestone extends AuditFields {
     projectId: string;
     phase: ProductionPhase;
     name: string;
-    description?: string;
-
+    description?: string | undefined;
     // WHO
     ownerId: string;
     approverIds: string[];
@@ -526,8 +507,7 @@ export interface Milestone extends AuditFields {
 
     // WHEN
     dueDate: string;
-    completedAt?: string;
-
+    completedAt?: string | undefined;
     // WHY
     isCriticalPath: boolean;
     clientFacing: boolean;
@@ -537,11 +517,10 @@ export interface Milestone extends AuditFields {
 
     // IF/THEN
     paymentTrigger: boolean;
-    paymentAmount?: number;
-
+    paymentAmount?: number | undefined;
     // Relationships
     taskIds: string[];
-    approvalId?: string;
+    approvalId?: string | undefined;
 }
 
 export interface MilestoneDeliverable {
@@ -550,7 +529,7 @@ export interface MilestoneDeliverable {
     type: "document" | "asset" | "approval" | "payment" | "installation" | "other";
     status: "pending" | "submitted" | "approved" | "rejected";
     dueDate: string;
-    attachmentUrl?: string;
+    attachmentUrl?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -603,7 +582,7 @@ export interface RFQ extends AuditFields {
 
     // Relationships
     responses: RFQResponse[];
-    awardedPOId?: string;
+    awardedPOId?: string | undefined;
 }
 
 export interface RFQLineItem {
@@ -611,8 +590,8 @@ export interface RFQLineItem {
     description: string;
     quantity: number;
     unit: string;
-    specifications?: string;
-    targetPrice?: number;
+    specifications?: string | undefined;
+    targetPrice?: number | undefined;
 }
 
 export interface RFQResponse {
@@ -623,7 +602,7 @@ export interface RFQResponse {
     totalPrice: number;
     leadTime: number;
     lineItems: RFQResponseLineItem[];
-    notes?: string;
+    notes?: string | undefined;
     submittedAt: string;
     selected: boolean;
 }
@@ -632,7 +611,7 @@ export interface RFQResponseLineItem {
     rfqLineItemId: string;
     unitPrice: number;
     totalPrice: number;
-    notes?: string;
+    notes?: string | undefined;
 }
 
 export interface PurchaseOrder extends AuditFields {
@@ -644,8 +623,7 @@ export interface PurchaseOrder extends AuditFields {
     vendorId: string;
     vendorName: string;
     requestedById: string;
-    approvedById?: string;
-
+    approvedById?: string | undefined;
     // WHAT
     description: string;
     lineItems: POLineItem[];
@@ -653,8 +631,7 @@ export interface PurchaseOrder extends AuditFields {
     // WHEN
     issueDate: string;
     requiredByDate: string;
-    acknowledgedAt?: string;
-
+    acknowledgedAt?: string | undefined;
     // WHERE
     deliveryLocationId: string;
     deliveryAddress: Address;
@@ -677,11 +654,11 @@ export interface PurchaseOrder extends AuditFields {
     approvalThreshold: number;
 
     // Relationships
-    rfqId?: string;
+    rfqId?: string | undefined;
     invoiceIds: string[];
     shipmentIds: string[];
-    taskId?: string;
-    activationId?: string;
+    taskId?: string | undefined;
+    activationId?: string | undefined;
 }
 
 export interface POLineItem {
@@ -699,9 +676,9 @@ export interface POLineItem {
 
 export interface Contract extends AuditFields {
     id: string;
-    projectId?: string;
-    vendorId?: string;
-    clientId?: string;
+    projectId?: string | undefined;
+    vendorId?: string | undefined;
+    clientId?: string | undefined;
     number: string;
     title: string;
     type: "vendor" | "client" | "venue" | "talent" | "sponsor" | "nda" | "other";
@@ -717,8 +694,7 @@ export interface Contract extends AuditFields {
     // WHEN
     effectiveDate: string;
     expirationDate: string;
-    signedAt?: string;
-
+    signedAt?: string | undefined;
     // WHY
     value: number;
 
@@ -727,8 +703,7 @@ export interface Contract extends AuditFields {
 
     // IF/THEN
     autoRenew: boolean;
-    terminationClause?: string;
-
+    terminationClause?: string | undefined;
     // Relationships
     documentUrl: string;
     amendmentIds: string[];
@@ -750,8 +725,7 @@ export interface ScheduleEntry extends AuditFields {
 
     // WHAT
     title: string;
-    description?: string;
-
+    description?: string | undefined;
     // WHEN
     startDateTime: string;
     endDateTime: string;
@@ -759,40 +733,37 @@ export interface ScheduleEntry extends AuditFields {
     timezone: string;
 
     // WHERE
-    locationId?: string;
-    locationName?: string;
-
+    locationId?: string | undefined;
+    locationName?: string | undefined;
     // WHY
     priority: TaskPriority;
 
     // HOW
     status: "scheduled" | "confirmed" | "in_progress" | "completed" | "cancelled";
-    color?: string;
-
+    color?: string | undefined;
     // IF/THEN
-    recurrence?: RecurrenceRule;
-    reminderMinutes?: number[];
+    recurrence?: RecurrenceRule | undefined;
+    reminderMinutes?: number[] | undefined;
 }
 
 export interface RecurrenceRule {
     frequency: "daily" | "weekly" | "monthly";
     interval: number;
-    daysOfWeek?: number[];
-    endDate?: string;
-    occurrences?: number;
+    daysOfWeek?: number[] | undefined;
+    endDate?: string | undefined;
+    occurrences?: number | undefined;
 }
 
 export interface CrewShift extends AuditFields {
     id: string;
     projectId: string;
-    eventId?: string;
+    eventId?: string | undefined;
     locationId: string;
 
     // WHO
     crewMemberId: string;
     crewMemberName: string;
-    supervisorId?: string;
-
+    supervisorId?: string | undefined;
     // WHAT
     role: string;
     department: Department;
@@ -803,15 +774,14 @@ export interface CrewShift extends AuditFields {
     callTime: string;
     startTime: string;
     endTime: string;
-    wrapTime?: string;
+    wrapTime?: string | undefined;
     breakMinutes: number;
 
     // WHERE
     reportingLocation: string;
 
     // WHY
-    notes?: string;
-
+    notes?: string | undefined;
     // HOW
     status:
         | "scheduled"
@@ -829,7 +799,7 @@ export interface CrewShift extends AuditFields {
     travelReimbursement: boolean;
 
     // Relationships
-    timeEntryId?: string;
+    timeEntryId?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -847,12 +817,11 @@ export type CrewStatus = "active" | "inactive" | "on_leave" | "terminated" | "do
 
 export interface CrewMember extends AuditFields {
     id: string;
-    employeeId?: string;
-
+    employeeId?: string | undefined;
     // WHO
     firstName: string;
     lastName: string;
-    preferredName?: string;
+    preferredName?: string | undefined;
     email: string;
     phone: string;
     emergencyContact: EmergencyContact;
@@ -866,13 +835,11 @@ export interface CrewMember extends AuditFields {
 
     // WHEN
     hireDate: string;
-    terminationDate?: string;
-
+    terminationDate?: string | undefined;
     // WHERE
     homeBase: string;
     willingToTravel: boolean;
-    travelRadius?: number;
-
+    travelRadius?: number | undefined;
     // WHY
     employmentType: EmploymentType;
     status: CrewStatus;
@@ -880,16 +847,14 @@ export interface CrewMember extends AuditFields {
     // HOW
     hourlyRate: number;
     overtimeRate: number;
-    dayRate?: number;
-
+    dayRate?: number | undefined;
     // IF/THEN
     unionMember: boolean;
-    unionLocal?: string;
-    backgroundCheckDate?: string;
-    drugTestDate?: string;
-
+    unionLocal?: string | undefined;
+    backgroundCheckDate?: string | undefined;
+    drugTestDate?: string | undefined;
     // Relationships
-    supervisorId?: string;
+    supervisorId?: string | undefined;
     projectAssignments: ProjectAssignment[];
 }
 
@@ -897,7 +862,7 @@ export interface EmergencyContact {
     name: string;
     relationship: string;
     phone: string;
-    email?: string;
+    email?: string | undefined;
 }
 
 export interface Certification {
@@ -907,7 +872,7 @@ export interface Certification {
     issuingBody: string;
     issueDate: string;
     expiryDate: string;
-    documentUrl?: string;
+    documentUrl?: string | undefined;
     verified: boolean;
 }
 
@@ -931,8 +896,8 @@ export interface Availability {
     crewMemberId: string;
     date: string;
     status: "available" | "unavailable" | "tentative" | "booked";
-    projectId?: string;
-    notes?: string;
+    projectId?: string | undefined;
+    notes?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -965,28 +930,25 @@ export type AssetOwnership = "owned" | "rental" | "client_provided" | "vendor_pr
 export interface Asset extends AuditFields {
     id: string;
     barcode: string;
-    serialNumber?: string;
-
+    serialNumber?: string | undefined;
     // WHO
-    ownerId?: string;
-    currentCustodianId?: string;
-    vendorId?: string;
-
+    ownerId?: string | undefined;
+    currentCustodianId?: string | undefined;
+    vendorId?: string | undefined;
     // WHAT
     name: string;
-    description?: string;
+    description?: string | undefined;
     category: AssetCategory;
-    subcategory?: string;
-    manufacturer?: string;
-    model?: string;
+    subcategory?: string | undefined;
+    manufacturer?: string | undefined;
+    model?: string | undefined;
     specifications: Record<string, string>;
 
     // WHEN
-    purchaseDate?: string;
-    warrantyExpiry?: string;
-    lastMaintenanceDate?: string;
-    nextMaintenanceDate?: string;
-
+    purchaseDate?: string | undefined;
+    warrantyExpiry?: string | undefined;
+    lastMaintenanceDate?: string | undefined;
+    nextMaintenanceDate?: string | undefined;
     // WHERE
     homeLocationId: string;
     currentLocationId: string;
@@ -996,16 +958,14 @@ export interface Asset extends AuditFields {
     condition: AssetCondition;
 
     // HOW
-    purchasePrice?: number;
-    currentValue?: number;
-    dailyRentalRate?: number;
-    insuranceValue?: number;
-
+    purchasePrice?: number | undefined;
+    currentValue?: number | undefined;
+    dailyRentalRate?: number | undefined;
+    insuranceValue?: number | undefined;
     // IF/THEN
     requiresCertification: boolean;
     certificationTypes: string[];
-    maintenanceSchedule?: string;
-
+    maintenanceSchedule?: string | undefined;
     // Relationships
     projectAssignments: AssetAssignment[];
     maintenanceRecords: MaintenanceRecord[];
@@ -1015,16 +975,16 @@ export interface AssetAssignment extends AuditFields {
     id: string;
     assetId: string;
     projectId: string;
-    activationId?: string;
+    activationId?: string | undefined;
     status: "reserved" | "checked_out" | "in_use" | "returned" | "damaged" | "lost";
     checkOutDate: string;
     expectedReturnDate: string;
-    actualReturnDate?: string;
+    actualReturnDate?: string | undefined;
     checkedOutById: string;
-    returnedById?: string;
+    returnedById?: string | undefined;
     conditionOnCheckout: AssetCondition;
-    conditionOnReturn?: AssetCondition;
-    notes?: string;
+    conditionOnReturn?: AssetCondition | undefined;
+    notes?: string | undefined;
 }
 
 export interface MaintenanceRecord extends AuditFields {
@@ -1033,25 +993,25 @@ export interface MaintenanceRecord extends AuditFields {
     type: "inspection" | "repair" | "calibration" | "cleaning" | "upgrade";
     description: string;
     performedById: string;
-    vendorId?: string;
-    cost?: number;
+    vendorId?: string | undefined;
+    cost?: number | undefined;
     date: string;
-    nextDueDate?: string;
-    notes?: string;
+    nextDueDate?: string | undefined;
+    notes?: string | undefined;
 }
 
 export interface Consumable extends AuditFields {
     id: string;
     sku: string;
     name: string;
-    description?: string;
+    description?: string | undefined;
     category: string;
     unit: string;
     quantityOnHand: number;
     reorderPoint: number;
     reorderQuantity: number;
     unitCost: number;
-    preferredVendorId?: string;
+    preferredVendorId?: string | undefined;
     locationId: string;
 }
 
@@ -1062,7 +1022,7 @@ export interface ConsumableUsage extends AuditFields {
     quantity: number;
     usedById: string;
     date: string;
-    notes?: string;
+    notes?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1087,9 +1047,9 @@ export interface Shipment extends AuditFields {
     type: ShipmentType;
 
     // WHO
-    carrierId?: string;
+    carrierId?: string | undefined;
     carrierName: string;
-    driverId?: string;
+    driverId?: string | undefined;
     coordinatorId: string;
 
     // WHAT
@@ -1101,10 +1061,9 @@ export interface Shipment extends AuditFields {
 
     // WHEN
     pickupDate: string;
-    pickupTime?: string;
+    pickupTime?: string | undefined;
     estimatedDeliveryDate: string;
-    actualDeliveryDate?: string;
-
+    actualDeliveryDate?: string | undefined;
     // WHERE
     originLocationId: string;
     originAddress: Address;
@@ -1116,29 +1075,28 @@ export interface Shipment extends AuditFields {
 
     // HOW
     status: ShipmentStatus;
-    trackingNumber?: string;
-    cost?: number;
-
+    trackingNumber?: string | undefined;
+    cost?: number | undefined;
     // IF/THEN
-    specialInstructions?: string;
+    specialInstructions?: string | undefined;
     liftgateRequired: boolean;
     insideDelivery: boolean;
     appointmentRequired: boolean;
 
     // Relationships
-    purchaseOrderId?: string;
-    vehicleId?: string;
+    purchaseOrderId?: string | undefined;
+    vehicleId?: string | undefined;
 }
 
 export interface ShipmentItem {
     id: string;
-    assetId?: string;
+    assetId?: string | undefined;
     description: string;
     quantity: number;
-    weight?: number;
-    dimensions?: Dimensions;
-    value?: number;
-    handlingInstructions?: string;
+    weight?: number | undefined;
+    dimensions?: Dimensions | undefined;
+    value?: number | undefined;
+    handlingInstructions?: string | undefined;
 }
 
 export interface Vehicle extends AuditFields {
@@ -1151,8 +1109,7 @@ export interface Vehicle extends AuditFields {
     vin: string;
 
     // WHO
-    primaryDriverId?: string;
-
+    primaryDriverId?: string | undefined;
     // WHAT
     capacity: number;
     capacityUnit: "lbs" | "kg" | "cu_ft" | "pallets";
@@ -1160,9 +1117,8 @@ export interface Vehicle extends AuditFields {
     // WHEN
     registrationExpiry: string;
     insuranceExpiry: string;
-    lastInspectionDate?: string;
-    nextInspectionDate?: string;
-
+    lastInspectionDate?: string | undefined;
+    nextInspectionDate?: string | undefined;
     // WHERE
     homeLocationId: string;
     currentLocationId: string;
@@ -1209,7 +1165,7 @@ export interface WarehouseZone {
     name: string;
     type: "storage" | "staging" | "shipping" | "receiving" | "fabrication";
     squareFootage: number;
-    rackCount?: number;
+    rackCount?: number | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1250,8 +1206,7 @@ export interface Budget extends AuditFields {
 
     // WHO
     preparedById: string;
-    approvedById?: string;
-
+    approvedById?: string | undefined;
     // WHAT
     lineItems: BudgetLineItem[];
 
@@ -1259,8 +1214,7 @@ export interface Budget extends AuditFields {
     effectiveDate: string;
 
     // WHY
-    notes?: string;
-
+    notes?: string | undefined;
     // HOW
     totalBudget: number;
     totalActual: number;
@@ -1276,13 +1230,12 @@ export interface BudgetLineItem extends AuditFields {
     id: string;
     budgetId: string;
     category: BudgetCategory;
-    subcategory?: string;
+    subcategory?: string | undefined;
     description: string;
     phase: ProductionPhase;
 
     // WHO
-    vendorId?: string;
-
+    vendorId?: string | undefined;
     // WHAT
     quantity: number;
     unit: string;
@@ -1295,8 +1248,7 @@ export interface BudgetLineItem extends AuditFields {
     variance: number;
 
     // IF/THEN
-    notes?: string;
-
+    notes?: string | undefined;
     // Relationships
     purchaseOrderIds: string[];
     expenseIds: string[];
@@ -1305,13 +1257,11 @@ export interface BudgetLineItem extends AuditFields {
 export interface Expense extends AuditFields {
     id: string;
     projectId: string;
-    budgetLineItemId?: string;
-
+    budgetLineItemId?: string | undefined;
     // WHO
     submittedById: string;
-    approvedById?: string;
-    vendorId?: string;
-
+    approvedById?: string | undefined;
+    vendorId?: string | undefined;
     // WHAT
     description: string;
     category: BudgetCategory;
@@ -1319,11 +1269,9 @@ export interface Expense extends AuditFields {
     // WHEN
     expenseDate: string;
     submittedAt: string;
-    approvedAt?: string;
-
+    approvedAt?: string | undefined;
     // WHY
-    justification?: string;
-
+    justification?: string | undefined;
     // HOW
     amount: number;
     currency: string;
@@ -1331,12 +1279,12 @@ export interface Expense extends AuditFields {
     paymentMethod: "corporate_card" | "personal_card" | "cash" | "check" | "wire" | "ach";
 
     // IF/THEN
-    receiptUrl?: string;
+    receiptUrl?: string | undefined;
     reimbursable: boolean;
 
     // Relationships
-    purchaseOrderId?: string;
-    invoiceId?: string;
+    purchaseOrderId?: string | undefined;
+    invoiceId?: string | undefined;
 }
 
 export interface Invoice extends AuditFields {
@@ -1346,9 +1294,8 @@ export interface Invoice extends AuditFields {
     number: string;
 
     // WHO
-    vendorId?: string;
-    clientId?: string;
-
+    vendorId?: string | undefined;
+    clientId?: string | undefined;
     // WHAT
     description: string;
     lineItems: InvoiceLineItem[];
@@ -1356,8 +1303,7 @@ export interface Invoice extends AuditFields {
     // WHEN
     invoiceDate: string;
     dueDate: string;
-    paidAt?: string;
-
+    paidAt?: string | undefined;
     // WHY
     terms: string;
 
@@ -1371,11 +1317,10 @@ export interface Invoice extends AuditFields {
     status: "draft" | "sent" | "viewed" | "partial" | "paid" | "overdue" | "disputed" | "void";
 
     // IF/THEN
-    paymentInstructions?: string;
-
+    paymentInstructions?: string | undefined;
     // Relationships
-    purchaseOrderId?: string;
-    milestoneId?: string;
+    purchaseOrderId?: string | undefined;
+    milestoneId?: string | undefined;
 }
 
 export interface InvoiceLineItem {
@@ -1384,21 +1329,18 @@ export interface InvoiceLineItem {
     quantity: number;
     unitPrice: number;
     totalPrice: number;
-    budgetCategoryId?: string;
+    budgetCategoryId?: string | undefined;
 }
 
 export interface TimeEntry extends AuditFields {
     id: string;
     projectId: string;
     crewMemberId: string;
-    shiftId?: string;
-
+    shiftId?: string | undefined;
     // WHO
-    approvedById?: string;
-
+    approvedById?: string | undefined;
     // WHAT
-    description?: string;
-
+    description?: string | undefined;
     // WHEN
     date: string;
     startTime: string;
@@ -1409,8 +1351,7 @@ export interface TimeEntry extends AuditFields {
     doubleTimeHours: number;
 
     // WHY
-    taskId?: string;
-
+    taskId?: string | undefined;
     // HOW
     status: "draft" | "submitted" | "approved" | "rejected" | "processed";
     regularRate: number;
@@ -1419,12 +1360,12 @@ export interface TimeEntry extends AuditFields {
     totalPay: number;
 
     // IF/THEN
-    notes?: string;
+    notes?: string | undefined;
 }
 
 export interface PayrollBatch extends AuditFields {
     id: string;
-    projectId?: string;
+    projectId?: string | undefined;
     periodStart: string;
     periodEnd: string;
     status: "draft" | "pending_approval" | "approved" | "processing" | "completed";
@@ -1432,7 +1373,7 @@ export interface PayrollBatch extends AuditFields {
     totalDeductions: number;
     totalNet: number;
     timeEntryIds: string[];
-    processedAt?: string;
+    processedAt?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1462,8 +1403,7 @@ export interface Incident extends AuditFields {
     reportedById: string;
     involvedPartyIds: string[];
     witnessIds: string[];
-    assignedToId?: string;
-
+    assignedToId?: string | undefined;
     // WHAT
     title: string;
     description: string;
@@ -1472,27 +1412,23 @@ export interface Incident extends AuditFields {
     // WHEN
     occurredAt: string;
     reportedAt: string;
-    resolvedAt?: string;
-
+    resolvedAt?: string | undefined;
     // WHERE
-    locationId?: string;
+    locationId?: string | undefined;
     specificLocation: string;
 
     // WHY
     severity: IncidentSeverity;
-    rootCause?: string;
-
+    rootCause?: string | undefined;
     // HOW
     status: "reported" | "investigating" | "pending_action" | "resolved" | "closed";
-    resolution?: string;
-    preventiveMeasures?: string;
-
+    resolution?: string | undefined;
+    preventiveMeasures?: string | undefined;
     // IF/THEN
     insuranceClaim: boolean;
-    claimNumber?: string;
-    estimatedCost?: number;
-    actualCost?: number;
-
+    claimNumber?: string | undefined;
+    estimatedCost?: number | undefined;
+    actualCost?: number | undefined;
     // Relationships
     attachmentIds: string[];
     followUpTaskIds: string[];
@@ -1515,8 +1451,7 @@ export type DocumentCategory =
 export interface KnowledgeBaseArticle extends AuditFields {
     id: string;
     category: DocumentCategory;
-    department?: Department;
-
+    department?: Department | undefined;
     // WHO
     authorId: string;
     reviewerIds: string[];
@@ -1528,10 +1463,9 @@ export interface KnowledgeBaseArticle extends AuditFields {
     tags: string[];
 
     // WHEN
-    publishedAt?: string;
-    reviewedAt?: string;
-    nextReviewDate?: string;
-
+    publishedAt?: string | undefined;
+    reviewedAt?: string | undefined;
+    nextReviewDate?: string | undefined;
     // WHY
     purpose: string;
 
@@ -1589,29 +1523,26 @@ export interface SOPStep {
     title: string;
     description: string;
     responsibleRole: string;
-    duration?: number;
-    safetyNote?: string;
-    imageUrl?: string;
+    duration?: number | undefined;
+    safetyNote?: string | undefined;
+    imageUrl?: string | undefined;
 }
 
 export interface Checklist extends AuditFields {
     id: string;
-    templateId?: string;
-    projectId?: string;
-    eventId?: string;
-
+    templateId?: string | undefined;
+    projectId?: string | undefined;
+    eventId?: string | undefined;
     // WHO
     assignedToId: string;
-    completedById?: string;
-
+    completedById?: string | undefined;
     // WHAT
     title: string;
     items: ChecklistItem[];
 
     // WHEN
-    dueDate?: string;
-    completedAt?: string;
-
+    dueDate?: string | undefined;
+    completedAt?: string | undefined;
     // WHY
     type: "pre_event" | "post_event" | "safety" | "quality" | "maintenance" | "custom";
 
@@ -1626,10 +1557,10 @@ export interface ChecklistItem {
     text: string;
     required: boolean;
     completed: boolean;
-    completedAt?: string;
-    completedById?: string;
-    notes?: string;
-    attachmentUrl?: string;
+    completedAt?: string | undefined;
+    completedById?: string | undefined;
+    notes?: string | undefined;
+    attachmentUrl?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1663,12 +1594,10 @@ export interface ReportDefinition extends AuditFields {
     // WHAT
     filters: ReportFilter[];
     columns: ReportColumn[];
-    groupBy?: string[];
-    sortBy?: ReportSort[];
-
+    groupBy?: string[] | undefined;
+    sortBy?: ReportSort[] | undefined;
     // WHEN
-    schedule?: ReportSchedule;
-
+    schedule?: ReportSchedule | undefined;
     // WHY
     isTemplate: boolean;
     isPublic: boolean;
@@ -1686,9 +1615,9 @@ export interface ReportFilter {
 export interface ReportColumn {
     field: string;
     label: string;
-    width?: number;
-    format?: "text" | "number" | "currency" | "date" | "percent";
-    aggregate?: "sum" | "avg" | "count" | "min" | "max";
+    width?: number | undefined;
+    format?: "text" | "number" | "currency" | "date" | "percent" | undefined;
+    aggregate?: "sum" | "avg" | "count" | "min" | "max" | undefined;
 }
 
 export interface ReportSort {
@@ -1698,8 +1627,8 @@ export interface ReportSort {
 
 export interface ReportSchedule {
     frequency: "daily" | "weekly" | "monthly" | "on_demand";
-    dayOfWeek?: number;
-    dayOfMonth?: number;
-    time?: string;
+    dayOfWeek?: number | undefined;
+    dayOfMonth?: number | undefined;
+    time?: string | undefined;
     recipientIds: string[];
 }

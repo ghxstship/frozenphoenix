@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { ApprovalWorkflowDetailClient } from "./_client";
 
 export default async function ApprovalWorkflowDetailPage({
@@ -6,5 +7,6 @@ export default async function ApprovalWorkflowDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <ApprovalWorkflowDetailClient id={id} initialRecord={null} />;
+    const initialRecord = await prefetchDetailRecord("approval-workflows", id);
+    return <ApprovalWorkflowDetailClient id={id} initialRecord={initialRecord} />;
 }

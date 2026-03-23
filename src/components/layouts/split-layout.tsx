@@ -7,10 +7,10 @@ import { ChevronLeft } from "lucide-react";
 export interface SplitLayoutProps {
     list: React.ReactNode;
     detail: React.ReactNode;
-    listWidth?: number;
-    showDetail?: boolean;
-    onBack?: () => void;
-    className?: string;
+    listWidth?: number | undefined;
+    showDetail?: boolean | undefined;
+    onBack?: (() => void) | undefined;
+    className?: string | undefined;
 }
 
 export function SplitLayout({

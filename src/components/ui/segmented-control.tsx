@@ -7,18 +7,18 @@ import { SlidingIndicator } from "@/components/ui/sliding-indicator";
 export interface SegmentedControlOption<T extends string = string> {
     value: T;
     label: string;
-    icon?: React.ReactNode;
-    disabled?: boolean;
-    labelHidden?: boolean;
+    icon?: React.ReactNode | undefined;
+    disabled?: boolean | undefined;
+    labelHidden?: boolean | undefined;
 }
 
 export interface SegmentedControlProps<T extends string = string> {
     options: SegmentedControlOption<T>[];
     value: T;
     onValueChange: (value: T) => void;
-    ariaLabel?: string;
-    size?: "sm" | "md";
-    className?: string;
+    ariaLabel?: string | undefined;
+    size?: "sm" | "md" | undefined;
+    className?: string | undefined;
 }
 
 export function SegmentedControl<T extends string = string>({

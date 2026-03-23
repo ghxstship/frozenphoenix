@@ -9,8 +9,8 @@ interface DriftItem {
     drift_type: "missing" | "type_mismatch" | "out_of_range" | "deprecated" | "orphaned";
     severity: "critical" | "warning" | "info";
     message: string;
-    expected?: unknown;
-    actual?: unknown;
+    expected?: unknown | undefined;
+    actual?: unknown | undefined;
 }
 
 export const GET = withApiHandler(
@@ -41,12 +41,12 @@ export const GET = withApiHandler(
 
         // Fetch setting definitions
         const { data: definitions } = await serverFromTable(supabase, "setting_definitions")
-            .select("*")
+            .select("key, label, category, value_type, default_value, validation_rules")
             .eq("is_active", true);
 
         // Fetch current settings for this org
         const { data: settings } = await serverFromTable(supabase, "settings")
-            .select("*")
+            .select("key, value")
             .eq("organization_id", orgId);
 
         const definitionMap = new Map(

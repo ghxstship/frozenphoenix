@@ -64,7 +64,7 @@ function OrgNodeCard({
 }: {
     node: TreeNode;
     depth: number;
-    isDragOverlay?: boolean;
+    isDragOverlay?: boolean | undefined;
 }) {
     const {
         attributes,

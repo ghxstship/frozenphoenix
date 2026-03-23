@@ -18,38 +18,32 @@ export type PreferredContactMethod = "email" | "phone" | "mobile";
 export interface Company extends AuditFields {
     id: string;
     name: string;
-    legalName?: string;
-    industry?: string;
-    website?: string;
-
+    legalName?: string | undefined;
+    industry?: string | undefined;
+    website?: string | undefined;
     // Contact Info
-    phone?: string;
-    email?: string;
-
+    phone?: string | undefined;
+    email?: string | undefined;
     // Address
-    address?: Address;
-
+    address?: Address | undefined;
     // Billing
     billingAddressSame: boolean;
-    billingAddress?: Address;
+    billingAddress?: Address | undefined;
     defaultCurrency: string;
     paymentTermsDays: number;
-    taxId?: string;
-
+    taxId?: string | undefined;
     // Relationship
     companyType: CompanyType;
-    accountManagerId?: string;
-    parentCompanyId?: string;
-
+    accountManagerId?: string | undefined;
+    parentCompanyId?: string | undefined;
     // Branding
-    brandKitId?: string;
-    logoUrl?: string;
-
+    brandKitId?: string | undefined;
+    logoUrl?: string | undefined;
     // Status
     status: CompanyStatus;
 
     // Metadata
-    notes?: string;
+    notes?: string | undefined;
     tags: string[];
 
     organizationId: string;
@@ -57,31 +51,26 @@ export interface Company extends AuditFields {
 
 export interface Contact extends AuditFields {
     id: string;
-    companyId?: string;
-
+    companyId?: string | undefined;
     // Name
     firstName: string;
     lastName: string;
     fullName: string;
-    preferredName?: string;
-
+    preferredName?: string | undefined;
     // Contact Info
-    email?: string;
-    phone?: string;
-    mobile?: string;
-
+    email?: string | undefined;
+    phone?: string | undefined;
+    mobile?: string | undefined;
     // Position
-    title?: string;
-    department?: string;
-
+    title?: string | undefined;
+    department?: string | undefined;
     // Role in relationship
     isPrimary: boolean;
     isBillingContact: boolean;
     isDecisionMaker: boolean;
 
     // Social
-    linkedinUrl?: string;
-
+    linkedinUrl?: string | undefined;
     // Communication
     preferredContactMethod: PreferredContactMethod;
     timezone: string;
@@ -90,7 +79,7 @@ export interface Contact extends AuditFields {
     status: ContactStatus;
 
     // Notes
-    notes?: string;
+    notes?: string | undefined;
     tags: string[];
 
     organizationId: string;
@@ -102,25 +91,22 @@ export interface PipelineStage {
     order: number;
     probability: number;
     color: string;
-    rottingDays?: number;
+    rottingDays?: number | undefined;
 }
 
 export interface Pipeline extends AuditFields {
     id: string;
     name: string;
-    description?: string;
-
+    description?: string | undefined;
     // Configuration
     isDefault: boolean;
-    color?: string;
-    icon?: string;
-
+    color?: string | undefined;
+    icon?: string | undefined;
     // Stages
     stages: PipelineStage[];
 
     // Automation
-    defaultAssigneeId?: string;
-
+    defaultAssigneeId?: string | undefined;
     // Status
     isActive: boolean;
 
@@ -130,7 +116,7 @@ export interface Pipeline extends AuditFields {
 export interface LostReason {
     id: string;
     name: string;
-    description?: string;
+    description?: string | undefined;
     isActive: boolean;
     organizationId: string;
 }
@@ -169,15 +155,15 @@ export type EntityType =
 export interface CustomFieldOption {
     value: string;
     label: string;
-    color?: string;
+    color?: string | undefined;
 }
 
 export interface CustomFieldValidation {
-    min?: number;
-    max?: number;
-    pattern?: string;
-    minLength?: number;
-    maxLength?: number;
+    min?: number | undefined;
+    max?: number | undefined;
+    pattern?: string | undefined;
+    minLength?: number | undefined;
+    maxLength?: number | undefined;
 }
 
 export interface CustomField extends AuditFields {
@@ -188,14 +174,12 @@ export interface CustomField extends AuditFields {
     name: string;
     fieldKey: string;
     fieldType: CustomFieldType;
-    description?: string;
-
+    description?: string | undefined;
     // Configuration
     isRequired: boolean;
     isFilterable: boolean;
     isVisibleInList: boolean;
-    defaultValue?: string;
-
+    defaultValue?: string | undefined;
     // For select/multi_select types
     options: CustomFieldOption[];
 
@@ -204,8 +188,7 @@ export interface CustomField extends AuditFields {
 
     // Display
     displayOrder: number;
-    groupName?: string;
-
+    groupName?: string | undefined;
     organizationId: string;
 }
 
@@ -215,16 +198,15 @@ export interface CustomFieldValue {
     entityId: string;
 
     // Value storage
-    valueText?: string;
-    valueNumber?: number;
-    valueBoolean?: boolean;
-    valueDate?: string;
-    valueDatetime?: string;
-    valueJson?: Record<string, unknown>;
-
+    valueText?: string | undefined;
+    valueNumber?: number | undefined;
+    valueBoolean?: boolean | undefined;
+    valueDate?: string | undefined;
+    valueDatetime?: string | undefined;
+    valueJson?: Record<string, unknown> | undefined;
     organizationId: string;
     createdAt: string;
-    updatedAt?: string;
+    updatedAt?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -260,33 +242,29 @@ export interface BoardConfig {
     groupBy: string;
     cardFields: string[];
     showEmptyColumns: boolean;
-    columnOrder?: string[];
+    columnOrder?: string[] | undefined;
 }
 
 export interface SavedView extends AuditFields {
     id: string;
     entityType: EntityType;
-    projectId?: string;
-
+    projectId?: string | undefined;
     // Definition
     name: string;
-    description?: string;
-
+    description?: string | undefined;
     // View Configuration
     viewType: ViewType;
 
     // Filters, Sorting, Grouping
     filters: ViewFilter[];
     sortBy: ViewSort[];
-    groupBy?: string;
-
+    groupBy?: string | undefined;
     // Column Configuration
     visibleColumns: string[];
     columnWidths: Record<string, number>;
 
     // Board Configuration
-    boardConfig?: BoardConfig;
-
+    boardConfig?: BoardConfig | undefined;
     // Sharing
     isDefault: boolean;
     isShared: boolean;
@@ -326,11 +304,11 @@ export type AutomationAction =
     | "slack_message";
 
 export interface AutomationTriggerConfig {
-    field?: string;
-    from?: string;
-    to?: string;
-    daysBefore?: number;
-    threshold?: number;
+    field?: string | undefined;
+    from?: string | undefined;
+    to?: string | undefined;
+    daysBefore?: number | undefined;
+    threshold?: number | undefined;
     schedule?: string; // cron expression
 }
 
@@ -341,31 +319,29 @@ export interface AutomationCondition {
 }
 
 export interface AutomationActionConfig {
-    userId?: string;
-    userIds?: string[];
-    message?: string;
-    field?: string;
-    value?: unknown;
-    taskTitle?: string;
-    webhookUrl?: string;
-    channel?: string;
-    template?: string;
+    userId?: string | undefined;
+    userIds?: string[] | undefined;
+    message?: string | undefined;
+    field?: string | undefined;
+    value?: unknown | undefined;
+    taskTitle?: string | undefined;
+    webhookUrl?: string | undefined;
+    channel?: string | undefined;
+    template?: string | undefined;
 }
 
 export interface Automation extends AuditFields {
     id: string;
     name: string;
-    description?: string;
-
+    description?: string | undefined;
     // Scope
     entityType: EntityType;
-    projectId?: string;
-
+    projectId?: string | undefined;
     // Status
     isActive: boolean;
 
     // Execution
-    lastTriggeredAt?: string;
+    lastTriggeredAt?: string | undefined;
     triggerCount: number;
 
     organizationId: string;
@@ -393,21 +369,20 @@ export interface AutomationRule {
     isActive: boolean;
 
     createdAt: string;
-    updatedAt?: string;
+    updatedAt?: string | undefined;
 }
 
 export interface AutomationLog {
     id: string;
     automationId: string;
-    automationRuleId?: string;
-
+    automationRuleId?: string | undefined;
     // Execution
     entityId: string;
     triggeredAt: string;
 
     // Result
     success: boolean;
-    errorMessage?: string;
+    errorMessage?: string | undefined;
     executionData: Record<string, unknown>;
 
     organizationId: string;
@@ -428,19 +403,16 @@ export type RateType = "hourly" | "daily" | "weekly" | "flat";
 export interface RateCard extends AuditFields {
     id: string;
     name: string;
-    description?: string;
-
+    description?: string | undefined;
     // Type
     isDefault: boolean;
-    companyId?: string;
-
+    companyId?: string | undefined;
     // Currency
     currency: string;
 
     // Validity
-    effectiveDate?: string;
-    expirationDate?: string;
-
+    effectiveDate?: string | undefined;
+    expirationDate?: string | undefined;
     // Status
     isActive: boolean;
 
@@ -453,27 +425,24 @@ export interface RateCardItem {
 
     // Service Definition
     serviceName: string;
-    serviceDescription?: string;
-
+    serviceDescription?: string | undefined;
     // Role/Department
-    role?: string;
-    department?: string;
-
+    role?: string | undefined;
+    department?: string | undefined;
     // Rates
-    hourlyRate?: number;
-    dailyRate?: number;
-    unitRate?: number;
+    hourlyRate?: number | undefined;
+    dailyRate?: number | undefined;
+    unitRate?: number | undefined;
     unitName: string;
 
     // Cost (internal)
-    internalCostRate?: number;
-
+    internalCostRate?: number | undefined;
     // Billing
     billingType: BillingType;
     isBillable: boolean;
 
     createdAt: string;
-    updatedAt?: string;
+    updatedAt?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -498,13 +467,11 @@ export interface ResourceBooking extends AuditFields {
     id: string;
 
     // Resource
-    crewMemberId?: string;
-    placeholderName?: string;
-
+    crewMemberId?: string | undefined;
+    placeholderName?: string | undefined;
     // Project/Task
-    projectId?: string;
-    taskId?: string;
-
+    projectId?: string | undefined;
+    taskId?: string | undefined;
     // Booking Details
     bookingType: BookingType;
     status: BookingStatus;
@@ -516,16 +483,14 @@ export interface ResourceBooking extends AuditFields {
     totalHours: number;
 
     // Role
-    role?: string;
-    department?: string;
-
+    role?: string | undefined;
+    department?: string | undefined;
     // Rates
-    rate?: number;
+    rate?: number | undefined;
     rateType: RateType;
 
     // Notes
-    notes?: string;
-
+    notes?: string | undefined;
     // Conflict tracking
     hasConflict: boolean;
 
@@ -544,17 +509,14 @@ export interface TimeOffRequest extends AuditFields {
     isHalfDay: boolean;
 
     // Reason
-    reason?: string;
-
+    reason?: string | undefined;
     // Approval
     status: TimeOffStatus;
-    approverId?: string;
-    approvedAt?: string;
-    rejectionReason?: string;
-
+    approverId?: string | undefined;
+    approvedAt?: string | undefined;
+    rejectionReason?: string | undefined;
     // Notes
-    notes?: string;
-
+    notes?: string | undefined;
     organizationId: string;
 }
 
@@ -563,13 +525,11 @@ export interface ActiveTimer {
     userId: string;
 
     // What are we timing
-    projectId?: string;
-    taskId?: string;
-
+    projectId?: string | undefined;
+    taskId?: string | undefined;
     // Timer
     startedAt: string;
-    description?: string;
-
+    description?: string | undefined;
     // Billing
     isBillable: boolean;
 
@@ -579,7 +539,7 @@ export interface ActiveTimer {
 export interface UtilizationData {
     crewMemberId: string;
     crewMemberName: string;
-    department?: string;
+    department?: string | undefined;
     periodStart: string;
     periodEnd: string;
     availableHours: number;
@@ -602,20 +562,18 @@ export type ProposalStatus =
 
 export interface Proposal extends AuditFields {
     id: string;
-    dealId?: string;
-    companyId?: string;
-    contactId?: string;
-
+    dealId?: string | undefined;
+    companyId?: string | undefined;
+    contactId?: string | undefined;
     // Identification
     number: string;
     title: string;
 
     // Content
-    introduction?: string;
-    scopeOfWork?: string;
-    deliverables?: string;
-    termsAndConditions?: string;
-
+    introduction?: string | undefined;
+    scopeOfWork?: string | undefined;
+    deliverables?: string | undefined;
+    termsAndConditions?: string | undefined;
     // Pricing
     subtotal: number;
     discountPercent: number;
@@ -626,33 +584,27 @@ export interface Proposal extends AuditFields {
     currency: string;
 
     // Timeline
-    validUntil?: string;
-    proposedStartDate?: string;
-    proposedEndDate?: string;
-
+    validUntil?: string | undefined;
+    proposedStartDate?: string | undefined;
+    proposedEndDate?: string | undefined;
     // Status
     status: ProposalStatus;
-    sentAt?: string;
-    viewedAt?: string;
-    acceptedAt?: string;
-    rejectedAt?: string;
-
+    sentAt?: string | undefined;
+    viewedAt?: string | undefined;
+    acceptedAt?: string | undefined;
+    rejectedAt?: string | undefined;
     // Signature
     signatureRequired: boolean;
-    signedBy?: string;
-    signedAt?: string;
-    signatureIp?: string;
-
+    signedBy?: string | undefined;
+    signedAt?: string | undefined;
+    signatureIp?: string | undefined;
     // Conversion
-    convertedProjectId?: string;
-
+    convertedProjectId?: string | undefined;
     // Template
-    templateId?: string;
-
+    templateId?: string | undefined;
     // Versioning
     version: number;
-    parentProposalId?: string;
-
+    parentProposalId?: string | undefined;
     organizationId: string;
 }
 
@@ -662,8 +614,7 @@ export interface ProposalItem {
 
     // Item Details
     name: string;
-    description?: string;
-
+    description?: string | undefined;
     // Pricing
     quantity: number;
     unit: string;
@@ -671,18 +622,16 @@ export interface ProposalItem {
     total: number;
 
     // Categorization
-    category?: string;
-    phase?: ProductionPhase;
-
+    category?: string | undefined;
+    phase?: ProductionPhase | undefined;
     // Rate Card Reference
-    rateCardItemId?: string;
-
+    rateCardItemId?: string | undefined;
     // Display
     displayOrder: number;
     isOptional: boolean;
 
     createdAt: string;
-    updatedAt?: string;
+    updatedAt?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -706,10 +655,9 @@ export interface InvoiceTemplate extends AuditFields {
     name: string;
 
     // Branding
-    logoUrl?: string;
-    headerText?: string;
-    footerText?: string;
-
+    logoUrl?: string | undefined;
+    headerText?: string | undefined;
+    footerText?: string | undefined;
     // Styling
     primaryColor: string;
     accentColor: string;
@@ -722,9 +670,8 @@ export interface InvoiceTemplate extends AuditFields {
     showTaxBreakdown: boolean;
 
     // Payment
-    paymentInstructions?: string;
-    bankDetails?: string;
-
+    paymentInstructions?: string | undefined;
+    bankDetails?: string | undefined;
     // Default
     isDefault: boolean;
 
@@ -734,28 +681,24 @@ export interface InvoiceTemplate extends AuditFields {
 export interface RecurringInvoice extends AuditFields {
     id: string;
     companyId: string;
-    projectId?: string;
-
+    projectId?: string | undefined;
     // Schedule
     frequency: "weekly" | "biweekly" | "monthly" | "quarterly" | "annually";
-    dayOfMonth?: number;
-    dayOfWeek?: number;
-
+    dayOfMonth?: number | undefined;
+    dayOfWeek?: number | undefined;
     // Dates
     startDate: string;
-    endDate?: string;
+    endDate?: string | undefined;
     nextInvoiceDate: string;
-    lastInvoiceDate?: string;
-
+    lastInvoiceDate?: string | undefined;
     // Amount
     amount: number;
     currency: string;
 
     // Template
-    templateId?: string;
-
+    templateId?: string | undefined;
     // Content
-    description?: string;
+    description?: string | undefined;
     lineItems: RecurringInvoiceLineItem[];
 
     // Status
@@ -783,16 +726,14 @@ export interface Payment {
 
     // Method
     paymentMethod: PaymentMethod;
-    referenceNumber?: string;
-
+    referenceNumber?: string | undefined;
     // Status
     status: PaymentStatus;
 
     // Notes
-    notes?: string;
-
+    notes?: string | undefined;
     organizationId: string;
-    createdBy?: string;
+    createdBy?: string | undefined;
     createdAt: string;
 }
 
@@ -812,9 +753,8 @@ export interface CreditNote extends AuditFields {
 
     // Status
     status: "draft" | "issued" | "applied" | "void";
-    issuedAt?: string;
-    appliedAt?: string;
-
+    issuedAt?: string | undefined;
+    appliedAt?: string | undefined;
     organizationId: string;
 }
 
@@ -859,16 +799,14 @@ export interface DashboardLayout {
 export interface Dashboard extends AuditFields {
     id: string;
     name: string;
-    description?: string;
-
+    description?: string | undefined;
     // Layout
     layout: DashboardLayout[];
 
     // Sharing
     isDefault: boolean;
     isShared: boolean;
-    sharedWithRole?: string;
-
+    sharedWithRole?: string | undefined;
     // Owner
     ownerId: string;
 
@@ -876,12 +814,12 @@ export interface Dashboard extends AuditFields {
 }
 
 export interface WidgetConfig {
-    metric?: string;
-    xAxis?: string;
-    yAxis?: string;
-    groupBy?: string;
-    aggregation?: "count" | "sum" | "avg" | "min" | "max";
-    limit?: number;
+    metric?: string | undefined;
+    xAxis?: string | undefined;
+    yAxis?: string | undefined;
+    groupBy?: string | undefined;
+    aggregation?: "count" | "sum" | "avg" | "min" | "max" | undefined;
+    limit?: number | undefined;
 }
 
 export interface DashboardWidget extends AuditFields {
@@ -903,17 +841,15 @@ export interface DashboardWidget extends AuditFields {
 
     // Time Range
     timeRange: TimeRange;
-    customStartDate?: string;
-    customEndDate?: string;
-
+    customStartDate?: string | undefined;
+    customEndDate?: string | undefined;
     // Refresh
     refreshIntervalSeconds: number;
-    lastRefreshedAt?: string;
-
+    lastRefreshedAt?: string | undefined;
     // Display
-    title?: string;
-    subtitle?: string;
-    color?: string;
+    title?: string | undefined;
+    subtitle?: string | undefined;
+    color?: string | undefined;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -934,9 +870,8 @@ export interface Document extends AuditFields {
     id: string;
 
     // Hierarchy
-    parentId?: string;
-    projectId?: string;
-
+    parentId?: string | undefined;
+    projectId?: string | undefined;
     // Content
     title: string;
     content: Record<string, unknown>; // ProseMirror/TipTap JSON format
@@ -945,16 +880,13 @@ export interface Document extends AuditFields {
     documentType: DocumentType;
 
     // Template
-    templateId?: string;
-
+    templateId?: string | undefined;
     // Status
     status: DocumentStatus;
-    publishedAt?: string;
-
+    publishedAt?: string | undefined;
     // Cover
-    coverImageUrl?: string;
-    icon?: string;
-
+    coverImageUrl?: string | undefined;
+    icon?: string | undefined;
     // Sharing
     isPublic: boolean;
     sharedWithUserIds: string[];
@@ -968,8 +900,7 @@ export interface Document extends AuditFields {
     ownerId: string;
 
     // Last Editor
-    lastEditedBy?: string;
-
+    lastEditedBy?: string | undefined;
     organizationId: string;
 }
 
@@ -985,18 +916,17 @@ export interface DocumentVersion {
     title: string;
 
     // Metadata
-    createdBy?: string;
+    createdBy?: string | undefined;
     createdAt: string;
 
     // Change Description
-    changeDescription?: string;
+    changeDescription?: string | undefined;
 }
 
 export interface DocumentTemplate extends AuditFields {
     id: string;
     name: string;
-    description?: string;
-
+    description?: string | undefined;
     // Content
     content: Record<string, unknown>;
 
@@ -1004,11 +934,9 @@ export interface DocumentTemplate extends AuditFields {
     documentType: DocumentType;
 
     // Category
-    category?: string;
-
+    category?: string | undefined;
     // Preview
-    previewImageUrl?: string;
-
+    previewImageUrl?: string | undefined;
     // Status
     isActive: boolean;
 
@@ -1030,16 +958,14 @@ export interface DealExtended {
     probability: number;
     expectedCloseDate: string;
     assignedTo: string;
-    notes?: string;
-
+    notes?: string | undefined;
     // New fields
-    pipelineId?: string;
-    companyId?: string;
-    contactId?: string;
-    lostReasonId?: string;
-    convertedProjectId?: string;
-    convertedAt?: string;
-
+    pipelineId?: string | undefined;
+    companyId?: string | undefined;
+    contactId?: string | undefined;
+    lostReasonId?: string | undefined;
+    convertedProjectId?: string | undefined;
+    convertedAt?: string | undefined;
     createdAt: string;
     updatedAt: string;
     organizationId: string;
@@ -1053,7 +979,7 @@ export interface ProjectProfitability {
     projectId: string;
     name: string;
     client: string;
-    companyId?: string;
+    companyId?: string | undefined;
     budgetPlanned: number;
     budgetActual: number;
     budgetVariance: number;
@@ -1065,8 +991,8 @@ export interface ProjectProfitability {
 
 export interface PipelineSummary {
     organizationId: string;
-    pipelineId?: string;
-    pipelineName?: string;
+    pipelineId?: string | undefined;
+    pipelineName?: string | undefined;
     stage: string;
     dealCount: number;
     totalValue: number;
@@ -1077,8 +1003,8 @@ export interface PipelineSummary {
 export interface InvoiceAging {
     organizationId: string;
     invoiceId: string;
-    vendorId?: string;
-    companyId?: string;
+    vendorId?: string | undefined;
+    companyId?: string | undefined;
     amount: number;
     dueDate: string;
     status: string;

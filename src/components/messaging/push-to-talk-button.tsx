@@ -7,12 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 
 interface PushToTalkButtonProps {
-    channelName?: string;
-    activeSpeakers?: number;
-    disabled?: boolean;
-    onPTTStart?: () => void;
-    onPTTEnd?: () => void;
-    className?: string;
+    channelName?: string | undefined;
+    activeSpeakers?: number | undefined;
+    disabled?: boolean | undefined;
+    onPTTStart?: (() => void) | undefined;
+    onPTTEnd?: (() => void) | undefined;
+    className?: string | undefined;
 }
 
 type PTTState = "idle" | "connecting" | "transmitting";

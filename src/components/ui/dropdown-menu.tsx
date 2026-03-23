@@ -9,19 +9,19 @@ interface DropdownMenuProps {
 
 interface DropdownMenuTriggerProps {
     children: React.ReactNode;
-    asChild?: boolean;
+    asChild?: boolean | undefined;
 }
 
 interface DropdownMenuContentProps {
     children: React.ReactNode;
-    align?: "start" | "center" | "end";
-    className?: string;
+    align?: "start" | "center" | "end" | undefined;
+    className?: string | undefined;
 }
 
 interface DropdownMenuItemProps {
     children: React.ReactNode;
-    className?: string;
-    onClick?: () => void;
+    className?: string | undefined;
+    onClick?: (() => void) | undefined;
 }
 
 const DropdownMenuContext = React.createContext<{
@@ -98,12 +98,13 @@ export function DropdownMenuTrigger({ children, asChild }: DropdownMenuTriggerPr
     if (asChild && React.isValidElement(children)) {
         return React.cloneElement(
             children as React.ReactElement<{
-                onClick?: (e: React.MouseEvent) => void;
-                onKeyDown?: (e: React.KeyboardEvent) => void;
+                onClick?: ((e: React.MouseEvent) => void) | undefined;
+                onKeyDown?: ((e: React.KeyboardEvent) => void) | undefined;
                 "aria-haspopup"?: string;
                 "aria-expanded"?: boolean;
                 "aria-controls"?: string;
             }>,
+            // @ts-expect-error — React.cloneElement types lack | undefined on optional props under exactOptionalPropertyTypes
             {
                 onClick: handleClick,
                 onKeyDown: handleKeyDown,
@@ -239,7 +240,7 @@ export function DropdownMenuLabel({
     className,
 }: {
     children: React.ReactNode;
-    className?: string;
+    className?: string | undefined;
 }) {
     return (
         <div className={cn("px-2 py-1.5 text-xs font-semibold text-muted-foreground", className)}>

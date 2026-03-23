@@ -19,7 +19,7 @@ export const GET = withApiHandler(
             supabase,
             "catalog_categories"
         )
-            .select("*")
+            .select("id, name, category_type, description, sort_order, parent_id")
             .is("deleted_at", null)
             .order("sort_order");
 

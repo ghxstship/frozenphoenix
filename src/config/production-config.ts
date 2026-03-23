@@ -568,9 +568,9 @@ export interface FieldMapping {
         | "reference"
         | "boolean"
         | "textarea";
-    referenceEntity?: string;
-    required?: boolean;
-    editable?: boolean;
+    referenceEntity?: string | undefined;
+    required?: boolean | undefined;
+    editable?: boolean | undefined;
 }
 
 export const ENTITY_FIELD_MAPPINGS: Record<string, FieldMapping[]> = {

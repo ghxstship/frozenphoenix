@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { MaintenanceSchedulesDetailClient } from "./_client";
 
 export default async function MaintenanceSchedulesDetailPage({
@@ -6,5 +7,6 @@ export default async function MaintenanceSchedulesDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <MaintenanceSchedulesDetailClient id={id} />;
+    const initialRecord = await prefetchDetailRecord("maintenance_schedules", id);
+    return <MaintenanceSchedulesDetailClient id={id} initialRecord={initialRecord} />;
 }

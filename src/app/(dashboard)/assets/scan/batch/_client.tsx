@@ -45,7 +45,7 @@ interface BatchEntry {
     identifier: string;
     result: AssetScanResult | null;
     status: "pending" | "success" | "error";
-    error?: string;
+    error?: string | undefined;
 }
 
 export function BatchAssetScannerPageClient() {

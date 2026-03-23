@@ -3,6 +3,7 @@
 import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_DASHBOARD_CONFIG } from "@/config/create-entity-configs";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
+import { useQuery } from "@tanstack/react-query";
 import { TabBar } from "@/components/ui/tab-bar";
 import {
     Activity,
@@ -21,25 +22,38 @@ import { cn, formatCompactCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { OperationalDashboardShell } from "@/components/shells";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
-import { useApprovals, useCrewMembers, useDeals, useProjects, useTasks } from "@/lib/supabase";
-import { useActivities } from "@/lib/supabase";
-import {
-    useCreateDashboard,
-    useDashboards,
-    useDashboardWidgets,
-    useDashboardWithWidgets,
-    useReportDefinitions,
-} from "@/lib/supabase/hooks-automation";
+import { useCreateDashboard } from "@/lib/supabase/hooks-automation";
 import { useMemo } from "react";
+
+interface DashboardsData {
+    projects: Array<Record<string, unknown>>;
+    deals: Array<Record<string, unknown>>;
+    tasks: Array<Record<string, unknown>>;
+    crew: Array<Record<string, unknown>>;
+    approvals: Array<Record<string, unknown>>;
+    activities: Array<Record<string, unknown>>;
+}
 
 interface DashboardWidget {
     id: string;
     title: string;
     type: "number" | "chart" | "list" | "progress";
     value: string | number;
-    change?: number;
-    changeLabel?: string;
-    data?: unknown;
+    change?: number | undefined;
+    changeLabel?: string | undefined;
+    data?: unknown | undefined;
+}
+
+function useDashboardsData() {
+    return useQuery<DashboardsData>({
+        queryKey: ["dashboards-bff"],
+        queryFn: async () => {
+            const res = await fetch("/api/dashboards");
+            if (!res.ok) throw new Error(`Dashboards BFF failed: ${res.status}`);
+            return res.json();
+        },
+        staleTime: 30_000,
+    });
 }
 
 export function DashboardsPageClient() {
@@ -52,23 +66,21 @@ export function DashboardsPageClient() {
         validValues: DASHBOARD_TABS,
     });
 
-    const { data: _savedDashboards } = useDashboards();
-    const { data: _dbWidgets } = useDashboardWidgets();
-    const { data: _dashboardDetail } = useDashboardWithWidgets("");
-    const { data: _reportDefs } = useReportDefinitions();
-    const { data: sbProjects, isLoading: loadingProjects } = useProjects();
-    const { data: sbDeals } = useDeals();
-    const { data: sbTasks } = useTasks();
-    const { data: sbCrew } = useCrewMembers();
-    const { data: sbApprovals } = useApprovals();
+    const { data, isLoading: loadingData } = useDashboardsData();
 
     const projects = useMemo(
-        () => (sbProjects ?? []) as Array<Record<string, unknown>>,
-        [sbProjects]
+        () => (data?.projects ?? []) as Array<Record<string, unknown>>,
+        [data?.projects]
     );
-    const deals = useMemo(() => (sbDeals ?? []) as Array<Record<string, unknown>>, [sbDeals]);
-    const tasks = useMemo(() => (sbTasks ?? []) as Array<Record<string, unknown>>, [sbTasks]);
-    const crew = useMemo(() => (sbCrew ?? []) as Array<Record<string, unknown>>, [sbCrew]);
+    const deals = useMemo(
+        () => (data?.deals ?? []) as Array<Record<string, unknown>>,
+        [data?.deals]
+    );
+    const tasks = useMemo(
+        () => (data?.tasks ?? []) as Array<Record<string, unknown>>,
+        [data?.tasks]
+    );
+    const crew = useMemo(() => (data?.crew ?? []) as Array<Record<string, unknown>>, [data?.crew]);
 
     const activeProjects = useMemo(
         () => projects.filter((p) => p.status === "active" || p.status === "in_progress"),
@@ -97,9 +109,9 @@ export function DashboardsPageClient() {
     );
     const pendingApprovals = useMemo(
         () =>
-            (sbApprovals ?? []).filter((a: Record<string, unknown>) => a.status === "pending")
+            (data?.approvals ?? []).filter((a: Record<string, unknown>) => a.status === "pending")
                 .length,
-        [sbApprovals]
+        [data?.approvals]
     );
     const crewUtilization = useMemo(() => {
         const assigned = crew.filter((c) => c.status === "assigned").length;
@@ -178,10 +190,9 @@ export function DashboardsPageClient() {
         }));
     }, [deals]);
 
-    const { data: sbActivities } = useActivities();
     const recentActivities: Array<{ action: string; project: string; time: string; type: string }> =
         useMemo(() => {
-            const acts = (sbActivities ?? []) as Array<Record<string, unknown>>;
+            const acts = (data?.activities ?? []) as Array<Record<string, unknown>>;
             const now = new Date();
             return acts.slice(0, 5).map((a) => {
                 const createdAt = a.created_at as string | null;
@@ -203,7 +214,7 @@ export function DashboardsPageClient() {
                     type: "info",
                 };
             });
-        }, [sbActivities]);
+        }, [data?.activities]);
 
     const contentSlot = (
         <>
@@ -458,5 +469,5 @@ export function DashboardsPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} isLoading={loadingProjects} />;
+    return <OperationalDashboardShell config={config} isLoading={loadingData} />;
 }

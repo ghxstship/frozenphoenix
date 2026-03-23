@@ -8,9 +8,9 @@ function ShimmerBlock({ className }: { className?: string }) {
 }
 
 export interface LoadingStateProps {
-    variant?: "page" | "card" | "list" | "table";
-    rows?: number;
-    className?: string;
+    variant?: "page" | "card" | "list" | "table" | undefined;
+    rows?: number | undefined;
+    className?: string | undefined;
 }
 
 export function LoadingState({ variant = "page", rows = 3, className }: LoadingStateProps) {

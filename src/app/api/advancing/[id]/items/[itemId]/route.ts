@@ -20,7 +20,7 @@ export const PATCH = withApiHandlerParams(
             .update(parsed.data as Record<string, unknown>)
             .eq("id", itemId)
             .eq("advance_id", id)
-            .select()
+            .select("id, name, description, quantity, status, updated_at")
             .single();
 
         if (error) {

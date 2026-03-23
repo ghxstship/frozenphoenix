@@ -58,14 +58,14 @@ export const POST = withApiHandler(
             entityData = data as Record<string, unknown> | null;
         } else if (action === "sync_expense") {
             const { data } = await serverFromTable(supabase, "expenses")
-                .select("*")
+                .select("id, amount, description, date, created_at")
                 .eq("id", entity_id)
                 .eq("organization_id", orgId)
                 .single();
             entityData = data as Record<string, unknown> | null;
         } else if (action === "sync_payment") {
             const { data } = await serverFromTable(supabase, "payments")
-                .select("*")
+                .select("id, amount, payment_date, payment_method, reference_number, created_at")
                 .eq("id", entity_id)
                 .eq("organization_id", orgId)
                 .single();

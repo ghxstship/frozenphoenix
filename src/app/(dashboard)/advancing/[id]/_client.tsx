@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useParams } from "next/navigation";
 import {
     AlertTriangle,
     Calendar,
@@ -37,8 +36,8 @@ import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import type { AdvanceItemStatus, AdvancePriority, AdvanceStatus, AdvanceType } from "@/types";
 
-function AdvanceStatusHistoryTab({ advanceId }: { advanceId: string }) {
-    const { data: history, isLoading } = useAdvanceStatusHistory("advance", advanceId);
+function AdvanceStatusHistoryTab({ id }: { id: string }) {
+    const { data: history, isLoading } = useAdvanceStatusHistory("advance", id);
     if (isLoading) {
         return (
             <Card>
@@ -172,16 +171,19 @@ const BASE_CONFIG: DetailPageConfig = {
     chatter: false,
 };
 
-export function AdvancingOrderDetailPageClient() {
-    const params = useParams();
-    const id = params.id as string;
-
+export function AdvancingOrderDetailPageClient({
+    id,
+    initialRecord,
+}: {
+    id: string;
+    initialRecord?: Record<string, unknown> | null;
+}) {
     useAdvancesRealtime();
 
     const { data: advance, isLoading } = useAdvance(id);
     const { data: items } = useAdvanceItems(id);
 
-    const adv = advance as Record<string, unknown> | undefined;
+    const adv = (advance ?? initialRecord) as Record<string, unknown> | undefined;
     const itemsList = (items as Record<string, unknown>[] | undefined) ?? [];
 
     const [actionLoading, setActionLoading] = React.useState<string | null>(null);
@@ -198,7 +200,7 @@ export function AdvancingOrderDetailPageClient() {
             const res = await fetch(`/api/advancing/${id}/${action}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: body ? JSON.stringify(body) : undefined,
+                body: body ? JSON.stringify(body) : null,
             });
             if (!res.ok) {
                 const err = await res.json();
@@ -237,7 +239,7 @@ export function AdvancingOrderDetailPageClient() {
             {
                 id: "status-history",
                 label: "Status History",
-                content: <AdvanceStatusHistoryTab advanceId={id} />,
+                content: <AdvanceStatusHistoryTab id={id} />,
             },
             {
                 id: "templates",
@@ -496,7 +498,7 @@ export function AdvancingOrderDetailPageClient() {
             config={config}
             id={id}
             record={adv ?? null}
-            isLoading={isLoading}
+            isLoading={isLoading && !initialRecord}
             actions={
                 <div className="flex items-center gap-2">
                     {canSubmit && (

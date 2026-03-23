@@ -46,7 +46,9 @@ export const POST = withApiHandler(
         const byIdResult = validate(notificationDispatchByIdSchema, rawBody);
         if (byIdResult.success) {
             const { data: notification, error } = await serverFromTable(admin!, "notifications")
-                .select("*")
+                .select(
+                    "id, user_id, title, message, type, read, action_url, created_at, body, entity_type, entity_id, read_at, channel, organization_id"
+                )
                 .eq("id", byIdResult.data.notification_id)
                 .single();
 
@@ -78,7 +80,9 @@ export const POST = withApiHandler(
                 type: type ?? "info",
                 action_url: action_url ?? null,
             })
-            .select("*")
+            .select(
+                "id, user_id, title, message, type, read, action_url, created_at, body, entity_type, entity_id, read_at, channel, organization_id"
+            )
             .single();
 
         if (insertErr || !notification) {
@@ -103,21 +107,21 @@ interface NotificationRow {
     read: boolean;
     action_url: string | null;
     created_at: string | null;
-    body?: string | null;
-    entity_type?: string | null;
-    entity_id?: string | null;
-    read_at?: string | null;
-    channel?: string | null;
-    organization_id?: string | null;
+    body?: string | null | undefined;
+    entity_type?: string | null | undefined;
+    entity_id?: string | null | undefined;
+    read_at?: string | null | undefined;
+    channel?: string | null | undefined;
+    organization_id?: string | null | undefined;
 }
 
 type AdminClient = NonNullable<ReturnType<typeof createAdminClient>>;
 
 /** Categories JSONB shape from notification_preferences (migration 006). */
 interface CategoryPrefs {
-    email?: boolean;
-    push?: boolean;
-    in_app?: boolean;
+    email?: boolean | undefined;
+    push?: boolean | undefined;
+    in_app?: boolean | undefined;
 }
 
 // ─── Dispatch Logic ─────────────────────────────────────────────

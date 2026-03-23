@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { ComplianceChecklistDetailClient } from "./_client";
 
 export default async function ComplianceChecklistDetailPage({
@@ -6,5 +7,6 @@ export default async function ComplianceChecklistDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <ComplianceChecklistDetailClient id={id} initialRecord={null} />;
+    const initialRecord = await prefetchDetailRecord("compliance-checklists", id);
+    return <ComplianceChecklistDetailClient id={id} initialRecord={initialRecord} />;
 }

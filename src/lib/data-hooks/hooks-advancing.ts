@@ -425,7 +425,7 @@ export function useAdvanceStatusTransition() {
         }: {
             id: string;
             status: string;
-            reason?: string;
+            reason?: string | undefined;
         }) => {
             const { data, error } = await getSupabase()
                 .from("production_advances")
@@ -585,7 +585,7 @@ export function useAdvanceItemStatusTransition() {
             id: string;
             advance_id: string;
             status: string;
-            quantity_confirmed?: number;
+            quantity_confirmed?: number | undefined;
         }) => {
             const updates: Record<string, unknown> = { status };
             if (quantity_confirmed !== undefined) updates.quantity_confirmed = quantity_confirmed;
@@ -722,7 +722,7 @@ export function useUpdateAdvanceItemStatus() {
             advanceId: string;
             itemId: string;
             status: string;
-            quantity_confirmed?: number;
+            quantity_confirmed?: number | undefined;
         }) => {
             const res = await fetch(`/api/advancing/${advanceId}/items/${itemId}/status`, {
                 method: "POST",

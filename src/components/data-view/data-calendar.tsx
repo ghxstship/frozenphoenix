@@ -29,15 +29,15 @@ export interface CalendarItem {
     id: string;
     title: string;
     date: string;
-    endDate?: string;
-    color?: string;
+    endDate?: string | undefined;
+    color?: string | undefined;
 }
 
 export interface DataCalendarProps {
     data: CalendarItem[];
-    className?: string;
-    actions?: (item: CalendarItem) => React.ReactNode;
-    onItemClick?: (item: CalendarItem) => void;
+    className?: string | undefined;
+    actions?: ((item: CalendarItem) => React.ReactNode) | undefined;
+    onItemClick?: ((item: CalendarItem) => void) | undefined;
 }
 
 // ─── Helpers ───
@@ -273,7 +273,7 @@ function MobileAgendaView({
     data: CalendarItem[];
     year: number;
     month: number;
-    onItemClick?: (item: CalendarItem) => void;
+    onItemClick?: ((item: CalendarItem) => void) | undefined;
 }) {
     // Filter items for current month and sort by date
     const monthItems = React.useMemo(() => {

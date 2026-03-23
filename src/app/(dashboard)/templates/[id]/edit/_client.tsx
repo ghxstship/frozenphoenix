@@ -33,7 +33,7 @@ interface TemplateBlock {
     id: string;
     type: BlockType;
     content: string;
-    variableKey?: string;
+    variableKey?: string | undefined;
 }
 
 const BLOCK_TYPES: { type: BlockType; label: string; icon: React.ElementType }[] = [

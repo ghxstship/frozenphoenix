@@ -123,7 +123,7 @@ export default function ESignaturePage() {
                         </p>
                         {Boolean(esig?.signed_at) && (
                             <p className="mt-1 text-xs text-muted-foreground">
-                                Signed on {formatDate(String(esig!.signed_at))}
+                                Signed on {formatDate(String(esig?.signed_at ?? ""))}
                             </p>
                         )}
                     </CardContent>
@@ -168,20 +168,20 @@ export default function ESignaturePage() {
                         {Boolean(contract?.effective_date) && (
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Effective Date</span>
-                                <span>{formatDate(String(contract!.effective_date))}</span>
+                                <span>{formatDate(String(contract?.effective_date ?? ""))}</span>
                             </div>
                         )}
                         {Boolean(contract?.expiration_date) && (
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Expiration Date</span>
-                                <span>{formatDate(String(contract!.expiration_date))}</span>
+                                <span>{formatDate(String(contract?.expiration_date ?? ""))}</span>
                             </div>
                         )}
                         {Boolean(contract?.value) && (
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Value</span>
                                 <span className="font-medium">
-                                    ${Number(contract!.value).toLocaleString()}
+                                    ${Number(contract?.value ?? 0).toLocaleString()}
                                 </span>
                             </div>
                         )}
@@ -196,7 +196,7 @@ export default function ESignaturePage() {
                         </CardHeader>
                         <CardContent>
                             <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
-                                {String(contract!.description)}
+                                {String(contract?.description ?? "")}
                             </div>
                         </CardContent>
                     </Card>

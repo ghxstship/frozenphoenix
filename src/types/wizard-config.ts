@@ -19,62 +19,52 @@ export interface WizardStepDef {
     /** Step label (shown in indicator) */
     label: string;
     /** i18n key for step label — when provided, resolved at runtime via t() */
-    labelKey?: string;
-    /** Step description (shown below label in indicator) */
-    description?: string;
-    /** i18n key for step description */
-    descriptionKey?: string;
-    /** Step icon */
-    icon?: LucideIcon;
-    /** Step content — rendered in the step panel */
+    labelKey?: string | undefined; /** Step description (shown below label in indicator) */
+    description?: string | undefined; /** i18n key for step description */
+    descriptionKey?: string | undefined; /** Step icon */
+    icon?: LucideIcon | undefined; /** Step content — rendered in the step panel */
     content: React.ReactNode;
     /** Validate before advancing — return true to allow, string for error message */
-    validate?: () => boolean | string;
-    /** Whether this step can be skipped */
-    skippable?: boolean;
-    /** Whether to hide this step from the indicator (for conditional steps) */
-    hidden?: boolean;
+    validate?: () => boolean | string | undefined; /** Whether this step can be skipped */
+    skippable?:
+        | boolean
+        | undefined; /** Whether to hide this step from the indicator (for conditional steps) */
+    hidden?: boolean | undefined;
 }
 
 // ─── Main Config ────────────────────────────────────────────
 
 export interface WizardConfig {
     /** RBAC resource key for PermissionGate (optional — omit for public wizards like onboarding) */
-    resource?: string;
-    /** RBAC action (default: "read") */
-    action?: string;
-
+    resource?: string | undefined; /** RBAC action (default: "read") */
+    action?: string | undefined;
     // ─── Header ───
     /** Wizard title */
     title: string;
     /** i18n key for title — when provided, resolved at runtime via t() */
-    titleKey?: string;
-    /** Wizard description */
-    description?: string;
-    /** i18n key for description */
-    descriptionKey?: string;
-    /** Page icon */
-    icon?: LucideIcon;
-
+    titleKey?: string | undefined; /** Wizard description */
+    description?: string | undefined; /** i18n key for description */
+    descriptionKey?: string | undefined; /** Page icon */
+    icon?: LucideIcon | undefined;
     // ─── Steps ───
     /** Step definitions */
     steps: WizardStepDef[];
 
     // ─── Behavior ───
     /** Show step progress indicator (default: true) */
-    showProgress?: boolean;
-    /** Allow navigating to previous steps (default: true) */
-    allowBack?: boolean;
-    /** Label for the final step's submit button (default: "Complete") */
-    submitLabel?: string;
-    /** Label for the next button (default: "Continue") */
-    nextLabel?: string;
-    /** Label for the back button (default: "Back") */
-    backLabel?: string;
-    /** Label for the skip button (default: "Skip") */
-    skipLabel?: string;
-    /** Completion callback — called when the final step is submitted */
-    onComplete?: () => void | Promise<void>;
-    /** Cancel callback — called when the user exits the wizard */
-    onCancel?: () => void;
+    showProgress?: boolean | undefined; /** Allow navigating to previous steps (default: true) */
+    allowBack?:
+        | boolean
+        | undefined; /** Label for the final step's submit button (default: "Complete") */
+    submitLabel?: string | undefined; /** Label for the next button (default: "Continue") */
+    nextLabel?: string | undefined; /** Label for the back button (default: "Back") */
+    backLabel?: string | undefined; /** Label for the skip button (default: "Skip") */
+    skipLabel?:
+        | string
+        | undefined; /** Completion callback — called when the final step is submitted */
+    onComplete?: () =>
+        | void
+        | Promise<void>
+        | undefined; /** Cancel callback — called when the user exits the wizard */
+    onCancel?: (() => void) | undefined;
 }

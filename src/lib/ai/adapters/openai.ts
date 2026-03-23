@@ -149,9 +149,9 @@ export class OpenAIAdapter implements IModelProvider {
             model,
             messages: openaiMessages,
             max_tokens: options?.max_tokens ?? 4096,
-            temperature: options?.temperature,
-            top_p: options?.top_p,
-            stop: options?.stop_sequences,
+            ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
+            ...(options?.top_p !== undefined ? { top_p: options.top_p } : {}),
+            ...(options?.stop_sequences ? { stop: options.stop_sequences } : {}),
             stream: true,
             ...(tools && tools.length > 0 ? { tools } : {}),
             ...(options?.json_mode ? { response_format: { type: "json_object" } } : {}),
@@ -237,7 +237,7 @@ export class OpenAIAdapter implements IModelProvider {
             model,
             messages,
             max_tokens: options?.max_tokens ?? 4096,
-            temperature: options?.temperature,
+            ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
         });
 
         return response.choices[0]?.message?.content ?? "";

@@ -96,9 +96,9 @@ function LoginForm() {
                 const { error: authError } = await supabase.auth.signInWithPassword({
                     email,
                     password,
-                    options: botProtection.token
-                        ? { captchaToken: botProtection.token }
-                        : undefined,
+                    ...(botProtection.token
+                        ? { options: { captchaToken: botProtection.token } }
+                        : {}),
                 });
 
                 if (authError) {

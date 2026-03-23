@@ -17,26 +17,26 @@ interface AdvanceCartStore extends AdvanceCartState {
     updateItemDelivery: (
         catalogItemId: string,
         delivery: {
-            delivery_zone?: string;
-            delivery_location?: string;
-            location_id?: string;
-            scheduled_delivery?: string;
+            delivery_zone?: string | undefined;
+            delivery_location?: string | undefined;
+            location_id?: string | undefined;
+            scheduled_delivery?: string | undefined;
         }
     ) => void;
     updateItemDates: (
         catalogItemId: string,
         dates: {
-            start_date?: string;
-            end_date?: string;
+            start_date?: string | undefined;
+            end_date?: string | undefined;
         }
     ) => void;
     updateItemEnrichment: (
         catalogItemId: string,
         enrichment: {
-            category_id?: string;
-            item_specifications?: Record<string, unknown>;
-            operational_purpose?: string;
-            special_requests?: string;
+            category_id?: string | undefined;
+            item_specifications?: Record<string, unknown> | undefined;
+            operational_purpose?: string | undefined;
+            special_requests?: string | undefined;
         }
     ) => void;
     setEventId: (eventId: string) => void;

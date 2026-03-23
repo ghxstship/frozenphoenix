@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { OperationalDashboardShell } from "@/components/shells";
@@ -8,7 +9,6 @@ import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useCrewMembers, useDeals, useProjects, useTasks, useVendors } from "@/lib/supabase";
 import { formatCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { getStatusLabel } from "@/config/ui-variants";
@@ -27,13 +27,21 @@ import {
 import { EmptyState } from "@/components/layouts/empty-state";
 import { downloadCsvBlob, serializeCsv } from "@/lib/csv/csv-utils";
 
+interface ReportsData {
+    projects: Array<Record<string, unknown>>;
+    deals: Array<Record<string, unknown>>;
+    tasks: Array<Record<string, unknown>>;
+    crew: Array<Record<string, unknown>>;
+    vendors: Array<Record<string, unknown>>;
+}
+
 interface ReportCard {
     id: string;
     title: string;
     description: string;
     icon: typeof BarChart3;
     category: "financial" | "production" | "resources" | "sales";
-    lastRun?: string;
+    lastRun?: string | undefined;
 }
 
 const REPORTS: ReportCard[] = [
@@ -88,6 +96,18 @@ const categoryConfig = {
     sales: { label: "Sales", variant: "default" as const },
 };
 
+function useReportsData() {
+    return useQuery<ReportsData>({
+        queryKey: ["reports-bff"],
+        queryFn: async () => {
+            const res = await fetch("/api/reports");
+            if (!res.ok) throw new Error(`Reports BFF failed: ${res.status}`);
+            return res.json();
+        },
+        staleTime: 30_000,
+    });
+}
+
 export function ReportsPageClient() {
     const CATEGORY_FILTERS = ["all", "financial", "production", "resources", "sales"] as const;
     const [selectedCategory, setSelectedCategory] = useQueryTabState({
@@ -95,19 +115,13 @@ export function ReportsPageClient() {
         defaultValue: "all",
         validValues: CATEGORY_FILTERS,
     });
-    const { data: sbDeals, isLoading: dealsLoading } = useDeals();
-    const { data: sbProjects, isLoading: projectsLoading } = useProjects();
-    const { data: sbTasks, isLoading: tasksLoading } = useTasks();
-    const { data: sbCrew, isLoading: crewLoading } = useCrewMembers();
-    const { data: sbVendors, isLoading: vendorsLoading } = useVendors();
+    const { data, isLoading } = useReportsData();
 
-    const deals = useMemo(() => sbDeals ?? [], [sbDeals]);
-    const projects = useMemo(() => sbProjects ?? [], [sbProjects]);
-    const tasks = useMemo(() => sbTasks ?? [], [sbTasks]);
-    const crew = useMemo(() => sbCrew ?? [], [sbCrew]);
-    const vendors = useMemo(() => sbVendors ?? [], [sbVendors]);
-    const isLoading =
-        dealsLoading || projectsLoading || tasksLoading || crewLoading || vendorsLoading;
+    const deals = useMemo(() => data?.deals ?? [], [data?.deals]);
+    const projects = useMemo(() => data?.projects ?? [], [data?.projects]);
+    const tasks = useMemo(() => data?.tasks ?? [], [data?.tasks]);
+    const crew = useMemo(() => data?.crew ?? [], [data?.crew]);
+    const vendors = useMemo(() => data?.vendors ?? [], [data?.vendors]);
 
     const [selectedReport, setSelectedReport] = useState<string | null>(null);
 
@@ -537,7 +551,11 @@ export function ReportsPageClient() {
                             {["lead", "qualified", "proposal", "negotiation", "won"].map(
                                 (stage) => {
                                     const stageDeals = deals.filter((d) => d.stage === stage);
-                                    const value = stageDeals.reduce((sum, d) => sum + d.value, 0);
+                                    const value = stageDeals.reduce(
+                                        (sum: number, d: Record<string, unknown>) =>
+                                            sum + ((d.value as number) ?? 0),
+                                        0
+                                    );
                                     const maxValue = Math.max(
                                         ...[
                                             "lead",

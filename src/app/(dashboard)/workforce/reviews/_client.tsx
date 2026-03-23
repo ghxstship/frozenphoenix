@@ -34,7 +34,7 @@ function Stars({ rating }: { rating: number }) {
     );
 }
 
-function RatingRow({ label, value }: { label: string; value?: number }) {
+function RatingRow({ label, value }: { label: string; value?: number | undefined }) {
     if (!value) return null;
     return (
         <div className="flex items-center justify-between text-xs">

@@ -22,7 +22,7 @@ import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 
 interface ThreadPanelProps {
     parentMessage: MessageWithSender | null;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function ThreadPanel({ parentMessage, className }: ThreadPanelProps) {
@@ -53,7 +53,7 @@ export function ThreadPanel({ parentMessage, className }: ThreadPanelProps) {
     const draftKey = `thread-${parentMessage?.id ?? "none"}`;
 
     const handleSend = React.useCallback(
-        (payload: { body: string; mentioned_user_ids?: string[] }) => {
+        (payload: { body: string; mentioned_user_ids?: string[] | undefined }) => {
             if (!activeConversationId || !parentMessage) return;
             sendMessage.mutate({
                 conversation_id: activeConversationId,

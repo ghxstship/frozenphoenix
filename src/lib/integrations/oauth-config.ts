@@ -13,11 +13,11 @@ export interface OAuthProviderConfig {
     scopes: string[];
     clientIdEnvVar: string;
     clientSecretEnvVar: string;
-    additionalAuthParams?: Record<string, string>;
+    additionalAuthParams?: Record<string, string> | undefined;
     tokenResponseMap?: {
-        accessToken?: string;
-        refreshToken?: string;
-        expiresIn?: string;
+        accessToken?: string | undefined;
+        refreshToken?: string | undefined;
+        expiresIn?: string | undefined;
     };
 }
 
@@ -213,12 +213,12 @@ export async function exchangeCodeForTokens(
     code: string
 ): Promise<{
     success: boolean;
-    accessToken?: string;
-    refreshToken?: string;
-    expiresAt?: string;
-    scopes?: string[];
-    rawResponse?: Record<string, unknown>;
-    error?: string;
+    accessToken?: string | undefined;
+    refreshToken?: string | undefined;
+    expiresAt?: string | undefined;
+    scopes?: string[] | undefined;
+    rawResponse?: Record<string, unknown> | undefined;
+    error?: string | undefined;
 }> {
     const config = OAUTH_PROVIDERS[providerType];
     if (!config) return { success: false, error: `Unknown provider: ${providerType}` };
@@ -288,10 +288,10 @@ export async function refreshAccessToken(
     refreshToken: string
 ): Promise<{
     success: boolean;
-    accessToken?: string;
-    refreshToken?: string;
-    expiresAt?: string;
-    error?: string;
+    accessToken?: string | undefined;
+    refreshToken?: string | undefined;
+    expiresAt?: string | undefined;
+    error?: string | undefined;
 }> {
     const config = OAUTH_PROVIDERS[providerType];
     if (!config) return { success: false, error: `Unknown provider: ${providerType}` };

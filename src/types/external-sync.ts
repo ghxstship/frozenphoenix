@@ -5,34 +5,15 @@
 
 // ─── Provider Enums ───
 
-export type ProviderType =
-    | "eventbrite"
-    | "square"
-    | "front_gate"
-    | "intellitix"
-    | "custom";
+export type ProviderType = "eventbrite" | "square" | "front_gate" | "intellitix" | "custom";
 
 export type SyncDirection = "inbound" | "outbound" | "bidirectional";
 
-export type WebhookEventStatus =
-    | "received"
-    | "processing"
-    | "processed"
-    | "failed"
-    | "skipped";
+export type WebhookEventStatus = "received" | "processing" | "processed" | "failed" | "skipped";
 
-export type SyncEventStatus =
-    | "pending"
-    | "in_progress"
-    | "completed"
-    | "failed"
-    | "conflict";
+export type SyncEventStatus = "pending" | "in_progress" | "completed" | "failed" | "conflict";
 
-export type ConflictStrategy =
-    | "provider_wins"
-    | "compvss_wins"
-    | "last_write_wins"
-    | "manual";
+export type ConflictStrategy = "provider_wins" | "compvss_wins" | "last_write_wins" | "manual";
 
 export type PosPaymentMethod =
     | "cash"
@@ -144,7 +125,7 @@ export interface PosTransactionItem {
 export interface PosItemModifier {
     name: string;
     value: string;
-    price_adjustment?: number;
+    price_adjustment?: number | undefined;
 }
 
 // ─── Webhook Events ───
@@ -228,59 +209,59 @@ export interface PosAggregate {
 // ─── Filter / Request Types ───
 
 export interface ProviderConnectionFilters {
-    provider_type?: ProviderType;
-    event_id?: string;
-    is_active?: boolean;
-    sort_by?: string;
-    sort_order?: "asc" | "desc";
+    provider_type?: ProviderType | undefined;
+    event_id?: string | undefined;
+    is_active?: boolean | undefined;
+    sort_by?: string | undefined;
+    sort_order?: "asc" | "desc" | undefined;
 }
 
 export interface SyncLogFilters {
-    connection_id?: string;
-    direction?: "inbound" | "outbound";
-    status?: SyncEventStatus;
-    entity_type?: string;
-    date_from?: string;
-    date_to?: string;
-    sort_by?: string;
-    sort_order?: "asc" | "desc";
-    page?: number;
-    per_page?: number;
+    connection_id?: string | undefined;
+    direction?: "inbound" | "outbound" | undefined;
+    status?: SyncEventStatus | undefined;
+    entity_type?: string | undefined;
+    date_from?: string | undefined;
+    date_to?: string | undefined;
+    sort_by?: string | undefined;
+    sort_order?: "asc" | "desc" | undefined;
+    page?: number | undefined;
+    per_page?: number | undefined;
 }
 
 export interface PosTransactionFilters {
-    connection_id?: string;
-    event_id?: string;
-    foh_zone_id?: string;
-    category?: PosCategory;
-    payment_method?: PosPaymentMethod;
-    date_from?: string;
-    date_to?: string;
-    is_refund?: boolean;
-    sort_by?: string;
-    sort_order?: "asc" | "desc";
-    page?: number;
-    per_page?: number;
+    connection_id?: string | undefined;
+    event_id?: string | undefined;
+    foh_zone_id?: string | undefined;
+    category?: PosCategory | undefined;
+    payment_method?: PosPaymentMethod | undefined;
+    date_from?: string | undefined;
+    date_to?: string | undefined;
+    is_refund?: boolean | undefined;
+    sort_by?: string | undefined;
+    sort_order?: "asc" | "desc" | undefined;
+    page?: number | undefined;
+    per_page?: number | undefined;
 }
 
 export interface CreateProviderConnectionRequest {
     provider_type: ProviderType;
     display_name: string;
-    event_id?: string;
-    api_key?: string;
-    api_secret?: string;
-    webhook_secret?: string;
-    sync_direction?: SyncDirection;
+    event_id?: string | undefined;
+    api_key?: string | undefined;
+    api_secret?: string | undefined;
+    webhook_secret?: string | undefined;
+    sync_direction?: SyncDirection | undefined;
 }
 
 export interface UpdateProviderConnectionRequest {
-    display_name?: string;
-    api_key?: string;
-    api_secret?: string;
-    webhook_secret?: string;
-    sync_direction?: SyncDirection;
-    is_active?: boolean;
-    rate_limit_config?: RateLimitConfig;
+    display_name?: string | undefined;
+    api_key?: string | undefined;
+    api_secret?: string | undefined;
+    webhook_secret?: string | undefined;
+    sync_direction?: SyncDirection | undefined;
+    is_active?: boolean | undefined;
+    rate_limit_config?: RateLimitConfig | undefined;
 }
 
 export interface CreateSyncConflictPolicyRequest {

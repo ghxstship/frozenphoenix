@@ -123,24 +123,26 @@ import type { PermissionLevel } from "@/types";
 export interface NavItem {
     title: string;
     /** i18n key for title — when provided, resolved at runtime via t() */
-    titleKey?: string;
+    titleKey?: string | undefined;
     path: string;
     icon: LucideIcon;
-    badge?: string | number;
-    permission?: string;
-    /** Minimum pricing tier required to see this item. Omit = visible on all tiers. */
-    minTier?: PricingTier;
-    children?: NavItem[];
+    badge?: string | number | undefined;
+    permission?:
+        | string
+        | undefined; /** Minimum pricing tier required to see this item. Omit = visible on all tiers. */
+    minTier?: PricingTier | undefined;
+    children?: NavItem[] | undefined;
 }
 
 export interface NavSection {
     title: string;
     /** i18n key for section title — when provided, resolved at runtime via t() */
-    titleKey?: string;
+    titleKey?: string | undefined;
     items: NavItem[];
-    defaultExpanded?: boolean;
-    /** Section only appears when a live event is in-progress */
-    contextual?: "live-ops";
+    defaultExpanded?:
+        | boolean
+        | undefined; /** Section only appears when a live event is in-progress */
+    contextual?: "live-ops" | undefined;
 }
 
 // ─── Helper: flatten all NavItems (including children) from the config ───
@@ -160,10 +162,12 @@ export function flattenNavItems(sections: NavSection[]): NavItem[] {
 }
 
 export interface NavigationVisibilityOptions {
-    includeContextual?: boolean;
-    contextualVisibility?: Partial<Record<NonNullable<NavSection["contextual"]>, boolean>>;
+    includeContextual?: boolean | undefined;
+    contextualVisibility?:
+        | Partial<Record<NonNullable<NavSection["contextual"]>, boolean>>
+        | undefined;
     /** Current org pricing tier — items with minTier above this are hidden */
-    currentTier?: PricingTier;
+    currentTier?: PricingTier | undefined;
 }
 
 function isItemPermitted(item: NavItem, role: PermissionLevel | undefined): boolean {
@@ -1362,7 +1366,7 @@ export const navigationConfig: NavSection[] = [
 interface NavItemMatch {
     section: NavSection;
     item: NavItem;
-    parentItem?: NavItem;
+    parentItem?: NavItem | undefined;
     matchLength: number;
 }
 
@@ -1418,7 +1422,7 @@ function findLongestNavItemMatch(pathname: string, sections: NavSection[]): NavI
 export interface NavigationContext {
     section: NavSection;
     item: NavItem;
-    parentItem?: NavItem;
+    parentItem?: NavItem | undefined;
 }
 
 export interface NavigationBreadcrumb {

@@ -16,6 +16,18 @@ const CONFIG: DetailPageConfig = {
     tabs: [],
 };
 
-export function StakeholdersDetailClient({ id }: { id: string }) {
-    return <DetailPageShell config={CONFIG} id={id} />;
+export function StakeholdersDetailClient({
+    id,
+    initialRecord,
+}: {
+    id: string;
+    initialRecord?: Record<string, unknown> | null;
+}) {
+    return (
+        <DetailPageShell
+            config={CONFIG}
+            id={id}
+            record={initialRecord as Record<string, unknown> | undefined}
+        />
+    );
 }

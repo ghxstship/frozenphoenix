@@ -20,28 +20,28 @@ const labelVariants = cva(
 );
 
 export interface LabelProps
-    extends React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>,
+    extends
+        React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>,
         VariantProps<typeof labelVariants> {
-    required?: boolean;
+    required?: boolean | undefined;
 }
 
-const Label = React.forwardRef<
-    React.ComponentRef<typeof LabelPrimitive.Root>,
-    LabelProps
->(({ className, variant, required, children, ...props }, ref) => (
-    <LabelPrimitive.Root
-        ref={ref}
-        className={cn(labelVariants({ variant }), className)}
-        {...props}
-    >
-        {children}
-        {required && (
-            <span className="text-destructive ml-1" aria-hidden="true">
-                *
-            </span>
-        )}
-    </LabelPrimitive.Root>
-));
+const Label = React.forwardRef<React.ComponentRef<typeof LabelPrimitive.Root>, LabelProps>(
+    ({ className, variant, required, children, ...props }, ref) => (
+        <LabelPrimitive.Root
+            ref={ref}
+            className={cn(labelVariants({ variant }), className)}
+            {...props}
+        >
+            {children}
+            {required && (
+                <span className="text-destructive ml-1" aria-hidden="true">
+                    *
+                </span>
+            )}
+        </LabelPrimitive.Root>
+    )
+);
 Label.displayName = "Label";
 
 export { Label, labelVariants };

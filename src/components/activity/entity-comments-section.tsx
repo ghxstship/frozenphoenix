@@ -16,7 +16,7 @@ import type { MessageWithSender } from "@/types/messaging";
 interface EntityCommentsSectionProps {
     entityType: string;
     entityId: string;
-    className?: string;
+    className?: string | undefined;
 }
 
 function mapMessageToComment(msg: MessageWithSender): CommentItem {

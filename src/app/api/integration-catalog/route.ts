@@ -18,7 +18,9 @@ export const GET = withApiHandler(
         const supabase = await getServerSupabase();
 
         const { data, error } = await serverFromTable(supabase, "integration_catalog")
-            .select("*")
+            .select(
+                "id, name, provider_type, description, category, icon_url, is_available, sort_order, auth_type, features"
+            )
             .eq("is_available", true)
             .order("sort_order", { ascending: true });
 

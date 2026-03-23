@@ -30,21 +30,21 @@ import type { BadgeVariant } from "@/config/ui-variants";
 export interface BoardColumn<T> {
     id: string;
     title: string;
-    variant?: BadgeVariant;
+    variant?: BadgeVariant | undefined;
     filter: (item: T) => boolean;
-    count?: number;
+    count?: number | undefined;
 }
 
 // ─── Card Field Definition ───
 export interface CardField<T> {
     id: string;
-    label?: string;
-    accessorKey?: keyof T;
-    accessorFn?: (row: T) => unknown;
-    fieldType?: FieldType;
-    fieldConfig?: Partial<FieldConfig>;
-    render?: (value: unknown, row: T) => React.ReactNode;
-    position?: "header" | "body" | "footer";
+    label?: string | undefined;
+    accessorKey?: keyof T | undefined;
+    accessorFn?: ((row: T) => unknown) | undefined;
+    fieldType?: FieldType | undefined;
+    fieldConfig?: Partial<FieldConfig> | undefined;
+    render?: ((value: unknown, row: T) => React.ReactNode) | undefined;
+    position?: "header" | "body" | "footer" | undefined;
 }
 
 // ─── Board Props ───
@@ -55,19 +55,19 @@ export interface DataBoardProps<T> {
     cardFields: CardField<T>[];
     // Card rendering
     cardTitle: keyof T | ((row: T) => string);
-    cardSubtitle?: keyof T | ((row: T) => string);
+    cardSubtitle?: keyof T | ((row: T) => string) | undefined;
     // Interactions
-    actions?: (row: T) => React.ReactNode;
-    onCardClick?: (item: T) => void;
-    onDragEnd?: (itemId: string, fromColumn: string, toColumn: string) => void;
+    actions?: ((row: T) => React.ReactNode) | undefined;
+    onCardClick?: ((item: T) => void) | undefined;
+    onDragEnd?: ((itemId: string, fromColumn: string, toColumn: string) => void) | undefined;
     // Styling
-    columnWidth?: number;
-    cardClassName?: string;
-    className?: string;
+    columnWidth?: number | undefined;
+    cardClassName?: string | undefined;
+    className?: string | undefined;
     // Empty state
-    emptyColumnState?: React.ReactNode;
+    emptyColumnState?: React.ReactNode | undefined;
     /** Rendered when the entire data array is empty (no items across any column) */
-    emptyState?: React.ReactNode;
+    emptyState?: React.ReactNode | undefined;
 }
 
 // ─── Droppable Column Wrapper ───
@@ -81,10 +81,10 @@ function DroppableColumn({
 }: {
     id: string;
     children: React.ReactNode;
-    className?: string;
-    style?: React.CSSProperties;
-    role?: string;
-    ariaLabel?: string;
+    className?: string | undefined;
+    style?: React.CSSProperties | undefined;
+    role?: string | undefined;
+    ariaLabel?: string | undefined;
 }) {
     const { setNodeRef, isOver } = useDroppable({ id });
     return (
@@ -107,12 +107,12 @@ function DraggableCard({
     children,
 }: {
     id: string;
-    disabled?: boolean;
+    disabled?: boolean | undefined;
     children: React.ReactNode;
 }) {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id,
-        disabled,
+        disabled: disabled ?? false,
     });
     return (
         <div

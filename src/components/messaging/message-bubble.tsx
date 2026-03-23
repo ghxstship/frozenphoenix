@@ -20,17 +20,17 @@ import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 interface MessageBubbleProps {
     message: MessageWithSender;
     isOwn: boolean;
-    onReply?: (message: MessageWithSender) => void;
-    onReact?: (messageId: string, emoji: string) => void;
-    onPin?: (messageId: string, pin: boolean) => void;
-    onEdit?: (messageId: string) => void;
-    onDelete?: (messageId: string) => void;
-    onThreadOpen?: (messageId: string) => void;
-    onTranslate?: (messageId: string, body: string, targetLanguage: string) => void;
-    translatingMessageId?: string | null;
-    translatedTexts?: Record<string, string>;
-    onClearTranslation?: (messageId: string) => void;
-    className?: string;
+    onReply?: ((message: MessageWithSender) => void) | undefined;
+    onReact?: ((messageId: string, emoji: string) => void) | undefined;
+    onPin?: ((messageId: string, pin: boolean) => void) | undefined;
+    onEdit?: ((messageId: string) => void) | undefined;
+    onDelete?: ((messageId: string) => void) | undefined;
+    onThreadOpen?: ((messageId: string) => void) | undefined;
+    onTranslate?: ((messageId: string, body: string, targetLanguage: string) => void) | undefined;
+    translatingMessageId?: string | null | undefined;
+    translatedTexts?: Record<string, string> | undefined;
+    onClearTranslation?: ((messageId: string) => void) | undefined;
+    className?: string | undefined;
 }
 
 export function MessageBubble({

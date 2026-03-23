@@ -28,11 +28,9 @@ import type { WizardConfig, WizardStepDef } from "@/types/wizard-config";
 export interface WizardShellProps {
     config: WizardConfig;
     /** Controlled step index — when provided, shell is controlled externally */
-    activeStep?: number;
-    /** Controlled step change handler */
-    onStepChange?: (step: number) => void;
-    /** External submitting state */
-    isSubmitting?: boolean;
+    activeStep?: number | undefined; /** Controlled step change handler */
+    onStepChange?: ((step: number) => void) | undefined; /** External submitting state */
+    isSubmitting?: boolean | undefined;
 }
 
 // ─── Step Indicator ─────────────────────────────────────────
@@ -44,7 +42,7 @@ function StepIndicator({
 }: {
     steps: WizardStepDef[];
     currentIndex: number;
-    onStepClick?: (index: number) => void;
+    onStepClick?: ((index: number) => void) | undefined;
 }) {
     const visibleSteps = steps.filter((s) => !s.hidden);
 

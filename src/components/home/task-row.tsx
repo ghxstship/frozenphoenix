@@ -10,8 +10,8 @@ export interface TaskRowItem {
     title: string;
     status: TaskStatus;
     priority: TaskPriority;
-    dueDate?: string | null;
-    projectName?: string | null;
+    dueDate?: string | null | undefined;
+    projectName?: string | null | undefined;
 }
 
 function formatDueLabel(dueDate: string): { label: string; overdue: boolean } {

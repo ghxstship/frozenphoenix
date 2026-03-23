@@ -9,7 +9,7 @@ import { useAdvanceCart } from "@/hooks/use-advance-cart";
 import type { AdvanceType } from "@/types/advancing";
 
 interface AdvanceTemplatePickerProps {
-    onClose?: () => void;
+    onClose?: (() => void) | undefined;
 }
 
 export function AdvanceTemplatePicker({ onClose }: AdvanceTemplatePickerProps) {

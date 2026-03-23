@@ -331,25 +331,26 @@ function generateExample(column: string, fieldType: CsvFieldType, enumValues?: s
 // ─── Field Override Types ────────────────────────────────────
 
 export interface FieldOverride {
-    csvHeader?: string;
-    description?: string;
-    example?: string;
-    importable?: boolean;
-    exportable?: boolean;
-    required?: boolean;
-    type?: CsvFieldType;
-    enumValues?: string[];
+    csvHeader?: string | undefined;
+    description?: string | undefined;
+    example?: string | undefined;
+    importable?: boolean | undefined;
+    exportable?: boolean | undefined;
+    required?: boolean | undefined;
+    type?: CsvFieldType | undefined;
+    enumValues?: string[] | undefined;
 }
 
 export interface TemplateOverride {
-    description?: string;
-    importEnabled?: boolean;
-    exportEnabled?: boolean;
-    defaultSort?: { column: string; ascending: boolean };
-    selectQuery?: string;
-    fields?: Record<string, FieldOverride>;
-    /** Extra fields to append (not derived from Zod schema) */
-    extraFields?: CsvFieldDef[];
+    description?: string | undefined;
+    importEnabled?: boolean | undefined;
+    exportEnabled?: boolean | undefined;
+    defaultSort?: { column: string; ascending: boolean } | undefined;
+    selectQuery?: string | undefined;
+    fields?:
+        | Record<string, FieldOverride>
+        | undefined; /** Extra fields to append (not derived from Zod schema) */
+    extraFields?: CsvFieldDef[] | undefined;
 }
 
 // ─── Core Generator ──────────────────────────────────────────

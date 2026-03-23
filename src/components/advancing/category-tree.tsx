@@ -23,7 +23,7 @@ interface CategoryTreeProps {
     categories: CategoryNode[];
     selectedId: string | null;
     onSelect: (id: string | null) => void;
-    className?: string;
+    className?: string | undefined;
 }
 
 interface TreeItemProps {

@@ -19,7 +19,7 @@ interface BulkActionBarProps {
     actions: ListBulkActionDef[];
     selectedIds: string[];
     onClearSelection: () => void;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function BulkActionBar({

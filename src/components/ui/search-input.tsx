@@ -12,9 +12,9 @@ export interface SearchInputProps extends Omit<
 > {
     value: string;
     onValueChange: (value: string) => void;
-    debounce?: number;
-    showClear?: boolean;
-    size?: "sm" | "md" | "lg";
+    debounce?: number | undefined;
+    showClear?: boolean | undefined;
+    size?: "sm" | "md" | "lg" | undefined;
 }
 
 export function SearchInput({

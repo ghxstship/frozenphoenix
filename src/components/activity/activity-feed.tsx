@@ -50,18 +50,18 @@ export interface ActivityItem {
     id: string;
     action: ActivityAction;
     actorName: string;
-    actorInitials?: string;
+    actorInitials?: string | undefined;
     entityType: string;
-    entityName?: string;
-    description?: string;
+    entityName?: string | undefined;
+    description?: string | undefined;
     createdAt: string;
 }
 
 export interface ActivityFeedProps {
     items: ActivityItem[];
-    className?: string;
-    maxItems?: number;
-    compact?: boolean;
+    className?: string | undefined;
+    maxItems?: number | undefined;
+    compact?: boolean | undefined;
 }
 
 export function ActivityFeed({ items, className, maxItems, compact = false }: ActivityFeedProps) {

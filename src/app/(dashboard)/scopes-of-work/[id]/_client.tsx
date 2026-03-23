@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
     useDeleteScopeOfWork,
     useScopeOfWork,
@@ -39,8 +39,8 @@ import {
     Users,
 } from "lucide-react";
 
-function SOWDeliverablesTab({ sowId }: { sowId: string }) {
-    const { data: deliverables, isLoading } = useSOWDeliverables(sowId);
+function SOWDeliverablesTab({ id }: { id: string }) {
+    const { data: deliverables, isLoading } = useSOWDeliverables(id);
 
     if (isLoading) {
         return (
@@ -111,8 +111,8 @@ function SOWDeliverablesTab({ sowId }: { sowId: string }) {
     );
 }
 
-function SOWChangeLogTab({ sowId }: { sowId: string }) {
-    const { data: changes, isLoading } = useSOWChangeLog(sowId);
+function SOWChangeLogTab({ id }: { id: string }) {
+    const { data: changes, isLoading } = useSOWChangeLog(id);
 
     if (isLoading) {
         return (
@@ -185,8 +185,8 @@ function SOWChangeLogTab({ sowId }: { sowId: string }) {
     );
 }
 
-function SOWDeliverableSummaryTab({ sowId }: { sowId: string }) {
-    const { data: summary, isLoading } = useSOWDeliverableSummary(sowId);
+function SOWDeliverableSummaryTab({ id }: { id: string }) {
+    const { data: summary, isLoading } = useSOWDeliverableSummary(id);
 
     if (isLoading) {
         return (
@@ -250,8 +250,8 @@ function SOWDeliverableSummaryTab({ sowId }: { sowId: string }) {
     );
 }
 
-function CollaboratorRequirementsTab({ sowId }: { sowId: string }) {
-    const { data: reqs, isLoading } = useCollaboratorRequirements(sowId, "");
+function CollaboratorRequirementsTab({ id }: { id: string }) {
+    const { data: reqs, isLoading } = useCollaboratorRequirements(id, "");
 
     if (isLoading) {
         return (
@@ -363,12 +363,17 @@ function parseDeliverables(raw: unknown): DeliverableItem[] {
     }));
 }
 
-export function ScopeOfWorkDetailPageClient() {
-    const params = useParams();
+export function ScopeOfWorkDetailPageClient({
+    id,
+    initialRecord,
+}: {
+    id: string;
+    initialRecord?: Record<string, unknown> | null;
+}) {
     const router = useRouter();
-    const entityId = params.id as string;
+    const entityId = id;
     const { data: sbRecord, isLoading } = useScopeOfWork(entityId);
-    const sow = sbRecord as Record<string, unknown> | null;
+    const sow = (sbRecord ?? initialRecord) as Record<string, unknown> | null;
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
         entityId,
         entityLabel: "Scope of Work",
@@ -609,22 +614,22 @@ export function ScopeOfWorkDetailPageClient() {
             {
                 id: "db-deliverables",
                 label: "DB Deliverables",
-                content: <SOWDeliverablesTab sowId={entityId} />,
+                content: <SOWDeliverablesTab id={entityId} />,
             },
             {
                 id: "change-log",
                 label: "Change Log",
-                content: <SOWChangeLogTab sowId={entityId} />,
+                content: <SOWChangeLogTab id={entityId} />,
             },
             {
                 id: "deliverable-summary",
                 label: "Summary",
-                content: <SOWDeliverableSummaryTab sowId={entityId} />,
+                content: <SOWDeliverableSummaryTab id={entityId} />,
             },
             {
                 id: "collab-requirements",
                 label: "Requirements",
-                content: <CollaboratorRequirementsTab sowId={entityId} />,
+                content: <CollaboratorRequirementsTab id={entityId} />,
             },
             {
                 id: "deliverables",
@@ -695,7 +700,7 @@ export function ScopeOfWorkDetailPageClient() {
             config={config}
             id={entityId}
             record={sow}
-            isLoading={isLoading}
+            isLoading={isLoading && !initialRecord}
             menuItems={[
                 {
                     label: "Edit SOW",

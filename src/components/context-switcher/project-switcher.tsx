@@ -13,11 +13,13 @@ import type { PermissionLevel } from "@/types";
 
 interface ProjectSwitcherProps {
     /** Override the active project name displayed in the trigger */
-    activeName?: string;
-    /** When true, selecting a project navigates to /projects/[id] */
-    navigateOnSelect?: boolean;
-    /** Sub-path to append after project id (e.g., "tasks") */
-    subPath?: string;
+    activeName?:
+        | string
+        | undefined; /** When true, selecting a project navigates to /projects/[id] */
+    navigateOnSelect?:
+        | boolean
+        | undefined; /** Sub-path to append after project id (e.g., "tasks") */
+    subPath?: string | undefined;
 }
 
 export function ProjectSwitcher({

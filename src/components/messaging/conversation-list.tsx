@@ -16,8 +16,8 @@ interface ConversationListProps {
     onSearchChange: (query: string) => void;
     onSelect: (id: string) => void;
     onCompose: () => void;
-    isLoading?: boolean;
-    className?: string;
+    isLoading?: boolean | undefined;
+    className?: string | undefined;
 }
 
 export function ConversationList({

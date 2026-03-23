@@ -13,11 +13,11 @@ import type { PermissionLevel } from "@/types";
 
 interface ActivationSwitcherProps {
     /** Override the active activation name displayed in the trigger */
-    activeName?: string;
-    /** When true, selecting an activation navigates to /activations/[id] */
-    navigateOnSelect?: boolean;
-    /** Sub-path to append after activation id */
-    subPath?: string;
+    activeName?:
+        | string
+        | undefined; /** When true, selecting an activation navigates to /activations/[id] */
+    navigateOnSelect?: boolean | undefined; /** Sub-path to append after activation id */
+    subPath?: string | undefined;
 }
 
 export function ActivationSwitcher({

@@ -23,7 +23,7 @@ export function NewAdvancingOrderPageClient() {
             name: string;
             sku: string;
             unit_cost: number;
-            thumbnail_url?: string;
+            thumbnail_url?: string | undefined;
             is_critical_path: boolean;
         }) => {
             addItem({

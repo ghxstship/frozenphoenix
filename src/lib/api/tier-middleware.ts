@@ -22,7 +22,7 @@ interface TierCheckResult {
     allowed: boolean;
     currentTier: PricingTier;
     requiredTier: PricingTier;
-    response?: NextResponse;
+    response?: NextResponse | undefined;
 }
 
 /**

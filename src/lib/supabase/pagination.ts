@@ -22,12 +22,12 @@ export interface PaginatedResult<T> {
 export interface UsePaginatedQueryOptions<T> {
     queryKey: string[];
     table: string;
-    select?: string;
-    filters?: Record<string, unknown>;
-    orderBy?: { column: string; ascending?: boolean };
-    pageSize?: number;
-    enabled?: boolean;
-    transform?: (row: unknown) => T;
+    select?: string | undefined;
+    filters?: Record<string, unknown> | undefined;
+    orderBy?: { column: string; ascending?: boolean } | undefined;
+    pageSize?: number | undefined;
+    enabled?: boolean | undefined;
+    transform?: (row: unknown) => T | undefined;
 }
 
 export function usePaginatedQuery<T>({
@@ -182,4 +182,3 @@ export function usePaginatedQuery<T>({
         pagination: paginationControls,
     };
 }
-

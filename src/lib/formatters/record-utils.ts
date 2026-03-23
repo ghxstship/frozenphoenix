@@ -42,9 +42,9 @@ export function matchesSearch(record: EntityRecord, search: string, keys: string
 interface StatDefLike {
     /** @internal `any` is intentional — contravariant param; callers pass entity-specific compute fns. */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    compute?: (data: any) => string | number;
-    accessorKey?: string;
-    value?: string | number;
+    compute?: (data: any) => string | number | undefined;
+    accessorKey?: string | undefined;
+    value?: string | number | undefined;
 }
 
 /**
@@ -55,8 +55,8 @@ export function computeStatValue(
     stat: StatDefLike,
     data: EntityRecord | EntityRecord[]
 ): string | number {
-    if (stat.compute) return stat.compute(data);
-    if (stat.value != null) return stat.value;
+    if (stat.compute) return stat.compute(data) ?? "—";
+    if (stat.value != null) return stat.value as string | number;
     if (stat.accessorKey && !Array.isArray(data)) {
         const val = getNestedValue(data, stat.accessorKey);
         return val != null ? String(val) : "—";

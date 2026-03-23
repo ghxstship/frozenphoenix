@@ -118,9 +118,9 @@ export interface PasswordInputProps extends Omit<
     React.InputHTMLAttributes<HTMLInputElement>,
     "type"
 > {
-    showStrengthMeter?: boolean;
-    showIcon?: boolean;
-    error?: string;
+    showStrengthMeter?: boolean | undefined;
+    showIcon?: boolean | undefined;
+    error?: string | undefined;
 }
 
 function generateDescribedBy(

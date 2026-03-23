@@ -9,9 +9,9 @@ import type { AdvanceItemStatus } from "@/types";
 
 interface AdvanceItemRowProps {
     item: Record<string, unknown>;
-    onStatusChange?: (itemId: string, status: AdvanceItemStatus) => void;
-    onDelete?: (itemId: string) => void;
-    readOnly?: boolean;
+    onStatusChange?: ((itemId: string, status: AdvanceItemStatus) => void) | undefined;
+    onDelete?: ((itemId: string) => void) | undefined;
+    readOnly?: boolean | undefined;
 }
 
 export function AdvanceItemRow({
@@ -45,15 +45,11 @@ export function AdvanceItemRow({
                     <span>
                         Qty: {qty}
                         {qtyConfirmed > 0 && qtyConfirmed !== qty && (
-                            <span className="ml-1 text-warning">
-                                (confirmed: {qtyConfirmed})
-                            </span>
+                            <span className="ml-1 text-warning">(confirmed: {qtyConfirmed})</span>
                         )}
                     </span>
                     <span>{formatAdvanceCost(unitCost)} ea</span>
-                    {Boolean(item.notes) && (
-                        <span className="italic">{String(item.notes)}</span>
-                    )}
+                    {Boolean(item.notes) && <span className="italic">{String(item.notes)}</span>}
                 </div>
             </div>
 

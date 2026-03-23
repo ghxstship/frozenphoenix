@@ -20,7 +20,7 @@ export type FilterParams = Record<string, string | number | boolean | undefined>
 
 interface HookFactoryOptions {
     /** Per-domain staleTime override (ms). Undefined = use global default (60s). */
-    staleTime?: number;
+    staleTime?: number | undefined;
 }
 
 /**

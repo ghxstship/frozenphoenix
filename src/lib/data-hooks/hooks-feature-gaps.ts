@@ -142,7 +142,7 @@ export interface RecordCommentRow {
     is_internal: boolean;
     created_at: string;
     updated_at: string;
-    user_profiles?: { display_name: string; avatar_url: string | null } | null;
+    user_profiles?: { display_name: string; avatar_url: string | null } | null | undefined;
 }
 
 /** @deprecated Use useEntityMessages from hooks-messaging.ts when messaging_enabled flag is on. Legacy fallback only. */
@@ -171,8 +171,8 @@ export function useCreateRecordComment() {
             entity_id: string;
             author_id: string;
             body: string;
-            parent_comment_id?: string;
-            is_internal?: boolean;
+            parent_comment_id?: string | undefined;
+            is_internal?: boolean | undefined;
         }) => {
             const { data, error } = await fromTable("record_comments")
                 .insert(comment)
@@ -202,7 +202,7 @@ export interface RecordActivityRow {
     changes: Record<string, unknown>;
     metadata: Record<string, unknown>;
     created_at: string;
-    user_profiles?: { display_name: string } | null;
+    user_profiles?: { display_name: string } | null | undefined;
 }
 
 export function useRecordActivityLog(entityType: string, entityId: string) {
@@ -264,7 +264,7 @@ export interface QualityCheckRow {
     photos: unknown[];
     completed_at: string | null;
     created_at: string;
-    user_profiles?: { display_name: string } | null;
+    user_profiles?: { display_name: string } | null | undefined;
 }
 
 export function useAllQualityChecks() {
@@ -426,8 +426,8 @@ export function useGoals(ownerId?: string) {
             const { data, error } = await query;
             if (error) throw error;
             return (data ?? []) as (GoalRow & {
-                user_profiles?: { display_name: string } | null;
-                projects?: { name: string } | null;
+                user_profiles?: { display_name: string } | null | undefined;
+                projects?: { name: string } | null | undefined;
             })[];
         },
     });
@@ -477,7 +477,7 @@ export interface KnowledgeArticleRow {
     published_at: string | null;
     created_at: string;
     updated_at: string;
-    user_profiles?: { display_name: string } | null;
+    user_profiles?: { display_name: string } | null | undefined;
 }
 
 export function useKnowledgeArticles(category?: string) {
@@ -554,7 +554,7 @@ export interface ArticleLinkRow {
     entity_type: string;
     entity_id: string;
     created_at: string;
-    knowledge_articles?: { title: string } | null;
+    knowledge_articles?: { title: string } | null | undefined;
 }
 
 export function useArticleLinks(entityType: string, entityId: string) {
@@ -579,7 +579,7 @@ export function useLinkArticle() {
             article_id: string;
             entity_type: string;
             entity_id: string;
-            linked_by?: string;
+            linked_by?: string | undefined;
         }) => {
             const { data, error } = await fromTable("knowledge_article_links")
                 .insert(link)

@@ -11,9 +11,9 @@ import { CHANNEL_CATEGORIES, CHANNEL_CATEGORY_LABELS } from "@/types/messaging";
 import type { ChannelCategory, ConversationListItem } from "@/types/messaging";
 
 interface ChannelBrowserProps {
-    onJoinChannel?: (channelId: string) => void;
-    onSelectChannel?: (channelId: string) => void;
-    className?: string;
+    onJoinChannel?: ((channelId: string) => void) | undefined;
+    onSelectChannel?: ((channelId: string) => void) | undefined;
+    className?: string | undefined;
 }
 
 export function ChannelBrowser({ onJoinChannel, onSelectChannel, className }: ChannelBrowserProps) {

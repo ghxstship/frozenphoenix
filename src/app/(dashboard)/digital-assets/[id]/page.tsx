@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { DigitalAssetDetailClient } from "./_client";
 
 export default async function DigitalAssetDetailPage({
@@ -6,5 +7,6 @@ export default async function DigitalAssetDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <DigitalAssetDetailClient id={id} initialRecord={null} />;
+    const initialRecord = await prefetchDetailRecord("digital-assets", id);
+    return <DigitalAssetDetailClient id={id} initialRecord={initialRecord} />;
 }

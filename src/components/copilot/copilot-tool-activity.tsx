@@ -7,7 +7,7 @@ import { Check, Loader2, Wrench } from "lucide-react";
 interface CopilotToolActivityProps {
     name: string;
     status: "pending" | "done";
-    className?: string;
+    className?: string | undefined;
 }
 
 const TOOL_LABELS: Record<string, string> = {

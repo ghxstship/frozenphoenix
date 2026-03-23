@@ -24,8 +24,8 @@ export interface ChartSegment {
 interface DataChartProps {
     segments: ChartSegment[];
     type: "bar" | "pie" | "donut";
-    className?: string;
-    height?: number;
+    className?: string | undefined;
+    height?: number | undefined;
 }
 
 // ─── Color Palette (re-exported from shared module) ───

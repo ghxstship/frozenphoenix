@@ -109,8 +109,8 @@ interface LifecycleStageItem {
     label: string;
     description: string;
     status: LifecycleStatus;
-    approver?: string;
-    completedAt?: string;
+    approver?: string | undefined;
+    completedAt?: string | undefined;
 }
 
 function buildLifecycleStages(approvals: Approval[]): LifecycleStageItem[] {

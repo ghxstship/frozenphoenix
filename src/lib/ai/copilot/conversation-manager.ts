@@ -21,29 +21,29 @@ import type { AIConversation, AIMessage, ChatRole } from "../types";
 export interface CreateConversationParams {
     userId: string;
     orgId: string;
-    workspaceContext?: string;
-    modelId?: string;
-    title?: string;
+    workspaceContext?: string | undefined;
+    modelId?: string | undefined;
+    title?: string | undefined;
 }
 
 export interface AppendMessageParams {
     conversationId: string;
     role: ChatRole;
     content: string;
-    tokenCountInput?: number;
-    tokenCountOutput?: number;
-    modelId?: string;
-    latencyMs?: number;
-    toolCalls?: unknown[];
-    attachments?: unknown[];
+    tokenCountInput?: number | undefined;
+    tokenCountOutput?: number | undefined;
+    modelId?: string | undefined;
+    latencyMs?: number | undefined;
+    toolCalls?: unknown[] | undefined;
+    attachments?: unknown[] | undefined;
 }
 
 export interface ListConversationsParams {
     userId: string;
     orgId: string;
-    archived?: boolean;
-    limit?: number;
-    offset?: number;
+    archived?: boolean | undefined;
+    limit?: number | undefined;
+    offset?: number | undefined;
 }
 
 // ─── Conversation CRUD ───────────────────────────────────────

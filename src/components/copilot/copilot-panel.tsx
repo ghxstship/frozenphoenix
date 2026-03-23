@@ -296,7 +296,7 @@ function EmptyState() {
 // ─── Copilot Trigger Button (for topbar/sidebar) ────────────
 
 interface CopilotButtonProps {
-    className?: string;
+    className?: string | undefined;
 }
 
 export function CopilotButton({ className }: CopilotButtonProps) {

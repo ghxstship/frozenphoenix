@@ -7,8 +7,8 @@ import { useMotion } from "@/hooks/use-motion";
 export interface LayoutTransitionProps {
     children: React.ReactNode;
     /** Unique group ID to scope layout animations */
-    id?: string;
-    className?: string;
+    id?: string | undefined;
+    className?: string | undefined;
 }
 
 /**
@@ -36,7 +36,7 @@ export function LayoutTransition({ children, id, className }: LayoutTransitionPr
     }
 
     return (
-        <LayoutGroup id={id}>
+        <LayoutGroup {...(id ? { id } : {})}>
             <div className={className}>{children}</div>
         </LayoutGroup>
     );
@@ -45,10 +45,9 @@ export function LayoutTransition({ children, id, className }: LayoutTransitionPr
 export interface LayoutTransitionItemProps {
     children: React.ReactNode;
     /** Unique layout ID for cross-render position tracking */
-    layoutId?: string;
-    /** Enable layout animation without a shared layoutId */
-    layout?: boolean;
-    className?: string;
+    layoutId?: string | undefined; /** Enable layout animation without a shared layoutId */
+    layout?: boolean | undefined;
+    className?: string | undefined;
 }
 
 export function LayoutTransitionItem({
@@ -65,10 +64,10 @@ export function LayoutTransitionItem({
 
     return (
         <motion.div
-            layoutId={layoutId}
-            layout={layoutId ? undefined : layout}
+            {...(layoutId ? { layoutId } : {})}
+            {...(layoutId ? {} : layout ? { layout } : {})}
             transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-            className={className}
+            {...(className ? { className } : {})}
         >
             {children}
         </motion.div>

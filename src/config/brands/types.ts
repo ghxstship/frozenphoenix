@@ -21,32 +21,32 @@ export interface BrandColorPalette {
 
 export interface BrandTypography {
     fontFamily: string;
-    fontFamilyDisplay?: string;
-    fontFamilyMono?: string;
+    fontFamilyDisplay?: string | undefined;
+    fontFamilyMono?: string | undefined;
 }
 
 export interface BrandAssets {
     logoIcon: string;
-    logoWordmark?: string;
-    logoFull?: string;
-    favicon?: string;
-    ogImage?: string;
+    logoWordmark?: string | undefined;
+    logoFull?: string | undefined;
+    favicon?: string | undefined;
+    ogImage?: string | undefined;
 }
 
 export interface BrandContact {
     email: string;
     url: string;
-    phone?: string;
-    address?: string;
+    phone?: string | undefined;
+    address?: string | undefined;
 }
 
 export interface BrandSocial {
-    twitter?: string;
-    instagram?: string;
-    youtube?: string;
-    twitch?: string;
-    discord?: string;
-    tiktok?: string;
+    twitter?: string | undefined;
+    instagram?: string | undefined;
+    youtube?: string | undefined;
+    twitch?: string | undefined;
+    discord?: string | undefined;
+    tiktok?: string | undefined;
 }
 
 export interface BrandConfig {
@@ -54,8 +54,7 @@ export interface BrandConfig {
     name: string;
     shortName: string;
     tagline: string;
-    description?: string;
-
+    description?: string | undefined;
     colors: {
         light: BrandColorPalette;
         dark: BrandColorPalette;
@@ -64,12 +63,11 @@ export interface BrandConfig {
     typography: BrandTypography;
     assets: BrandAssets;
     support: BrandContact;
-    social?: BrandSocial;
-
+    social?: BrandSocial | undefined;
     features?: {
-        enableDarkMode?: boolean;
-        enableAnimations?: boolean;
-        enableGlassEffects?: boolean;
+        enableDarkMode?: boolean | undefined;
+        enableAnimations?: boolean | undefined;
+        enableGlassEffects?: boolean | undefined;
     };
 }
 

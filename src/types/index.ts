@@ -63,7 +63,7 @@ export interface User {
     id: string;
     email: string;
     name: string;
-    avatar?: string;
+    avatar?: string | undefined;
     role: PermissionLevel;
     organizationId: string;
 }
@@ -76,7 +76,7 @@ export interface Lead {
     name: string;
     company: string;
     email: string;
-    phone?: string;
+    phone?: string | undefined;
     projectType: string;
     budgetRange: string;
     source: string;
@@ -94,7 +94,7 @@ export interface Deal {
     probability: number;
     expectedCloseDate: string;
     assignedTo: string;
-    notes?: string;
+    notes?: string | undefined;
     createdAt: string;
     updatedAt: string;
 }
@@ -114,10 +114,10 @@ export interface CaseStudy {
     title: string;
     client: string;
     summary: string;
-    heroImage?: string;
+    heroImage?: string | undefined;
     metrics: { label: string; value: string }[];
     photos: string[];
-    publishedAt?: string;
+    publishedAt?: string | undefined;
     status: "draft" | "published";
 }
 
@@ -167,7 +167,7 @@ export interface Project {
     id: string;
     name: string;
     client: string;
-    clientLogo?: string;
+    clientLogo?: string | undefined;
     status: ProjectStatus;
     currentPhase: ProjectPhase;
     startDate: string;
@@ -183,21 +183,21 @@ export interface Project {
 export interface Task {
     id: string;
     projectId: string;
-    parentId?: string;
+    parentId?: string | undefined;
     title: string;
-    description?: string;
+    description?: string | undefined;
     status: TaskStatus;
     priority: TaskPriority;
-    assigneeId?: string;
-    assigneeName?: string;
+    assigneeId?: string | undefined;
+    assigneeName?: string | undefined;
     phase: ProjectPhase;
-    fabricationStatus?: FabricationStatus;
-    materialCost?: number;
-    estimatedHours?: number;
+    fabricationStatus?: FabricationStatus | undefined;
+    materialCost?: number | undefined;
+    estimatedHours?: number | undefined;
     dependencies: string[];
-    startDate?: string;
-    dueDate?: string;
-    completedAt?: string;
+    startDate?: string | undefined;
+    dueDate?: string | undefined;
+    completedAt?: string | undefined;
     createdAt: string;
 }
 
@@ -228,7 +228,7 @@ export interface CrewMember {
     email: string;
     phone: string;
     role: string;
-    avatar?: string;
+    avatar?: string | undefined;
     hourlyRate: number;
     certifications: Certification[];
     status: "available" | "assigned" | "unavailable";
@@ -241,7 +241,7 @@ export interface Certification {
     issuedDate: string;
     expiryDate: string;
     isValid: boolean;
-    documentUrl?: string;
+    documentUrl?: string | undefined;
 }
 
 export interface Shift {
@@ -272,11 +272,11 @@ export interface Asset {
     condition: AssetCondition;
     location: string;
     ownedOrRental: "owned" | "rental";
-    rentalReturnDate?: string;
-    dailyRentalCost?: number;
-    purchasePrice?: number;
-    imageUrl?: string;
-    notes?: string;
+    rentalReturnDate?: string | undefined;
+    dailyRentalCost?: number | undefined;
+    purchasePrice?: number | undefined;
+    imageUrl?: string | undefined;
+    notes?: string | undefined;
 }
 
 export interface Vehicle {
@@ -300,8 +300,8 @@ export interface BrandKit {
     secondaryColor: string;
     accentColor: string;
     fontFamily: string;
-    logoUrl?: string;
-    guidelines?: string;
+    logoUrl?: string | undefined;
+    guidelines?: string | undefined;
 }
 
 export interface Deck {
@@ -319,7 +319,7 @@ export interface DeckSlide {
     order: number;
     title: string;
     content: string;
-    dataBindings?: { key: string; source: string }[];
+    dataBindings?: { key: string; source: string }[] | undefined;
 }
 
 export interface Approval {
@@ -330,10 +330,10 @@ export interface Approval {
     status: "pending" | "approved" | "revision_requested" | "overdue";
     requestedAt: string;
     deadline: string;
-    approvedAt?: string;
+    approvedAt?: string | undefined;
     approverName: string;
-    deliverableUrl?: string;
-    timelineImpactDays?: number;
+    deliverableUrl?: string | undefined;
+    timelineImpactDays?: number | undefined;
 }
 
 // ─── Vendor & Finance ───
@@ -344,7 +344,7 @@ export interface Vendor {
     email: string;
     phone: string;
     specialty: string;
-    coiExpiryDate?: string;
+    coiExpiryDate?: string | undefined;
     coiValid: boolean;
     ndaSigned: boolean;
     w9Uploaded: boolean;
@@ -379,13 +379,13 @@ export interface Invoice {
     id: string;
     vendorId: string;
     vendorName: string;
-    purchaseOrderId?: string;
-    workOrderId?: string;
+    purchaseOrderId?: string | undefined;
+    workOrderId?: string | undefined;
     amount: number;
     status: "pending" | "approved" | "paid" | "disputed";
     invoiceDate: string;
     dueDate: string;
-    variance?: number;
+    variance?: number | undefined;
 }
 
 // ─── People & Org ───
@@ -395,10 +395,10 @@ export interface Stakeholder {
     id: string;
     name: string;
     email: string;
-    phone?: string;
+    phone?: string | undefined;
     type: StakeholderType;
     role: string;
-    avatar?: string;
+    avatar?: string | undefined;
     projectIds: string[];
 }
 
@@ -407,7 +407,7 @@ export interface OrgChartNode {
     projectId: string;
     personName: string;
     role: string;
-    parentId?: string;
+    parentId?: string | undefined;
     sopIds: string[];
 }
 
@@ -426,15 +426,15 @@ export interface VaultDocument {
     id: string;
     name: string;
     category: "site_map" | "nda" | "contract" | "blueprint" | "permit" | "other";
-    projectId?: string;
+    projectId?: string | undefined;
     uploadedBy: string;
     uploadedAt: string;
     size: number;
     mimeType: string;
     url: string;
     accessLevel: PermissionLevel;
-    expiringLinkUrl?: string;
-    expiringLinkExpiresAt?: string;
+    expiringLinkUrl?: string | undefined;
+    expiringLinkExpiresAt?: string | undefined;
 }
 
 // ─── Notifications ───
@@ -444,7 +444,7 @@ export interface Notification {
     message: string;
     type: "info" | "warning" | "error" | "success";
     read: boolean;
-    actionUrl?: string;
+    actionUrl?: string | undefined;
     createdAt: string;
 }
 
@@ -454,15 +454,15 @@ export type TimeEntryStatus = "pending" | "approved" | "rejected";
 export interface TimeEntry {
     id: string;
     projectId: string;
-    taskId?: string;
+    taskId?: string | undefined;
     crewMemberId: string;
     date: string;
     hoursWorked: number;
     hourlyRate: number;
     totalCost: number;
-    notes?: string;
+    notes?: string | undefined;
     status: TimeEntryStatus;
-    approvedBy?: string;
+    approvedBy?: string | undefined;
     createdAt: string;
 }
 
@@ -484,11 +484,11 @@ export interface Expense {
     category: ExpenseCategory;
     description: string;
     amount: number;
-    receiptUrl?: string;
+    receiptUrl?: string | undefined;
     submittedBy: string;
     submittedAt: string;
     status: ExpenseStatus;
-    approvedBy?: string;
+    approvedBy?: string | undefined;
     createdAt: string;
 }
 
@@ -529,7 +529,7 @@ export interface BudgetLineItem {
     estimatedAmount: number;
     actualAmount: number;
     variance: number;
-    notes?: string;
+    notes?: string | undefined;
     createdAt: string;
 }
 
@@ -540,13 +540,13 @@ export interface Milestone {
     id: string;
     projectId: string;
     name: string;
-    description?: string;
+    description?: string | undefined;
     dueDate: string;
-    completedAt?: string;
+    completedAt?: string | undefined;
     status: MilestoneStatus;
     deliverables: string[];
     approvalRequired: boolean;
-    approvalId?: string;
+    approvalId?: string | undefined;
     createdAt: string;
 }
 
@@ -569,7 +569,7 @@ export interface Comment {
     authorName: string;
     content: string;
     createdAt: string;
-    updatedAt?: string;
+    updatedAt?: string | undefined;
     mentions: string[];
     attachments: string[];
 }
@@ -600,8 +600,8 @@ export interface ReportDefinition {
     type: ReportType;
     filters: Record<string, unknown>[];
     columns: string[];
-    groupBy?: string;
-    sortBy?: string;
+    groupBy?: string | undefined;
+    sortBy?: string | undefined;
     isTemplate: boolean;
     createdBy: string;
     createdAt: string;
@@ -627,9 +627,9 @@ export interface TemplatePhase {
 
 export interface TemplateTask {
     title: string;
-    description?: string;
+    description?: string | undefined;
     priority: TaskPriority;
-    estimatedHours?: number;
+    estimatedHours?: number | undefined;
     dependencies: number[];
 }
 
@@ -650,6 +650,6 @@ export interface Integration {
     name: string;
     status: IntegrationStatus;
     config: Record<string, unknown>;
-    lastSyncAt?: string;
+    lastSyncAt?: string | undefined;
     createdAt: string;
 }

@@ -6,11 +6,11 @@ import { useReducedMotion } from "@/hooks/use-media-query";
 
 interface AnimatedCheckboxProps {
     checked: boolean;
-    onChange?: (checked: boolean) => void;
-    label?: string;
-    disabled?: boolean;
-    className?: string;
-    id?: string;
+    onChange?: ((checked: boolean) => void) | undefined;
+    label?: string | undefined;
+    disabled?: boolean | undefined;
+    className?: string | undefined;
+    id?: string | undefined;
 }
 
 export function AnimatedCheckbox({

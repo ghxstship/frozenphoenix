@@ -36,7 +36,7 @@ interface PlanCard {
     tier: PricingTier;
     icon: React.ElementType;
     highlights: string[];
-    recommended?: boolean;
+    recommended?: boolean | undefined;
 }
 
 const PLAN_CARDS: PlanCard[] = [

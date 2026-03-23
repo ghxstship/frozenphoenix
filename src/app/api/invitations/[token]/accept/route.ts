@@ -15,7 +15,9 @@ export const POST = withApiHandlerParams(
 
         // Find the invitation
         const { data: invitation, error: invError } = await serverFromTable(supabase, "invitations")
-            .select("*")
+            .select(
+                "id, token, email, role, status, expires_at, invite_type, organization_id, accepted_by, accepted_at"
+            )
             .eq("token", token)
             .single();
 

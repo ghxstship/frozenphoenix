@@ -18,13 +18,10 @@ import { embedText } from "./embedder";
 
 export interface RetrievalOptions {
     /** Maximum chunks to return. Default: 5. */
-    topK?: number;
-    /** Minimum similarity score (0–1). Default: 0.3. */
-    scoreThreshold?: number;
-    /** Filter by document source types. */
-    sourceTypes?: DocumentSourceType[];
-    /** Filter by specific document IDs. */
-    documentIds?: string[];
+    topK?: number | undefined; /** Minimum similarity score (0–1). Default: 0.3. */
+    scoreThreshold?: number | undefined; /** Filter by document source types. */
+    sourceTypes?: DocumentSourceType[] | undefined; /** Filter by specific document IDs. */
+    documentIds?: string[] | undefined;
 }
 
 // ─── Public API ──────────────────────────────────────────────

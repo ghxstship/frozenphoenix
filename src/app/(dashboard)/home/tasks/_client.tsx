@@ -230,7 +230,7 @@ function KpiCard({
     label: string;
     value: number;
     icon: React.ElementType;
-    variant?: "destructive" | "info" | "warning";
+    variant?: "destructive" | "info" | "warning" | undefined;
 }) {
     const colorClass =
         variant === "destructive"

@@ -5,25 +5,44 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createClient } from "./client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
-type TableName = 
-    | "projects" | "tasks" | "deals" | "approvals" 
-    | "notifications" | "comments" | "activity_log"
-    | "budgets" | "contracts" | "invoices" | "client_invoices"
-    | "workflow_instances" | "workflow_step_approvals"
-    | "crew_shifts" | "incidents" | "shipments"
-    | "proposals" | "scopes_of_work" | "e_signatures"
-    | "assets" | "purchase_orders" | "expenses"
-    | "credential_assignments" | "credential_scan_log"
-    | "credential_inventory_pools" | "credential_types"
-    | "provider_connections" | "sync_events" | "webhook_events"
+type TableName =
+    | "projects"
+    | "tasks"
+    | "deals"
+    | "approvals"
+    | "notifications"
+    | "comments"
+    | "activity_log"
+    | "budgets"
+    | "contracts"
+    | "invoices"
+    | "client_invoices"
+    | "workflow_instances"
+    | "workflow_step_approvals"
+    | "crew_shifts"
+    | "incidents"
+    | "shipments"
+    | "proposals"
+    | "scopes_of_work"
+    | "e_signatures"
+    | "assets"
+    | "purchase_orders"
+    | "expenses"
+    | "credential_assignments"
+    | "credential_scan_log"
+    | "credential_inventory_pools"
+    | "credential_types"
+    | "provider_connections"
+    | "sync_events"
+    | "webhook_events"
     | "pos_transactions";
 
 interface UseRealtimeOptions {
     table: TableName;
-    filter?: string;
-    onInsert?: (payload: Record<string, unknown>) => void;
-    onUpdate?: (payload: Record<string, unknown>) => void;
-    onDelete?: (payload: Record<string, unknown>) => void;
+    filter?: string | undefined;
+    onInsert?: ((payload: Record<string, unknown>) => void) | undefined;
+    onUpdate?: ((payload: Record<string, unknown>) => void) | undefined;
+    onDelete?: ((payload: Record<string, unknown>) => void) | undefined;
 }
 
 export function useRealtimeSubscription({
@@ -50,9 +69,13 @@ export function useRealtimeSubscription({
                         event: "*",
                         schema: "public",
                         table,
-                        filter,
+                        ...(filter ? { filter } : {}),
                     },
-                    (payload) => {
+                    (payload: {
+                        eventType: string;
+                        new: Record<string, unknown>;
+                        old: Record<string, unknown>;
+                    }) => {
                         const { eventType, new: newRecord, old: oldRecord } = payload;
 
                         switch (eventType) {
@@ -135,10 +158,12 @@ export function useActivityRealtime(entityType?: string, entityId?: string) {
                     event: "INSERT",
                     schema: "public",
                     table: "activity_log",
-                    filter,
+                    ...(filter ? { filter } : {}),
                 },
                 () => {
-                    queryClient.invalidateQueries({ queryKey: ["activity_log", entityType, entityId] });
+                    queryClient.invalidateQueries({
+                        queryKey: ["activity_log", entityType, entityId],
+                    });
                 }
             )
             .subscribe();
@@ -184,7 +209,12 @@ export function useCommentsRealtime(entityType: string, entityId: string) {
 // Subscribe to domain_events table for cross-domain state change notifications
 export function useDomainEventSubscription(
     sourceDomain?: string,
-    onEvent?: (event: { event_type: string; entity_type: string; entity_id: string; payload: Record<string, unknown> }) => void
+    onEvent?: (event: {
+        event_type: string;
+        entity_type: string;
+        entity_id: string;
+        payload: Record<string, unknown>;
+    }) => void
 ) {
     const queryClient = useQueryClient();
 
@@ -192,9 +222,7 @@ export function useDomainEventSubscription(
         const supabase = createClient();
         if (!supabase) return;
 
-        const filter = sourceDomain
-            ? `source_domain=eq.${sourceDomain}`
-            : undefined;
+        const filter = sourceDomain ? `source_domain=eq.${sourceDomain}` : undefined;
 
         const channel = supabase
             .channel("domain_events_propagation")
@@ -204,9 +232,9 @@ export function useDomainEventSubscription(
                     event: "INSERT",
                     schema: "public",
                     table: "domain_events",
-                    filter,
+                    ...(filter ? { filter } : {}),
                 },
-                (payload) => {
+                (payload: { new: Record<string, unknown> }) => {
                     const record = payload.new as Record<string, unknown>;
                     onEvent?.({
                         event_type: record.event_type as string,
@@ -286,17 +314,15 @@ export function useDealsRealtime() {
 
         const channel = supabase
             .channel("deals_realtime")
-            .on(
-                "postgres_changes",
-                { event: "*", schema: "public", table: "deals" },
-                () => {
-                    queryClient.invalidateQueries({ queryKey: ["deals"] });
-                    queryClient.invalidateQueries({ queryKey: ["pipeline_summary"] });
-                }
-            )
+            .on("postgres_changes", { event: "*", schema: "public", table: "deals" }, () => {
+                queryClient.invalidateQueries({ queryKey: ["deals"] });
+                queryClient.invalidateQueries({ queryKey: ["pipeline_summary"] });
+            })
             .subscribe();
 
-        return () => { supabase.removeChannel(channel); };
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [queryClient]);
 }
 
@@ -314,14 +340,16 @@ export function useApprovalsRealtime(userId?: string) {
             .channel("approvals_realtime")
             .on(
                 "postgres_changes",
-                { event: "*", schema: "public", table: "approvals", filter },
+                { event: "*", schema: "public", table: "approvals", ...(filter ? { filter } : {}) },
                 () => {
                     queryClient.invalidateQueries({ queryKey: ["approvals"] });
                 }
             )
             .subscribe();
 
-        return () => { supabase.removeChannel(channel); };
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [userId, queryClient]);
 }
 
@@ -339,7 +367,7 @@ export function useBudgetsRealtime(projectId?: string) {
             .channel("budgets_realtime")
             .on(
                 "postgres_changes",
-                { event: "*", schema: "public", table: "budgets", filter },
+                { event: "*", schema: "public", table: "budgets", ...(filter ? { filter } : {}) },
                 () => {
                     queryClient.invalidateQueries({ queryKey: ["budgets"] });
                     queryClient.invalidateQueries({ queryKey: ["budget_line_items"] });
@@ -350,7 +378,9 @@ export function useBudgetsRealtime(projectId?: string) {
             )
             .subscribe();
 
-        return () => { supabase.removeChannel(channel); };
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [projectId, queryClient]);
 }
 
@@ -364,16 +394,14 @@ export function useContractsRealtime() {
 
         const channel = supabase
             .channel("contracts_realtime")
-            .on(
-                "postgres_changes",
-                { event: "*", schema: "public", table: "contracts" },
-                () => {
-                    queryClient.invalidateQueries({ queryKey: ["contracts"] });
-                }
-            )
+            .on("postgres_changes", { event: "*", schema: "public", table: "contracts" }, () => {
+                queryClient.invalidateQueries({ queryKey: ["contracts"] });
+            })
             .subscribe();
 
-        return () => { supabase.removeChannel(channel); };
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [queryClient]);
 }
 
@@ -387,14 +415,10 @@ export function useInvoicesRealtime() {
 
         const vendorChannel = supabase
             .channel("invoices_realtime")
-            .on(
-                "postgres_changes",
-                { event: "*", schema: "public", table: "invoices" },
-                () => {
-                    queryClient.invalidateQueries({ queryKey: ["invoices"] });
-                    queryClient.invalidateQueries({ queryKey: ["invoice_aging"] });
-                }
-            )
+            .on("postgres_changes", { event: "*", schema: "public", table: "invoices" }, () => {
+                queryClient.invalidateQueries({ queryKey: ["invoices"] });
+                queryClient.invalidateQueries({ queryKey: ["invoice_aging"] });
+            })
             .subscribe();
 
         const clientChannel = supabase
@@ -424,15 +448,18 @@ export function useWorkflowRealtime(workflowId?: string) {
         const supabase = createClient();
         if (!supabase) return;
 
-        const instanceFilter = workflowId
-            ? `workflow_id=eq.${workflowId}`
-            : undefined;
+        const instanceFilter = workflowId ? `workflow_id=eq.${workflowId}` : undefined;
 
         const instanceChannel = supabase
             .channel("workflow_instances_realtime")
             .on(
                 "postgres_changes",
-                { event: "*", schema: "public", table: "workflow_instances", filter: instanceFilter },
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "workflow_instances",
+                    ...(instanceFilter ? { filter: instanceFilter } : {}),
+                },
                 () => {
                     queryClient.invalidateQueries({ queryKey: ["workflow_instances"] });
                 }
@@ -472,14 +499,21 @@ export function useESignaturesRealtime(documentId?: string) {
             .channel("e_signatures_realtime")
             .on(
                 "postgres_changes",
-                { event: "*", schema: "public", table: "e_signatures", filter },
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "e_signatures",
+                    ...(filter ? { filter } : {}),
+                },
                 () => {
                     queryClient.invalidateQueries({ queryKey: ["e_signatures"] });
                 }
             )
             .subscribe();
 
-        return () => { supabase.removeChannel(channel); };
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [documentId, queryClient]);
 }
 
@@ -497,7 +531,12 @@ export function useCrewShiftsRealtime(projectId?: string) {
             .channel("crew_shifts_realtime")
             .on(
                 "postgres_changes",
-                { event: "*", schema: "public", table: "crew_shifts", filter },
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "crew_shifts",
+                    ...(filter ? { filter } : {}),
+                },
                 () => {
                     queryClient.invalidateQueries({ queryKey: ["crew_shifts"] });
                     queryClient.invalidateQueries({ queryKey: ["crew_utilization"] });
@@ -505,7 +544,9 @@ export function useCrewShiftsRealtime(projectId?: string) {
             )
             .subscribe();
 
-        return () => { supabase.removeChannel(channel); };
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [projectId, queryClient]);
 }
 
@@ -519,16 +560,14 @@ export function useIncidentsRealtime() {
 
         const channel = supabase
             .channel("incidents_realtime")
-            .on(
-                "postgres_changes",
-                { event: "*", schema: "public", table: "incidents" },
-                () => {
-                    queryClient.invalidateQueries({ queryKey: ["incidents"] });
-                }
-            )
+            .on("postgres_changes", { event: "*", schema: "public", table: "incidents" }, () => {
+                queryClient.invalidateQueries({ queryKey: ["incidents"] });
+            })
             .subscribe();
 
-        return () => { supabase.removeChannel(channel); };
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [queryClient]);
 }
 
@@ -546,7 +585,12 @@ export function useCredentialAssignmentsRealtime(eventId?: string) {
             .channel("credential_assignments_realtime")
             .on(
                 "postgres_changes",
-                { event: "*", schema: "public", table: "credential_assignments", filter },
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "credential_assignments",
+                    ...(filter ? { filter } : {}),
+                },
                 () => {
                     queryClient.invalidateQueries({ queryKey: ["credential_assignments"] });
                     queryClient.invalidateQueries({ queryKey: ["credential_inventory_pools"] });
@@ -594,14 +638,10 @@ export function useIntegrationsSyncRealtime() {
 
         const syncChannel = supabase
             .channel("sync_events_realtime")
-            .on(
-                "postgres_changes",
-                { event: "*", schema: "public", table: "sync_events" },
-                () => {
-                    queryClient.invalidateQueries({ queryKey: ["sync_events"] });
-                    queryClient.invalidateQueries({ queryKey: ["provider_connections"] });
-                }
-            )
+            .on("postgres_changes", { event: "*", schema: "public", table: "sync_events" }, () => {
+                queryClient.invalidateQueries({ queryKey: ["sync_events"] });
+                queryClient.invalidateQueries({ queryKey: ["provider_connections"] });
+            })
             .subscribe();
 
         const webhookChannel = supabase
@@ -637,7 +677,12 @@ export function usePosTransactionsRealtime(eventId?: string) {
             .channel("pos_transactions_realtime")
             .on(
                 "postgres_changes",
-                { event: "INSERT", schema: "public", table: "pos_transactions", filter },
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "pos_transactions",
+                    ...(filter ? { filter } : {}),
+                },
                 () => {
                     queryClient.invalidateQueries({ queryKey: ["pos_transactions"] });
                     queryClient.invalidateQueries({ queryKey: ["live_financial_snapshots"] });
@@ -645,7 +690,9 @@ export function usePosTransactionsRealtime(eventId?: string) {
             )
             .subscribe();
 
-        return () => { supabase.removeChannel(channel); };
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [eventId, queryClient]);
 }
 
@@ -669,7 +716,9 @@ export function useCredentialPoolsRealtime() {
             )
             .subscribe();
 
-        return () => { supabase.removeChannel(channel); };
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [queryClient]);
 }
 
@@ -684,7 +733,14 @@ export function useFullProjectRealtime(projectId: string) {
         if (!supabase) return;
 
         const channels: RealtimeChannel[] = [];
-        const tables = ["projects", "tasks", "budgets", "budget_line_items", "milestones", "expenses"] as const;
+        const tables = [
+            "projects",
+            "tasks",
+            "budgets",
+            "budget_line_items",
+            "milestones",
+            "expenses",
+        ] as const;
 
         tables.forEach((table) => {
             const filterKey = table === "projects" ? "id" : "project_id";

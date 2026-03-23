@@ -8,8 +8,8 @@ export interface MentionMatch {
     username: string;
     startIndex: number;
     endIndex: number;
-    userId?: string;
-    displayName?: string;
+    userId?: string | undefined;
+    displayName?: string | undefined;
 }
 
 export interface MentionNotificationPayload {

@@ -337,7 +337,7 @@ export interface LocationContact {
 
 export interface LocationWithHierarchy extends SpatialLocation {
     breadcrumb: string;
-    children?: LocationWithHierarchy[];
+    children?: LocationWithHierarchy[] | undefined;
 }
 
 export interface LocationComplianceSummary {

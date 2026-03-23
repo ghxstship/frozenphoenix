@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { OpportunityDetailClient } from "./_client";
 
 export default async function OpportunityDetailPage({
@@ -6,5 +7,6 @@ export default async function OpportunityDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <OpportunityDetailClient id={id} initialRecord={null} />;
+    const initialRecord = await prefetchDetailRecord("opportunities", id);
+    return <OpportunityDetailClient id={id} initialRecord={initialRecord} />;
 }

@@ -29,7 +29,7 @@ export async function POST(
     // Validate token
     const tokenHash = createHash("sha256").update(token).digest("hex");
     const { data: pat, error: patError } = await serverFromTable(supabase, "portal_access_tokens")
-        .select("*")
+        .select("id, vendor_id, collaborator_id, permissions, expires_at, revoked_at")
         .eq("token_hash", tokenHash)
         .eq("is_active", true)
         .single();

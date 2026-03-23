@@ -9,8 +9,8 @@ import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 interface SMSFallbackToggleProps {
     enabled: boolean;
     onToggle: (enabled: boolean) => void;
-    isPending?: boolean;
-    className?: string;
+    isPending?: boolean | undefined;
+    className?: string | undefined;
 }
 
 export function SMSFallbackToggle({

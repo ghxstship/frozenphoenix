@@ -15,9 +15,9 @@ import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 interface NewConversationDialogProps {
     open: boolean;
     onClose: () => void;
-    onCreated?: (conversationId: string) => void;
-    members?: Array<{ id: string; name: string; avatar_url?: string | null }>;
-    className?: string;
+    onCreated?: ((conversationId: string) => void) | undefined;
+    members?: Array<{ id: string; name: string; avatar_url?: string | null }> | undefined;
+    className?: string | undefined;
 }
 
 type TabValue = "dm" | "group" | "channel";

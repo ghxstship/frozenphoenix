@@ -27,7 +27,7 @@ export const GET = withApiHandler(
 
         // Fetch profile data
         const { data: profile } = await serverFromTable(supabase, "user_profiles")
-            .select("*")
+            .select("display_name, avatar_url")
             .eq("id", user.id)
             .single();
 

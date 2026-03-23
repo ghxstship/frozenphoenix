@@ -28,7 +28,7 @@ export const POST = withApiHandler(
 
         // Fetch template project
         const { data: template, error: tplErr } = await serverFromTable(supabase, "projects")
-            .select("*")
+            .select("id, company_id, budget_planned, timezone")
             .eq("id", template_id)
             .single();
 

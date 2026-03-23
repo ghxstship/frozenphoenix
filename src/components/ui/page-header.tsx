@@ -4,15 +4,16 @@ import type { LucideIcon } from "lucide-react";
 
 interface PageHeaderProps {
     title: string;
-    description?: string;
-    children?: React.ReactNode;
-    className?: string;
-    /** Optional hero icon rendered above the title (useful for standalone/onboarding pages) */
-    icon?: LucideIcon;
-    /** Icon container className override */
-    iconClassName?: string;
-    /** When true, centers title/description/icon (for standalone flows like onboarding) */
-    centered?: boolean;
+    description?: string | undefined;
+    children?: React.ReactNode | undefined;
+    className?:
+        | string
+        | undefined; /** Optional hero icon rendered above the title (useful for standalone/onboarding pages) */
+    icon?: LucideIcon | undefined; /** Icon container className override */
+    iconClassName?:
+        | string
+        | undefined; /** When true, centers title/description/icon (for standalone flows like onboarding) */
+    centered?: boolean | undefined;
 }
 
 export function PageHeader({

@@ -19,19 +19,15 @@ export interface DetailFieldDef {
     /** Display label */
     label: string;
     /** Record key to access value (dot notation supported) */
-    accessorKey?: string;
-    /** Custom accessor */
-    accessorFn?: (record: Record<string, unknown>) => unknown;
-    /** FieldRenderer type */
-    fieldType?: FieldType;
-    /** Additional FieldRenderer config */
-    fieldConfig?: Partial<FieldConfig>;
-    /** Custom render (escape hatch) */
-    render?: (value: unknown, record: Record<string, unknown>) => React.ReactNode;
-    /** Span full width (2 columns) */
-    fullWidth?: boolean;
-    /** Icon for the field label */
-    icon?: LucideIcon;
+    accessorKey?: string | undefined; /** Custom accessor */
+    accessorFn?: (record: Record<string, unknown>) => unknown | undefined; /** FieldRenderer type */
+    fieldType?: FieldType | undefined; /** Additional FieldRenderer config */
+    fieldConfig?: Partial<FieldConfig> | undefined; /** Custom render (escape hatch) */
+    render?:
+        | ((value: unknown, record: Record<string, unknown>) => React.ReactNode)
+        | undefined; /** Span full width (2 columns) */
+    fullWidth?: boolean | undefined; /** Icon for the field label */
+    icon?: LucideIcon | undefined;
 }
 
 // ─── Related Entity Definition ──────────────────────────────
@@ -46,13 +42,10 @@ export interface RelatedEntityDef {
     /** Columns for the sub-table */
     columns: ListColumnDef[];
     /** Link path pattern (e.g. "/tasks/{id}") — {id} is replaced with record.id */
-    linkPattern?: string;
-    /** Icon */
-    icon?: LucideIcon;
-    /** Empty state message */
-    emptyMessage?: string;
-    /** Maximum rows to display (default: 10) */
-    limit?: number;
+    linkPattern?: string | undefined; /** Icon */
+    icon?: LucideIcon | undefined; /** Empty state message */
+    emptyMessage?: string | undefined; /** Maximum rows to display (default: 10) */
+    limit?: number | undefined;
 }
 
 // ─── Stat Definition (for detail header) ────────────────────
@@ -61,15 +54,13 @@ export interface DetailStatDef {
     /** Display label */
     label: string;
     /** Icon */
-    icon?: LucideIcon;
-    /** Record key */
-    accessorKey?: string;
-    /** Custom compute from record */
-    compute?: (record: Record<string, unknown>) => string | number;
-    /** FieldRenderer type for formatting */
-    fieldType?: FieldType;
-    /** Additional FieldRenderer config */
-    fieldConfig?: Partial<FieldConfig>;
+    icon?: LucideIcon | undefined; /** Record key */
+    accessorKey?: string | undefined; /** Custom compute from record */
+    compute?: (
+        record: Record<string, unknown>
+    ) => string | number | undefined; /** FieldRenderer type for formatting */
+    fieldType?: FieldType | undefined; /** Additional FieldRenderer config */
+    fieldConfig?: Partial<FieldConfig> | undefined;
 }
 
 // ─── Tab Definition ─────────────────────────────────────────
@@ -80,11 +71,9 @@ export interface DetailTabDef {
     /** Tab label */
     label: string;
     /** Tab icon */
-    icon?: LucideIcon;
-    /** Optional badge count */
-    count?: number;
-    /** Tab content (slot) */
-    content?: React.ReactNode;
+    icon?: LucideIcon | undefined; /** Optional badge count */
+    count?: number | undefined; /** Tab content (slot) */
+    content?: React.ReactNode | undefined;
 }
 
 // ─── Quick View Config (for slide-panel preview) ────────────
@@ -93,11 +82,9 @@ export interface QuickViewConfig {
     /** Fields shown in the preview panel (subset of full detail) */
     previewFields: DetailFieldDef[];
     /** Optional preview stats (defaults to first 3 from DetailPageConfig.stats when used with DetailPageShell) */
-    previewStats?: DetailStatDef[];
-    /** Panel width class (default: "max-w-lg") */
-    width?: string;
-    /** Enable prev/next record navigation via ↑/↓ keys */
-    navigable?: boolean;
+    previewStats?: DetailStatDef[] | undefined; /** Panel width class (default: "max-w-lg") */
+    width?: string | undefined; /** Enable prev/next record navigation via ↑/↓ keys */
+    navigable?: boolean | undefined;
 }
 
 // ─── Main Config ────────────────────────────────────────────
@@ -106,67 +93,52 @@ export interface DetailPageConfig {
     /** Entity config key (snake_case) — resolves EntityConfig for RBAC, API path */
     entityKey: string;
     /** Record key used as page title (optional if titleFn provided) */
-    titleKey?: string;
-    /** Compute title from record (overrides titleKey) */
-    titleFn?: (record: Record<string, unknown>) => string;
-    /** Record key for subtitle */
-    subtitleKey?: string;
-    /** Compute subtitle from record (overrides subtitleKey) */
-    subtitleFn?: (record: Record<string, unknown>) => string;
-    /** Record key for status badge */
-    statusKey?: string;
-    /** Compute status from record (overrides statusKey) */
-    statusFn?: (record: Record<string, unknown>) => string;
-    /** Page icon */
-    icon?: LucideIcon;
-
+    titleKey?: string | undefined; /** Compute title from record (overrides titleKey) */
+    titleFn?:
+        | ((record: Record<string, unknown>) => string)
+        | undefined; /** Record key for subtitle */
+    subtitleKey?: string | undefined; /** Compute subtitle from record (overrides subtitleKey) */
+    subtitleFn?:
+        | ((record: Record<string, unknown>) => string)
+        | undefined; /** Record key for status badge */
+    statusKey?: string | undefined; /** Compute status from record (overrides statusKey) */
+    statusFn?: ((record: Record<string, unknown>) => string) | undefined; /** Page icon */
+    icon?: LucideIcon | undefined;
     // ─── Back navigation ───
     /** Back link href (default: derived from entityKey slug) */
-    backHref?: string;
-    /** Back link label */
-    backLabel?: string;
-
+    backHref?: string | undefined; /** Back link label */
+    backLabel?: string | undefined;
     // ─── Stats ───
     /** Stat cards displayed below header */
-    stats?: DetailStatDef[];
-
+    stats?: DetailStatDef[] | undefined;
     // ─── Overview tab — declarative field grid ───
     /** Fields for the overview tab (rendered via FieldGrid) */
     fields: DetailFieldDef[];
     /** Fields for the sidebar (rendered via FieldGrid) */
-    sidebarFields?: DetailFieldDef[];
-
+    sidebarFields?: DetailFieldDef[] | undefined;
     // ─── Related entities — sub-tables ───
     /** Related entity sub-tables (each gets its own section or tab) */
-    relatedEntities?: RelatedEntityDef[];
-
+    relatedEntities?: RelatedEntityDef[] | undefined;
     // ─── Tabs ───
     /** Custom tabs beyond the auto-generated overview/related/activity tabs */
-    tabs?: DetailTabDef[];
-
+    tabs?: DetailTabDef[] | undefined;
     // ─── Actions ───
     /** Edit form config (reuses CreateEntityConfig for form definition) */
-    editConfig?: CreateEntityConfig;
-    /** Enable archive action */
-    archivable?: boolean;
-    /** Enable delete action */
-    deletable?: boolean;
-
+    editConfig?: CreateEntityConfig | undefined; /** Enable archive action */
+    archivable?: boolean | undefined; /** Enable delete action */
+    deletable?: boolean | undefined;
     // ─── Chatter ───
     /** Enable RecordChatter activity tab (default: true) */
-    chatter?: boolean;
-    /** RecordChatter recordType (defaults to entityKey with hyphens→underscores) */
-    chatterRecordType?: string;
-
+    chatter?:
+        | boolean
+        | undefined; /** RecordChatter recordType (defaults to entityKey with hyphens→underscores) */
+    chatterRecordType?: string | undefined;
     // ─── Messaging ───
     /** Entity type for messaging context */
-    messagingEntityType?: string;
-
+    messagingEntityType?: string | undefined;
     // ─── Slots (escape hatches) ───
     /** Override the header section */
-    headerSlot?: React.ReactNode;
-    /** Override the sidebar section */
-    sidebarSlot?: React.ReactNode;
-    /** Override the overview tab content */
-    overviewSlot?: React.ReactNode;
+    headerSlot?: React.ReactNode | undefined; /** Override the sidebar section */
+    sidebarSlot?: React.ReactNode | undefined; /** Override the overview tab content */
+    overviewSlot?: React.ReactNode | undefined;
 }

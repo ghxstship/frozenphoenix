@@ -19,8 +19,8 @@ interface FieldGridProps {
     fields: DetailFieldDef[];
     record: EntityRecord;
     /** Single column layout (for sidebars) */
-    singleColumn?: boolean;
-    className?: string;
+    singleColumn?: boolean | undefined;
+    className?: string | undefined;
 }
 
 export function FieldGrid({ fields, record, singleColumn = false, className }: FieldGridProps) {

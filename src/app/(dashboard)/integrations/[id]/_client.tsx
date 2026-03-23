@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -38,10 +38,14 @@ import {
     XCircle,
 } from "lucide-react";
 
-export function IntegrationDetailPageClient() {
-    const params = useParams();
+export function IntegrationDetailPageClient({
+    id,
+    initialRecord,
+}: {
+    id: string;
+    initialRecord?: Record<string, unknown> | null;
+}) {
     const searchParams = useSearchParams();
-    const id = params.id as string;
     const justConnected = searchParams.get("connected") === "true";
 
     const { data: connection, isLoading } = useProviderConnection(id);
@@ -561,7 +565,7 @@ export function IntegrationDetailPageClient() {
             config={config}
             id={id}
             record={(connection as Record<string, unknown> | null) ?? null}
-            isLoading={isLoading}
+            isLoading={isLoading && !initialRecord}
             actions={
                 <div className="flex gap-2">
                     <Button

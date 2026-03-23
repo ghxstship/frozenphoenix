@@ -28,9 +28,9 @@ interface NotificationItem {
     type: string;
     title: string;
     body: string;
-    entity_type?: string;
-    entity_id?: string;
-    action_url?: string;
+    entity_type?: string | undefined;
+    entity_id?: string | undefined;
+    action_url?: string | undefined;
     read: boolean;
     created_at: string;
 }

@@ -14,17 +14,21 @@ export interface EnumConfig<T extends string = string> {
     value: T;
     label: string;
     variant: BadgeVariant;
-    description?: string;
-    icon?: LucideIcon;
+    description?: string | undefined;
+    icon?: LucideIcon | undefined;
 }
 
 // ─── Enum Map Factory ────────────────────────────────────────
-export function toEnumMap<T extends string>(entries: readonly EnumConfig<T>[]): Record<T, EnumConfig<T>> {
+export function toEnumMap<T extends string>(
+    entries: readonly EnumConfig<T>[]
+): Record<T, EnumConfig<T>> {
     return Object.fromEntries(entries.map((e) => [e.value, e])) as Record<T, EnumConfig<T>>;
 }
 
 // ─── Form Option Helpers ─────────────────────────────────────
-export function mapToOptions(map: Record<string, { label: string }>): { value: string; label: string }[] {
+export function mapToOptions(
+    map: Record<string, { label: string }>
+): { value: string; label: string }[] {
     return Object.entries(map).map(([value, { label }]) => ({ value, label }));
 }
 

@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 
 interface BackLinkProps {
     href: string;
-    label?: string;
-    className?: string;
+    label?: string | undefined;
+    className?: string | undefined;
 }
 
 export function BackLink({ href, label = "Back", className }: BackLinkProps) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { logger } from "@/lib/logger";
 import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,15 +31,19 @@ const BASE_CONFIG: DetailPageConfig = {
     tabs: [],
 };
 
-export function TaskDetailPageClient() {
-    const params = useParams();
+export function TaskDetailPageClient({
+    id,
+    initialRecord,
+}: {
+    id: string;
+    initialRecord?: Record<string, unknown> | null;
+}) {
     const router = useRouter();
-    const taskId = params.id as string;
     const updateTask = useUpdateTask();
     const deleteTask = useDeleteTask();
 
-    const { data: task, isLoading } = useTask(taskId);
-    const rec = task as Record<string, unknown> | null;
+    const { data: task, isLoading } = useTask(id);
+    const rec = (task ?? initialRecord) as Record<string, unknown> | null;
     const { data: sbProjects } = useProjects();
     const { data: sbTasks } = useTasks();
     const project = task
@@ -50,7 +54,7 @@ export function TaskDetailPageClient() {
 
     const handleMarkComplete = async () => {
         try {
-            await updateTask.mutateAsync({ id: taskId, status: "done" } as unknown as Parameters<
+            await updateTask.mutateAsync({ id: id, status: "done" } as unknown as Parameters<
                 typeof updateTask.mutateAsync
             >[0]);
         } catch (error) {
@@ -60,7 +64,7 @@ export function TaskDetailPageClient() {
 
     const handleDeleteTask = async () => {
         try {
-            await deleteTask.mutateAsync(taskId);
+            await deleteTask.mutateAsync(id);
             router.push("/tasks");
         } catch (error) {
             logger.error("Failed to delete task", { error });
@@ -252,7 +256,7 @@ export function TaskDetailPageClient() {
                             <CardTitle className="text-base">Subtasks</CardTitle>
                             <Button
                                 size="sm"
-                                onClick={() => router.push(`/tasks/new?parentId=${taskId}`)}
+                                onClick={() => router.push(`/tasks/new?parentId=${id}`)}
                             >
                                 Add Subtask
                             </Button>
@@ -264,7 +268,7 @@ export function TaskDetailPageClient() {
                                 description="Break this task into smaller subtasks"
                                 action={{
                                     label: "Add Subtask",
-                                    onClick: () => router.push(`/tasks/new?parentId=${taskId}`),
+                                    onClick: () => router.push(`/tasks/new?parentId=${id}`),
                                 }}
                             />
                         </CardContent>
@@ -295,9 +299,9 @@ export function TaskDetailPageClient() {
     return (
         <DetailPageShell
             config={config}
-            id={taskId}
+            id={id}
             record={enrichedRecord}
-            isLoading={isLoading}
+            isLoading={isLoading && !initialRecord}
             menuItems={[
                 {
                     label: updateTask.isPending ? "Completing..." : "Mark Complete",
@@ -305,7 +309,7 @@ export function TaskDetailPageClient() {
                 },
                 {
                     label: "Duplicate Task",
-                    onClick: () => router.push(`/tasks/new?duplicateFrom=${taskId}`),
+                    onClick: () => router.push(`/tasks/new?duplicateFrom=${id}`),
                 },
                 {
                     label: deleteTask.isPending ? "Deleting..." : "Delete Task",
@@ -319,7 +323,7 @@ export function TaskDetailPageClient() {
                 </div>
             }
             actions={
-                <Button onClick={() => router.push(`/tasks/${taskId}/edit`)}>
+                <Button onClick={() => router.push(`/tasks/${id}/edit`)}>
                     <Edit className="h-4 w-4" />
                     Edit
                 </Button>

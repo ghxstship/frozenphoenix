@@ -8,8 +8,8 @@ import { useMessaging } from "@/hooks/use-messaging";
 interface MessagingButtonProps {
     entityType: string;
     entityId: string;
-    label?: string;
-    className?: string;
+    label?: string | undefined;
+    className?: string | undefined;
 }
 
 export function MessagingButton({

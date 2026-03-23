@@ -7,7 +7,7 @@ import { useMotion } from "@/hooks/use-motion";
 export interface AnimatedListProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
     children: React.ReactNode;
     /** Layout animation for reorder smoothing */
-    layout?: boolean;
+    layout?: boolean | undefined;
 }
 
 /**
@@ -47,9 +47,8 @@ export function AnimatedList({ children, className, layout: _layout, ...rest }: 
 
 export interface AnimatedListItemProps {
     children: React.ReactNode;
-    className?: string;
-    /** Enable layout animation for reorder smoothing */
-    layout?: boolean;
+    className?: string | undefined; /** Enable layout animation for reorder smoothing */
+    layout?: boolean | undefined;
 }
 
 export function AnimatedListItem({ children, className, layout = true }: AnimatedListItemProps) {

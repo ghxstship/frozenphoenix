@@ -10,17 +10,17 @@ import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 interface MessageComposerProps {
     onSend: (payload: {
         body: string;
-        mentioned_user_ids?: string[];
-        priority?: MessagePriority;
+        mentioned_user_ids?: string[] | undefined;
+        priority?: MessagePriority | undefined;
     }) => void;
-    placeholder?: string;
-    disabled?: boolean;
-    replyTo?: { messageId: string; body: string; senderName: string } | null;
-    onCancelReply?: () => void;
-    draft?: string;
-    onDraftChange?: (text: string) => void;
-    extraActions?: React.ReactNode;
-    className?: string;
+    placeholder?: string | undefined;
+    disabled?: boolean | undefined;
+    replyTo?: { messageId: string; body: string; senderName: string } | null | undefined;
+    onCancelReply?: (() => void) | undefined;
+    draft?: string | undefined;
+    onDraftChange?: ((text: string) => void) | undefined;
+    extraActions?: React.ReactNode | undefined;
+    className?: string | undefined;
 }
 
 export function MessageComposer({

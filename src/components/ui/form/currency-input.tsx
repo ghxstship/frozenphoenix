@@ -7,18 +7,24 @@ export interface CurrencyInputProps extends Omit<
     React.InputHTMLAttributes<HTMLInputElement>,
     "type" | "value" | "onChange"
 > {
-    value?: number;
+    value?: number | undefined;
     onChange?: (value: number | undefined) => void;
-    currency?: string;
+    currency?: string | undefined;
 }
 
 export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
     ({ className, value, onChange, currency = "USD", ...props }, ref) => {
         const currencySymbol = React.useMemo(() => {
             try {
-                return new Intl.NumberFormat(undefined, { style: "currency", currency, currencyDisplay: "narrowSymbol" })
-                    .formatToParts(0)
-                    .find((p) => p.type === "currency")?.value ?? currency;
+                return (
+                    new Intl.NumberFormat(undefined, {
+                        style: "currency",
+                        currency,
+                        currencyDisplay: "narrowSymbol",
+                    })
+                        .formatToParts(0)
+                        .find((p) => p.type === "currency")?.value ?? currency
+                );
             } catch {
                 return currency;
             }

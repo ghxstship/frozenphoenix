@@ -16,18 +16,18 @@ export type ChatRole = "user" | "assistant" | "system" | "tool_call" | "tool_res
 export interface ChatMessage {
     role: ChatRole;
     content: string;
-    name?: string;
-    tool_call_id?: string;
-    tool_calls?: ToolCall[];
-    attachments?: MessageAttachment[];
+    name?: string | undefined;
+    tool_call_id?: string | undefined;
+    tool_calls?: ToolCall[] | undefined;
+    attachments?: MessageAttachment[] | undefined;
 }
 
 export interface MessageAttachment {
     type: "image" | "file" | "document";
-    url?: string;
-    base64?: string;
+    url?: string | undefined;
+    base64?: string | undefined;
     mime_type: string;
-    filename?: string;
+    filename?: string | undefined;
 }
 
 // ─── Tool Calling ────────────────────────────────────────────
@@ -47,30 +47,30 @@ export interface ToolCall {
 export interface ToolResult {
     tool_call_id: string;
     content: string;
-    is_error?: boolean;
+    is_error?: boolean | undefined;
 }
 
 // ─── Completion Options ──────────────────────────────────────
 
 export interface CompletionOptions {
-    model?: string;
-    temperature?: number;
-    max_tokens?: number;
-    top_p?: number;
-    stop_sequences?: string[];
-    tools?: ToolDefinition[];
-    json_mode?: boolean;
-    system_prompt?: string;
-    stream?: boolean;
+    model?: string | undefined;
+    temperature?: number | undefined;
+    max_tokens?: number | undefined;
+    top_p?: number | undefined;
+    stop_sequences?: string[] | undefined;
+    tools?: ToolDefinition[] | undefined;
+    json_mode?: boolean | undefined;
+    system_prompt?: string | undefined;
+    stream?: boolean | undefined;
 }
 
 // ─── Streaming ───────────────────────────────────────────────
 
 export interface CopilotChunk {
     delta: string;
-    tool_call?: ToolCall;
-    finish_reason?: "stop" | "tool_use" | "max_tokens" | "error";
-    usage?: TokenUsage;
+    tool_call?: ToolCall | undefined;
+    finish_reason?: "stop" | "tool_use" | "max_tokens" | "error" | undefined;
+    usage?: TokenUsage | undefined;
 }
 
 export interface TokenUsage {
@@ -162,7 +162,7 @@ export interface AIConversation {
     workspace_context: WorkspaceContext;
     model_id: string;
     title: string;
-    summary?: string;
+    summary?: string | undefined;
     pinned: boolean;
     archived: boolean;
     created_at: string;
@@ -174,8 +174,8 @@ export interface AIMessage {
     conversation_id: string;
     role: ChatRole;
     content: string;
-    attachments?: MessageAttachment[];
-    tool_calls?: ToolCall[];
+    attachments?: MessageAttachment[] | undefined;
+    tool_calls?: ToolCall[] | undefined;
     token_count_input: number;
     token_count_output: number;
     model_id: string | null;
@@ -202,7 +202,7 @@ export interface AIUsageEntry {
 export interface AIUsageLimit {
     id: string;
     org_id: string;
-    role_id?: string;
+    role_id?: string | undefined;
     daily_token_limit: number;
     monthly_token_limit: number;
     max_context_per_request: number;
@@ -239,15 +239,15 @@ export interface AIDocumentChunk {
     chunk_index: number;
     content: string;
     token_count: number;
-    embedding?: number[];
+    embedding?: number[] | undefined;
     metadata: ChunkMetadata;
     created_at: string;
 }
 
 export interface ChunkMetadata {
-    page_number?: number;
-    section_header?: string;
-    source_context?: string;
+    page_number?: number | undefined;
+    section_header?: string | undefined;
+    source_context?: string | undefined;
     [key: string]: unknown;
 }
 
@@ -263,7 +263,7 @@ export interface RankedChunk {
 export interface AISystemPrompt {
     id: string;
     workspace_context: WorkspaceContext;
-    role_id?: string;
+    role_id?: string | undefined;
     prompt_name: string;
     prompt_text: string;
     is_active: boolean;

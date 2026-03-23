@@ -16,6 +16,18 @@ const CONFIG: DetailPageConfig = {
     tabs: [],
 };
 
-export function CreditNotesDetailClient({ id }: { id: string }) {
-    return <DetailPageShell config={CONFIG} id={id} />;
+export function CreditNotesDetailClient({
+    id,
+    initialRecord,
+}: {
+    id: string;
+    initialRecord?: Record<string, unknown> | null;
+}) {
+    return (
+        <DetailPageShell
+            config={CONFIG}
+            id={id}
+            record={initialRecord as Record<string, unknown> | undefined}
+        />
+    );
 }

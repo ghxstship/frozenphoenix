@@ -27,16 +27,16 @@ export type ApiScanMethod = "keyboard" | "camera" | "rfid" | "nfc" | "file" | "a
 export interface AssetLookupResult {
     asset: Record<string, unknown> | null;
     matched_by: string;
-    message?: string;
+    message?: string | undefined;
 }
 
 export interface AssetScanPayload {
     identifier: string;
-    identifier_type?: ScanIdentifierType;
+    identifier_type?: ScanIdentifierType | undefined;
     scan_action: AssetScanAction;
-    scan_method?: ApiScanMethod;
-    location_id?: string;
-    notes?: string;
+    scan_method?: ApiScanMethod | undefined;
+    location_id?: string | undefined;
+    notes?: string | undefined;
 }
 
 export interface AssetScanResult {

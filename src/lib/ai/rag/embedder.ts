@@ -14,9 +14,8 @@ import { ModelRegistry } from "../model-registry";
 
 export interface EmbedOptions {
     /** Override provider key (default: first provider with embedding support). */
-    providerKey?: string;
-    /** Batch size for parallel embedding calls. Default: 20. */
-    batchSize?: number;
+    providerKey?: string | undefined; /** Batch size for parallel embedding calls. Default: 20. */
+    batchSize?: number | undefined;
 }
 
 export interface EmbedResult {

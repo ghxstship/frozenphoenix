@@ -10,7 +10,9 @@ export const GET = withApiHandler(
         rbac: { resource: "leads", action: "read" },
     },
     async (_request, { supabase, log }) => {
-        const { data, error } = await serverFromTable(supabase, "lead_pipeline_stats").select("*");
+        const { data, error } = await serverFromTable(supabase, "lead_pipeline_stats").select(
+            "stage, count, value, organization_id"
+        );
 
         if (error) {
             log.error("[GET /api/lead-pipeline-stats] failed", { error: error.message });

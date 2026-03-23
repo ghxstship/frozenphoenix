@@ -9,9 +9,9 @@ import { AlertTriangle } from "lucide-react";
 interface ConfirmOptions {
     title: string;
     description: string;
-    confirmLabel?: string;
-    cancelLabel?: string;
-    variant?: "destructive" | "default";
+    confirmLabel?: string | undefined;
+    cancelLabel?: string | undefined;
+    variant?: "destructive" | "default" | undefined;
 }
 
 interface ConfirmContextValue {

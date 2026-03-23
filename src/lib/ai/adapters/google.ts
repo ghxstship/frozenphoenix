@@ -103,9 +103,10 @@ export class GoogleAdapter implements IModelProvider {
         const systemMessage = messages.find((m) => m.role === "system");
         const nonSystemMessages = messages.filter((m) => m.role !== "system");
 
+        const systemInstruction = systemMessage?.content ?? options?.system_prompt;
         const model = this.genAI.getGenerativeModel({
             model: modelKey,
-            systemInstruction: systemMessage?.content ?? options?.system_prompt,
+            ...(systemInstruction ? { systemInstruction } : {}),
         });
 
         const tools = options?.tools?.map((t) => ({
@@ -130,9 +131,11 @@ export class GoogleAdapter implements IModelProvider {
             history,
             generationConfig: {
                 maxOutputTokens: options?.max_tokens ?? 4096,
-                temperature: options?.temperature,
-                topP: options?.top_p,
-                stopSequences: options?.stop_sequences,
+                ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
+                ...(options?.top_p !== undefined ? { topP: options.top_p } : {}),
+                ...(options?.stop_sequences !== undefined
+                    ? { stopSequences: options.stop_sequences }
+                    : {}),
                 ...(options?.json_mode ? { responseMimeType: "application/json" } : {}),
             },
             ...(tools && tools.length > 0 ? { tools } : {}),
@@ -180,14 +183,14 @@ export class GoogleAdapter implements IModelProvider {
         const modelKey = options?.model ?? "gemini-2.5-flash";
         const model = this.genAI.getGenerativeModel({
             model: modelKey,
-            systemInstruction: options?.system_prompt,
+            ...(options?.system_prompt ? { systemInstruction: options.system_prompt } : {}),
         });
 
         const result = await model.generateContent({
             contents: [{ role: "user", parts: [{ text: prompt }] }],
             generationConfig: {
                 maxOutputTokens: options?.max_tokens ?? 4096,
-                temperature: options?.temperature,
+                ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
             },
         });
 

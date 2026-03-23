@@ -18,9 +18,9 @@ export interface OfflineIndicatorProps {
     isOnline: boolean;
     pendingCount: number;
     isSyncing: boolean;
-    onSyncNow?: () => void;
-    onClearPending?: () => void;
-    className?: string;
+    onSyncNow?: (() => void) | undefined;
+    onClearPending?: (() => void) | undefined;
+    className?: string | undefined;
 }
 
 export function OfflineIndicator({

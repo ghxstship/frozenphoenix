@@ -41,7 +41,7 @@ interface AvatarCropDialogProps {
     onOpenChange: (open: boolean) => void;
     imageSrc: string;
     onCropComplete: (croppedBlob: Blob) => void;
-    loading?: boolean;
+    loading?: boolean | undefined;
 }
 
 // ─── Canvas crop helper ───

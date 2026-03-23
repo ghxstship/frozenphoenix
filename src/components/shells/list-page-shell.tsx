@@ -73,7 +73,9 @@ const DataWorkload = dynamic(() =>
 import { PermissionGate } from "@/components/app/permission-guard";
 import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CsvExportButton } from "@/components/csv/csv-export-button";
-import { CsvImportDialog } from "@/components/csv/csv-import-dialog";
+const CsvImportDialog = dynamic(() =>
+    import("@/components/csv/csv-import-dialog").then((m) => m.CsvImportDialog)
+);
 import { QuickViewPanel } from "@/components/shells/quick-view-panel";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { ColumnVisibilityPopover } from "@/components/ui/column-visibility-popover";
@@ -95,13 +97,14 @@ import type { EntityRecord } from "@/types/entity";
 
 export interface ListPageShellProps {
     /** Direct config object (client-side only — NOT serializable across RSC boundary) */
-    config?: ListPageConfig;
-    /** Registry key — serializable alternative to config for RSC→client boundary */
-    configKey?: ListPageConfigKey;
-    /** Pre-fetched data — bypasses built-in apiList query when provided */
-    data?: EntityRecord[];
-    /** Loading state for externally-provided data */
-    isLoading?: boolean;
+    config?:
+        | ListPageConfig
+        | undefined; /** Registry key — serializable alternative to config for RSC→client boundary */
+    configKey?:
+        | ListPageConfigKey
+        | undefined; /** Pre-fetched data — bypasses built-in apiList query when provided */
+    data?: EntityRecord[] | undefined; /** Loading state for externally-provided data */
+    isLoading?: boolean | undefined;
 }
 
 // ─── List Alert Renderer ─────────────────────────────────────
@@ -124,11 +127,11 @@ interface ViewContentProps {
     selectedKeys: Set<string>;
     setSelectedKeys: (keys: Set<string>) => void;
     handleRowClick: (record: EntityRecord) => void;
-    renderRowActions?: (row: EntityRecord) => React.ReactNode;
-    renderRowActionItems?: (row: EntityRecord) => React.ReactNode;
-    onBoardDragEnd?: (itemId: string, fromColumn: string, toColumn: string) => void;
-    emptyState?: React.ReactNode;
-    isLoading?: boolean;
+    renderRowActions?: ((row: EntityRecord) => React.ReactNode) | undefined;
+    renderRowActionItems?: ((row: EntityRecord) => React.ReactNode) | undefined;
+    onBoardDragEnd?: ((itemId: string, fromColumn: string, toColumn: string) => void) | undefined;
+    emptyState?: React.ReactNode | undefined;
+    isLoading?: boolean | undefined;
 }
 
 function ViewContent({
@@ -478,8 +481,8 @@ ListPageShell.displayName = "ListPageShell";
 
 interface ListPageShellInnerProps {
     config: ListPageConfig;
-    data?: Record<string, unknown>[];
-    isLoading?: boolean;
+    data?: Record<string, unknown>[] | undefined;
+    isLoading?: boolean | undefined;
 }
 
 function ListPageShellInner({
@@ -630,7 +633,7 @@ function ListPageShellInner({
         return config.stats.map((s) => {
             let val: string | number = records.length;
             if (s.value != null) val = s.value;
-            else if (s.compute) val = s.compute(records);
+            else if (s.compute) val = s.compute(records) ?? 0;
             else if (s.filter) val = records.filter(s.filter).length;
             return { label: s.label, icon: s.icon, computedValue: val };
         });
@@ -697,7 +700,11 @@ function ListPageShellInner({
     // Column visibility + reorder preferences (persisted to localStorage)
     const columnPrefs = useColumnPreferences({
         entityKey: config.entityKey,
-        defaultColumns: dtColumns.map((c) => ({ id: c.id, hidden: c.hidden, sticky: c.sticky })),
+        defaultColumns: dtColumns.map((c) => ({
+            id: c.id,
+            hidden: !!c.hidden,
+            sticky: !!c.sticky,
+        })),
     });
 
     // Apply visibility + order to columns
@@ -737,7 +744,7 @@ function ListPageShellInner({
                 id: string;
                 header: string;
                 visible: boolean;
-                sticky?: boolean;
+                sticky?: boolean | undefined;
             }[],
         [dtColumns, columnPrefs.order, columnPrefs.visibility]
     );
@@ -990,7 +997,7 @@ function ListPageShellInner({
                             onValueChange: setSearch,
                             placeholder: `Search ${title.toLowerCase()}...`,
                         }}
-                        filters={filterBarFilters}
+                        {...(filterBarFilters ? { filters: filterBarFilters } : {})}
                         activeCount={activeFilterCount}
                         onClearAll={() => updateFilterValues(() => ({}))}
                         actions={
@@ -1059,7 +1066,8 @@ function ListPageShellInner({
                                     ? async (itemId: string, _from: string, toColumn: string) => {
                                           try {
                                               await apiUpdate(basePath, itemId, {
-                                                  [config.boardConfig!.groupByKey]: toColumn,
+                                                  [config.boardConfig?.groupByKey ?? "status"]:
+                                                      toColumn,
                                               });
                                               invalidateEntity();
                                           } catch {

@@ -24,8 +24,8 @@ export interface OpenApiSpec {
         title: string;
         version: string;
         description: string;
-        contact?: { name: string; url?: string; email?: string };
-        license?: { name: string; url?: string };
+        contact?: { name: string; url?: string; email?: string } | undefined;
+        license?: { name: string; url?: string } | undefined;
     };
     servers: Array<{ url: string; description: string }>;
     paths: Record<string, unknown>;
@@ -34,7 +34,7 @@ export interface OpenApiSpec {
         securitySchemes: Record<string, unknown>;
     };
     security: Array<Record<string, unknown>>;
-    tags: Array<{ name: string; description?: string }>;
+    tags: Array<{ name: string; description?: string | undefined }>;
     "x-rbac-matrix"?: Record<string, unknown>;
 }
 
@@ -148,7 +148,7 @@ export function buildOpenApiSpec(): OpenApiSpec {
         "x-rbac-matrix": rbacMatrix,
     };
 
-    return cachedSpec;
+    return cachedSpec!;
 }
 
 /**

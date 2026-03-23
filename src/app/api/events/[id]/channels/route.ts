@@ -47,12 +47,12 @@ export const POST = withApiHandlerParams(
         let channelsConfig: Array<{
             name: string;
             slug: string;
-            category?: string;
-            is_public?: boolean;
-            is_announcement_only?: boolean;
-            is_restricted?: boolean;
-            required_role?: string;
-            required_credential_type?: string;
+            category?: string | undefined;
+            is_public?: boolean | undefined;
+            is_announcement_only?: boolean | undefined;
+            is_restricted?: boolean | undefined;
+            required_role?: string | undefined;
+            required_credential_type?: string | undefined;
         }> = [];
 
         // Load template if provided
@@ -124,7 +124,7 @@ export const POST = withApiHandlerParams(
                     template_id: template_id ?? null,
                     created_by: user.id,
                 })
-                .select()
+                .select("id, name, slug, category, is_public, event_id, created_at")
                 .single();
 
             if (convErr) {
@@ -182,7 +182,9 @@ export const GET = withApiHandlerParams(
         if (!admin) return ApiErrors.serviceUnavailable();
 
         const { data: channels, error } = await serverFromTable(admin!, "conversations")
-            .select("*")
+            .select(
+                "id, organization_id, type, name, slug, description, is_public, is_announcement_only, category, event_id, created_by, created_at"
+            )
             .eq("event_id", eventId)
             .eq("type", "channel")
             .order("created_at", { ascending: true });

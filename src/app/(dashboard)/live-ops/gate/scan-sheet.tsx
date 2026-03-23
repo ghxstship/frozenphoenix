@@ -39,8 +39,12 @@ const RESULT_META: Record<string, { icon: typeof CheckCircle2; color: string; la
 export function GateScanSheet({ result, open, onOpenChange }: GateScanSheetProps) {
     if (!result) return null;
 
-    const meta = RESULT_META[result.result] ?? RESULT_META.denied!;
-    const Icon = meta!.icon;
+    const meta = RESULT_META[result.result] ?? {
+        icon: XCircle,
+        color: "text-red-600",
+        label: "Denied",
+    };
+    const Icon = meta.icon;
     const assignment = result.assignment;
     const credType = result.credential_type as Record<string, unknown> | null;
 
@@ -49,8 +53,8 @@ export function GateScanSheet({ result, open, onOpenChange }: GateScanSheetProps
             <SheetContent side="right" className="w-full sm:max-w-md">
                 <SheetHeader>
                     <SheetTitle className="flex items-center gap-2">
-                        <Icon className={cn("h-5 w-5", meta!.color)} />
-                        {meta!.label}
+                        <Icon className={cn("h-5 w-5", meta.color)} />
+                        {meta.label}
                     </SheetTitle>
                     <SheetDescription>{result.message}</SheetDescription>
                 </SheetHeader>

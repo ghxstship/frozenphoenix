@@ -19,7 +19,11 @@ import {
     PROJECT_STATUS_MAP as PROJECT_STATUS_CONFIG,
 } from "@/config/domain-config";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
-import { type BoardColumn, type CardField, DataBoard } from "@/components/data-view/data-board";
+import type { BoardColumn, CardField, DataBoardProps } from "@/components/data-view/data-board";
+import dynamic from "next/dynamic";
+const DataBoard = dynamic(() =>
+    import("@/components/data-view/data-board").then((m) => m.DataBoard)
+) as unknown as React.ComponentType<DataBoardProps<Project>>;
 import { CurrencyField, DateField } from "@/components/data-view/field-renderers";
 import { ListPageShell } from "@/components/shells/list-page-shell";
 import type { ListPageConfig } from "@/types/list-page-config";

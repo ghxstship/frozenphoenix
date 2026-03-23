@@ -8,9 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 
 interface ErrorBoundaryProps {
     children: React.ReactNode;
-    fallback?: React.ReactNode;
-    level?: "app" | "page" | "section";
-    onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+    fallback?: React.ReactNode | undefined;
+    level?: "app" | "page" | "section" | undefined;
+    onError?: ((error: Error, errorInfo: React.ErrorInfo) => void) | undefined;
 }
 
 interface ErrorBoundaryState {

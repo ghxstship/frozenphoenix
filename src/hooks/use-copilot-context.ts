@@ -88,7 +88,7 @@ export function useCopilotContext() {
         }
 
         if (entityType) {
-            setPageContext({ entityType, entityId });
+            setPageContext({ entityType, ...(entityId ? { entityId } : {}) });
         } else {
             setPageContext(null);
         }

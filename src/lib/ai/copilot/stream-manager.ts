@@ -28,11 +28,11 @@ export interface StreamResult {
 }
 
 export interface StreamCallbacks {
-    onChunk?: (chunk: CopilotChunk) => void;
-    onToolCallStart?: (toolName: string) => void;
-    onToolCallEnd?: (toolName: string, result: string) => void;
-    onError?: (error: Error) => void;
-    onDone?: (result: StreamResult) => void;
+    onChunk?: ((chunk: CopilotChunk) => void) | undefined;
+    onToolCallStart?: ((toolName: string) => void) | undefined;
+    onToolCallEnd?: ((toolName: string, result: string) => void) | undefined;
+    onError?: ((error: Error) => void) | undefined;
+    onDone?: ((result: StreamResult) => void) | undefined;
 }
 
 // ─── SSE Encoding ────────────────────────────────────────────

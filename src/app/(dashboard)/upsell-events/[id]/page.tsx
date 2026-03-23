@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { UpsellEventsDetailClient } from "./_client";
 
 export default async function UpsellEventsDetailPage({
@@ -6,5 +7,6 @@ export default async function UpsellEventsDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <UpsellEventsDetailClient id={id} />;
+    const initialRecord = await prefetchDetailRecord("upsell_events", id);
+    return <UpsellEventsDetailClient id={id} initialRecord={initialRecord} />;
 }

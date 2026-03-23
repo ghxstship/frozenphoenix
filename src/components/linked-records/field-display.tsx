@@ -24,13 +24,22 @@ const CATEGORY_CONFIG: Record<FieldCategory, { label: string; icon: typeof User;
 interface FieldDisplayProps {
     label: string;
     value: unknown;
-    type?: "text" | "number" | "date" | "datetime" | "currency" | "boolean" | "reference" | "list";
-    category?: FieldCategory;
-    referenceEntity?: EntityType;
-    referenceId?: string;
-    referenceName?: string;
-    showCategory?: boolean;
-    className?: string;
+    type?:
+        | "text"
+        | "number"
+        | "date"
+        | "datetime"
+        | "currency"
+        | "boolean"
+        | "reference"
+        | "list"
+        | undefined;
+    category?: FieldCategory | undefined;
+    referenceEntity?: EntityType | undefined;
+    referenceId?: string | undefined;
+    referenceName?: string | undefined;
+    showCategory?: boolean | undefined;
+    className?: string | undefined;
 }
 
 export function FieldDisplay({
@@ -122,13 +131,13 @@ interface FieldGroupProps {
     fields: Array<{
         label: string;
         value: unknown;
-        type?: FieldDisplayProps["type"];
-        referenceEntity?: EntityType;
-        referenceId?: string;
-        referenceName?: string;
+        type?: FieldDisplayProps["type"] | undefined;
+        referenceEntity?: EntityType | undefined;
+        referenceId?: string | undefined;
+        referenceName?: string | undefined;
     }>;
-    columns?: 1 | 2 | 3 | 4;
-    className?: string;
+    columns?: 1 | 2 | 3 | 4 | undefined;
+    className?: string | undefined;
 }
 
 export function FieldGroup({ category, fields, columns = 2, className }: FieldGroupProps) {

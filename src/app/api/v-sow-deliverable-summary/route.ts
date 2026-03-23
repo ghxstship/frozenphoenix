@@ -12,7 +12,9 @@ export const GET = withApiHandler(
     async (request, { supabase, log }) => {
         const sowId = request.nextUrl.searchParams.get("sow_id");
 
-        let query = serverFromTable(supabase, "v_sow_deliverable_summary").select("*");
+        let query = serverFromTable(supabase, "v_sow_deliverable_summary").select(
+            "sow_id, deliverable_id, title, status, due_date, completed_at, organization_id"
+        );
         if (sowId) query = query.eq("sow_id", sowId);
 
         const { data, error } = await query;

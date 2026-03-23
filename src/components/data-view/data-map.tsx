@@ -28,16 +28,16 @@ export interface MapItem {
     lat: number;
     lng: number;
     title: string;
-    subtitle?: string;
-    color?: string;
+    subtitle?: string | undefined;
+    color?: string | undefined;
 }
 
 export interface DataMapProps {
     data: MapItem[];
-    className?: string;
-    height?: number;
-    actions?: (item: MapItem) => React.ReactNode;
-    onItemClick?: (item: MapItem) => void;
+    className?: string | undefined;
+    height?: number | undefined;
+    actions?: ((item: MapItem) => React.ReactNode) | undefined;
+    onItemClick?: ((item: MapItem) => void) | undefined;
 }
 
 // ─── Helpers ───

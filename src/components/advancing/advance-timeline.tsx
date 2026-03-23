@@ -7,7 +7,7 @@ import { ADVANCE_ITEM_STATUS_MAP, ADVANCE_STATUS_MAP } from "@/config/advancing-
 interface AdvanceTimelineProps {
     entityType: "advance" | "advance_item";
     entityId: string;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function AdvanceTimeline({ entityType, entityId, className }: AdvanceTimelineProps) {

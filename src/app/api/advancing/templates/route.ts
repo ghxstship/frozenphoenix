@@ -22,7 +22,9 @@ export const GET = withApiHandler(
         const orgId = req.nextUrl.searchParams.get("org_id");
 
         let query = serverFromTable(supabase, "advance_templates")
-            .select("*")
+            .select(
+                "id, name, description, advance_type, template_data, is_global, organization_id, created_by, created_at"
+            )
             .is("deleted_at", null)
             .order("name");
 
@@ -56,7 +58,7 @@ export const POST = withApiHandler(
                 ...parsed.data,
                 created_by: user.id,
             } as Record<string, unknown>)
-            .select()
+            .select("id, name, description, advance_type, is_global, created_at")
             .single();
 
         if (error) {

@@ -53,7 +53,7 @@ export const PATCH = withApiHandlerParams(
         const { data, error } = await serverFromTable(supabase, "production_advances")
             .update(parsed.data as Record<string, unknown>)
             .eq("id", id)
-            .select()
+            .select("id, status, advance_type, amount, notes, updated_at")
             .single();
 
         if (error) {

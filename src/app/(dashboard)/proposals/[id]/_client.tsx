@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useDeleteProposal, useProposal, useUpdateProposal } from "@/lib/supabase";
 import { useProposalWithItems } from "@/lib/supabase/hooks-crm";
 import { useDetailCrud } from "@/hooks/use-detail-crud";
@@ -41,8 +41,8 @@ import {
     Trash2,
 } from "lucide-react";
 
-function ProposalItemsTab({ proposalId }: { proposalId: string }) {
-    const { data: proposalData, isLoading } = useProposalWithItems(proposalId);
+function ProposalItemsTab({ id }: { id: string }) {
+    const { data: proposalData, isLoading } = useProposalWithItems(id);
     if (isLoading) {
         return (
             <Card>
@@ -155,14 +155,18 @@ function parseActivity(raw: unknown): { date: string; action: string; user: stri
     }));
 }
 
-export function ProposalDetailPageClient() {
-    const params = useParams();
+export function ProposalDetailPageClient({
+    id,
+    initialRecord,
+}: {
+    id: string;
+    initialRecord?: Record<string, unknown> | null;
+}) {
     const router = useRouter();
-    const proposalId = params.id as string;
-    const { data: sbRecord, isLoading } = useProposal(proposalId);
-    const prop = sbRecord as Record<string, unknown> | null;
+    const { data: sbRecord, isLoading } = useProposal(id);
+    const prop = (sbRecord ?? initialRecord) as Record<string, unknown> | null;
     const { menuItems: crudMenuItems, handleUpdate } = useDetailCrud({
-        entityId: proposalId,
+        entityId: id,
         entityLabel: "Proposal",
         listPath: "/proposals",
         useUpdateHook: useUpdateProposal,
@@ -765,7 +769,7 @@ export function ProposalDetailPageClient() {
             {
                 id: "items-db",
                 label: "Items (DB)",
-                content: <ProposalItemsTab proposalId={proposalId} />,
+                content: <ProposalItemsTab id={id} />,
             },
             {
                 id: "chatter",
@@ -773,7 +777,7 @@ export function ProposalDetailPageClient() {
                 content: (
                     <RecordChatter
                         recordType="proposal"
-                        recordId={proposalId}
+                        recordId={id}
                         comments={chatterComments}
                         currentUserId="u1"
                         onAddComment={handleAddChatterComment}
@@ -789,13 +793,13 @@ export function ProposalDetailPageClient() {
         <>
             <DetailPageShell
                 config={config}
-                id={proposalId}
+                id={id}
                 record={record}
-                isLoading={isLoading}
+                isLoading={isLoading && !initialRecord}
                 menuItems={[
                     {
                         label: "Duplicate",
-                        onClick: () => router.push(`/proposals/new?duplicateFrom=${proposalId}`),
+                        onClick: () => router.push(`/proposals/new?duplicateFrom=${id}`),
                     },
                     { label: "Save Draft", onClick: () => handleUpdate({ status: "draft" }) },
                     ...crudMenuItems,

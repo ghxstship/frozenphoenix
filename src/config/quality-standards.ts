@@ -56,11 +56,11 @@ function c(
     sev: SeverityLevel,
     ct: CheckType,
     opts: {
-        ac?: string;
-        at?: AttestationRequirement;
-        th?: ThresholdOverride;
-        er?: string;
-        tg?: string[];
+        ac?: string | undefined;
+        at?: AttestationRequirement | undefined;
+        th?: ThresholdOverride | undefined;
+        er?: string | undefined;
+        tg?: string[] | undefined;
     } = {}
 ): QualityCriterion {
     return {

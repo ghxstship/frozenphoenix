@@ -42,9 +42,9 @@ export interface FieldAccessRule {
 export interface FieldResolutionContext {
     userRole: PermissionLevel;
     orgPricingTier: PricingTier;
-    projectId?: string;
-    projectRole?: PermissionLevel;
-    fieldOverrides?: FieldOverride[];
+    projectId?: string | undefined;
+    projectRole?: PermissionLevel | undefined;
+    fieldOverrides?: FieldOverride[] | undefined;
 }
 
 export interface FieldOverride {

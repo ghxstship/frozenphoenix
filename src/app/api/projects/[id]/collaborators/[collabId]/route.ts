@@ -78,7 +78,7 @@ export const PATCH = withApiHandlerParams(
             .update(parsed.data as Record<string, unknown>)
             .eq("id", collabId)
             .eq("project_id", projectId)
-            .select()
+            .select("id, status, engagement_type, scope_summary, updated_at")
             .single();
 
         if (error) {

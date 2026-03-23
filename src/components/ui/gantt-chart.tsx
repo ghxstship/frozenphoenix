@@ -11,23 +11,23 @@ import { useBreakpoint } from "@/hooks/use-media-query";
 export interface GanttTask {
     id: string;
     label: string;
-    sublabel?: string;
+    sublabel?: string | undefined;
     startDate: string;
     endDate: string;
-    progress?: number;
-    color?: string;
-    dependencies?: string[];
-    hasConflict?: boolean;
-    resourceId?: string;
+    progress?: number | undefined;
+    color?: string | undefined;
+    dependencies?: string[] | undefined;
+    hasConflict?: boolean | undefined;
+    resourceId?: string | undefined;
 }
 
 interface GanttChartProps {
     tasks: GanttTask[];
     startDate: string;
     endDate: string;
-    granularity?: "day" | "week";
-    className?: string;
-    onTaskClick?: (task: GanttTask) => void;
+    granularity?: "day" | "week" | undefined;
+    className?: string | undefined;
+    onTaskClick?: ((task: GanttTask) => void) | undefined;
 }
 
 function daysBetween(a: string, b: string): number {

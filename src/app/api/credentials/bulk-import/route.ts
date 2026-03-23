@@ -40,7 +40,7 @@ export const POST = withApiHandler(
                 created_by: user.id,
                 started_at: new Date().toISOString(),
             } as Record<string, unknown>)
-            .select()
+            .select("id, entity_type, status, total_rows, organization_id, created_at")
             .single();
 
         if (jobError || !job) {

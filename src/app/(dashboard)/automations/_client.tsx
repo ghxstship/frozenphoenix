@@ -66,7 +66,7 @@ interface ExecutionLog {
     entityId: string;
     entityName: string;
     actionsRun: string[];
-    error?: string;
+    error?: string | undefined;
 }
 
 const LOG_STATUS_CONFIG: Record<

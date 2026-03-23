@@ -13,9 +13,9 @@ const VARIANT_STYLES: Record<IconContainerVariant, string> = {
 
 interface IconContainerProps {
     icon: React.ComponentType<{ className?: string }>;
-    variant?: IconContainerVariant;
-    size?: "sm" | "md" | "lg";
-    className?: string;
+    variant?: IconContainerVariant | undefined;
+    size?: "sm" | "md" | "lg" | undefined;
+    className?: string | undefined;
 }
 
 const SIZE_STYLES = {

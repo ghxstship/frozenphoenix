@@ -21,7 +21,7 @@ export interface PermissionCheckResult {
     role: string | null;
     orgId: string | null;
     isOwner: boolean;
-    error?: string;
+    error?: string | undefined;
 }
 
 /**

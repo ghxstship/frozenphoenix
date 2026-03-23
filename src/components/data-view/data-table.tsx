@@ -34,18 +34,18 @@ const ESTIMATED_ROW_HEIGHT = 44;
 export interface ColumnDef<T> {
     id: string;
     header: string;
-    accessorKey?: keyof T;
-    accessorFn?: (row: T) => unknown;
-    fieldType?: FieldType;
-    fieldConfig?: Partial<FieldConfig>;
-    sortable?: boolean;
-    filterable?: boolean;
-    width?: string | number;
-    minWidth?: number;
-    align?: "left" | "center" | "right";
-    sticky?: boolean;
-    hidden?: boolean;
-    render?: (value: unknown, row: T) => React.ReactNode;
+    accessorKey?: keyof T | undefined;
+    accessorFn?: ((row: T) => unknown) | undefined;
+    fieldType?: FieldType | undefined;
+    fieldConfig?: Partial<FieldConfig> | undefined;
+    sortable?: boolean | undefined;
+    filterable?: boolean | undefined;
+    width?: string | number | undefined;
+    minWidth?: number | undefined;
+    align?: "left" | "center" | "right" | undefined;
+    sticky?: boolean | undefined;
+    hidden?: boolean | undefined;
+    render?: ((value: unknown, row: T) => React.ReactNode) | undefined;
 }
 
 // ─── Sort State ───
@@ -58,7 +58,16 @@ export interface SortState {
 export interface FilterState {
     column: string;
     value: string;
-    operator?: "equals" | "contains" | "startsWith" | "endsWith" | "gt" | "lt" | "gte" | "lte";
+    operator?:
+        | "equals"
+        | "contains"
+        | "startsWith"
+        | "endsWith"
+        | "gt"
+        | "lt"
+        | "gte"
+        | "lte"
+        | undefined;
 }
 
 // ─── Table Props ───
@@ -67,41 +76,41 @@ interface DataTableProps<T> {
     columns: ColumnDef<T>[];
     keyField: keyof T;
     // Sorting
-    sortable?: boolean;
-    defaultSort?: SortState;
-    onSortChange?: (sort: SortState | null) => void;
+    sortable?: boolean | undefined;
+    defaultSort?: SortState | undefined;
+    onSortChange?: ((sort: SortState | null) => void) | undefined;
     // Filtering
-    searchable?: boolean;
-    searchPlaceholder?: string;
-    filters?: FilterState[];
-    onFiltersChange?: (filters: FilterState[]) => void;
+    searchable?: boolean | undefined;
+    searchPlaceholder?: string | undefined;
+    filters?: FilterState[] | undefined;
+    onFiltersChange?: ((filters: FilterState[]) => void) | undefined;
     // Pagination
-    pagination?: boolean;
-    pageSize?: number;
-    pageSizeOptions?: number[];
+    pagination?: boolean | undefined;
+    pageSize?: number | undefined;
+    pageSizeOptions?: number[] | undefined;
     // Selection
-    selectable?: boolean;
-    selectedKeys?: Set<string>;
-    onSelectionChange?: (keys: Set<string>) => void;
+    selectable?: boolean | undefined;
+    selectedKeys?: Set<string> | undefined;
+    onSelectionChange?: ((keys: Set<string>) => void) | undefined;
     // Row actions
-    onRowClick?: (row: T) => void;
-    rowActions?: (row: T) => React.ReactNode;
+    onRowClick?: ((row: T) => void) | undefined;
+    rowActions?: ((row: T) => React.ReactNode) | undefined;
     // Styling
-    striped?: boolean;
-    hoverable?: boolean;
-    compact?: boolean;
-    stickyHeader?: boolean;
-    className?: string;
+    striped?: boolean | undefined;
+    hoverable?: boolean | undefined;
+    compact?: boolean | undefined;
+    stickyHeader?: boolean | undefined;
+    className?: string | undefined;
     // Empty state
-    emptyState?: React.ReactNode;
+    emptyState?: React.ReactNode | undefined;
     // Loading
-    loading?: boolean;
-    loadingRows?: number;
+    loading?: boolean | undefined;
+    loadingRows?: number | undefined;
     // Accessibility
-    caption?: string;
+    caption?: string | undefined;
     // Grouping
-    groupBy?: keyof T;
-    groupLabels?: Record<string, string>;
+    groupBy?: keyof T | undefined;
+    groupLabels?: Record<string, string> | undefined;
 }
 
 // ─── Virtualized / Non-Virtualized Row Renderer ───
@@ -133,8 +142,8 @@ function NonGroupedRows<T extends object>({
     striped: boolean;
     hoverable: boolean;
     compact: boolean;
-    onRowClick?: (row: T) => void;
-    rowActions?: (row: T) => React.ReactNode;
+    onRowClick?: ((row: T) => void) | undefined;
+    rowActions?: ((row: T) => React.ReactNode) | undefined;
 }) {
     const parentRef = React.useRef<HTMLTableSectionElement>(null);
     const shouldVirtualize = data.length > VIRTUALIZE_THRESHOLD;

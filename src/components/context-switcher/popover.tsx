@@ -13,21 +13,21 @@ export interface ContextSwitcherPopoverProps {
     items: SwitcherItem[];
     activeId: string | null;
     onSelect: (id: string) => void;
-    onClear?: () => void;
-    clearLabel?: string;
-    searchPlaceholder?: string;
-    createLabel?: string;
-    createHref?: string;
-    onCreateClick?: () => void;
-    viewAllLabel?: string;
-    viewAllHref?: string;
-    isLoading?: boolean;
-    emptyMessage?: string;
-    canCreate?: boolean;
+    onClear?: (() => void) | undefined;
+    clearLabel?: string | undefined;
+    searchPlaceholder?: string | undefined;
+    createLabel?: string | undefined;
+    createHref?: string | undefined;
+    onCreateClick?: (() => void) | undefined;
+    viewAllLabel?: string | undefined;
+    viewAllHref?: string | undefined;
+    isLoading?: boolean | undefined;
+    emptyMessage?: string | undefined;
+    canCreate?: boolean | undefined;
     trigger: React.ReactNode;
-    align?: "start" | "end";
-    width?: number | string;
-    label?: string;
+    align?: "start" | "end" | undefined;
+    width?: number | string | undefined;
+    label?: string | undefined;
 }
 
 // ─── Component ───────────────────────────────────────────────

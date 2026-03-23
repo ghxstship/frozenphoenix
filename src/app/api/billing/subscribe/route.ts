@@ -59,7 +59,9 @@ export const POST = withApiHandler(
                 },
                 { onConflict: "organization_id" }
             )
-            .select("*")
+            .select(
+                "id, organization_id, pricing_tier, billing_cycle, status, current_period_start, current_period_end, trial_ends_at, created_at"
+            )
             .single();
 
         if (error) {
@@ -93,7 +95,9 @@ export const GET = withApiHandler(
         }
 
         const { data } = await serverFromTable(supabase, "org_subscriptions")
-            .select("*")
+            .select(
+                "id, organization_id, pricing_tier, billing_cycle, status, current_period_start, current_period_end, trial_ends_at, created_at"
+            )
             .eq("organization_id", membership.organization_id)
             .single();
 

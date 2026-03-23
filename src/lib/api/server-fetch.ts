@@ -33,15 +33,11 @@ export async function fetchEntityList(
     entityKey: string,
     options?: {
         /** Override the select clause */
-        select?: string;
-        /** Maximum rows (default: 500) */
-        limit?: number;
-        /** Sort column (default: "created_at") */
-        sortBy?: string;
-        /** Sort direction (default: descending) */
-        ascending?: boolean;
-        /** Additional filters as column→value pairs */
-        filters?: Record<string, string | number | boolean>;
+        select?: string | undefined; /** Maximum rows (default: 500) */
+        limit?: number | undefined; /** Sort column (default: "created_at") */
+        sortBy?: string | undefined; /** Sort direction (default: descending) */
+        ascending?: boolean | undefined; /** Additional filters as column→value pairs */
+        filters?: Record<string, string | number | boolean> | undefined;
     }
 ): Promise<EntityRecord[]> {
     const config = getEntityConfig(entityKey);
@@ -92,7 +88,7 @@ export async function fetchEntityDetail(
     id: string,
     options?: {
         /** Override the select clause */
-        select?: string;
+        select?: string | undefined;
     }
 ): Promise<EntityRecord | null> {
     const config = getEntityConfig(entityKey);

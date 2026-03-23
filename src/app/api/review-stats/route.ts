@@ -10,7 +10,9 @@ export const GET = withApiHandler(
         rbac: { resource: "reviews", action: "read" },
     },
     async (_request, { supabase, log }) => {
-        const { data, error } = await serverFromTable(supabase, "review_stats").select("*");
+        const { data, error } = await serverFromTable(supabase, "review_stats").select(
+            "status, count, entity_type, organization_id"
+        );
 
         if (error) {
             log.error("[GET /api/review-stats] failed", { error: error.message });

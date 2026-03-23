@@ -65,7 +65,7 @@ interface ModelRow {
     supports_streaming: boolean;
     supports_tools: boolean;
     supports_vision: boolean;
-    provider_display_name?: string;
+    provider_display_name?: string | undefined;
 }
 
 interface PromptRow {

@@ -50,7 +50,7 @@ interface SignatureItem {
     email: string;
     role: string;
     status: SignatureStatusType;
-    signedAt?: string;
+    signedAt?: string | undefined;
 }
 interface AmendmentItem {
     id: string;

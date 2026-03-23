@@ -52,8 +52,8 @@ interface Goal {
     progress: number;
     dueDate: string;
     keyResults: KeyResult[];
-    linkedProjectName?: string;
-    parentGoalId?: string;
+    linkedProjectName?: string | undefined;
+    parentGoalId?: string | undefined;
 }
 
 const STATUS_CONFIG: Record<GoalStatus, { label: string; color: string }> = {

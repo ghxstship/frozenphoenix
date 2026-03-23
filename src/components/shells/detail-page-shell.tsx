@@ -41,15 +41,18 @@ interface DetailPageShellProps {
     config: DetailPageConfig;
     id: string;
     /** External record — bypasses internal apiGet fetch when provided */
-    record?: EntityRecord | null;
-    /** External loading state — used with `record` prop */
-    isLoading?: boolean;
-    /** Menu items passed through to DetailLayout (e.g. from useDetailCrud) */
-    menuItems?: DetailLayoutProps["menuItems"];
-    /** Custom action buttons (Approve, Start Work, etc.) */
-    actions?: React.ReactNode;
-    /** Custom avatar element */
-    avatar?: React.ReactNode;
+    record?:
+        | EntityRecord
+        | null
+        | undefined; /** External loading state — used with `record` prop */
+    isLoading?:
+        | boolean
+        | undefined; /** Menu items passed through to DetailLayout (e.g. from useDetailCrud) */
+    menuItems?:
+        | DetailLayoutProps["menuItems"]
+        | undefined; /** Custom action buttons (Approve, Start Work, etc.) */
+    actions?: React.ReactNode | undefined; /** Custom avatar element */
+    avatar?: React.ReactNode | undefined;
 }
 
 export function DetailPageShell({

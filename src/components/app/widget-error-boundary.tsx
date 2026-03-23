@@ -16,7 +16,7 @@ import { ErrorBoundary } from "@/components/app/error-boundary";
 
 interface WidgetErrorBoundaryProps {
     children: React.ReactNode;
-    name?: string;
+    name?: string | undefined;
 }
 
 export function WidgetErrorBoundary({ children, name }: WidgetErrorBoundaryProps) {

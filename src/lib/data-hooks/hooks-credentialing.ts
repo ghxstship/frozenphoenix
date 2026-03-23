@@ -323,11 +323,11 @@ export function useCreateScanEntry() {
             assignment_id: string;
             scan_type: string;
             scan_result: string;
-            zone_id?: string;
-            device_id?: string;
-            latitude?: number;
-            longitude?: number;
-            notes?: string;
+            zone_id?: string | undefined;
+            device_id?: string | undefined;
+            latitude?: number | undefined;
+            longitude?: number | undefined;
+            notes?: string | undefined;
         }) => {
             const { data, error } = await getSupabase()
                 .from("credential_scan_log")
@@ -354,8 +354,8 @@ export interface GateScanResult {
     assignment: Record<string, unknown> | null;
     credential_type: Record<string, unknown> | null;
     message: string;
-    matched_by?: string;
-    scan_method?: string;
+    matched_by?: string | undefined;
+    scan_method?: string | undefined;
     timestamp: string;
 }
 
@@ -363,12 +363,12 @@ export interface GateScanPayload {
     /** Scanned value — barcode, RFID tag, or NFC serial. */
     identifier: string;
     /** How to interpret the identifier. Default "auto". */
-    identifier_type?: "barcode" | "rfid" | "nfc" | "auto";
+    identifier_type?: "barcode" | "rfid" | "nfc" | "auto" | undefined;
     scan_type: string;
-    scan_method?: "keyboard" | "camera" | "rfid" | "nfc" | "file" | "api";
-    zone_id?: string;
-    device_id?: string;
-    notes?: string;
+    scan_method?: "keyboard" | "camera" | "rfid" | "nfc" | "file" | "api" | undefined;
+    zone_id?: string | undefined;
+    device_id?: string | undefined;
+    notes?: string | undefined;
 }
 
 export function useGateScan() {
@@ -463,9 +463,9 @@ export function useCreateBulkImportJob() {
     return useMutation({
         mutationFn: async (payload: {
             entity_type: string;
-            target_pool_id?: string;
+            target_pool_id?: string | undefined;
             file_name: string;
-            file_size_bytes?: number;
+            file_size_bytes?: number | undefined;
         }) => {
             const { data, error } = await getSupabase()
                 .from("bulk_import_jobs")

@@ -9,7 +9,7 @@ import { CopilotToolActivity } from "./copilot-tool-activity";
 
 interface CopilotMessageProps {
     message: CopilotMessageType;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function CopilotMessage({ message, className }: CopilotMessageProps) {

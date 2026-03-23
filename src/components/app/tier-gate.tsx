@@ -18,11 +18,14 @@ interface TierGateProps {
     /** Entitlement path to check, e.g. "modules.liveOps" or "ai.copilot" */
     requires: EntitlementPath;
     /** "soft" shows upsell fallback; "hard" hides completely. Default: "soft" */
-    enforcement?: "soft" | "hard";
-    /** Custom fallback for soft gate. Defaults to <UpsellCard />. */
-    fallback?: React.ReactNode;
-    /** Optional label describing what this feature is (used in default upsell) */
-    featureLabel?: string;
+    enforcement?:
+        | "soft"
+        | "hard"
+        | undefined; /** Custom fallback for soft gate. Defaults to <UpsellCard />. */
+    fallback?:
+        | React.ReactNode
+        | undefined; /** Optional label describing what this feature is (used in default upsell) */
+    featureLabel?: string | undefined;
     children: React.ReactNode;
 }
 

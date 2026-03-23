@@ -22,7 +22,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
 
     // Look up e_signature by access_token
     const { data: esig, error: esigError } = await serverFromTable(supabase, "e_signatures")
-        .select("*")
+        .select(
+            "id, entity_type, entity_id, access_token, status, signer_name, signer_email, signed_at, expires_at, ip_address, user_agent, signature_data, created_at"
+        )
         .eq("access_token", token)
         .single();
 
@@ -104,7 +106,9 @@ export async function POST(
 
     // Validate token
     const { data: esig, error: esigError } = await serverFromTable(supabase, "e_signatures")
-        .select("*")
+        .select(
+            "id, entity_type, entity_id, access_token, status, signer_name, signer_email, signed_at, expires_at, ip_address, user_agent, signature_data, created_at"
+        )
         .eq("access_token", token)
         .single();
 

@@ -25,7 +25,7 @@ interface ConversationMembersPanelProps {
     conversationId: string;
     conversationType: "dm" | "group" | "channel";
     onClose: () => void;
-    className?: string;
+    className?: string | undefined;
 }
 
 export function ConversationMembersPanel({

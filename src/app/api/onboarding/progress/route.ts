@@ -41,13 +41,15 @@ export const GET = withApiHandler(
 
         // Get step definitions relevant to this user's role
         const { data: steps } = await serverFromTable(supabase, "onboarding_step_definitions")
-            .select("*")
+            .select(
+                "id, step_key, title, description, icon, sort_order, role, is_required, action_url"
+            )
             .or(`role.eq.all,role.eq.${userRole}`)
             .order("sort_order", { ascending: true });
 
         // Get user's progress
         const { data: progress } = await serverFromTable(supabase, "user_onboarding_progress")
-            .select("*")
+            .select("id, user_id, step_definition_id, status, completed_at")
             .eq("user_id", user.id);
 
         const progressMap = new Map(
@@ -143,7 +145,7 @@ export const POST = withApiHandler(
                 },
                 { onConflict: "user_id,step_definition_id" }
             )
-            .select("*")
+            .select("id, user_id, step_definition_id, status, completed_at")
             .single();
 
         if (error) {

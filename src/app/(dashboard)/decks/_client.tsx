@@ -42,7 +42,7 @@ interface Deck {
     status: DeckStatus;
     slideCount: number;
     lastUpdated: string;
-    presentedAt?: string;
+    presentedAt?: string | undefined;
 }
 
 const typeConfig: Record<DeckType, { label: string; color: string }> = {

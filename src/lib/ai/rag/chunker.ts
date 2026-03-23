@@ -13,11 +13,11 @@
 
 export interface ChunkOptions {
     /** Target chunk size in characters. Default: 1500 (~375 tokens). */
-    chunkSize?: number;
-    /** Overlap between consecutive chunks in characters. Default: 200. */
-    overlap?: number;
-    /** Chunking strategy. Default: "section_aware". */
-    strategy?: "fixed_size" | "section_aware";
+    chunkSize?:
+        | number
+        | undefined; /** Overlap between consecutive chunks in characters. Default: 200. */
+    overlap?: number | undefined; /** Chunking strategy. Default: "section_aware". */
+    strategy?: "fixed_size" | "section_aware" | undefined;
 }
 
 export interface DocumentChunk {
@@ -25,9 +25,9 @@ export interface DocumentChunk {
     index: number;
     tokenEstimate: number;
     metadata: {
-        page_number?: number;
-        section_header?: string;
-        source_context?: string;
+        page_number?: number | undefined;
+        section_header?: string | undefined;
+        source_context?: string | undefined;
     };
 }
 

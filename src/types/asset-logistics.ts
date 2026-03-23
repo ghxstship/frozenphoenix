@@ -130,8 +130,8 @@ export interface WarehouseZone {
     warehouse_id: string;
     name: string;
     zone_type: WarehouseZoneType;
-    description?: string;
-    square_footage?: number;
+    description?: string | undefined;
+    square_footage?: number | undefined;
     capacity_units: number;
     capacity_used: number;
     climate_controlled: boolean;
@@ -139,8 +139,8 @@ export interface WarehouseZone {
     display_order: number;
     is_active: boolean;
     organization_id: string;
-    created_by?: string;
-    updated_by?: string;
+    created_by?: string | undefined;
+    updated_by?: string | undefined;
     created_at: string;
     updated_at: string;
 }
@@ -149,16 +149,18 @@ export interface WarehouseLocation {
     id: string;
     zone_id: string;
     label: string;
-    aisle?: string;
-    rack?: string;
-    bin?: string;
+    aisle?: string | undefined;
+    rack?: string | undefined;
+    bin?: string | undefined;
     location_type: WarehouseLocationType;
-    max_weight?: number;
+    max_weight?: number | undefined;
     max_weight_unit: string;
-    max_dimensions?: { length?: number; width?: number; height?: number; unit?: string };
+    max_dimensions?:
+        | { length?: number; width?: number; height?: number; unit?: string }
+        | undefined;
     is_occupied: boolean;
     is_active: boolean;
-    barcode?: string;
+    barcode?: string | undefined;
     organization_id: string;
     created_at: string;
     updated_at: string;
@@ -168,17 +170,17 @@ export interface WarehouseLocation {
 
 export interface InventoryReservation {
     id: string;
-    asset_id?: string;
-    consumable_id?: string;
+    asset_id?: string | undefined;
+    consumable_id?: string | undefined;
     quantity: number;
     project_id: string;
-    activation_id?: string;
-    event_id?: string;
+    activation_id?: string | undefined;
+    event_id?: string | undefined;
     reserved_by: string;
     status: ReservationStatus;
     reserved_from: string;
     reserved_until: string;
-    notes?: string;
+    notes?: string | undefined;
     priority: number;
     organization_id: string;
     created_at: string;
@@ -190,20 +192,20 @@ export interface InventoryReservation {
 export interface ShipmentItem {
     id: string;
     shipment_id: string;
-    asset_id?: string;
-    consumable_id?: string;
-    kit_id?: string;
-    description?: string;
+    asset_id?: string | undefined;
+    consumable_id?: string | undefined;
+    kit_id?: string | undefined;
+    description?: string | undefined;
     quantity: number;
-    received_quantity?: number;
-    weight?: number;
+    received_quantity?: number | undefined;
+    weight?: number | undefined;
     weight_unit: string;
-    declared_value?: number;
-    handling_instructions?: string;
-    hs_code?: string;
-    condition_at_ship?: ShipmentItemCondition;
-    condition_at_receive?: ShipmentItemCondition;
-    discrepancy_notes?: string;
+    declared_value?: number | undefined;
+    handling_instructions?: string | undefined;
+    hs_code?: string | undefined;
+    condition_at_ship?: ShipmentItemCondition | undefined;
+    condition_at_receive?: ShipmentItemCondition | undefined;
+    discrepancy_notes?: string | undefined;
     organization_id: string;
     created_at: string;
     updated_at: string;
@@ -214,17 +216,17 @@ export interface ShipmentItem {
 export interface Kit {
     id: string;
     name: string;
-    description?: string;
-    category?: string;
+    description?: string | undefined;
+    category?: string | undefined;
     is_template: boolean;
-    template_id?: string;
+    template_id?: string | undefined;
     status: KitStatus;
-    total_weight?: number;
-    total_value?: number;
-    barcode?: string;
+    total_weight?: number | undefined;
+    total_value?: number | undefined;
+    barcode?: string | undefined;
     organization_id: string;
-    created_by?: string;
-    updated_by?: string;
+    created_by?: string | undefined;
+    updated_by?: string | undefined;
     created_at: string;
     updated_at: string;
 }
@@ -232,11 +234,11 @@ export interface Kit {
 export interface KitItem {
     id: string;
     kit_id: string;
-    asset_id?: string;
-    consumable_id?: string;
+    asset_id?: string | undefined;
+    consumable_id?: string | undefined;
     quantity: number;
     is_required: boolean;
-    substitute_notes?: string;
+    substitute_notes?: string | undefined;
     display_order: number;
     organization_id: string;
     created_at: string;
@@ -246,18 +248,18 @@ export interface KitItem {
 
 export interface ScanEvent {
     id: string;
-    asset_id?: string;
-    consumable_id?: string;
-    kit_id?: string;
-    warehouse_location_id?: string;
+    asset_id?: string | undefined;
+    consumable_id?: string | undefined;
+    kit_id?: string | undefined;
+    warehouse_location_id?: string | undefined;
     scan_type: ScanType;
     scanned_by: string;
     scanned_at: string;
-    location_context?: string;
-    device_id?: string;
-    latitude?: number;
-    longitude?: number;
-    notes?: string;
+    location_context?: string | undefined;
+    device_id?: string | undefined;
+    latitude?: number | undefined;
+    longitude?: number | undefined;
+    notes?: string | undefined;
     organization_id: string;
     created_at: string;
 }
@@ -268,17 +270,17 @@ export interface LoadPlan {
     id: string;
     shipment_id: string;
     vehicle_id: string;
-    planned_by?: string;
+    planned_by?: string | undefined;
     status: LoadPlanStatus;
     total_weight: number;
     weight_capacity: number;
     utilization_percent: number;
-    departure_datetime?: string;
-    load_sequence_notes?: string;
-    special_instructions?: string;
+    departure_datetime?: string | undefined;
+    load_sequence_notes?: string | undefined;
+    special_instructions?: string | undefined;
     organization_id: string;
-    created_by?: string;
-    updated_by?: string;
+    created_by?: string | undefined;
+    updated_by?: string | undefined;
     created_at: string;
     updated_at: string;
 }
@@ -288,7 +290,7 @@ export interface LoadPlanItem {
     load_plan_id: string;
     shipment_item_id: string;
     load_sequence: number;
-    position_notes?: string;
+    position_notes?: string | undefined;
     created_at: string;
 }
 
@@ -299,11 +301,11 @@ export interface LogisticsEvent {
     shipment_id: string;
     event_type: LogisticsEventType;
     occurred_at: string;
-    location_text?: string;
-    latitude?: number;
-    longitude?: number;
-    notes?: string;
-    reported_by?: string;
+    location_text?: string | undefined;
+    latitude?: number | undefined;
+    longitude?: number | undefined;
+    notes?: string | undefined;
+    reported_by?: string | undefined;
     organization_id: string;
     created_at: string;
 }
@@ -313,24 +315,24 @@ export interface LogisticsEvent {
 export interface AssetDamageReport {
     id: string;
     asset_id: string;
-    incident_id?: string;
-    project_id?: string;
-    shipment_id?: string;
+    incident_id?: string | undefined;
+    project_id?: string | undefined;
+    shipment_id?: string | undefined;
     reported_by: string;
     reported_at: string;
     damage_type: AssetDamageType;
     severity: DamageSeverity;
     description: string;
     photo_urls: string[];
-    repair_estimate?: number;
-    actual_repair_cost?: number;
+    repair_estimate?: number | undefined;
+    actual_repair_cost?: number | undefined;
     resolution: DamageResolution;
-    resolved_at?: string;
-    resolution_notes?: string;
-    insurance_claim_id?: string;
+    resolved_at?: string | undefined;
+    resolution_notes?: string | undefined;
+    insurance_claim_id?: string | undefined;
     organization_id: string;
-    created_by?: string;
-    updated_by?: string;
+    created_by?: string | undefined;
+    updated_by?: string | undefined;
     created_at: string;
     updated_at: string;
 }
@@ -340,21 +342,21 @@ export interface AssetDamageReport {
 export interface MaintenanceSchedule {
     id: string;
     name: string;
-    description?: string;
-    asset_id?: string;
-    asset_category?: string;
+    description?: string | undefined;
+    asset_id?: string | undefined;
+    asset_category?: string | undefined;
     frequency_type: MaintenanceFrequencyType;
     frequency_value: number;
     frequency_unit: MaintenanceFrequencyUnit;
-    estimated_duration_hours?: number;
-    estimated_cost?: number;
+    estimated_duration_hours?: number | undefined;
+    estimated_cost?: number | undefined;
     requires_certification: boolean;
-    certification_type?: string;
+    certification_type?: string | undefined;
     checklist_template: unknown[];
     is_active: boolean;
     organization_id: string;
-    created_by?: string;
-    updated_by?: string;
+    created_by?: string | undefined;
+    updated_by?: string | undefined;
     created_at: string;
     updated_at: string;
 }
@@ -371,12 +373,12 @@ export interface DepreciationSchedule {
     cost_basis: number;
     accumulated_depreciation: number;
     current_book_value: number;
-    last_calculated_at?: string;
-    gl_account_id?: string;
-    notes?: string;
+    last_calculated_at?: string | undefined;
+    gl_account_id?: string | undefined;
+    notes?: string | undefined;
     organization_id: string;
-    created_by?: string;
-    updated_by?: string;
+    created_by?: string | undefined;
+    updated_by?: string | undefined;
     created_at: string;
     updated_at: string;
 }
@@ -386,21 +388,21 @@ export interface DepreciationSchedule {
 export interface InventoryAudit {
     id: string;
     warehouse_id: string;
-    zone_id?: string;
+    zone_id?: string | undefined;
     audit_type: InventoryAuditType;
     status: InventoryAuditStatus;
     planned_date: string;
-    started_at?: string;
-    completed_at?: string;
-    conducted_by?: string;
-    approved_by?: string;
+    started_at?: string | undefined;
+    completed_at?: string | undefined;
+    conducted_by?: string | undefined;
+    approved_by?: string | undefined;
     total_items_counted: number;
     discrepancy_count: number;
     discrepancy_value: number;
-    notes?: string;
+    notes?: string | undefined;
     organization_id: string;
-    created_by?: string;
-    updated_by?: string;
+    created_by?: string | undefined;
+    updated_by?: string | undefined;
     created_at: string;
     updated_at: string;
 }
@@ -408,16 +410,16 @@ export interface InventoryAudit {
 export interface AuditCountItem {
     id: string;
     audit_id: string;
-    asset_id?: string;
-    consumable_id?: string;
-    warehouse_location_id?: string;
+    asset_id?: string | undefined;
+    consumable_id?: string | undefined;
+    warehouse_location_id?: string | undefined;
     expected_quantity: number;
     counted_quantity: number;
     discrepancy: number;
-    condition_observed?: string;
-    counted_by?: string;
+    condition_observed?: string | undefined;
+    counted_by?: string | undefined;
     counted_at: string;
-    notes?: string;
+    notes?: string | undefined;
     organization_id: string;
     created_at: string;
 }
@@ -438,15 +440,18 @@ export interface WarehouseWithZones {
 
 export interface KitWithItems extends Kit {
     kit_items: (KitItem & {
-        assets?: { id: string; name: string; barcode: string; condition: string } | null;
-        consumables?: { id: string; name: string; sku: string } | null;
+        assets?:
+            | { id: string; name: string; barcode: string; condition: string }
+            | null
+            | undefined;
+        consumables?: { id: string; name: string; sku: string } | null | undefined;
     })[];
 }
 
 export interface ShipmentItemWithRefs extends ShipmentItem {
-    assets?: { id: string; name: string; barcode: string } | null;
-    consumables?: { id: string; name: string; sku: string } | null;
-    kits?: { id: string; name: string } | null;
+    assets?: { id: string; name: string; barcode: string } | null | undefined;
+    consumables?: { id: string; name: string; sku: string } | null | undefined;
+    kits?: { id: string; name: string } | null | undefined;
 }
 
 export interface LoadPlanWithItems extends LoadPlan {

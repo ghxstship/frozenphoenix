@@ -105,15 +105,15 @@ import {
 interface TopbarIconButtonProps {
     icon: LucideIcon;
     label: string;
-    shortcut?: string;
-    onClick?: () => void;
-    href?: string;
-    badge?: number;
-    active?: boolean;
-    className?: string;
+    shortcut?: string | undefined;
+    onClick?: (() => void) | undefined;
+    href?: string | undefined;
+    badge?: number | undefined;
+    active?: boolean | undefined;
+    className?: string | undefined;
     "aria-expanded"?: boolean;
     "aria-haspopup"?: boolean | "menu" | "dialog";
-    children?: React.ReactNode;
+    children?: React.ReactNode | undefined;
 }
 
 function TopbarIconButton({

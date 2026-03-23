@@ -1,21 +1,12 @@
 "use client";
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { OperationalDashboardShell } from "@/components/shells";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-    useApprovals,
-    useCrewMembers,
-    useDeals,
-    useMyTaskCounts,
-    useMyTasks,
-    useNotifications,
-    useProjects,
-} from "@/lib/supabase";
-import { useDocuments } from "@/lib/supabase";
 import { TaskRow } from "@/components/home/task-row";
 import { DOCUMENT_TYPE_MAP } from "@/config/domain-config";
 import type { DocumentType, TaskPriority, TaskStatus } from "@/types";
@@ -36,15 +27,48 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+/**
+ * Dashboard BFF hook — single request replaces 8 individual queries.
+ * Performance: 1 auth resolution, 1 network round-trip, parallel DB queries server-side.
+ */
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type R = Record<string, any>;
+
+interface DashboardData {
+    projects: R[];
+    deals: R[];
+    notifications: R[];
+    approvals: R[];
+    crew: R[];
+    tasks: R[];
+    taskCounts: { total: number; overdue: number; inProgress: number };
+    documents: R[];
+}
+
+function useDashboardData() {
+    return useQuery<DashboardData>({
+        queryKey: ["dashboard-bff"],
+        queryFn: async () => {
+            const res = await fetch("/api/dashboard");
+            if (!res.ok) throw new Error(`Dashboard BFF failed: ${res.status}`);
+            return res.json();
+        },
+        staleTime: 30_000, // 30s — dashboard data refreshes on revisit
+    });
+}
+
 export function DashboardPageClient() {
-    const { data: sbProjects } = useProjects();
-    const { data: sbDeals } = useDeals();
-    const { data: sbNotifications } = useNotifications();
-    const { data: sbApprovals } = useApprovals();
-    const { data: sbCrew } = useCrewMembers();
-    const { data: myTasks } = useMyTasks();
-    const { data: myTaskCounts } = useMyTaskCounts();
-    const { data: myDocs } = useDocuments();
+    const { data } = useDashboardData();
+
+    const sbProjects = data?.projects ?? [];
+    const sbDeals = data?.deals ?? [];
+    const sbNotifications = data?.notifications ?? [];
+    const sbApprovals = data?.approvals ?? [];
+    const sbCrew = data?.crew ?? [];
+    const myTasks = data?.tasks ?? [];
+    const myTaskCounts = data?.taskCounts;
+    const myDocs = data?.documents ?? [];
 
     // Transform Supabase data or fall back to mock data
     const projects = (sbProjects ?? []).map((p) => ({

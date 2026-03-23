@@ -30,7 +30,7 @@ export interface CsvFieldDef {
     csvHeader: string;
     required: boolean;
     type: CsvFieldType;
-    enumValues?: string[];
+    enumValues?: string[] | undefined;
     importable: boolean;
     exportable: boolean;
     example: string;
@@ -47,9 +47,8 @@ export interface CsvEntityTemplate {
     exportEnabled: boolean;
     fields: CsvFieldDef[];
     /** Optional select string for Supabase (joins) */
-    selectQuery?: string;
-    /** Default sort for export */
-    defaultSort?: { column: string; ascending: boolean };
+    selectQuery?: string | undefined; /** Default sort for export */
+    defaultSort?: { column: string; ascending: boolean } | undefined;
 }
 
 // ═══════════════════════════════════════════════════════════════

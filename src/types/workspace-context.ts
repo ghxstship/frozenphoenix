@@ -37,11 +37,11 @@ export interface TeamMember {
 export interface SwitcherItem {
     id: string;
     name: string;
-    slug?: string;
-    logo_url?: string | null;
-    avatar_url?: string | null;
-    status?: string;
-    is_default?: boolean;
+    slug?: string | undefined;
+    logo_url?: string | null | undefined;
+    avatar_url?: string | null | undefined;
+    status?: string | undefined;
+    is_default?: boolean | undefined;
 }
 
 // ─── Entity Types for breadcrumb context detection ───────────

@@ -165,7 +165,7 @@ function StatCard({
     title: string;
     value: string | number;
     icon: React.ComponentType<{ className?: string }>;
-    className?: string;
+    className?: string | undefined;
 }) {
     return (
         <Card className={className}>

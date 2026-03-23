@@ -184,7 +184,7 @@ export function OnboardingPageClient() {
                                             <div className="space-y-2 ml-7">
                                                 {(
                                                     typedRun as (typeof onboardingRuns)[0]
-                                                ).steps!.map((step) => {
+                                                ).steps?.map((step) => {
                                                     const cfg = STEP_ICONS[step.status];
                                                     const StepIcon = cfg.icon;
                                                     return (

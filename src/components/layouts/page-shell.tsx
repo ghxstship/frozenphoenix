@@ -19,19 +19,19 @@ export type TabConfig = TabBarItem;
 /** @internal Retained for justified-bespoke pages. New pages should not use this type. */
 export interface BreadcrumbItem {
     label: string;
-    href?: string;
+    href?: string | undefined;
 }
 
 /** @internal Retained for justified-bespoke pages. New pages should use a purpose-built shell. */
 export interface PageShellProps {
     title: string;
-    description?: string;
-    actions?: React.ReactNode;
-    tabs?: TabBarItem[];
-    activeTab?: string;
-    onTabChange?: (tabId: string) => void;
-    breadcrumbs?: BreadcrumbItem[];
-    className?: string;
+    description?: string | undefined;
+    actions?: React.ReactNode | undefined;
+    tabs?: TabBarItem[] | undefined;
+    activeTab?: string | undefined;
+    onTabChange?: ((tabId: string) => void) | undefined;
+    breadcrumbs?: BreadcrumbItem[] | undefined;
+    className?: string | undefined;
     children: React.ReactNode;
 }
 

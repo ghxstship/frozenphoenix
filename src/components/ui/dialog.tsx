@@ -30,8 +30,8 @@ DialogOverlay.displayName = "DialogOverlay";
 const DialogContent = React.forwardRef<
     React.ComponentRef<typeof DialogPrimitive.Content>,
     React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
-        showClose?: boolean;
-        size?: "sm" | "md" | "lg" | "xl" | "full";
+        showClose?: boolean | undefined;
+        size?: "sm" | "md" | "lg" | "xl" | "full" | undefined;
     }
 >(({ className, children, showClose = true, size = "md", ...props }, ref) => {
     const sizeClasses = {

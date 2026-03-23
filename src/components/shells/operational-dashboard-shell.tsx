@@ -48,11 +48,11 @@ type DataRow = EntityRecord;
 export interface OperationalDashboardShellProps {
     config: DashboardPageConfig;
     /** External data array */
-    data?: DataRow[] | null;
-    /** External loading state */
-    isLoading?: boolean;
-    /** Children override — when provided, replaces the card list entirely */
-    children?: React.ReactNode;
+    data?: DataRow[] | null | undefined; /** External loading state */
+    isLoading?:
+        | boolean
+        | undefined; /** Children override — when provided, replaces the card list entirely */
+    children?: React.ReactNode | undefined;
 }
 
 // ─── Main Component ─────────────────────────────────────────

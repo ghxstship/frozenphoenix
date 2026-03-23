@@ -369,7 +369,7 @@ export function useEditMessage() {
         }: {
             messageId: string;
             body: string;
-            conversationId?: string;
+            conversationId?: string | undefined;
         }): Promise<Message | null> => {
             const res = await fetch(`/api/messages/${messageId}`, {
                 method: "PATCH",
@@ -398,7 +398,7 @@ export function useDeleteMessage() {
             messageId,
         }: {
             messageId: string;
-            conversationId?: string;
+            conversationId?: string | undefined;
         }): Promise<boolean> => {
             const res = await fetch(`/api/messages/${messageId}`, {
                 method: "DELETE",
@@ -427,8 +427,8 @@ export function useToggleReaction() {
         }: {
             messageId: string;
             emoji: string;
-            remove?: boolean;
-            conversationId?: string;
+            remove?: boolean | undefined;
+            conversationId?: string | undefined;
         }): Promise<boolean> => {
             const res = await fetch(`/api/messages/${messageId}/reactions`, {
                 method: remove ? "DELETE" : "POST",
@@ -457,7 +457,7 @@ export function usePinMessage() {
         }: {
             messageId: string;
             pin: boolean;
-            conversationId?: string;
+            conversationId?: string | undefined;
         }): Promise<boolean> => {
             const res = await fetch(`/api/messages/${messageId}/pin`, {
                 method: pin ? "POST" : "DELETE",

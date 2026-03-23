@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { CreativeAssetDetailClient } from "./_client";
 
 export default async function CreativeAssetDetailPage({
@@ -6,5 +7,6 @@ export default async function CreativeAssetDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <CreativeAssetDetailClient id={id} initialRecord={null} />;
+    const initialRecord = await prefetchDetailRecord("creative-assets", id);
+    return <CreativeAssetDetailClient id={id} initialRecord={initialRecord} />;
 }

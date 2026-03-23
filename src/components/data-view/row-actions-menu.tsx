@@ -32,7 +32,7 @@ export interface RowActionsMenuProps {
     /** Declarative action definitions */
     actions: ListRowActionDef[];
     /** Optional aria-label override */
-    ariaLabel?: string;
+    ariaLabel?: string | undefined;
 }
 
 // ─── Component ───────────────────────────────────────────────

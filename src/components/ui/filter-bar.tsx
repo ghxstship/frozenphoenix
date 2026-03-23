@@ -9,14 +9,14 @@ import { Tooltip } from "@/components/ui/tooltip";
 export interface FilterOption {
     value: string;
     label: string;
-    count?: number;
+    count?: number | undefined;
 }
 
 export interface FilterBarProps {
     search?: {
         value: string;
         onValueChange: (value: string) => void;
-        placeholder?: string;
+        placeholder?: string | undefined;
     };
     filters?: {
         id: string;
@@ -25,10 +25,10 @@ export interface FilterBarProps {
         options: FilterOption[];
         onValueChange: (value: string) => void;
     }[];
-    actions?: React.ReactNode;
-    activeCount?: number;
-    onClearAll?: () => void;
-    className?: string;
+    actions?: React.ReactNode | undefined;
+    activeCount?: number | undefined;
+    onClearAll?: (() => void) | undefined;
+    className?: string | undefined;
 }
 
 export function FilterBar({

@@ -1,3 +1,4 @@
+import { prefetchDetailRecord } from "@/lib/api/prefetch-detail";
 import { CertificationDetailClient } from "./_client";
 
 export default async function CertificationDetailPage({
@@ -6,5 +7,6 @@ export default async function CertificationDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    return <CertificationDetailClient id={id} initialRecord={null} />;
+    const initialRecord = await prefetchDetailRecord("certifications", id);
+    return <CertificationDetailClient id={id} initialRecord={initialRecord} />;
 }

@@ -3,11 +3,11 @@ import Image from "next/image";
 import { cn, getInitials } from "@/lib/utils";
 
 interface AvatarProps {
-    name?: string;
-    src?: string;
-    size?: "sm" | "md" | "lg";
-    className?: string;
-    children?: React.ReactNode;
+    name?: string | undefined;
+    src?: string | undefined;
+    size?: "sm" | "md" | "lg" | undefined;
+    className?: string | undefined;
+    children?: React.ReactNode | undefined;
 }
 
 const sizeClasses = {
@@ -16,7 +16,10 @@ const sizeClasses = {
     lg: "h-12 w-12 text-base",
 };
 
-const AvatarContext = React.createContext<{ imgLoaded: boolean; setImgLoaded: (v: boolean) => void }>({ imgLoaded: false, setImgLoaded: () => {} });
+const AvatarContext = React.createContext<{
+    imgLoaded: boolean;
+    setImgLoaded: (v: boolean) => void;
+}>({ imgLoaded: false, setImgLoaded: () => {} });
 
 export function Avatar({ name, src, size = "md", className, children }: AvatarProps) {
     const [imgError, setImgError] = React.useState(false);
@@ -38,7 +41,13 @@ export function Avatar({ name, src, size = "md", className, children }: AvatarPr
 
     if (src && !imgError) {
         return (
-            <span className={cn("relative inline-block overflow-hidden rounded-full ring-2 ring-background", sizeClasses[size], className)}>
+            <span
+                className={cn(
+                    "relative inline-block overflow-hidden rounded-full ring-2 ring-background",
+                    sizeClasses[size],
+                    className
+                )}
+            >
                 <Image
                     src={src}
                     alt={name ?? ""}
@@ -53,20 +62,33 @@ export function Avatar({ name, src, size = "md", className, children }: AvatarPr
     }
 
     return (
-        <div className={cn(
-            "rounded-full bg-primary/10 text-primary font-semibold flex items-center justify-center ring-2 ring-background",
-            sizeClasses[size],
-            className
-        )}>
+        <div
+            className={cn(
+                "rounded-full bg-primary/10 text-primary font-semibold flex items-center justify-center ring-2 ring-background",
+                sizeClasses[size],
+                className
+            )}
+        >
             {getInitials(name ?? "")}
         </div>
     );
 }
 
-export function AvatarImage({ src, alt, className }: { src?: string; alt?: string; className?: string }) {
+export function AvatarImage({
+    src,
+    alt,
+    className,
+}: {
+    src?: string;
+    alt?: string;
+    className?: string;
+}) {
     const { setImgLoaded } = React.useContext(AvatarContext);
     const [error, setError] = React.useState(false);
-    React.useEffect(() => { if (src && !error) setImgLoaded(true); else setImgLoaded(false); }, [src, error, setImgLoaded]);
+    React.useEffect(() => {
+        if (src && !error) setImgLoaded(true);
+        else setImgLoaded(false);
+    }, [src, error, setImgLoaded]);
     if (!src || error) return null;
     return (
         <Image
@@ -74,18 +96,32 @@ export function AvatarImage({ src, alt, className }: { src?: string; alt?: strin
             alt={alt ?? ""}
             fill
             sizes="48px"
-            onError={() => { setError(true); setImgLoaded(false); }}
+            onError={() => {
+                setError(true);
+                setImgLoaded(false);
+            }}
             className={cn("object-cover", className)}
             unoptimized
         />
     );
 }
 
-export function AvatarFallback({ children, className }: { children: React.ReactNode; className?: string }) {
+export function AvatarFallback({
+    children,
+    className,
+}: {
+    children: React.ReactNode;
+    className?: string;
+}) {
     const { imgLoaded } = React.useContext(AvatarContext);
     if (imgLoaded) return null;
     return (
-        <div className={cn("flex h-full w-full items-center justify-center rounded-full bg-muted text-sm font-medium", className)}>
+        <div
+            className={cn(
+                "flex h-full w-full items-center justify-center rounded-full bg-muted text-sm font-medium",
+                className
+            )}
+        >
             {children}
         </div>
     );

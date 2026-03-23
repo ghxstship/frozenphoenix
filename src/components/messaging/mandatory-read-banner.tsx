@@ -9,8 +9,8 @@ import { useAcknowledgeMandatoryRead } from "@/lib/supabase/hooks-messaging";
 interface MandatoryReadBannerProps {
     messageId: string;
     isAcknowledged: boolean;
-    acknowledgedAt?: string | null;
-    className?: string;
+    acknowledgedAt?: string | null | undefined;
+    className?: string | undefined;
 }
 
 export function MandatoryReadBanner({

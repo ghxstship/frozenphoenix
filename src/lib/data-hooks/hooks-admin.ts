@@ -112,7 +112,7 @@ export function useAddTeamMember() {
         }: {
             teamId: string;
             user_id: string;
-            role?: string;
+            role?: string | undefined;
         }) => {
             const res = await apiFetch<{ data: unknown }>(`/api/teams/${teamId}/members`, {
                 method: "POST",
@@ -337,11 +337,18 @@ export const useCreateVendorCommunication = makeCreateHook<Tables<"vendor_commun
 // ═══════════════════════════════════════════════════════════════
 
 // Performance: 5-min staleTime — brands are config data that rarely change.
-export const useBrands = makeListHook<Tables<"brands">>("brand", "/api/brands", {
-    sort_by: "name",
-    sort_order: "asc",
-}, { staleTime: 5 * 60_000 });
-export const useBrand = makeDetailHook<Tables<"brands">>("brand", "/api/brands", { staleTime: 5 * 60_000 });
+export const useBrands = makeListHook<Tables<"brands">>(
+    "brand",
+    "/api/brands",
+    {
+        sort_by: "name",
+        sort_order: "asc",
+    },
+    { staleTime: 5 * 60_000 }
+);
+export const useBrand = makeDetailHook<Tables<"brands">>("brand", "/api/brands", {
+    staleTime: 5 * 60_000,
+});
 export const useCreateBrand = makeCreateHook<Tables<"brands">>("brand", "/api/brands");
 export const useUpdateBrand = makeUpdateHook<Tables<"brands">>("brand", "/api/brands");
 

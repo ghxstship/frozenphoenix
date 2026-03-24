@@ -60,24 +60,37 @@ export interface CreateEntityConfig {
 }
 
 // ─── Hook: sync ?action=create to dialog open state ───
+// Derived-state pattern: URL provides deep-link support (?action=create),
+// local state provides immediate button response. Composed via logical OR.
+// No router.push on open (avoids Suspense re-render), no setState in effects.
 
 export function useCreateAction(): [boolean, () => void, () => void] {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
-    const isOpen = searchParams.get("action") === "create";
+
+    // Deep-link support: derive from URL (e.g. navigating to /deals?action=create)
+    const urlWantsCreate = searchParams.get("action") === "create";
+
+    // Immediate button response: local override (avoids router.push Suspense re-render)
+    const [localOpen, setLocalOpen] = useState(false);
+
+    // Dialog is open if EITHER the URL dictates it OR the button was clicked
+    const isOpen = urlWantsCreate || localOpen;
 
     const open = useCallback(() => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("action", "create");
-        router.push(`${pathname}?${params.toString()}`, { scroll: false });
-    }, [searchParams, router, pathname]);
+        setLocalOpen(true);
+    }, []);
 
     const close = useCallback(() => {
+        setLocalOpen(false);
+        // Clean up URL param if present (e.g. arrived via deep link)
         const params = new URLSearchParams(searchParams.toString());
-        params.delete("action");
-        const qs = params.toString();
-        router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+        if (params.has("action")) {
+            params.delete("action");
+            const qs = params.toString();
+            router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+        }
     }, [searchParams, router, pathname]);
 
     return [isOpen, open, close];

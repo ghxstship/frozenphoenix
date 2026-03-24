@@ -672,7 +672,10 @@ export function Sidebar() {
                 {/* Footer */}
                 <div className="border-t border-sidebar-border px-3 py-2.5 shrink-0">
                     {collapsed && !isMobile ? (
-                        <Tooltip content={profile?.display_name || "Guest"} side="right">
+                        <Tooltip
+                            content={authLoading ? "Loading..." : profile?.display_name || "Guest"}
+                            side="right"
+                        >
                             <div className="flex justify-center">
                                 <div className="relative h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-bold text-sidebar-foreground/80 overflow-hidden">
                                     {profile?.avatar_url ? (
@@ -686,7 +689,7 @@ export function Sidebar() {
                                         />
                                     ) : profile ? (
                                         getInitials(profile.display_name)
-                                    ) : (
+                                    ) : authLoading ? null : (
                                         "??"
                                     )}
                                 </div>
@@ -706,7 +709,7 @@ export function Sidebar() {
                                     />
                                 ) : profile ? (
                                     getInitials(profile.display_name)
-                                ) : (
+                                ) : authLoading ? null : (
                                     "??"
                                 )}
                             </div>
@@ -719,8 +722,10 @@ export function Sidebar() {
                                           "Guest"}
                                 </p>
                                 <p className="density-caption text-sidebar-foreground/40 truncate capitalize">
-                                    {activeOrg?.role ||
-                                        (user ? "Loading role..." : "Not signed in")}
+                                    {authLoading
+                                        ? "Loading..."
+                                        : activeOrg?.role ||
+                                          (user ? "Loading role..." : "Not signed in")}
                                 </p>
                             </div>
                             {user && (

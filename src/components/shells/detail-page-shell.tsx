@@ -28,7 +28,9 @@ import { PermissionGate } from "@/components/app/permission-guard";
 import { FieldGrid } from "@/components/shells/field-grid";
 import { RelatedEntitiesSection } from "@/components/shells/related-entities";
 import { RecordChatter } from "@/components/activity";
-import { LayoutList } from "lucide-react";
+import { LinkedRecordsPanel } from "@/components/linked-records/linked-records-panel";
+import { CustomFieldsPanel } from "@/components/custom-fields/custom-fields-panel";
+import { LayoutList, Link2, Settings2 } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import type { TabBarItem } from "@/components/ui/tab-bar";
 import { computeStatValue, getNestedValue } from "@/lib/formatters/record-utils";
@@ -156,6 +158,20 @@ export function DetailPageShell({
                 });
             }
         }
+
+        // Auto linked-records tab
+        items.push({
+            id: "linked-records",
+            label: "Linked Records",
+            icon: React.createElement(Link2, { className: "h-4 w-4" }),
+        });
+
+        // Auto custom-fields tab
+        items.push({
+            id: "custom-fields",
+            label: "Custom Fields",
+            icon: React.createElement(Settings2, { className: "h-4 w-4" }),
+        });
 
         // Auto chatter tab
         if (config.chatter !== false) {
@@ -312,6 +328,31 @@ export function DetailPageShell({
         const customTab = config.tabs?.find((t) => t.id === activeTab);
         if (customTab?.content) {
             return customTab.content;
+        }
+
+        // Auto linked-records tab
+        if (activeTab === "linked-records") {
+            return (
+                <LinkedRecordsPanel
+                    entityType={
+                        config.entityKey.replace(
+                            /-/g,
+                            "_"
+                        ) as import("@/types/production").EntityType
+                    }
+                    entityId={String(record.id)}
+                />
+            );
+        }
+
+        // Auto custom-fields tab
+        if (activeTab === "custom-fields") {
+            return (
+                <CustomFieldsPanel
+                    entityType={config.entityKey.replace(/-/g, "_")}
+                    entityId={String(record.id)}
+                />
+            );
         }
 
         return null;

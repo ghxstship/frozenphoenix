@@ -129,7 +129,7 @@ export const SCANNING_STRINGS = {
         batchMode: "Batch Mode",
         batchSubmit: "Submit All ({count})",
         batchClear: "Clear All",
-        batchExport: "Export CSV",
+        batchExport: "Export",
         recentScans: "Recent Scans",
         lastScan: "Last Scan",
         locationPicker: "Transfer Location",

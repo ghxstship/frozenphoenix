@@ -132,6 +132,9 @@ interface ViewContentProps {
     onBoardDragEnd?: ((itemId: string, fromColumn: string, toColumn: string) => void) | undefined;
     emptyState?: React.ReactNode | undefined;
     isLoading?: boolean | undefined;
+    /** Column/field preferences for visibility + order */
+    fieldVisibility: Record<string, boolean>;
+    fieldOrder: string[];
 }
 
 function ViewContent({
@@ -149,6 +152,8 @@ function ViewContent({
     onBoardDragEnd,
     emptyState,
     isLoading,
+    fieldVisibility,
+    fieldOrder,
 }: ViewContentProps) {
     // ─── Table ───
     if (viewMode === "table") {
@@ -209,7 +214,7 @@ function ViewContent({
     // ─── Cards ───
     if (viewMode === "cards" && config.cardConfig) {
         const cc = config.cardConfig;
-        const cardFields = (cc.fields ?? []).map((f) => ({
+        const allCardFields = (cc.fields ?? []).map((f) => ({
             id: f.id,
             label: f.label,
             accessorKey: f.accessorKey as keyof EntityRecord | undefined,
@@ -220,6 +225,18 @@ function ViewContent({
                 | ((value: unknown, row: EntityRecord) => React.ReactNode)
                 | undefined,
         }));
+        // Apply field visibility + order preferences
+        const fieldMap = new Map(allCardFields.map((f) => [f.id, f]));
+        const orderedFields: typeof allCardFields = [];
+        for (const id of fieldOrder) {
+            const f = fieldMap.get(id);
+            if (f && fieldVisibility[id] !== false) orderedFields.push(f);
+        }
+        // Append any fields not in the order
+        for (const f of allCardFields) {
+            if (!fieldOrder.includes(f.id) && fieldVisibility[f.id] !== false)
+                orderedFields.push(f);
+        }
         return (
             <DataCards
                 data={filtered}
@@ -227,7 +244,7 @@ function ViewContent({
                 title={(cc.titleKey ?? "name") as keyof EntityRecord}
                 subtitle={cc.subtitleKey as keyof EntityRecord | undefined}
                 badge={cc.statusKey as keyof EntityRecord | undefined}
-                fields={cardFields}
+                fields={orderedFields}
                 actions={renderRowActions}
                 onCardClick={handleRowClick}
             />
@@ -697,17 +714,45 @@ function ListPageShellInner({
         return cols;
     }, [config.columns, searchKeys, title]);
 
-    // Column visibility + reorder preferences (persisted to localStorage)
+    // ─── Unified field registry (table + card + board fields) ───
+    // Collects all unique field IDs so useColumnPreferences tracks them
+    // regardless of active view mode.
+    const allDefaultFields = useMemo(() => {
+        const seen = new Set<string>();
+        const fields: { id: string; header: string; hidden?: boolean; sticky?: boolean }[] = [];
+
+        // Table columns
+        for (const c of dtColumns) {
+            if (!seen.has(c.id)) {
+                seen.add(c.id);
+                fields.push({ id: c.id, header: c.header, hidden: !!c.hidden, sticky: !!c.sticky });
+            }
+        }
+
+        // Card config fields
+        if (config.cardConfig?.fields) {
+            for (const f of config.cardConfig.fields) {
+                if (!seen.has(f.id)) {
+                    seen.add(f.id);
+                    fields.push({ id: f.id, header: f.label ?? f.id });
+                }
+            }
+        }
+
+        return fields;
+    }, [dtColumns, config.cardConfig]);
+
+    // Column/field visibility + reorder preferences (persisted to localStorage)
     const columnPrefs = useColumnPreferences({
         entityKey: config.entityKey,
-        defaultColumns: dtColumns.map((c) => ({
-            id: c.id,
-            hidden: !!c.hidden,
-            sticky: !!c.sticky,
+        defaultColumns: allDefaultFields.map((f) => ({
+            id: f.id,
+            hidden: !!f.hidden,
+            sticky: !!f.sticky,
         })),
     });
 
-    // Apply visibility + order to columns
+    // Apply visibility + order to table columns
     const orderedVisibleColumns = useMemo((): ColumnDef<EntityRecord>[] => {
         const colMap = new Map(dtColumns.map((c) => [c.id, c]));
         const ordered: ColumnDef<EntityRecord>[] = [];
@@ -726,18 +771,18 @@ function ListPageShellInner({
         return ordered;
     }, [dtColumns, columnPrefs.visibility, columnPrefs.order]);
 
-    // Column visibility popover items
+    // Build popover items from the unified field registry
     const colVisibilityItems = useMemo(
         () =>
             columnPrefs.order
                 .map((id) => {
-                    const col = dtColumns.find((c) => c.id === id);
-                    if (!col) return null;
+                    const field = allDefaultFields.find((f) => f.id === id);
+                    if (!field) return null;
                     return {
-                        id: col.id,
-                        header: col.header,
-                        visible: columnPrefs.visibility[col.id] !== false,
-                        sticky: col.sticky,
+                        id: field.id,
+                        header: field.header,
+                        visible: columnPrefs.visibility[field.id] !== false,
+                        sticky: field.sticky,
                     };
                 })
                 .filter(Boolean) as {
@@ -746,8 +791,11 @@ function ListPageShellInner({
                 visible: boolean;
                 sticky?: boolean | undefined;
             }[],
-        [dtColumns, columnPrefs.order, columnPrefs.visibility]
+        [allDefaultFields, columnPrefs.order, columnPrefs.visibility]
     );
+
+    // Label for the popover button: "Columns" for table, "Fields" for others
+    const fieldPopoverLabel = viewMode === "table" ? "Columns" : "Fields";
 
     // Build FilterBar props
     const filterBarFilters = useMemo(() => {
@@ -1003,13 +1051,15 @@ function ListPageShellInner({
                         onClearAll={() => updateFilterValues(() => ({}))}
                         actions={
                             <>
-                                {viewMode === "table" && colVisibilityItems.length > 1 && (
+                                {colVisibilityItems.length > 1 && (
                                     <ColumnVisibilityPopover
                                         columns={colVisibilityItems}
                                         onToggle={columnPrefs.toggleVisibility}
                                         onReset={columnPrefs.reset}
                                         onShowAll={columnPrefs.showAll}
                                         onHideAll={columnPrefs.hideAll}
+                                        onReorder={columnPrefs.reorder}
+                                        label={fieldPopoverLabel}
                                     />
                                 )}
                                 {hasMultiView && (
@@ -1040,6 +1090,8 @@ function ListPageShellInner({
                         renderRowActionItems={renderRowActionItems}
                         emptyState={tableEmptyText}
                         isLoading={isLoading}
+                        fieldVisibility={columnPrefs.visibility}
+                        fieldOrder={columnPrefs.order}
                         onBoardDragEnd={
                             config.boardConfig
                                 ? async (itemId: string, _from: string, toColumn: string) => {

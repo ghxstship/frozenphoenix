@@ -138,6 +138,8 @@ export * from "./hooks-automation";
 export * from "./hooks-admin";
 export * from "./hooks-live-ops";
 export * from "./hooks-feature-gaps";
+export * from "./hooks-record-links";
+export * from "./hooks-record-link-fields";
 
 // ═══════════════════════════════════════════════════════════════
 // UNCHANGED DOMAIN FILES

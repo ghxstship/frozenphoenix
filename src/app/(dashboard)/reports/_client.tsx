@@ -444,7 +444,7 @@ export function ReportsPageClient() {
                                             onClick={() => handleDownloadReport(selectedReport)}
                                         >
                                             <Download className="h-4 w-4" />
-                                            Export CSV
+                                            Export
                                         </Button>
                                     </div>
                                 </div>
@@ -494,7 +494,7 @@ export function ReportsPageClient() {
                                 </table>
                                 {rows.length > 25 && (
                                     <p className="text-xs text-muted-foreground text-center py-3">
-                                        Showing 25 of {rows.length} rows. Export CSV for full data.
+                                        Showing 25 of {rows.length} rows. Export for full data.
                                     </p>
                                 )}
                             </CardContent>

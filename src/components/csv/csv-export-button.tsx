@@ -26,7 +26,7 @@ export function CsvExportButton({
     limit,
     variant = "outline",
     size = "sm",
-    label = "Export CSV",
+    label = "Export",
     className,
     disabled = false,
 }: CsvExportButtonProps) {
@@ -39,7 +39,7 @@ export function CsvExportButton({
             onClick={() => setExportOpen(true)}
             disabled={disabled}
             className={className}
-            aria-label={`Export ${entity.replace(/_/g, " ")} as CSV`}
+            aria-label={`Export ${entity.replace(/_/g, " ")} data`}
         >
             <Download className="h-4 w-4" />
             {size !== "icon" && label}

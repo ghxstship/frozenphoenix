@@ -22,6 +22,9 @@ export interface LinkedRecord {
     type: EntityType;
     name: string;
     status?: string | undefined;
+    linkId?: string | undefined;
+    linkType?: string | undefined;
+    linkLabel?: string | undefined;
 }
 
 export type EntityType =

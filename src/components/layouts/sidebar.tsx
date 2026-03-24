@@ -277,8 +277,12 @@ export function Sidebar() {
         // signOut() handles navigation via window.location.href
     };
 
+    const prevPathnameRef = useRef(pathname);
     useEffect(() => {
-        if (isMobile && isOpen) closeMobileSidebar();
+        if (prevPathnameRef.current !== pathname) {
+            prevPathnameRef.current = pathname;
+            if (isMobile && isOpen) closeMobileSidebar();
+        }
     }, [pathname, isMobile, isOpen, closeMobileSidebar]);
 
     useEffect(() => {

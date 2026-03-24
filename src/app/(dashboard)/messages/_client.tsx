@@ -353,7 +353,7 @@ export function MessagesPageClient() {
                         {/* Conversation sidebar — always visible on desktop, hidden when in chat on mobile */}
                         <div
                             className={cn(
-                                "w-80 border-r border-border shrink-0",
+                                "w-full lg:w-80 border-r border-border shrink-0",
                                 showChatOrThread ? "hidden lg:block" : "block"
                             )}
                         >
@@ -452,7 +452,7 @@ export function MessagesPageClient() {
                                         onClearTranslation={handleClearTranslation}
                                         className="flex-1"
                                     />
-                                    <div className="w-80 border-l border-border shrink-0">
+                                    <div className="hidden lg:block w-80 border-l border-border shrink-0">
                                         <ThreadPanel
                                             parentMessage={threadParentMessage}
                                             className="h-full"

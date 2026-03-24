@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/form/textarea";
 import { RecordChatter } from "@/components/activity";
+import { LinkedRecordsPanel } from "@/components/linked-records";
 import type { ActivityItem, CommentItem } from "@/components/activity";
 import { formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
@@ -219,7 +220,6 @@ export function KBArticleDetailClient({
     const [editContent, setEditContent] = useState("");
     const [editTags, setEditTags] = useState("");
     const [isEditing, setIsEditing] = useState(false);
-    const [linkSearch, setLinkSearch] = useState("");
 
     const { data: article, isLoading } = useKnowledgeBaseArticle(id);
     const { data: sbActivity } = useRecordActivityLog("kb_article", id);
@@ -437,41 +437,7 @@ export function KBArticleDetailClient({
             {
                 id: "linked",
                 label: "Linked Records",
-                count: 0,
-                content: (
-                    <div className="density-gap-section">
-                        <Card>
-                            <CardHeader>
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="text-base flex items-center gap-2">
-                                        <Link2 className="h-4 w-4 text-primary" />
-                                        Linked Records
-                                    </CardTitle>
-                                    <div className="flex items-center gap-2">
-                                        <Input
-                                            placeholder="Search to link a record..."
-                                            value={linkSearch}
-                                            onChange={(e) => setLinkSearch(e.target.value)}
-                                            className="w-64"
-                                        />
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            disabled={!linkSearch.trim()}
-                                        >
-                                            <Plus className="h-3.5 w-3.5 mr-1" /> Link
-                                        </Button>
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-center py-8 text-sm text-muted-foreground">
-                                    No linked records.
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                ),
+                content: <LinkedRecordsPanel entityType="document" entityId={id} />,
             },
             {
                 id: "related-articles",

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { createAdminClient, serverFromTable } from "@/lib/supabase/server";
 import {
     ArrowLeft,
@@ -107,12 +108,15 @@ export default async function PublicUserProfilePage({
                 <div className="flex flex-col sm:flex-row items-start gap-6 mb-8">
                     {/* Avatar */}
                     {profile.avatar_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={profile.avatar_url}
-                            alt={profile.display_name}
-                            className="h-24 w-24 rounded-2xl object-cover ring-2 ring-border"
-                        />
+                        <div className="relative h-24 w-24 shrink-0">
+                            <Image
+                                src={profile.avatar_url}
+                                alt={profile.display_name}
+                                fill
+                                sizes="96px"
+                                className="rounded-2xl object-cover ring-2 ring-border"
+                            />
+                        </div>
                     ) : (
                         <div className="h-24 w-24 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center ring-2 ring-border">
                             <span className="text-2xl font-bold text-primary-foreground">
@@ -199,12 +203,15 @@ export default async function PublicUserProfilePage({
                                         className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-accent/5 transition-colors"
                                     >
                                         {m.organizations?.logo_url ? (
-                                            // eslint-disable-next-line @next/next/no-img-element
-                                            <img
-                                                src={m.organizations?.logo_url ?? ""}
-                                                alt={m.organizations?.name ?? ""}
-                                                className="h-10 w-10 rounded-lg object-cover"
-                                            />
+                                            <div className="relative h-10 w-10 shrink-0">
+                                                <Image
+                                                    src={m.organizations.logo_url}
+                                                    alt={m.organizations?.name ?? ""}
+                                                    fill
+                                                    sizes="40px"
+                                                    className="rounded-lg object-cover"
+                                                />
+                                            </div>
                                         ) : (
                                             <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center">
                                                 <Building2 className="h-5 w-5 text-muted-foreground" />

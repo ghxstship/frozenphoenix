@@ -3,6 +3,7 @@
 import { logger } from "@/lib/logger";
 import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import React, { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -125,7 +126,7 @@ export default function LandingPage() {
                         </a>
                     </div>
                     <Button size="sm" asChild>
-                        <a href="/dashboard">Client Portal</a>
+                        <Link href="/dashboard">Client Portal</Link>
                     </Button>
                 </div>
             </nav>

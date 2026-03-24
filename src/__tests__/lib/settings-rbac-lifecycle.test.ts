@@ -46,6 +46,12 @@ describe("RBAC Permission Matrix", () => {
         expect(hasPermission("member", "settings", "manage")).toBe(false);
     });
 
+    it("all roles can read settings (personal preferences)", () => {
+        for (const role of ALL_ROLES) {
+            expect(hasPermission(role, "settings", "read")).toBe(true);
+        }
+    });
+
     it("client cannot access crew management", () => {
         expect(hasPermission("client", "crew", "write")).toBe(false);
         expect(hasPermission("client", "crew", "manage")).toBe(false);

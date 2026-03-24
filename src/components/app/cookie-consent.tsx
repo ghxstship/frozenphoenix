@@ -12,6 +12,7 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
+import Link from "next/link";
 import { useEscapeKey, useFocusReturn, useFocusTrap } from "@/hooks/use-accessibility";
 
 export type ConsentCategory = "essential" | "analytics" | "functional";
@@ -92,12 +93,12 @@ export function CookieConsent() {
                 <p className="text-sm text-muted-foreground mb-4">
                     We use essential cookies for authentication and security. Analytics cookies help
                     us improve your experience and are only enabled with your consent.{" "}
-                    <a
+                    <Link
                         href="/legal/privacy"
                         className="underline text-primary hover:text-primary/80"
                     >
                         Privacy Policy
-                    </a>
+                    </Link>
                 </p>
 
                 {showDetails && (

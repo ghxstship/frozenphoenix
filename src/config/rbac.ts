@@ -457,6 +457,8 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "call_sheets", actions: ["read"] },
         { resource: "documents", actions: ["read"] },
         { resource: "client_portal", actions: ["read"] },
+        // Settings (client view — personal preferences)
+        { resource: "settings", actions: ["read"] },
         // CRM & Revenue (client view)
         { resource: "opportunities", actions: ["read"] },
         { resource: "accounts", actions: ["read"] },
@@ -495,6 +497,7 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "credential_assignments", actions: ["read"] },
         { resource: "credential_scans", actions: ["read"] },
         // Messaging (client — DM assigned PM only)
+        { resource: "messaging", actions: ["read"] },
         { resource: "messaging_dm", actions: ["read", "write"] },
         { resource: "messaging_message", actions: ["read", "write"] },
         // Teams (client — read own team only)
@@ -539,6 +542,7 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "org_chart", actions: ["read"] },
         { resource: "sops", actions: ["read"] },
         { resource: "kb", actions: ["read"] },
+        { resource: "settings", actions: ["read"] },
         // Workforce (own profile)
         { resource: "workforce", actions: ["read"] },
         // Digital Assets
@@ -586,6 +590,7 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "credential_scans", actions: ["read", "write"] },
         { resource: "gate_operations", actions: ["read", "write"] },
         // Messaging
+        { resource: "messaging", actions: ["read"] },
         { resource: "messaging_dm", actions: ["read", "write"] },
         { resource: "messaging_group", actions: ["read", "write"] },
         { resource: "messaging_channel", actions: ["read"] },
@@ -599,6 +604,7 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         // Command Center — collaborator is also DEFAULT_LEVEL fallback,
         // so dashboard must be accessible to prevent false Access Denied.
         { resource: "dashboard", actions: ["read"] },
+        { resource: "settings", actions: ["read"] },
         { resource: "tasks", actions: ["read"] },
         { resource: "schedule", actions: ["read"] },
         { resource: "vault", actions: ["read"] },
@@ -638,6 +644,7 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         { resource: "credential_assignments", actions: ["read"] },
         { resource: "credential_scans", actions: ["read"] },
         // Messaging (collaborator — DM assigned PM only)
+        { resource: "messaging", actions: ["read"] },
         { resource: "messaging_dm", actions: ["read", "write"] },
         { resource: "messaging_message", actions: ["read", "write"] },
         // Teams (collaborator — read own team only)
@@ -688,9 +695,10 @@ export function hasPermission(
 
     // Static fallback: check the hardcoded PERMISSION_MATRIX
     const permissions = PERMISSION_MATRIX[level];
-    return permissions.some(
+    const result = permissions.some(
         (p) => (p.resource === "*" || p.resource === resource) && p.actions.includes(action)
     );
+    return result;
 }
 
 // ─── Batch check: resolve all permissions for a role from DB grants ───

@@ -39,6 +39,23 @@ export async function GET(request: NextRequest) {
             return ApiErrors.forbidden(`Role "${role}" cannot read dashboard`);
         }
 
+        // Guard: if user has no org yet (empty orgId), return empty dashboard gracefully
+        if (!orgId) {
+            const response = NextResponse.json({
+                projects: [],
+                deals: [],
+                notifications: [],
+                approvals: [],
+                crew: [],
+                tasks: [],
+                taskCounts: { total: 0, overdue: 0, inProgress: 0 },
+                documents: [],
+            });
+            response.headers.set("X-Request-Id", requestId);
+            response.headers.set("Cache-Control", "private, max-age=0, stale-while-revalidate=30");
+            return response;
+        }
+
         // Execute all 8 queries in parallel with a single auth resolution
         const [
             projectsResult,
@@ -56,17 +73,15 @@ export async function GET(request: NextRequest) {
                     "id, name, status, current_phase, progress, start_date, end_date, budget_planned, budget_actual, client_logo, manager_id, created_at, companies:client_company_id(name), project_members(profile_id)"
                 )
                 .eq("organization_id", orgId)
-                .is("deleted_at", null)
                 .order("created_at", { ascending: false })
                 .limit(20),
 
             // 2. Deals
             serverFromTable(supabase, "deals")
                 .select(
-                    "id, title, company, contact_name, contact_email, value, stage, probability, expected_close_date, assigned_to, notes, created_at, updated_at"
+                    "id, title, company, contact_name, contact_email, value, stage, probability, expected_close_date, assigned_to, created_at, updated_at"
                 )
                 .eq("organization_id", orgId)
-                .is("deleted_at", null)
                 .order("created_at", { ascending: false })
                 .limit(20),
 
@@ -83,7 +98,6 @@ export async function GET(request: NextRequest) {
                     "id, project_id, milestone_id, milestone_name, status, requested_at, deadline, approved_at, deliverable_url, timeline_impact_days, user_profiles:approver_id(display_name)"
                 )
                 .eq("organization_id", orgId)
-                .is("deleted_at", null)
                 .order("deadline", { ascending: true })
                 .limit(20),
 
@@ -96,9 +110,8 @@ export async function GET(request: NextRequest) {
             // 6. My tasks with project name join
             serverFromTable(supabase, "tasks")
                 .select("id, title, status, priority, due_date, projects:project_id(name)")
-                .eq("assigned_to", user.id)
+                .eq("assignee_id", user.id)
                 .eq("organization_id", orgId)
-                .is("deleted_at", null)
                 .order("due_date", { ascending: true })
                 .limit(10),
 
@@ -107,21 +120,18 @@ export async function GET(request: NextRequest) {
                 const [total, overdue, inProgress] = await Promise.all([
                     serverFromTable(supabase, "tasks")
                         .select("id", { count: "exact", head: true })
-                        .eq("assigned_to", user.id)
-                        .eq("organization_id", orgId)
-                        .is("deleted_at", null),
+                        .eq("assignee_id", user.id)
+                        .eq("organization_id", orgId),
                     serverFromTable(supabase, "tasks")
                         .select("id", { count: "exact", head: true })
-                        .eq("assigned_to", user.id)
+                        .eq("assignee_id", user.id)
                         .eq("organization_id", orgId)
-                        .is("deleted_at", null)
                         .lt("due_date", new Date().toISOString())
                         .neq("status", "done"),
                     serverFromTable(supabase, "tasks")
                         .select("id", { count: "exact", head: true })
-                        .eq("assigned_to", user.id)
+                        .eq("assignee_id", user.id)
                         .eq("organization_id", orgId)
-                        .is("deleted_at", null)
                         .eq("status", "in_progress"),
                 ]);
                 return {
@@ -135,7 +145,6 @@ export async function GET(request: NextRequest) {
             serverFromTable(supabase, "documents")
                 .select("id, title, document_type, updated_at")
                 .eq("organization_id", orgId)
-                .is("deleted_at", null)
                 .order("updated_at", { ascending: false })
                 .limit(4),
         ]);

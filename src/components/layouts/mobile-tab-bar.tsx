@@ -22,7 +22,7 @@ interface MobileTab {
 
 const MOBILE_TABS: MobileTab[] = [
     { id: "home", label: "Home", icon: Home, path: "/dashboard" },
-    { id: "tasks", label: "Tasks", icon: CheckSquare, path: "/home/tasks" },
+    { id: "tasks", label: "Tasks", icon: CheckSquare, path: "/tasks" },
     { id: "calendar", label: "Calendar", icon: CalendarDays, path: "/calendar" },
     { id: "messages", label: "Messages", icon: Mail, path: "/messages" },
     { id: "more", label: "More", icon: Menu, path: "#more", openDrawer: true },

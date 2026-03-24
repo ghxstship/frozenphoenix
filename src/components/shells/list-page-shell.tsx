@@ -16,7 +16,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { apiList } from "@/lib/api/client";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { EmptyState } from "@/components/layouts/empty-state";
+
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
@@ -932,8 +932,9 @@ function ListPageShellInner({
         return config.emptyTitle ?? `No ${title.toLowerCase()} yet`;
     }, [search, activeFilterCount, title, config.emptyTitle]);
 
-    // Non-table views still use the hero EmptyState as a wrapper
-    const showNonTableEmpty = !isLoading && filtered.length === 0 && viewMode !== "table";
+    // Non-table views handle their own empty states with contextual messaging
+    // (e.g. "No data to chart", "No items with date ranges to display"),
+    // so we always render ViewContent regardless of data length.
 
     return (
         <PermissionGate resource={resource} action="read">
@@ -1024,60 +1025,38 @@ function ListPageShellInner({
                 )}
 
                 {/* Content */}
-                {config.contentSlot ??
-                    (showNonTableEmpty ? (
-                        <EmptyState
-                            icon={Icon}
-                            title={config.emptyTitle ?? `No ${title.toLowerCase()} found`}
-                            description={
-                                search || activeFilterCount > 0
-                                    ? "Try adjusting your search or filters"
-                                    : (config.emptyDescription ??
-                                      `Create your first ${entityConfig?.displayName?.toLowerCase() ?? "record"}`)
-                            }
-                            action={
-                                !search && activeFilterCount === 0 && hasCreate
-                                    ? {
-                                          label:
-                                              config.createLabel ??
-                                              `New ${entityConfig?.displayName ?? "Record"}`,
-                                          onClick: openCreate,
+                {config.contentSlot ?? (
+                    <ViewContent
+                        viewMode={viewMode}
+                        filtered={filtered}
+                        dtColumns={orderedVisibleColumns}
+                        config={config}
+                        title={title}
+                        hasBulkActions={hasBulkActions}
+                        selectedKeys={selectedKeys}
+                        setSelectedKeys={setSelectedKeys}
+                        handleRowClick={handleRowClick}
+                        renderRowActions={renderRowActions}
+                        renderRowActionItems={renderRowActionItems}
+                        emptyState={tableEmptyText}
+                        isLoading={isLoading}
+                        onBoardDragEnd={
+                            config.boardConfig
+                                ? async (itemId: string, _from: string, toColumn: string) => {
+                                      try {
+                                          await apiUpdate(basePath, itemId, {
+                                              [config.boardConfig?.groupByKey ?? "status"]:
+                                                  toColumn,
+                                          });
+                                          invalidateEntity();
+                                      } catch {
+                                          // API errors surface via toast
                                       }
-                                    : undefined
-                            }
-                        />
-                    ) : (
-                        <ViewContent
-                            viewMode={viewMode}
-                            filtered={filtered}
-                            dtColumns={orderedVisibleColumns}
-                            config={config}
-                            title={title}
-                            hasBulkActions={hasBulkActions}
-                            selectedKeys={selectedKeys}
-                            setSelectedKeys={setSelectedKeys}
-                            handleRowClick={handleRowClick}
-                            renderRowActions={renderRowActions}
-                            renderRowActionItems={renderRowActionItems}
-                            emptyState={tableEmptyText}
-                            isLoading={isLoading}
-                            onBoardDragEnd={
-                                config.boardConfig
-                                    ? async (itemId: string, _from: string, toColumn: string) => {
-                                          try {
-                                              await apiUpdate(basePath, itemId, {
-                                                  [config.boardConfig?.groupByKey ?? "status"]:
-                                                      toColumn,
-                                              });
-                                              invalidateEntity();
-                                          } catch {
-                                              // API errors surface via toast
-                                          }
-                                      }
-                                    : undefined
-                            }
-                        />
-                    ))}
+                                  }
+                                : undefined
+                        }
+                    />
+                )}
 
                 {/* Footer slot */}
                 {config.footerSlot}

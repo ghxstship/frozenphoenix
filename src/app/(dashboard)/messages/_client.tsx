@@ -342,7 +342,7 @@ export function MessagesPageClient() {
 
     const config: DashboardPageConfig = React.useMemo(
         () => ({
-            resource: "messaging",
+            resource: "messaging_dm",
             action: "read",
             title: "Messages",
             description: "Conversations, channels, and direct messages",

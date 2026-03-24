@@ -71,9 +71,8 @@ export interface EntityConfig {
     /** React Query cache key */
     queryKey: string[];
     /** State machine definition (if entity has lifecycle) */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     stateMachine?:
-        | StateMachineDefinition<any>
+        | StateMachineDefinition<string>
         | undefined; /** Column that holds status (default: "status") */
     statusColumn: string;
     /** Zod create schema */
@@ -165,10 +164,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "deals",
         stateMachine: DEAL_MACHINE,
         selectList:
-            "id, title, company_name, contact_name, stage, value, probability, expected_close_date, status, owner_id, created_at",
+            "id, title, company, contact_name, stage, value, probability, expected_close_date, assigned_to, created_at",
         selectDetail:
-            "id, title, company_name, contact_name, contact_email, stage, value, probability, expected_close_date, status, owner_id, source, notes, lost_reason, won_date, created_at, updated_at, organization_id",
-        searchColumns: ["title", "company_name", "contact_name"],
+            "id, title, company, contact_name, contact_email, stage, value, probability, expected_close_date, assigned_to, source, notes, lost_reason, closed_at, created_at, updated_at, organization_id",
+        searchColumns: ["title", "company", "contact_name"],
         icon: "Handshake",
     }),
 

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { createAdminClient, serverFromTable } from "@/lib/supabase/server";
 import { ArrowLeft, Building2, ExternalLink, Globe, Linkedin, MapPin, Users } from "lucide-react";
 import Link from "next/link";
@@ -106,12 +107,16 @@ export default async function PublicOrgProfilePage({
             {/* Cover image */}
             {org.cover_image_url && (
                 <div className="h-48 md:h-64 bg-secondary overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src={org.cover_image_url}
-                        alt={`${org.name} cover`}
-                        className="w-full h-full object-cover"
-                    />
+                    <div className="relative w-full h-full">
+                        <Image
+                            src={org.cover_image_url}
+                            alt={`${org.name} cover`}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 768px"
+                            className="object-cover"
+                            priority
+                        />
+                    </div>
                 </div>
             )}
 
@@ -120,12 +125,15 @@ export default async function PublicOrgProfilePage({
                 {/* Org header */}
                 <div className="flex flex-col sm:flex-row items-start gap-6 mb-8">
                     {org.logo_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={org.logo_url}
-                            alt={org.name}
-                            className="h-20 w-20 rounded-2xl object-cover ring-2 ring-border"
-                        />
+                        <div className="relative h-20 w-20 shrink-0">
+                            <Image
+                                src={org.logo_url}
+                                alt={org.name}
+                                fill
+                                sizes="80px"
+                                className="rounded-2xl object-cover ring-2 ring-border"
+                            />
+                        </div>
                     ) : (
                         <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center ring-2 ring-border">
                             <span className="text-xl font-bold text-primary-foreground">
@@ -222,12 +230,15 @@ export default async function PublicOrgProfilePage({
                                     const memberContent = (
                                         <>
                                             {p.avatar_url ? (
-                                                // eslint-disable-next-line @next/next/no-img-element
-                                                <img
-                                                    src={p.avatar_url}
-                                                    alt={p.display_name}
-                                                    className="h-10 w-10 rounded-full object-cover"
-                                                />
+                                                <div className="relative h-10 w-10 shrink-0">
+                                                    <Image
+                                                        src={p.avatar_url}
+                                                        alt={p.display_name}
+                                                        fill
+                                                        sizes="40px"
+                                                        className="rounded-full object-cover"
+                                                    />
+                                                </div>
                                             ) : (
                                                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                                                     <span className="text-xs font-bold text-primary">

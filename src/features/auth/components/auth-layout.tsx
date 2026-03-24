@@ -4,6 +4,7 @@ import React from "react";
 import { Globe, Lock, Play, Shield } from "lucide-react";
 import { getActiveBrand } from "@/config/brands";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 const brandConfig = getActiveBrand();
 
@@ -104,13 +105,13 @@ export function AuthLayout({ children, title, subtitle, className }: AuthLayoutP
 
                     <p className="text-center text-xs text-muted-foreground">
                         By continuing, you agree to our{" "}
-                        <a href="/legal/terms" className="text-primary hover:underline">
+                        <Link href="/legal/terms" className="text-primary hover:underline">
                             Terms of Service
-                        </a>{" "}
+                        </Link>{" "}
                         and{" "}
-                        <a href="/legal/privacy" className="text-primary hover:underline">
+                        <Link href="/legal/privacy" className="text-primary hover:underline">
                             Privacy Policy
-                        </a>
+                        </Link>
                         .
                     </p>
                 </div>

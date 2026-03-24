@@ -269,7 +269,10 @@ export function InviteTeamPageClient() {
 
                             <div className="space-y-3">
                                 {rows.map((row, idx) => (
-                                    <div key={row.id} className="flex gap-2 items-center">
+                                    <div
+                                        key={row.id}
+                                        className="flex flex-col sm:flex-row gap-2 sm:items-center"
+                                    >
                                         <div className="relative flex-1">
                                             <Mail
                                                 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"

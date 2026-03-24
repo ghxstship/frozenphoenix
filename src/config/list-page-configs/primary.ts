@@ -833,6 +833,11 @@ export const CREATIVE_ASSETS_PAGE: ListPageConfig = {
     ],
     views: ["table", "cards"],
     defaultView: "cards",
+    cardConfig: {
+        titleKey: "name",
+        subtitleKey: "asset_type",
+        statusKey: "status",
+    },
     quickViewConfig: {
         previewFields: [
             { id: "name", label: "Asset", accessorKey: "name" },
@@ -1347,6 +1352,11 @@ export const WAREHOUSES_PAGE: ListPageConfig = {
     ],
     views: ["table", "cards"],
     defaultView: "table",
+    cardConfig: {
+        titleKey: "name",
+        subtitleKey: "location",
+        statusKey: "status",
+    },
     quickViewConfig: {
         previewFields: [
             { id: "name", label: "Warehouse", accessorKey: "name" },
@@ -1414,6 +1424,11 @@ export const LOCATIONS_PAGE: ListPageConfig = {
     ],
     views: ["table", "cards"],
     defaultView: "table",
+    cardConfig: {
+        titleKey: "name",
+        subtitleKey: "location_type",
+        statusKey: "status",
+    },
     quickViewConfig: {
         previewFields: [
             { id: "name", label: "Location", accessorKey: "name" },
@@ -2308,6 +2323,11 @@ export const ACCOUNTS_PAGE: ListPageConfig = {
     ],
     views: ["table", "cards"],
     defaultView: "table",
+    cardConfig: {
+        titleKey: "name",
+        subtitleKey: "company",
+        statusKey: "type",
+    },
     quickViewConfig: {
         previewFields: [
             { id: "name", label: "Name", accessorKey: "name" },

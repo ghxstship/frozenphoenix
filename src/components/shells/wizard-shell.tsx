@@ -202,7 +202,7 @@ export function WizardShell({
     );
 
     const content = (
-        <div className="density-gap-page motion-safe:animate-fade-in">
+        <div className="density-gap-page motion-safe:animate-fade-in pb-24 lg:pb-0">
             <PageHeader title={config.title} description={config.description} />
 
             {/* Step indicator */}

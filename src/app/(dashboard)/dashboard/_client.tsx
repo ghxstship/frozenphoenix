@@ -46,15 +46,47 @@ interface DashboardData {
     documents: R[];
 }
 
+const EMPTY_DASHBOARD: DashboardData = {
+    projects: [],
+    deals: [],
+    notifications: [],
+    approvals: [],
+    crew: [],
+    tasks: [],
+    taskCounts: { total: 0, overdue: 0, inProgress: 0 },
+    documents: [],
+};
+
 function useDashboardData() {
     return useQuery<DashboardData>({
         queryKey: ["dashboard-bff"],
         queryFn: async () => {
-            const res = await fetch("/api/dashboard");
-            if (!res.ok) throw new Error(`Dashboard BFF failed: ${res.status}`);
-            return res.json();
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 15_000);
+            try {
+                const res = await fetch("/api/dashboard", {
+                    signal: controller.signal,
+                });
+                if (!res.ok) {
+                    // Return empty data instead of throwing — prevents infinite retry spinner
+                    // eslint-disable-next-line no-console
+                    console.warn(`Dashboard BFF returned ${res.status}, showing empty state`);
+                    return EMPTY_DASHBOARD;
+                }
+                return res.json();
+            } catch (err) {
+                if (err instanceof DOMException && err.name === "AbortError") {
+                    // eslint-disable-next-line no-console
+                    console.warn("Dashboard BFF timed out after 15s");
+                }
+                return EMPTY_DASHBOARD;
+            } finally {
+                clearTimeout(timeout);
+            }
         },
         staleTime: 30_000, // 30s — dashboard data refreshes on revisit
+        retry: 2,
+        retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
     });
 }
 

@@ -2823,7 +2823,9 @@ export const ROLES_PAGE: ListPageConfig = {
     searchKeys: ["name", "description"],
     columns: [
         { id: "name", header: "Role", accessorKey: "name" },
+        { id: "slug", header: "Slug", accessorKey: "slug" },
         { id: "description", header: "Description", accessorKey: "description" },
+        { id: "is_system", header: "System", accessorKey: "is_system", fieldType: "boolean" },
         { id: "member_count", header: "Members", accessorKey: "member_count" },
         { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
         { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
@@ -2831,7 +2833,14 @@ export const ROLES_PAGE: ListPageConfig = {
     quickViewConfig: {
         previewFields: [
             { id: "name", label: "Role", accessorKey: "name" },
+            { id: "slug", label: "Slug", accessorKey: "slug" },
             { id: "description", label: "Description", accessorKey: "description" },
+            {
+                id: "is_system",
+                label: "System Role",
+                accessorKey: "is_system",
+                fieldType: "boolean",
+            },
             { id: "member_count", label: "Members", accessorKey: "member_count" },
             { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
         ],

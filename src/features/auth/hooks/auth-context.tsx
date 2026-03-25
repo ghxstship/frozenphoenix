@@ -108,23 +108,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const fetchMemberships = useCallback(
         async (userId: string) => {
             if (!supabase) return;
-            const { data, error } = await supabase
-                .from("org_memberships")
-                .select(MEMBERSHIP_SELECT)
-                .eq("user_id", userId)
-                .eq("status", "active");
 
-            if (data && data.length > 0) {
-                setMemberships(data);
-                return;
+            // Retry up to 2 times with 1s delay for transient errors (406, 500)
+            let lastError: { message: string; code: string } | null = null;
+            for (let attempt = 0; attempt < 3; attempt++) {
+                if (attempt > 0) {
+                    await new Promise((r) => setTimeout(r, 1000 * attempt));
+                }
+
+                const { data, error } = await supabase
+                    .from("org_memberships")
+                    .select(MEMBERSHIP_SELECT)
+                    .eq("user_id", userId)
+                    .eq("status", "active");
+
+                if (data && data.length > 0) {
+                    setMemberships(data);
+                    return;
+                }
+
+                if (error) {
+                    lastError = error;
+                    // Retry on transient server errors; bail on auth/RLS errors
+                    const isTransient =
+                        error.code === "PGRST301" || // 406 Not Acceptable
+                        error.code === "500" ||
+                        error.message?.includes("fetch") ||
+                        error.message?.includes("network") ||
+                        error.message?.includes("Failed to fetch");
+                    if (!isTransient) {
+                        // eslint-disable-next-line no-console
+                        console.warn(
+                            "[auth] org_memberships SELECT failed:",
+                            error.message,
+                            error.code
+                        );
+                        return;
+                    }
+                    // eslint-disable-next-line no-console
+                    console.warn(
+                        `[auth] org_memberships attempt ${attempt + 1} failed (transient):`,
+                        error.message
+                    );
+                    continue;
+                }
+
+                // Query succeeded with zero rows — no need to retry
+                break;
             }
 
-            // Only create a default membership when the query succeeded with
-            // zero rows. If the query itself failed (RLS, network), do NOT
-            // fall through — that would spuriously create a duplicate membership.
-            if (error) {
+            if (lastError) {
                 // eslint-disable-next-line no-console
-                console.warn("[auth] org_memberships SELECT failed:", error.message, error.code);
+                console.warn(
+                    "[auth] org_memberships all retries exhausted:",
+                    lastError.message,
+                    lastError.code
+                );
                 return;
             }
 

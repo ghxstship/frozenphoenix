@@ -626,6 +626,10 @@ function ListPageShellInner({
         enabled: externalData === undefined,
         // Performance: Keep previous list visible during navigation/refetch
         placeholderData: keepPreviousData,
+        // Prevent refetch storms on rapid navigation — serve cached data for 30s
+        staleTime: 30_000,
+        // Retry transient Supabase errors (406/500) with default backoff
+        retry: 2,
     });
 
     const isLoading = externalData !== undefined ? (externalLoading ?? false) : apiLoading;

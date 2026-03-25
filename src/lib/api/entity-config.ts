@@ -4911,6 +4911,23 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         icon: "Handshake",
         softDelete: false,
     }),
+
+    role: defineEntity({
+        entityName: "role",
+        displayName: "Role",
+        displayNamePlural: "Roles",
+        table: "roles",
+        resource: "roles",
+        slug: "roles",
+        selectList:
+            "id, name, slug, description, permissions, is_system, member_count, status, created_at, updated_at",
+        selectDetail:
+            "id, name, slug, description, permissions, is_system, member_count, status, organization_id, created_at, updated_at, created_by, updated_by",
+        searchColumns: ["name", "description"],
+        icon: "Shield",
+        softDelete: true,
+        trackAuthor: true,
+    }),
 };
 
 // ─── Lookups ─────────────────────────────────────────────────

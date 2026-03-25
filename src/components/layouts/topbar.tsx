@@ -203,6 +203,7 @@ function ThemeSwitcher() {
 }
 
 // ─── Connection Status Indicator ───
+// Resilient: retries with backoff, debounces state to avoid flash
 
 function ConnectionIndicator() {
     const [status, setStatus] = useState<"connected" | "connecting" | "disconnected">("connecting");
@@ -211,15 +212,66 @@ function ConnectionIndicator() {
         const supabase = createClient();
         if (!supabase) return;
 
-        const channel = supabase.channel("connection-probe");
-        channel.subscribe((s) => {
-            if (s === "SUBSCRIBED") setStatus("connected");
-            else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT") setStatus("disconnected");
-            else setStatus("connecting");
-        });
+        let retryCount = 0;
+        const MAX_RETRIES = 3;
+        const BASE_DELAY = 2000;
+        let retryTimer: ReturnType<typeof setTimeout> | null = null;
+        let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+        let currentChannel: ReturnType<typeof supabase.channel> | null = null;
+        let cancelled = false;
+
+        function subscribe() {
+            if (cancelled) return;
+            currentChannel = supabase!.channel(`connection-probe-${Date.now()}`);
+            currentChannel.subscribe((s) => {
+                if (cancelled) return;
+
+                if (s === "SUBSCRIBED") {
+                    retryCount = 0;
+                    // Clear any pending debounce — connection is healthy
+                    if (debounceTimer) {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = null;
+                    }
+                    setStatus("connected");
+                } else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT") {
+                    // Debounce: wait 2s before showing disconnected to avoid flash
+                    // on transient network hiccups during rapid navigation
+                    if (!debounceTimer) {
+                        debounceTimer = setTimeout(() => {
+                            if (!cancelled) setStatus("disconnected");
+                            debounceTimer = null;
+                        }, BASE_DELAY);
+                    }
+
+                    // Auto-retry with exponential backoff
+                    if (retryCount < MAX_RETRIES && !cancelled) {
+                        retryCount++;
+                        const delay = BASE_DELAY * Math.pow(2, retryCount - 1);
+                        if (currentChannel) {
+                            supabase!.removeChannel(currentChannel);
+                            currentChannel = null;
+                        }
+                        retryTimer = setTimeout(() => {
+                            if (!cancelled) subscribe();
+                        }, delay);
+                    }
+                } else {
+                    // SUBSCRIBING etc — show connecting only if not already connected
+                    setStatus((prev) => (prev === "connected" ? "connected" : "connecting"));
+                }
+            });
+        }
+
+        // Delay initial probe so it doesn't race with auth init
+        const initTimer = setTimeout(subscribe, 1000);
 
         return () => {
-            supabase.removeChannel(channel);
+            cancelled = true;
+            clearTimeout(initTimer);
+            if (retryTimer) clearTimeout(retryTimer);
+            if (debounceTimer) clearTimeout(debounceTimer);
+            if (currentChannel) supabase!.removeChannel(currentChannel);
         };
     }, []);
 

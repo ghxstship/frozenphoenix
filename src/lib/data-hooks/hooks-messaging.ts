@@ -44,62 +44,76 @@ export function useConversations() {
     return useQuery({
         queryKey: messagingKeys.conversations(),
         queryFn: async (): Promise<ConversationListItem[]> => {
-            const supabase = getSupabase();
+            try {
+                const supabase = getSupabase();
 
-            // Get conversations the user is a member of
-            const { data: memberships, error: memErr } = await supabase
-                .from("conversation_members")
-                .select(
-                    "conversation_id, last_read_at, is_muted, is_pinned, notification_preference, role"
-                )
-                .order("joined_at", { ascending: false });
+                // Get conversations the user is a member of
+                const { data: memberships, error: memErr } = await supabase
+                    .from("conversation_members")
+                    .select(
+                        "conversation_id, last_read_at, is_muted, is_pinned, notification_preference, role"
+                    )
+                    .order("joined_at", { ascending: false });
 
-            if (memErr || !memberships) return [];
+                if (memErr || !memberships) {
+                    // eslint-disable-next-line no-console
+                    if (memErr) console.warn("conversation_members query failed:", memErr.message);
+                    return [];
+                }
 
-            const conversationIds = (memberships as Record<string, unknown>[]).map(
-                (m) => m.conversation_id as string
-            );
-            if (conversationIds.length === 0) return [];
-
-            const { data: conversations, error: convErr } = await supabase
-                .from("conversations")
-                .select("*")
-                .in("id", conversationIds)
-                .eq("is_archived", false)
-                .order("last_message_at", { ascending: false, nullsFirst: false });
-
-            if (convErr || !conversations) return [];
-
-            // Build list items with unread counts
-            return (conversations as Record<string, unknown>[]).map((conv) => {
-                const membership = (memberships as Record<string, unknown>[]).find(
-                    (m) => m.conversation_id === conv.id
+                const conversationIds = (memberships as Record<string, unknown>[]).map(
+                    (m) => m.conversation_id as string
                 );
-                const lastReadAt = membership?.last_read_at as string | null;
-                const lastMessageAt = conv.last_message_at as string | null;
-                const unreadCount =
-                    lastReadAt && lastMessageAt && new Date(lastMessageAt) > new Date(lastReadAt)
-                        ? 1 // Simplified — real count computed server-side
-                        : 0;
+                if (conversationIds.length === 0) return [];
 
-                return {
-                    ...(conv as unknown as Conversation),
-                    unread_count: unreadCount,
-                    last_message: null,
-                    members: [],
-                    my_membership: membership
-                        ? {
-                              ...(membership as unknown as ConversationMember),
-                              conversation_id: conv.id as string,
-                              user_id: "",
-                              id: "",
-                              joined_at: "",
-                          }
-                        : null,
-                } as ConversationListItem;
-            });
+                const { data: conversations, error: convErr } = await supabase
+                    .from("conversations")
+                    .select("*")
+                    .in("id", conversationIds)
+                    .eq("is_archived", false)
+                    .order("last_message_at", { ascending: false, nullsFirst: false });
+
+                if (convErr || !conversations) return [];
+
+                // Build list items with unread counts
+                return (conversations as Record<string, unknown>[]).map((conv) => {
+                    const membership = (memberships as Record<string, unknown>[]).find(
+                        (m) => m.conversation_id === conv.id
+                    );
+                    const lastReadAt = membership?.last_read_at as string | null;
+                    const lastMessageAt = conv.last_message_at as string | null;
+                    const unreadCount =
+                        lastReadAt &&
+                        lastMessageAt &&
+                        new Date(lastMessageAt) > new Date(lastReadAt)
+                            ? 1 // Simplified — real count computed server-side
+                            : 0;
+
+                    return {
+                        ...(conv as unknown as Conversation),
+                        unread_count: unreadCount,
+                        last_message: null,
+                        members: [],
+                        my_membership: membership
+                            ? {
+                                  ...(membership as unknown as ConversationMember),
+                                  conversation_id: conv.id as string,
+                                  user_id: "",
+                                  id: "",
+                                  joined_at: "",
+                              }
+                            : null,
+                    } as ConversationListItem;
+                });
+            } catch (err) {
+                // eslint-disable-next-line no-console
+                console.warn("useConversations failed:", err instanceof Error ? err.message : err);
+                return [];
+            }
         },
         staleTime: 30_000,
+        retry: 2,
+        retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
     });
 }
 

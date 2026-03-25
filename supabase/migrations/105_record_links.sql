@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS record_links (
     link_type          TEXT NOT NULL DEFAULT 'related'
                        CHECK (link_type IN ('related', 'parent', 'blocks', 'duplicate', 'references')),
     label              TEXT,
-    created_by         UUID REFERENCES profiles(id),
+    created_by         UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     organization_id    UUID REFERENCES organizations(id) ON DELETE CASCADE,
     created_at         TIMESTAMPTZ DEFAULT NOW(),
     -- Prevent duplicate links in either direction

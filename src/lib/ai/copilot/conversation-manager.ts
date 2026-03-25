@@ -60,7 +60,7 @@ export async function createConversation(
             user_id: params.userId,
             org_id: params.orgId,
             workspace_context: params.workspaceContext ?? "global",
-            model_id: params.modelId,
+            model_id: params.modelId ?? null,
             title: params.title ?? "New Conversation",
         })
         .select()
@@ -167,7 +167,7 @@ export async function appendMessage(params: AppendMessageParams): Promise<AIMess
             content: params.content,
             token_count_input: params.tokenCountInput ?? 0,
             token_count_output: params.tokenCountOutput ?? 0,
-            model_id: params.modelId,
+            model_id: params.modelId ?? null,
             latency_ms: params.latencyMs ?? 0,
             tool_calls: (params.toolCalls ?? []) as unknown as Json,
             attachments: (params.attachments ?? []) as unknown as Json,

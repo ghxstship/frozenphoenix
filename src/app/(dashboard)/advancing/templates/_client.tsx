@@ -6,7 +6,6 @@ import { OperationalDashboardShell } from "@/components/shells";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useAdvanceTemplates } from "@/lib/supabase/hooks-advancing";
 import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
@@ -34,13 +33,6 @@ export function AdvancingTemplatesPageClient() {
 
     const contentSlot = (
         <div className="density-gap-page">
-            <SearchInput
-                value={searchQuery}
-                onValueChange={setSearchQuery}
-                placeholder="Search templates..."
-                className="max-w-sm"
-            />
-
             {isLoading ? (
                 <div className="flex items-center justify-center py-16">
                     <div className="h-6 w-6 motion-safe:animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -118,6 +110,11 @@ export function AdvancingTemplatesPageClient() {
                 <Plus className="h-4 w-4" /> New Template
             </Button>
         ),
+        searchState: {
+            value: searchQuery,
+            onValueChange: setSearchQuery,
+            placeholder: "Search templates...",
+        },
         contentSlot,
     };
 

@@ -166,18 +166,17 @@ export function ColumnVisibilityPopover({
 
     return (
         <Popover>
-            <Tooltip content={`${label} visibility`} side="bottom">
+            <Tooltip content={label} side="bottom">
                 <PopoverTrigger asChild>
                     <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        className="gap-1.5"
+                        className="h-8 w-8 p-0 relative"
                         aria-label={`Toggle ${label.toLowerCase()} visibility`}
                     >
                         <Columns3 className="h-4 w-4" />
-                        <span className="hidden sm:inline">{label}</span>
                         {visibleCount < columns.length && (
-                            <span className="text-xs text-muted-foreground tabular-nums">
+                            <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-muted text-[10px] font-medium text-muted-foreground px-1">
                                 {visibleCount}/{columns.length}
                             </span>
                         )}

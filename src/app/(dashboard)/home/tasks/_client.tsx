@@ -4,7 +4,6 @@ import { TaskRow, TimeHorizonGroup } from "@/components/home";
 import { OperationalDashboardShell } from "@/components/shells";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useMyTaskCounts, useMyTasks } from "@/lib/supabase";
@@ -118,26 +117,7 @@ export function TasksHomePageClient() {
             </div>
 
             {/* Filters */}
-            <div className="flex items-center gap-3 flex-wrap">
-                <SearchInput
-                    value={search}
-                    onValueChange={setSearch}
-                    placeholder="Search tasks..."
-                    className="flex-1 max-w-sm"
-                />
-                <SegmentedControl
-                    ariaLabel="Task status filter"
-                    value={statusFilter}
-                    onValueChange={(v) => setStatusFilter(v as (typeof STATUS_FILTERS)[number])}
-                    size="sm"
-                    options={[
-                        { value: "all", label: "All" },
-                        { value: "active", label: "Active" },
-                        { value: "overdue", label: "Overdue" },
-                        { value: "completed", label: "Completed" },
-                    ]}
-                />
-            </div>
+            <div className="flex items-center gap-3 flex-wrap"></div>
 
             {/* Time Horizon Groups */}
             {statusFilter !== "completed" ? (
@@ -215,6 +195,22 @@ export function TasksHomePageClient() {
                 </Link>
             </>
         ),
+        searchState: { value: search, onValueChange: setSearch, placeholder: "Search tasks..." },
+        toolbarActions: (
+            <SegmentedControl
+                ariaLabel="Task status filter"
+                value={statusFilter}
+                onValueChange={(v) => setStatusFilter(v as (typeof STATUS_FILTERS)[number])}
+                size="sm"
+                options={[
+                    { value: "all", label: "All" },
+                    { value: "active", label: "Active" },
+                    { value: "overdue", label: "Overdue" },
+                    { value: "completed", label: "Completed" },
+                ]}
+            />
+        ),
+
         contentSlot,
     };
 

@@ -6,7 +6,6 @@ import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useProviderConnections } from "@/lib/supabase/hooks-external-sync";
 import { CheckCircle2, ExternalLink, Link2, Plus, Store } from "lucide-react";
@@ -90,12 +89,6 @@ export function MarketplacePageClient() {
     const contentSlot = (
         <div className="density-gap-page">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <SearchInput
-                    value={search}
-                    onValueChange={setSearch}
-                    placeholder="Search integrations..."
-                    className="flex-1 max-w-sm"
-                />
                 <div className="flex gap-2 flex-wrap">
                     <Button
                         variant={categoryFilter === "all" ? "default" : "outline"}
@@ -225,6 +218,11 @@ export function MarketplacePageClient() {
         action: "read",
         title: "Integration Marketplace",
         description: "Browse and connect external services to your workspace",
+        searchState: {
+            value: search,
+            onValueChange: setSearch,
+            placeholder: "Search integrations...",
+        },
         contentSlot,
     };
 

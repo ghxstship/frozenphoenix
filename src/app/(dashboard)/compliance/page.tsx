@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { ComplianceDashboardPageClient } from "./_client";
+import { CatchAllClient } from "@/app/(dashboard)/[...slug]/_client";
 
-export default async function ComplianceDashboardPage() {
+export default async function Page() {
     return (
-        <Suspense fallback={<LoadingState />}>
-            <ComplianceDashboardPageClient />
+        <Suspense fallback={<LoadingState variant="table" rows={8} />}>
+            <CatchAllClient configKey="COMPLIANCE_REQUIREMENTS_PAGE" />
         </Suspense>
     );
 }

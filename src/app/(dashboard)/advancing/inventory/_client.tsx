@@ -5,7 +5,6 @@ import { AlertTriangle, Box, Package } from "lucide-react";
 import { OperationalDashboardShell } from "@/components/shells";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useCatalogItems } from "@/lib/supabase/hooks-advancing";
 import { formatAdvanceCost } from "@/config/advancing-config";
@@ -80,12 +79,6 @@ export function AdvancingInventoryPageClient() {
             </div>
 
             {/* Search */}
-            <SearchInput
-                value={searchQuery}
-                onValueChange={setSearchQuery}
-                placeholder="Search inventory..."
-                className="max-w-sm"
-            />
 
             {/* Items table */}
             {isLoading ? (
@@ -149,6 +142,11 @@ export function AdvancingInventoryPageClient() {
         action: "manage",
         title: "Inventory Dashboard",
         description: "Monitor catalog inventory, availability, and cross-event allocation",
+        searchState: {
+            value: searchQuery,
+            onValueChange: setSearchQuery,
+            placeholder: "Search inventory...",
+        },
         contentSlot,
     };
 

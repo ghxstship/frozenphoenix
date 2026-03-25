@@ -10,7 +10,6 @@ import { CREATE_CATALOG_ITEM_CONFIG } from "@/config/create-entity-configs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { SearchInput } from "@/components/ui/search-input";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { CategoryTypeBadge } from "@/components/advancing/advance-status-badge";
@@ -198,17 +197,6 @@ export function CatalogPageClient() {
 
                 {/* Search + view toggle + stats */}
                 <div className="flex items-center gap-3 flex-wrap">
-                    <SearchInput
-                        value={searchQuery}
-                        onValueChange={setSearchQuery}
-                        placeholder="Search items by name or SKU..."
-                        className="max-w-sm flex-1"
-                    />
-                    <SegmentedControl
-                        value={view}
-                        onValueChange={setView}
-                        options={[...VIEW_OPTIONS]}
-                    />
                     <span className="ml-auto text-sm text-muted-foreground tabular-nums">
                         {filtered.length} {filtered.length === 1 ? "item" : "items"}
                     </span>
@@ -329,6 +317,15 @@ export function CatalogPageClient() {
                 <Plus className="h-4 w-4" /> Add Item
             </Button>
         ),
+        searchState: {
+            value: searchQuery,
+            onValueChange: setSearchQuery,
+            placeholder: "Search items by name or SKU...",
+        },
+        toolbarActions: (
+            <SegmentedControl value={view} onValueChange={setView} options={[...VIEW_OPTIONS]} />
+        ),
+
         contentSlot,
     };
 

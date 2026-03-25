@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { AutomationsPageClient } from "./_client";
+import { CatchAllClient } from "@/app/(dashboard)/[...slug]/_client";
 
-export default async function AutomationsPage() {
+export default async function Page() {
     return (
-        <Suspense fallback={<LoadingState />}>
-            <AutomationsPageClient />
+        <Suspense fallback={<LoadingState variant="table" rows={8} />}>
+            <CatchAllClient configKey="AUTOMATION_RULES_PAGE" />
         </Suspense>
     );
 }

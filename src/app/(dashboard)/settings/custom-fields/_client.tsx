@@ -15,7 +15,6 @@ import { CREATE_CUSTOM_FIELD_CONFIG } from "@/config/create-entity-configs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { SearchInput } from "@/components/ui/search-input";
 import {
     Calendar,
     CheckSquare,
@@ -169,12 +168,6 @@ export function CustomFieldsPageClient() {
     const contentSlot = (
         <>
             <div className="flex items-center gap-3">
-                <SearchInput
-                    value={search}
-                    onValueChange={setSearch}
-                    placeholder="Search fields..."
-                    className="max-w-sm"
-                />
                 <div className="flex gap-1">
                     {entityTypes.map((entity) => (
                         <Button
@@ -316,6 +309,7 @@ export function CustomFieldsPageClient() {
                 value: fields.filter((f) => f.isRequired).length,
             },
         ],
+        searchState: { value: search, onValueChange: setSearch, placeholder: "Search fields..." },
         contentSlot,
     };
 

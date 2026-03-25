@@ -11,7 +11,6 @@ import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SearchInput } from "@/components/ui/search-input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
 import type { AccessReviewEntry, TemporaryAccessGrant } from "@/types/user-lifecycle";
@@ -155,12 +154,6 @@ export function AccessReviewsPageClient() {
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                        <SearchInput
-                            value={search}
-                            onValueChange={setSearch}
-                            placeholder="Search users..."
-                            className="flex-1"
-                        />
                         <div className="flex gap-2">
                             {(["all", "high", "medium", "low"] as const).map((level) => (
                                 <Button
@@ -303,6 +296,7 @@ export function AccessReviewsPageClient() {
             { label: "Active Temp Grants", icon: Clock, compute: () => activeGrants },
             { label: "Stale Access (30d+)", icon: Users, compute: () => staleAccess },
         ],
+        searchState: { value: search, onValueChange: setSearch, placeholder: "Search users..." },
         contentSlot,
     };
 

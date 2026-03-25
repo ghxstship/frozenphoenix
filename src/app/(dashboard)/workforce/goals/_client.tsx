@@ -9,7 +9,6 @@ import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SearchInput } from "@/components/ui/search-input";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -150,30 +149,24 @@ export function GoalsPageClient() {
     const avgProgress =
         goals.length > 0 ? Math.round(goals.reduce((s, g) => s + g.progress, 0) / goals.length) : 0;
 
+    const toolbarActions = (
+        <SegmentedControl
+            ariaLabel="Goal status filter"
+            value={statusFilter}
+            onValueChange={(v) => setStatusFilter(v as (typeof TAB_VALUES)[number])}
+            size="sm"
+            options={[
+                { value: "all", label: "All" },
+                { value: "on_track", label: "On Track" },
+                { value: "at_risk", label: "At Risk" },
+                { value: "behind", label: "Behind" },
+                { value: "completed", label: "Done" },
+            ]}
+        />
+    );
+
     const contentSlot = (
         <div className="density-gap-page">
-            <div className="flex items-center gap-4 flex-wrap">
-                <SearchInput
-                    value={search}
-                    onValueChange={setSearch}
-                    placeholder="Search goals..."
-                    className="flex-1 max-w-sm"
-                />
-                <SegmentedControl
-                    ariaLabel="Goal status filter"
-                    value={statusFilter}
-                    onValueChange={(v) => setStatusFilter(v as (typeof TAB_VALUES)[number])}
-                    size="sm"
-                    options={[
-                        { value: "all", label: "All" },
-                        { value: "on_track", label: "On Track" },
-                        { value: "at_risk", label: "At Risk" },
-                        { value: "behind", label: "Behind" },
-                        { value: "completed", label: "Done" },
-                    ]}
-                />
-            </div>
-
             <div className="space-y-3">
                 {filtered.map((goal, i) => {
                     const isExpanded = expandedId === goal.id;
@@ -371,6 +364,8 @@ export function GoalsPageClient() {
             { label: "Completed", icon: CheckCircle2, compute: () => completed },
             { label: "Avg Progress", icon: Target, compute: () => `${avgProgress}%` },
         ],
+        searchState: { value: search, onValueChange: setSearch, placeholder: "Search goals..." },
+        toolbarActions,
         contentSlot,
     };
 

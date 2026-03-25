@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { VendorsPageClient } from "./_client";
+import { CatchAllClient } from "@/app/(dashboard)/[...slug]/_client";
 
-export default async function VendorsPage() {
+export default async function Page() {
     return (
-        <Suspense fallback={<LoadingState />}>
-            <VendorsPageClient />
+        <Suspense fallback={<LoadingState variant="table" rows={8} />}>
+            <CatchAllClient configKey="VENDORS_PAGE" />
         </Suspense>
     );
 }

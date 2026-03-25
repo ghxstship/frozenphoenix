@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { SearchInput } from "@/components/ui/search-input";
 import { formatDate } from "@/lib/utils";
 import {
     ArrowRight,
@@ -107,14 +106,7 @@ export function ProjectTemplatesPageClient() {
                 />
             </div>
 
-            <div className="flex items-center gap-3">
-                <SearchInput
-                    value={search}
-                    onValueChange={setSearch}
-                    placeholder="Search templates..."
-                    className="max-w-sm"
-                />
-            </div>
+            <div className="flex items-center gap-3"></div>
 
             {filtered.length === 0 ? (
                 <EmptyState
@@ -257,6 +249,11 @@ export function ProjectTemplatesPageClient() {
                 <Plus className="h-4 w-4" /> New Template
             </Button>
         ),
+        searchState: {
+            value: search,
+            onValueChange: setSearch,
+            placeholder: "Search templates...",
+        },
         contentSlot,
     };
 

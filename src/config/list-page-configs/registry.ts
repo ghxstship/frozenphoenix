@@ -196,6 +196,8 @@ const CONFIG_KEY_MODULE: Record<string, ModuleLoader> = {
     SURVEYS_PAGE: loadPrimary,
     TASKS_PAGE: loadPrimary,
     VENDORS_PAGE: loadPrimary,
+    ROLES_PAGE: loadPrimary,
+    APPROVALS_PAGE: loadPrimary,
 
     // production
     ADVANCE_TEMPLATES_PAGE: loadProduction,

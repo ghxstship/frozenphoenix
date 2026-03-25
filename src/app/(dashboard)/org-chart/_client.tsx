@@ -275,7 +275,7 @@ export function OrgChartPageClient() {
             title: "Org Chart",
             description: "Drag crew members to reorganize the reporting hierarchy",
             searchable: false,
-            headerActions: (
+            toolbarActions: (
                 <select className="h-8 rounded-lg border border-input bg-background px-2 text-xs">
                     {projects.map((p) => (
                         <option key={String(p.id)} value={String(p.id)}>

@@ -2813,3 +2813,69 @@ export const VENDORS_PAGE: ListPageConfig = {
     },
     exportable: true,
 };
+
+// ─── role ───
+
+export const ROLES_PAGE: ListPageConfig = {
+    entityKey: "role",
+    description: "Organizational roles and access levels",
+    icon: Users,
+    searchKeys: ["name", "description"],
+    columns: [
+        { id: "name", header: "Role", accessorKey: "name" },
+        { id: "description", header: "Description", accessorKey: "description" },
+        { id: "member_count", header: "Members", accessorKey: "member_count" },
+        { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "updated_at", header: "Updated", accessorKey: "updated_at", fieldType: "date" },
+    ],
+    quickViewConfig: {
+        previewFields: [
+            { id: "name", label: "Role", accessorKey: "name" },
+            { id: "description", label: "Description", accessorKey: "description" },
+            { id: "member_count", label: "Members", accessorKey: "member_count" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
+    exportable: true,
+};
+
+// ─── approval ───
+
+export const APPROVALS_PAGE: ListPageConfig = {
+    entityKey: "approval",
+    description: "Pending approvals, budget requests, and authorization workflows",
+    icon: CheckCircle2,
+    searchKeys: ["title", "requester_name"],
+    columns: [
+        { id: "title", header: "Request", accessorKey: "title" },
+        { id: "approval_type", header: "Type", accessorKey: "approval_type", fieldType: "status" },
+        { id: "requester_name", header: "Requester", accessorKey: "requester_name" },
+        { id: "amount", header: "Amount", accessorKey: "amount", fieldType: "currency" },
+        { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+        { id: "created_at", header: "Created", accessorKey: "created_at", fieldType: "date" },
+    ],
+    views: ["table", "board"],
+    defaultView: "table",
+    boardConfig: {
+        groupByKey: "status",
+        cardTitleKey: "title",
+        cardSubtitleKey: "requester_name",
+    },
+    quickViewConfig: {
+        previewFields: [
+            { id: "title", label: "Request", accessorKey: "title" },
+            {
+                id: "approval_type",
+                label: "Type",
+                accessorKey: "approval_type",
+                fieldType: "status",
+            },
+            { id: "requester_name", label: "Requester", accessorKey: "requester_name" },
+            { id: "amount", label: "Amount", accessorKey: "amount", fieldType: "currency" },
+            { id: "status", label: "Status", accessorKey: "status", fieldType: "status" },
+        ],
+        navigable: true,
+    },
+    exportable: true,
+};

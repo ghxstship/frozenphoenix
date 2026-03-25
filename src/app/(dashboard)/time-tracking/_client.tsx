@@ -7,7 +7,6 @@ import { OperationalDashboardShell } from "@/components/shells";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { StatCard } from "@/components/ui/stat-card";
@@ -525,12 +524,6 @@ export function TimeTrackingPageClient() {
                     ariaLabel="Time tracking mode"
                 />
                 <div className="flex-1" />
-                <SearchInput
-                    value={search}
-                    onValueChange={setSearch}
-                    placeholder="Search entries..."
-                    className="w-64"
-                />
             </div>
 
             {/* Daily View */}
@@ -910,6 +903,7 @@ export function TimeTrackingPageClient() {
                 </Button>
             </div>
         ),
+        searchState: { value: search, onValueChange: setSearch, placeholder: "Search entries..." },
         contentSlot,
     };
 

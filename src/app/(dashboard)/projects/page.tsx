@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import { LoadingState } from "@/components/layouts/loading-state";
-import { ProjectsPageClient } from "./_client";
+import { CatchAllClient } from "@/app/(dashboard)/[...slug]/_client";
 
-export default async function ProjectsPage() {
+export default async function Page() {
     return (
-        <Suspense fallback={<LoadingState />}>
-            <ProjectsPageClient />
+        <Suspense fallback={<LoadingState variant="table" rows={8} />}>
+            <CatchAllClient configKey="PROJECTS_PAGE" />
         </Suspense>
     );
 }

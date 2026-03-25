@@ -8,7 +8,6 @@ import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { SearchInput } from "@/components/ui/search-input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
 import type { Invitation } from "@/types/user-lifecycle";
@@ -61,12 +60,6 @@ export function InvitationsPageClient() {
             <Card>
                 <CardContent className="pt-6">
                     <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                        <SearchInput
-                            value={search}
-                            onValueChange={setSearch}
-                            placeholder="Search by email or inviter..."
-                            className="flex-1"
-                        />
                         <div className="flex gap-2 flex-wrap">
                             {STATUS_FILTERS.map((f) => (
                                 <Button
@@ -211,6 +204,11 @@ export function InvitationsPageClient() {
             { label: "Expired", icon: XCircle, compute: () => expiredCount },
             { label: "Revoked", icon: XCircle, compute: () => revokedCount },
         ],
+        searchState: {
+            value: search,
+            onValueChange: setSearch,
+            placeholder: "Search by email or inviter...",
+        },
         contentSlot,
     };
 

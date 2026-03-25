@@ -125,4 +125,16 @@ export interface DashboardPageConfig {
         | undefined; /** Additional content between stats and filters/cards */
     afterStatsSlot?: React.ReactNode | undefined; /** Additional content after the card list */
     afterCardsSlot?: React.ReactNode | undefined;
+    // ─── Toolbar ───
+    /** Action buttons for the canonical toolbar (right side) — icons, view switcher, etc. */
+    toolbarActions?: React.ReactNode | undefined;
+    /** External search state override — when provided, the shell uses this instead of its own internal search state.
+     *  Use this for contentSlot pages that manage their own search filtering. */
+    searchState?:
+        | {
+              value: string;
+              onValueChange: (value: string) => void;
+              placeholder?: string | undefined;
+          }
+        | undefined;
 }

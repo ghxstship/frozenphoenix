@@ -8,7 +8,6 @@ import { OperationalDashboardShell } from "@/components/shells";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SearchInput } from "@/components/ui/search-input";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import {
@@ -82,12 +81,6 @@ export function OnboardingPageClient() {
                         </Button>
                     ))}
                 </div>
-                <SearchInput
-                    value={search}
-                    onValueChange={setSearch}
-                    placeholder="Search by name..."
-                    className="flex-1 max-w-sm"
-                />
             </div>
 
             <div className="density-gap-section">
@@ -309,6 +302,7 @@ export function OnboardingPageClient() {
             },
             { label: "Active Offboarding", icon: AlertTriangle, compute: () => activeOffboarding },
         ],
+        searchState: { value: search, onValueChange: setSearch, placeholder: "Search by name..." },
         contentSlot,
     };
 

@@ -4,7 +4,6 @@ import { DocCard } from "@/components/home";
 import { OperationalDashboardShell } from "@/components/shells";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { SearchInput } from "@/components/ui/search-input";
 import { OverlineText } from "@/components/ui/overline-text";
 import { Button } from "@/components/ui/button";
 import { DOCUMENT_TYPE_MAP } from "@/config/domain-config";
@@ -84,34 +83,6 @@ export function DocumentsPageClient() {
         <div className="density-gap-page">
             {/* Filters */}
             <div className="flex items-center gap-4 flex-wrap">
-                <SearchInput
-                    value={search}
-                    onValueChange={setSearch}
-                    placeholder="Search documents..."
-                    className="flex-1 max-w-sm"
-                />
-                <SegmentedControl
-                    ariaLabel="Document type filter"
-                    value={typeFilter}
-                    onValueChange={(v) => setTypeFilter(v as (typeof TYPE_FILTERS)[number])}
-                    size="sm"
-                    options={[
-                        { value: "all", label: "All Types" },
-                        ...(
-                            [
-                                "doc",
-                                "wiki",
-                                "meeting_notes",
-                                "specification",
-                                "sow",
-                                "template",
-                            ] as const
-                        ).map((t) => ({
-                            value: t,
-                            label: DOCUMENT_TYPE_MAP[t].label,
-                        })),
-                    ]}
-                />
                 <SegmentedControl
                     ariaLabel="Document status filter"
                     value={statusFilter}
@@ -187,6 +158,36 @@ export function DocumentsPageClient() {
                 </Link>
             </>
         ),
+        searchState: {
+            value: search,
+            onValueChange: setSearch,
+            placeholder: "Search documents...",
+        },
+        toolbarActions: (
+            <SegmentedControl
+                ariaLabel="Document type filter"
+                value={typeFilter}
+                onValueChange={(v) => setTypeFilter(v as (typeof TYPE_FILTERS)[number])}
+                size="sm"
+                options={[
+                    { value: "all", label: "All Types" },
+                    ...(
+                        [
+                            "doc",
+                            "wiki",
+                            "meeting_notes",
+                            "specification",
+                            "sow",
+                            "template",
+                        ] as const
+                    ).map((t) => ({
+                        value: t,
+                        label: DOCUMENT_TYPE_MAP[t].label,
+                    })),
+                ]}
+            />
+        ),
+
         contentSlot,
     };
 

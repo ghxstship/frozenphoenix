@@ -8,7 +8,6 @@ import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { AdvanceStatusBadge } from "@/components/advancing";
 import {
@@ -181,12 +180,6 @@ export function FulfillmentPageClient() {
             </div>
 
             {/* Search */}
-            <SearchInput
-                value={searchQuery}
-                onValueChange={setSearchQuery}
-                placeholder="Search active advances..."
-                className="max-w-sm"
-            />
 
             {/* List */}
             {isLoading ? (
@@ -261,6 +254,11 @@ export function FulfillmentPageClient() {
         action: "manage",
         title: "Fulfillment Tracking",
         description: "Track approved advances through sourcing, ordering, and delivery",
+        searchState: {
+            value: searchQuery,
+            onValueChange: setSearchQuery,
+            placeholder: "Search active advances...",
+        },
         contentSlot,
     };
 

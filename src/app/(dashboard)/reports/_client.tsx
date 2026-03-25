@@ -339,19 +339,6 @@ export function ReportsPageClient() {
             </div>
 
             {/* Category Filter */}
-            <SegmentedControl
-                ariaLabel="Report category filter"
-                value={selectedCategory}
-                onValueChange={(v) => setSelectedCategory(v as (typeof CATEGORY_FILTERS)[number])}
-                size="sm"
-                options={[
-                    { value: "all", label: "All Reports" },
-                    { value: "financial", label: "Financial" },
-                    { value: "production", label: "Production" },
-                    { value: "resources", label: "Resources" },
-                    { value: "sales", label: "Sales" },
-                ]}
-            />
 
             {/* Report Cards */}
             {filteredReports.length === 0 ? (
@@ -614,6 +601,22 @@ export function ReportsPageClient() {
                 Export All
             </Button>
         ),
+        toolbarActions: (
+            <SegmentedControl
+                ariaLabel="Report category filter"
+                value={selectedCategory}
+                onValueChange={(v) => setSelectedCategory(v as (typeof CATEGORY_FILTERS)[number])}
+                size="sm"
+                options={[
+                    { value: "all", label: "All Reports" },
+                    { value: "financial", label: "Financial" },
+                    { value: "production", label: "Production" },
+                    { value: "resources", label: "Resources" },
+                    { value: "sales", label: "Sales" },
+                ]}
+            />
+        ),
+
         contentSlot,
     };
 

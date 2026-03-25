@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
-import { SearchInput } from "@/components/ui/search-input";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
@@ -144,14 +143,7 @@ export function SlaPageClient() {
                 <StatCard title="Within SLA" value={withinSla} icon={CheckCircle2} />
             </div>
 
-            <div className="flex items-center gap-3">
-                <SearchInput
-                    value={search}
-                    onValueChange={setSearch}
-                    placeholder="Search tickets..."
-                    className="max-w-sm"
-                />
-            </div>
+            <div className="flex items-center gap-3"></div>
 
             <TabBar
                 items={tabs}
@@ -451,6 +443,7 @@ export function SlaPageClient() {
                 </Button>
             </div>
         ),
+        searchState: { value: search, onValueChange: setSearch, placeholder: "Search tickets..." },
         contentSlot,
     };
 

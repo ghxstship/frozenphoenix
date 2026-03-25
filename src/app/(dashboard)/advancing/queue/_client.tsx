@@ -7,7 +7,6 @@ import { OperationalDashboardShell } from "@/components/shells";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { SearchInput } from "@/components/ui/search-input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { AdvancePriorityBadge, AdvanceStatusBadge } from "@/components/advancing";
 import { useAdvances } from "@/lib/supabase/hooks-advancing";
@@ -70,12 +69,6 @@ export function QueuePageClient() {
             </div>
 
             {/* Search */}
-            <SearchInput
-                value={searchQuery}
-                onValueChange={setSearchQuery}
-                placeholder="Search pending advances..."
-                className="max-w-sm"
-            />
 
             {/* Queue list */}
             {isLoading ? (
@@ -150,6 +143,11 @@ export function QueuePageClient() {
         action: "manage",
         title: "Advance Queue",
         description: "Review and approve pending production advances",
+        searchState: {
+            value: searchQuery,
+            onValueChange: setSearchQuery,
+            placeholder: "Search pending advances...",
+        },
         contentSlot,
     };
 

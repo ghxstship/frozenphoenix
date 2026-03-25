@@ -349,15 +349,6 @@ export function CalendarPageClient() {
             searchable: false,
             headerActions: (
                 <div className="flex items-center gap-2">
-                    <SegmentedControl
-                        value={view}
-                        onValueChange={(v) => setView(v as "month" | "week")}
-                        options={[
-                            { value: "month", label: "Month" },
-                            { value: "week", label: "Week" },
-                        ]}
-                        ariaLabel="Calendar view"
-                    />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="sm">
@@ -388,6 +379,17 @@ export function CalendarPageClient() {
                         Add Event
                     </Button>
                 </div>
+            ),
+            toolbarActions: (
+                <SegmentedControl
+                    value={view}
+                    onValueChange={(v) => setView(v as "month" | "week")}
+                    options={[
+                        { value: "month", label: "Month" },
+                        { value: "week", label: "Week" },
+                    ]}
+                    ariaLabel="Calendar view"
+                />
             ),
             contentSlot: (
                 <>

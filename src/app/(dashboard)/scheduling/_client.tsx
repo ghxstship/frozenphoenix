@@ -232,24 +232,10 @@ export function SchedulingPageClient() {
             description: "Shift management and labor allocation across productions",
             searchable: false,
             headerActions: (
-                <div className="flex items-center gap-2">
-                    <select
-                        value={selectedProject}
-                        onChange={(e) => setSelectedProject(e.target.value)}
-                        className="h-8 rounded-lg border border-input bg-background px-2 text-xs"
-                    >
-                        <option value="all">All Projects</option>
-                        {projects.map((p) => (
-                            <option key={p.id} value={p.id}>
-                                {p.name}
-                            </option>
-                        ))}
-                    </select>
-                    <Button size="sm" onClick={openCreate}>
-                        <Plus className="h-4 w-4" />
-                        Add Shift
-                    </Button>
-                </div>
+                <Button size="sm" onClick={openCreate}>
+                    <Plus className="h-4 w-4" />
+                    Add Shift
+                </Button>
             ),
             stats: [
                 { label: "Crew Scheduled", icon: Users, value: filteredCrew.length },
@@ -275,16 +261,31 @@ export function SchedulingPageClient() {
                     },
                 },
             ],
+            toolbarActions: (
+                <>
+                    <select
+                        value={selectedProject}
+                        onChange={(e) => setSelectedProject(e.target.value)}
+                        className="h-8 rounded-lg border border-input bg-background px-2 text-xs"
+                    >
+                        <option value="all">All Projects</option>
+                        {projects.map((p) => (
+                            <option key={p.id} value={p.id}>
+                                {p.name}
+                            </option>
+                        ))}
+                    </select>
+                    <SegmentedControl
+                        value={activeView}
+                        onValueChange={setActiveView}
+                        options={VIEW_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+                    />
+                </>
+            ),
+
             contentSlot: (
                 <>
                     {/* View Toggle */}
-                    <div className="flex items-center justify-between">
-                        <SegmentedControl
-                            value={activeView}
-                            onValueChange={setActiveView}
-                            options={VIEW_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
-                        />
-                    </div>
 
                     {/* Utilization Heatmap View */}
                     {activeView === "utilization" && (

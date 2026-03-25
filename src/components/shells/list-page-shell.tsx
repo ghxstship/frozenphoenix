@@ -87,6 +87,12 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ColumnVisibilityPopover } from "@/components/ui/column-visibility-popover";
+import {
+    AdvancedFilterPopover,
+    type FilterConjunction,
+    type FilterFieldDef,
+    type FilterGroup,
+} from "@/components/ui/advanced-filter-popover";
 import { useColumnPreferences } from "@/hooks/use-column-preferences";
 import {
     CheckCircle2,
@@ -822,18 +828,39 @@ function ListPageShellInner({
     // Label for the popover button: "Columns" for table, "Fields" for others
     const fieldPopoverLabel = viewMode === "table" ? "Columns" : "Fields";
 
-    // Build FilterBar props
-    const filterBarFilters = useMemo(() => {
-        if (!resolvedFilters) return undefined;
+    // Build Advanced Filter fields from resolvedFilters
+    const advancedFilterFields = useMemo<FilterFieldDef[]>(() => {
+        if (!resolvedFilters) return [];
         return resolvedFilters.map((f) => ({
             id: f.id,
             label: f.label,
-            value: filterValues[f.id] ?? "all",
             options: f.options.map((o) => ({ value: o.value, label: o.label })),
-            onValueChange: (val: string) =>
-                updateFilterValues((prev) => ({ ...prev, [f.id]: val })),
         }));
-    }, [resolvedFilters, filterValues, updateFilterValues]);
+    }, [resolvedFilters]);
+
+    // Advanced filter groups state
+    const [advancedFilterGroups, setAdvancedFilterGroups] = useState<FilterGroup[]>([
+        { conjunction: "and" as FilterConjunction, conditions: [] },
+    ]);
+
+    // Bridge: sync advanced filter conditions → existing filterValues state
+    const handleFilterGroupsChange = useCallback(
+        (groups: FilterGroup[]) => {
+            setAdvancedFilterGroups(groups);
+            // Convert conditions to the simple filterValues map
+            // (first condition per field wins — "is" operator maps to equality)
+            const next: Record<string, string> = {};
+            for (const group of groups) {
+                for (const cond of group.conditions) {
+                    if (cond.value && cond.operator === "is") {
+                        next[cond.fieldId] = cond.value;
+                    }
+                }
+            }
+            updateFilterValues(() => next);
+        },
+        [updateFilterValues]
+    );
 
     const activeFilterCount = useMemo(() => {
         return Object.values(filterValues).filter((v) => v !== "all").length;
@@ -1050,11 +1077,16 @@ function ListPageShellInner({
                             onValueChange: setSearch,
                             placeholder: `Search ${title.toLowerCase()}...`,
                         }}
-                        {...(filterBarFilters ? { filters: filterBarFilters } : {})}
-                        activeCount={activeFilterCount}
-                        onClearAll={() => updateFilterValues(() => ({}))}
                         actions={
                             <>
+                                {advancedFilterFields.length > 0 && (
+                                    <AdvancedFilterPopover
+                                        fields={advancedFilterFields}
+                                        filterGroups={advancedFilterGroups}
+                                        onFilterGroupsChange={handleFilterGroupsChange}
+                                        activeCount={activeFilterCount}
+                                    />
+                                )}
                                 {colVisibilityItems.length > 1 && (
                                     <ColumnVisibilityPopover
                                         columns={colVisibilityItems}

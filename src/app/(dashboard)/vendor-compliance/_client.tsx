@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getStatusLabel } from "@/config/ui-variants";
-import { SearchInput } from "@/components/ui/search-input";
 import {
     AlertTriangle,
     CheckCircle2,
@@ -134,27 +133,6 @@ export function VendorCompliancePageClient() {
                     </CardContent>
                 </Card>
             )}
-
-            <div className="flex items-center gap-3">
-                <SearchInput
-                    value={search}
-                    onValueChange={setSearch}
-                    placeholder="Search vendors or documents..."
-                    className="flex-1 max-w-sm"
-                />
-                <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-                >
-                    <option value="all">All Statuses</option>
-                    {COMPLIANCE_STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                            {getStatusLabel(s)}
-                        </option>
-                    ))}
-                </select>
-            </div>
 
             <Card>
                 <CardHeader>
@@ -343,6 +321,25 @@ export function VendorCompliancePageClient() {
             { label: "Expiring Soon", icon: AlertTriangle, compute: () => expiringSoon },
             { label: "Expired", icon: XCircle, compute: () => expired },
         ],
+        searchState: {
+            value: search,
+            onValueChange: setSearch,
+            placeholder: "Search vendors or documents...",
+        },
+        toolbarActions: (
+            <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            >
+                <option value="all">All Statuses</option>
+                {COMPLIANCE_STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                        {getStatusLabel(s)}
+                    </option>
+                ))}
+            </select>
+        ),
         contentSlot,
     };
 

@@ -21,23 +21,15 @@ import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatsGrid } from "@/components/ui/stats-grid";
 import { AlertBanner } from "@/components/ui/alert-banner";
-import { SearchInput } from "@/components/ui/search-input";
 import { LoadingState } from "@/components/layouts/loading-state";
+import { ListToolbar } from "@/components/ui/filter-bar";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-    Select as DSSelect,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { TabBar, TabPanel } from "@/components/ui/tab-bar";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { Inbox } from "lucide-react";
 import { SHELLS_STRINGS } from "@/lib/i18n/shells-strings";
-import type { DashboardFilterDef, DashboardPageConfig } from "@/types/dashboard-page-config";
+import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { computeStatValue, matchesSearch } from "@/lib/formatters/record-utils";
 import type { EntityRecord } from "@/types/entity";
 
@@ -64,13 +56,6 @@ export function OperationalDashboardShell({
     children,
 }: OperationalDashboardShellProps) {
     const [search, setSearch] = useState("");
-    const [filterValues, setFilterValues] = useState<Record<string, string>>(() => {
-        const initial: Record<string, string> = {};
-        for (const f of config.filters ?? []) {
-            initial[f.id] = f.defaultValue ?? f.options[0]?.value ?? "all";
-        }
-        return initial;
-    });
 
     // Tab state (URL-synced)
     const hasTabs = Boolean(config.tabs && config.tabs.length > 0);
@@ -96,16 +81,8 @@ export function OperationalDashboardShell({
             );
         }
 
-        // Apply filters
-        for (const filterDef of config.filters ?? []) {
-            const val = filterValues[filterDef.id];
-            if (val && val !== "all") {
-                result = result.filter((item) => filterDef.predicate(item, val));
-            }
-        }
-
         return result;
-    }, [data, search, searchKeys, config.filters, filterValues]);
+    }, [data, search, searchKeys]);
 
     // Stat values
     const statValues = useMemo(() => {
@@ -189,6 +166,27 @@ export function OperationalDashboardShell({
                 {/* After-stats slot */}
                 {config.afterStatsSlot}
 
+                {/* Canonical toolbar — always rendered */}
+                {(searchable || config.searchState || config.toolbarActions) &&
+                    (() => {
+                        const toolbarProps: React.ComponentProps<typeof ListToolbar> = {};
+                        if (config.searchState) {
+                            toolbarProps.search = config.searchState;
+                        } else if (searchable) {
+                            toolbarProps.search = {
+                                value: search,
+                                onValueChange: setSearch,
+                                placeholder:
+                                    config.searchPlaceholder ??
+                                    SHELLS_STRINGS.dashboard_search_placeholder,
+                            };
+                        }
+                        if (config.toolbarActions) {
+                            toolbarProps.actions = config.toolbarActions;
+                        }
+                        return <ListToolbar {...toolbarProps} />;
+                    })()}
+
                 {/* Content: show loading skeleton when data is still fetching */}
                 {isLoading ? (
                     <LoadingState variant="table" rows={6} />
@@ -196,36 +194,6 @@ export function OperationalDashboardShell({
                     config.contentSlot
                 ) : (
                     <>
-                        {/* Search + Filters */}
-                        {(searchable || (config.filters && config.filters.length > 0)) && (
-                            <div className="flex flex-col sm:flex-row gap-3">
-                                {searchable && (
-                                    <SearchInput
-                                        value={search}
-                                        onValueChange={setSearch}
-                                        placeholder={
-                                            config.searchPlaceholder ??
-                                            SHELLS_STRINGS.dashboard_search_placeholder
-                                        }
-                                        className="max-w-sm"
-                                    />
-                                )}
-                                {config.filters?.map((filterDef) => (
-                                    <FilterControl
-                                        key={filterDef.id}
-                                        filter={filterDef}
-                                        value={filterValues[filterDef.id] ?? "all"}
-                                        onChange={(val) =>
-                                            setFilterValues((prev) => ({
-                                                ...prev,
-                                                [filterDef.id]: val,
-                                            }))
-                                        }
-                                    />
-                                ))}
-                            </div>
-                        )}
-
                         {/* Tabs */}
                         {hasTabs && config.tabs ? (
                             <>
@@ -293,48 +261,3 @@ export function OperationalDashboardShell({
 }
 
 OperationalDashboardShell.displayName = "OperationalDashboardShell";
-
-// ─── Filter Control ─────────────────────────────────────────
-
-function FilterControl({
-    filter,
-    value,
-    onChange,
-}: {
-    filter: DashboardFilterDef;
-    value: string;
-    onChange: (value: string) => void;
-}) {
-    if (filter.type === "button-group") {
-        return (
-            <div className="flex gap-1.5" role="group" aria-label={filter.label}>
-                {filter.options.map((opt) => (
-                    <Button
-                        key={opt.value}
-                        variant={value === opt.value ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => onChange(opt.value)}
-                    >
-                        {opt.label}
-                    </Button>
-                ))}
-            </div>
-        );
-    }
-
-    // select
-    return (
-        <DSSelect value={value} onValueChange={onChange}>
-            <SelectTrigger className="h-9 min-w-[140px]" aria-label={filter.label}>
-                <SelectValue placeholder={filter.label} />
-            </SelectTrigger>
-            <SelectContent>
-                {filter.options.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </DSSelect>
-    );
-}

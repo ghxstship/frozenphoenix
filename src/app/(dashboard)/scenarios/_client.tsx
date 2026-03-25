@@ -7,7 +7,6 @@ import { OperationalDashboardShell } from "@/components/shells";
 import type { DashboardPageConfig } from "@/types/dashboard-page-config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SearchInput } from "@/components/ui/search-input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -326,33 +325,7 @@ export function ScenariosPageClient() {
                 />
             </div>
 
-            <div className="flex items-center gap-4 flex-wrap">
-                <SearchInput
-                    value={search}
-                    onValueChange={setSearch}
-                    placeholder="Search scenarios..."
-                    className="flex-1 max-w-sm"
-                />
-                <SegmentedControl
-                    ariaLabel="Scenario type filter"
-                    value={typeFilter}
-                    onValueChange={(v) => setTypeFilter(v as (typeof TYPE_FILTERS)[number])}
-                    size="sm"
-                    options={[
-                        { value: "all", label: "All" },
-                        ...(
-                            [
-                                "combined",
-                                "budget",
-                                "revenue",
-                                "pricing",
-                                "hiring",
-                                "resource",
-                            ] as const
-                        ).map((t) => ({ value: t, label: TYPE_LABELS[t] })),
-                    ]}
-                />
-            </div>
+            <div className="flex items-center gap-4 flex-wrap"></div>
 
             {/* Compare Banner */}
             {activeScenarios.length >= 2 && !compareMode && (
@@ -827,6 +800,26 @@ export function ScenariosPageClient() {
                 <Plus className="mr-2 h-4 w-4" /> New Scenario
             </Button>
         ),
+        searchState: {
+            value: search,
+            onValueChange: setSearch,
+            placeholder: "Search scenarios...",
+        },
+        toolbarActions: (
+            <SegmentedControl
+                ariaLabel="Scenario type filter"
+                value={typeFilter}
+                onValueChange={(v) => setTypeFilter(v as (typeof TYPE_FILTERS)[number])}
+                size="sm"
+                options={[
+                    { value: "all", label: "All" },
+                    ...(
+                        ["combined", "budget", "revenue", "pricing", "hiring", "resource"] as const
+                    ).map((t) => ({ value: t, label: TYPE_LABELS[t] })),
+                ]}
+            />
+        ),
+
         contentSlot,
     };
 

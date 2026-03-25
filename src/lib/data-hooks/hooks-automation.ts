@@ -23,22 +23,22 @@ import type { CustomFieldDefinitionRow } from "./hook-types";
 
 export const useAutomations = makeListHook<Tables<"automations">>(
     "automation",
-    "/api/automations",
+    "/api/entities/automations",
     { sort_by: "name", sort_order: "asc" }
 );
 export const useAutomation = makeDetailHook<Tables<"automations">>(
     "automation",
-    "/api/automations"
+    "/api/entities/automations"
 );
 export const useCreateAutomation = makeCreateHook<Tables<"automations">>(
     "automation",
-    "/api/automations"
+    "/api/entities/automations"
 );
 export const useUpdateAutomation = makeUpdateHook<Tables<"automations">>(
     "automation",
-    "/api/automations"
+    "/api/entities/automations"
 );
-export const useDeleteAutomation = makeDeleteHook("automation", "/api/automations");
+export const useDeleteAutomation = makeDeleteHook("automation", "/api/entities/automations");
 
 const AUTO_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -46,14 +46,14 @@ export function useAutomationWithRules(id?: string) {
     const isValid = !!id && AUTO_UUID_RE.test(id);
     return useQuery({
         queryKey: ["automation", "detail", id, "rules"],
-        queryFn: () => apiGet<Tables<"automations">>("/api/automations", id!),
+        queryFn: () => apiGet<Tables<"automations">>("/api/entities/automations", id!),
         enabled: isValid,
     });
 }
 
 export const useCreateAutomationRule = makeCreateHook<Tables<"automation_rules">>(
     "automation_rule",
-    "/api/automation-rules",
+    "/api/entities/automation-rules",
     ["automation"]
 );
 
@@ -63,16 +63,16 @@ export const useCreateAutomationRule = makeCreateHook<Tables<"automation_rules">
 
 export const useAutomationExecutions = makeListHook<Tables<"automation_executions">>(
     "automation_execution",
-    "/api/automation-executions",
+    "/api/entities/automation-executions",
     { sort_by: "started_at", sort_order: "desc" }
 );
 export const useCreateAutomationExecution = makeCreateHook<Tables<"automation_executions">>(
     "automation_execution",
-    "/api/automation-executions"
+    "/api/entities/automation-executions"
 );
 export const useUpdateAutomationExecution = makeUpdateHook<Tables<"automation_executions">>(
     "automation_execution",
-    "/api/automation-executions"
+    "/api/entities/automation-executions"
 );
 
 // ─── Automation Logs alias ───
@@ -81,7 +81,7 @@ export function useAutomationLogs(automationId?: string) {
     return useQuery({
         queryKey: ["automation_log", { automation_id: automationId }],
         queryFn: () =>
-            apiList<Tables<"automation_executions">>("/api/automation-logs", {
+            apiList<Tables<"automation_executions">>("/api/entities/automation-logs", {
                 automation_id: automationId,
                 sort_by: "executed_at",
                 sort_order: "desc",
@@ -96,22 +96,22 @@ export function useAutomationLogs(automationId?: string) {
 
 export const useWorkflows = makeListHook<Tables<"workflow_instances">>(
     "workflow",
-    "/api/workflows",
+    "/api/entities/workflows",
     { sort_by: "name", sort_order: "asc" }
 );
 export const useWorkflow = makeDetailHook<Tables<"workflow_instances">>(
     "workflow",
-    "/api/workflows"
+    "/api/entities/workflows"
 );
 export const useCreateWorkflow = makeCreateHook<Tables<"workflow_instances">>(
     "workflow",
-    "/api/workflows"
+    "/api/entities/workflows"
 );
 export const useUpdateWorkflow = makeUpdateHook<Tables<"workflow_instances">>(
     "workflow",
-    "/api/workflows"
+    "/api/entities/workflows"
 );
-export const useDeleteWorkflow = makeDeleteHook("workflow", "/api/workflows");
+export const useDeleteWorkflow = makeDeleteHook("workflow", "/api/entities/workflows");
 
 // ═══════════════════════════════════════════════════════════════
 // NOTIFICATIONS
@@ -121,7 +121,7 @@ export function useNotifications(unreadOnly?: boolean) {
     return useQuery({
         queryKey: ["notification", { unreadOnly }],
         queryFn: async () => {
-            const res = await apiList<Tables<"notifications">>("/api/notifications", {
+            const res = await apiList<Tables<"notifications">>("/api/entities/notifications", {
                 ...(unreadOnly ? { read: false } : {}),
                 sort_by: "created_at",
                 sort_order: "desc",
@@ -136,7 +136,9 @@ export function useUnreadNotificationCount() {
     return useQuery({
         queryKey: ["notification", "unread_count"],
         queryFn: async () => {
-            const res = await apiFetch<{ count: number }>("/api/notifications/unread-count");
+            const res = await apiFetch<{ count: number }>(
+                "/api/entities/notifications/unread-count"
+            );
             return res.count ?? 0;
         },
     });
@@ -144,14 +146,14 @@ export function useUnreadNotificationCount() {
 
 export const useCreateNotification = makeCreateHook<Tables<"notifications">>(
     "notification",
-    "/api/notifications"
+    "/api/entities/notifications"
 );
 
 export function useMarkNotificationRead() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (id: string) =>
-            apiUpdate<Tables<"notifications">>("/api/notifications", id, {
+            apiUpdate<Tables<"notifications">>("/api/entities/notifications", id, {
                 read: true,
                 read_at: new Date().toISOString(),
             }),
@@ -163,7 +165,7 @@ export function useMarkAllNotificationsRead() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async () => {
-            await apiFetch<void>("/api/notifications/mark-all-read", { method: "POST" });
+            await apiFetch<void>("/api/entities/notifications/mark-all-read", { method: "POST" });
         },
         onSuccess: () => qc.invalidateQueries({ queryKey: ["notification"] }),
     });
@@ -175,7 +177,10 @@ export function useUpsertNotificationPreference() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (pref: Record<string, unknown>) =>
-            apiCreate<Tables<"notification_preferences">>("/api/notification-preferences", pref),
+            apiCreate<Tables<"notification_preferences">>(
+                "/api/entities/notification-preferences",
+                pref
+            ),
         onSuccess: () => qc.invalidateQueries({ queryKey: ["notification_preference"] }),
     });
 }
@@ -186,32 +191,39 @@ export function useUpsertNotificationPreference() {
 
 export const useEmailMessages = makeListHook<Tables<"email_messages">>(
     "email_message",
-    "/api/email-messages",
+    "/api/entities/email-messages",
     { sort_by: "received_at", sort_order: "desc" }
 );
 export const useCreateEmailMessage = makeCreateHook<Tables<"email_messages">>(
     "email_message",
-    "/api/email-messages"
+    "/api/entities/email-messages"
 );
 
 // ═══════════════════════════════════════════════════════════════
 // SAVED VIEWS
 // ═══════════════════════════════════════════════════════════════
 
-export const useSavedViews = makeListHook<Tables<"saved_views">>("saved_view", "/api/saved-views", {
-    sort_by: "name",
-    sort_order: "asc",
-});
-export const useSavedView = makeDetailHook<Tables<"saved_views">>("saved_view", "/api/saved-views");
+export const useSavedViews = makeListHook<Tables<"saved_views">>(
+    "saved_view",
+    "/api/entities/saved-views",
+    {
+        sort_by: "name",
+        sort_order: "asc",
+    }
+);
+export const useSavedView = makeDetailHook<Tables<"saved_views">>(
+    "saved_view",
+    "/api/entities/saved-views"
+);
 export const useCreateSavedView = makeCreateHook<Tables<"saved_views">>(
     "saved_view",
-    "/api/saved-views"
+    "/api/entities/saved-views"
 );
 export const useUpdateSavedView = makeUpdateHook<Tables<"saved_views">>(
     "saved_view",
-    "/api/saved-views"
+    "/api/entities/saved-views"
 );
-export const useDeleteSavedView = makeDeleteHook("saved_view", "/api/saved-views");
+export const useDeleteSavedView = makeDeleteHook("saved_view", "/api/entities/saved-views");
 
 // ═══════════════════════════════════════════════════════════════
 // CUSTOM FIELD DEFINITIONS & VALUES
@@ -222,7 +234,7 @@ export function useCustomFieldDefinitions(entityType?: string) {
         queryKey: ["custom_field_definition", { entity_type: entityType }],
         queryFn: async () => {
             const res = await apiList<Tables<"custom_field_definitions">>(
-                "/api/custom-field-definitions",
+                "/api/entities/custom-field-definitions",
                 {
                     entity_type: entityType,
                     sort_by: "display_order",
@@ -236,11 +248,11 @@ export function useCustomFieldDefinitions(entityType?: string) {
 
 export const useCreateCustomFieldDefinition = makeCreateHook<Tables<"custom_field_definitions">>(
     "custom_field_definition",
-    "/api/custom-field-definitions"
+    "/api/entities/custom-field-definitions"
 );
 export const useUpdateCustomFieldDefinition = makeUpdateHook<Tables<"custom_field_definitions">>(
     "custom_field_definition",
-    "/api/custom-field-definitions"
+    "/api/entities/custom-field-definitions"
 );
 
 // ─── Legacy alias ───
@@ -251,10 +263,13 @@ export function useCustomFieldValues(entityType: string, entityId: string) {
     return useQuery({
         queryKey: ["custom_field_value", { entity_type: entityType, entity_id: entityId }],
         queryFn: async () => {
-            const res = await apiList<Tables<"custom_field_values">>("/api/custom-field-values", {
-                entity_type: entityType,
-                entity_id: entityId,
-            });
+            const res = await apiList<Tables<"custom_field_values">>(
+                "/api/entities/custom-field-values",
+                {
+                    entity_type: entityType,
+                    entity_id: entityId,
+                }
+            );
             return res.data;
         },
         enabled: !!entityType && !!entityId,
@@ -265,7 +280,7 @@ export function useUpsertCustomFieldValue() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (val: Record<string, unknown>) =>
-            apiCreate<Tables<"custom_field_values">>("/api/custom-field-values", val),
+            apiCreate<Tables<"custom_field_values">>("/api/entities/custom-field-values", val),
         onSuccess: () => qc.invalidateQueries({ queryKey: ["custom_field_value"] }),
     });
 }
@@ -274,41 +289,48 @@ export function useUpsertCustomFieldValue() {
 // DASHBOARDS
 // ═══════════════════════════════════════════════════════════════
 
-export const useDashboards = makeListHook<Tables<"dashboards">>("dashboard", "/api/dashboards", {
-    sort_by: "name",
-    sort_order: "asc",
-});
-export const useDashboard = makeDetailHook<Tables<"dashboards">>("dashboard", "/api/dashboards");
+export const useDashboards = makeListHook<Tables<"dashboards">>(
+    "dashboard",
+    "/api/entities/dashboards",
+    {
+        sort_by: "name",
+        sort_order: "asc",
+    }
+);
+export const useDashboard = makeDetailHook<Tables<"dashboards">>(
+    "dashboard",
+    "/api/entities/dashboards"
+);
 export const useCreateDashboard = makeCreateHook<Tables<"dashboards">>(
     "dashboard",
-    "/api/dashboards"
+    "/api/entities/dashboards"
 );
 export const useUpdateDashboard = makeUpdateHook<Tables<"dashboards">>(
     "dashboard",
-    "/api/dashboards"
+    "/api/entities/dashboards"
 );
 
 export function useDashboardWithWidgets(id: string) {
     return useQuery({
         queryKey: ["dashboard", "detail", id, "widgets"],
-        queryFn: () => apiGet<Tables<"dashboards">>("/api/dashboards", id),
+        queryFn: () => apiGet<Tables<"dashboards">>("/api/entities/dashboards", id),
         enabled: !!id,
     });
 }
 
 export const useDashboardWidgets = makeListHook<Tables<"dashboard_widgets">>(
     "dashboard_widget",
-    "/api/dashboard-widgets",
+    "/api/entities/dashboard-widgets",
     { sort_by: "sort_order", sort_order: "asc" }
 );
 export const useCreateDashboardWidget = makeCreateHook<Tables<"dashboard_widgets">>(
     "dashboard_widget",
-    "/api/dashboard-widgets",
+    "/api/entities/dashboard-widgets",
     ["dashboard"]
 );
 export const useUpdateDashboardWidget = makeUpdateHook<Tables<"dashboard_widgets">>(
     "dashboard_widget",
-    "/api/dashboard-widgets",
+    "/api/entities/dashboard-widgets",
     ["dashboard"]
 );
 
@@ -318,16 +340,16 @@ export const useUpdateDashboardWidget = makeUpdateHook<Tables<"dashboard_widgets
 
 export const useReportDefinitions = makeListHook<Tables<"report_definitions">>(
     "report_definition",
-    "/api/report-definitions",
+    "/api/entities/report-definitions",
     { sort_by: "name", sort_order: "asc" }
 );
 export const useCreateReportDefinition = makeCreateHook<Tables<"report_definitions">>(
     "report_definition",
-    "/api/report-definitions"
+    "/api/entities/report-definitions"
 );
 export const useUpdateReportDefinition = makeUpdateHook<Tables<"report_definitions">>(
     "report_definition",
-    "/api/report-definitions"
+    "/api/entities/report-definitions"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -336,12 +358,12 @@ export const useUpdateReportDefinition = makeUpdateHook<Tables<"report_definitio
 
 export const useAiReportQueries = makeListHook<Tables<"ai_report_queries">>(
     "ai_report_query",
-    "/api/ai-report-queries",
+    "/api/entities/ai-report-queries",
     { sort_by: "created_at", sort_order: "desc" }
 );
 export const useCreateAiReportQuery = makeCreateHook<Tables<"ai_report_queries">>(
     "ai_report_query",
-    "/api/ai-report-queries"
+    "/api/entities/ai-report-queries"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -350,19 +372,19 @@ export const useCreateAiReportQuery = makeCreateHook<Tables<"ai_report_queries">
 
 export const useSlaPolicies = makeListHook<Tables<"sla_policies">>(
     "sla_policy",
-    "/api/sla-policies",
+    "/api/entities/sla-policies",
     { sort_by: "priority", sort_order: "asc" }
 );
 export const useCreateSlaPolicy = makeCreateHook<Tables<"sla_policies">>(
     "sla_policy",
-    "/api/sla-policies"
+    "/api/entities/sla-policies"
 );
 
 export function useSlaStatus() {
     return useQuery({
         queryKey: ["sla_status"],
         queryFn: async () => {
-            const res = await apiList<Record<string, unknown>>("/api/sla-status", {
+            const res = await apiList<Record<string, unknown>>("/api/entities/sla-status", {
                 sort_by: "sla_response_due_at",
                 sort_order: "asc",
             });
@@ -377,26 +399,26 @@ export function useSlaStatus() {
 
 export const useSurveyTemplates = makeListHook<Tables<"survey_templates">>(
     "survey_template",
-    "/api/survey-templates",
+    "/api/entities/survey-templates",
     { sort_by: "created_at", sort_order: "desc" }
 );
 export const useCreateSurveyTemplate = makeCreateHook<Tables<"survey_templates">>(
     "survey_template",
-    "/api/survey-templates"
+    "/api/entities/survey-templates"
 );
 export const useUpdateSurveyTemplate = makeUpdateHook<Tables<"survey_templates">>(
     "survey_template",
-    "/api/survey-templates"
+    "/api/entities/survey-templates"
 );
 
 export const useSurveyResponses = makeListHook<Tables<"survey_responses">>(
     "survey_response",
-    "/api/survey-responses",
+    "/api/entities/survey-responses",
     { sort_by: "submitted_at", sort_order: "desc" }
 );
 export const useCreateSurveyResponse = makeCreateHook<Tables<"survey_responses">>(
     "survey_response",
-    "/api/survey-responses"
+    "/api/entities/survey-responses"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -408,7 +430,7 @@ export function useTimeTrackingPolicy() {
         queryKey: ["time_tracking_policy"],
         queryFn: async () => {
             const res = await apiList<Tables<"time_tracking_policies">>(
-                "/api/time-tracking-policies",
+                "/api/entities/time-tracking-policies",
                 { is_active: true }
             );
             return (res.data as Tables<"time_tracking_policies">[])?.[0] ?? null;
@@ -420,7 +442,10 @@ export function useUpsertTimeTrackingPolicy() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: async (policy: Record<string, unknown>) =>
-            apiCreate<Tables<"time_tracking_policies">>("/api/time-tracking-policies", policy),
+            apiCreate<Tables<"time_tracking_policies">>(
+                "/api/entities/time-tracking-policies",
+                policy
+            ),
         onSuccess: () => qc.invalidateQueries({ queryKey: ["time_tracking_policy"] }),
     });
 }
@@ -429,10 +454,13 @@ export function useTimeTrackingCompliance() {
     return useQuery({
         queryKey: ["time_tracking_compliance"],
         queryFn: async () => {
-            const res = await apiList<Record<string, unknown>>("/api/time-tracking-compliance", {
-                sort_by: "name",
-                sort_order: "asc",
-            });
+            const res = await apiList<Record<string, unknown>>(
+                "/api/entities/time-tracking-compliance",
+                {
+                    sort_by: "name",
+                    sort_order: "asc",
+                }
+            );
             return res.data;
         },
     });
@@ -444,7 +472,7 @@ export function useTimeTrackingCompliance() {
 
 export const useDataExportRequests = makeListHook<Tables<"data_export_requests">>(
     "data_export_request",
-    "/api/data-export-requests",
+    "/api/entities/data-export-requests",
     { sort_by: "requested_at", sort_order: "desc" }
 );
 
@@ -453,7 +481,7 @@ export function useCreateDataExportRequest() {
     return useMutation({
         mutationFn: (payload: { export_format: string }) =>
             apiCreate<Tables<"data_export_requests">>(
-                "/api/data-export-requests",
+                "/api/entities/data-export-requests",
                 payload as Record<string, unknown>
             ),
         onSuccess: () => qc.invalidateQueries({ queryKey: ["data_export_request"] }),

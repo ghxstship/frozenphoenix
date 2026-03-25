@@ -22,14 +22,14 @@ import {
 // LEADS
 // ═══════════════════════════════════════════════════════════════
 
-export const useLeads = makeListHook<Tables<"leads">>("lead", "/api/leads", {
+export const useLeads = makeListHook<Tables<"leads">>("lead", "/api/entities/leads", {
     sort_by: "created_at",
     sort_order: "desc",
 });
-export const useLead = makeDetailHook<Tables<"leads">>("lead", "/api/leads");
-export const useCreateLead = makeCreateHook<Tables<"leads">>("lead", "/api/leads");
-export const useUpdateLead = makeUpdateHook<Tables<"leads">>("lead", "/api/leads");
-export const useDeleteLead = makeDeleteHook("lead", "/api/leads");
+export const useLead = makeDetailHook<Tables<"leads">>("lead", "/api/entities/leads");
+export const useCreateLead = makeCreateHook<Tables<"leads">>("lead", "/api/entities/leads");
+export const useUpdateLead = makeUpdateHook<Tables<"leads">>("lead", "/api/entities/leads");
+export const useDeleteLead = makeDeleteHook("lead", "/api/entities/leads");
 
 export function useConvertLeadToDeal() {
     const queryClient = useQueryClient();
@@ -41,8 +41,8 @@ export function useConvertLeadToDeal() {
             leadId: string;
             dealData: Record<string, unknown>;
         }) => {
-            const deal = await apiCreate<Tables<"deals">>("/api/deals", dealData);
-            await apiUpdate<Tables<"leads">>("/api/leads", leadId, {
+            const deal = await apiCreate<Tables<"deals">>("/api/entities/deals", dealData);
+            await apiUpdate<Tables<"leads">>("/api/entities/leads", leadId, {
                 status: "won",
                 converted_to_deal_id: deal.id,
                 converted_at: new Date().toISOString(),
@@ -58,7 +58,7 @@ export function useConvertLeadToDeal() {
 
 export const useCreateLeadActivity = makeCreateHook<Tables<"lead_activities">>(
     "lead_activity",
-    "/api/lead-activities",
+    "/api/entities/lead-activities",
     ["lead"]
 );
 
@@ -68,22 +68,22 @@ export const useCreateLeadActivity = makeCreateHook<Tables<"lead_activities">>(
 
 export const useOpportunities = makeListHook<Tables<"opportunities">>(
     "opportunity",
-    "/api/opportunities",
+    "/api/entities/opportunities",
     { sort_by: "created_at", sort_order: "desc" }
 );
 export const useOpportunity = makeDetailHook<Tables<"opportunities">>(
     "opportunity",
-    "/api/opportunities"
+    "/api/entities/opportunities"
 );
 export const useCreateOpportunity = makeCreateHook<Tables<"opportunities">>(
     "opportunity",
-    "/api/opportunities"
+    "/api/entities/opportunities"
 );
 export const useUpdateOpportunity = makeUpdateHook<Tables<"opportunities">>(
     "opportunity",
-    "/api/opportunities"
+    "/api/entities/opportunities"
 );
-export const useDeleteOpportunity = makeDeleteHook("opportunity", "/api/opportunities");
+export const useDeleteOpportunity = makeDeleteHook("opportunity", "/api/entities/opportunities");
 
 // ═══════════════════════════════════════════════════════════════
 // COMPANIES
@@ -91,14 +91,20 @@ export const useDeleteOpportunity = makeDeleteHook("opportunity", "/api/opportun
 
 export const useCompanies = makeListHook<Tables<"companies">>(
     "company",
-    "/api/companies",
+    "/api/entities/companies",
     { sort_by: "name", sort_order: "asc" },
     { staleTime: 5 * 60_000, gcTime: 10 * 60_000 }
 );
-export const useCompany = makeDetailHook<Tables<"companies">>("company", "/api/companies");
-export const useCreateCompany = makeCreateHook<Tables<"companies">>("company", "/api/companies");
-export const useUpdateCompany = makeUpdateHook<Tables<"companies">>("company", "/api/companies");
-export const useDeleteCompany = makeDeleteHook("company", "/api/companies");
+export const useCompany = makeDetailHook<Tables<"companies">>("company", "/api/entities/companies");
+export const useCreateCompany = makeCreateHook<Tables<"companies">>(
+    "company",
+    "/api/entities/companies"
+);
+export const useUpdateCompany = makeUpdateHook<Tables<"companies">>(
+    "company",
+    "/api/entities/companies"
+);
+export const useDeleteCompany = makeDeleteHook("company", "/api/entities/companies");
 
 // ═══════════════════════════════════════════════════════════════
 // CONTACTS
@@ -106,52 +112,84 @@ export const useDeleteCompany = makeDeleteHook("company", "/api/companies");
 
 export const useContacts = makeListHook<Tables<"contacts">>(
     "contact",
-    "/api/contacts",
+    "/api/entities/contacts",
     { sort_by: "full_name", sort_order: "asc" },
     { staleTime: 5 * 60_000, gcTime: 10 * 60_000 }
 );
-export const useContact = makeDetailHook<Tables<"contacts">>("contact", "/api/contacts");
-export const useCreateContact = makeCreateHook<Tables<"contacts">>("contact", "/api/contacts");
-export const useUpdateContact = makeUpdateHook<Tables<"contacts">>("contact", "/api/contacts");
-export const useDeleteContact = makeDeleteHook("contact", "/api/contacts");
+export const useContact = makeDetailHook<Tables<"contacts">>("contact", "/api/entities/contacts");
+export const useCreateContact = makeCreateHook<Tables<"contacts">>(
+    "contact",
+    "/api/entities/contacts"
+);
+export const useUpdateContact = makeUpdateHook<Tables<"contacts">>(
+    "contact",
+    "/api/entities/contacts"
+);
+export const useDeleteContact = makeDeleteHook("contact", "/api/entities/contacts");
 
 // ═══════════════════════════════════════════════════════════════
 // PIPELINES
 // ═══════════════════════════════════════════════════════════════
 
-export const usePipelines = makeListHook<Tables<"pipelines">>("pipeline", "/api/pipelines", {
-    sort_by: "name",
-    sort_order: "asc",
-});
-export const usePipeline = makeDetailHook<Tables<"pipelines">>("pipeline", "/api/pipelines");
-export const useCreatePipeline = makeCreateHook<Tables<"pipelines">>("pipeline", "/api/pipelines");
-export const useUpdatePipeline = makeUpdateHook<Tables<"pipelines">>("pipeline", "/api/pipelines");
-export const useDeletePipeline = makeDeleteHook("pipeline", "/api/pipelines");
+export const usePipelines = makeListHook<Tables<"pipelines">>(
+    "pipeline",
+    "/api/entities/pipelines",
+    {
+        sort_by: "name",
+        sort_order: "asc",
+    }
+);
+export const usePipeline = makeDetailHook<Tables<"pipelines">>(
+    "pipeline",
+    "/api/entities/pipelines"
+);
+export const useCreatePipeline = makeCreateHook<Tables<"pipelines">>(
+    "pipeline",
+    "/api/entities/pipelines"
+);
+export const useUpdatePipeline = makeUpdateHook<Tables<"pipelines">>(
+    "pipeline",
+    "/api/entities/pipelines"
+);
+export const useDeletePipeline = makeDeleteHook("pipeline", "/api/entities/pipelines");
 
 // ═══════════════════════════════════════════════════════════════
 // PROPOSALS
 // ═══════════════════════════════════════════════════════════════
 
-export const useProposals = makeListHook<Tables<"proposals">>("proposal", "/api/proposals", {
-    sort_by: "created_at",
-    sort_order: "desc",
-});
-export const useProposal = makeDetailHook<Tables<"proposals">>("proposal", "/api/proposals");
-export const useCreateProposal = makeCreateHook<Tables<"proposals">>("proposal", "/api/proposals");
-export const useUpdateProposal = makeUpdateHook<Tables<"proposals">>("proposal", "/api/proposals");
-export const useDeleteProposal = makeDeleteHook("proposal", "/api/proposals");
+export const useProposals = makeListHook<Tables<"proposals">>(
+    "proposal",
+    "/api/entities/proposals",
+    {
+        sort_by: "created_at",
+        sort_order: "desc",
+    }
+);
+export const useProposal = makeDetailHook<Tables<"proposals">>(
+    "proposal",
+    "/api/entities/proposals"
+);
+export const useCreateProposal = makeCreateHook<Tables<"proposals">>(
+    "proposal",
+    "/api/entities/proposals"
+);
+export const useUpdateProposal = makeUpdateHook<Tables<"proposals">>(
+    "proposal",
+    "/api/entities/proposals"
+);
+export const useDeleteProposal = makeDeleteHook("proposal", "/api/entities/proposals");
 
 export function useProposalWithItems(id: string) {
     return useQuery({
         queryKey: ["proposal", "detail", id, "items"],
-        queryFn: () => apiGet<Tables<"proposals">>("/api/proposals", id),
+        queryFn: () => apiGet<Tables<"proposals">>("/api/entities/proposals", id),
         enabled: !!id,
     });
 }
 
 export const useCreateProposalItem = makeCreateHook<Tables<"proposal_items">>(
     "proposal_item",
-    "/api/proposal-items",
+    "/api/entities/proposal-items",
     ["proposal"]
 );
 
@@ -159,14 +197,27 @@ export const useCreateProposalItem = makeCreateHook<Tables<"proposal_items">>(
 // ESTIMATES
 // ═══════════════════════════════════════════════════════════════
 
-export const useEstimates = makeListHook<Tables<"estimates">>("estimate", "/api/estimates", {
-    sort_by: "created_at",
-    sort_order: "desc",
-});
-export const useEstimate = makeDetailHook<Tables<"estimates">>("estimate", "/api/estimates");
-export const useCreateEstimate = makeCreateHook<Tables<"estimates">>("estimate", "/api/estimates");
-export const useUpdateEstimate = makeUpdateHook<Tables<"estimates">>("estimate", "/api/estimates");
-export const useDeleteEstimate = makeDeleteHook("estimate", "/api/estimates");
+export const useEstimates = makeListHook<Tables<"estimates">>(
+    "estimate",
+    "/api/entities/estimates",
+    {
+        sort_by: "created_at",
+        sort_order: "desc",
+    }
+);
+export const useEstimate = makeDetailHook<Tables<"estimates">>(
+    "estimate",
+    "/api/entities/estimates"
+);
+export const useCreateEstimate = makeCreateHook<Tables<"estimates">>(
+    "estimate",
+    "/api/entities/estimates"
+);
+export const useUpdateEstimate = makeUpdateHook<Tables<"estimates">>(
+    "estimate",
+    "/api/entities/estimates"
+);
+export const useDeleteEstimate = makeDeleteHook("estimate", "/api/entities/estimates");
 
 // ═══════════════════════════════════════════════════════════════
 // TESTIMONIALS
@@ -174,27 +225,27 @@ export const useDeleteEstimate = makeDeleteHook("estimate", "/api/estimates");
 
 export const useTestimonials = makeListHook<Tables<"testimonials">>(
     "testimonial",
-    "/api/testimonials",
+    "/api/entities/testimonials",
     { sort_by: "display_order", sort_order: "asc" }
 );
 export const useTestimonial = makeDetailHook<Tables<"testimonials">>(
     "testimonial",
-    "/api/testimonials"
+    "/api/entities/testimonials"
 );
 export const useCreateTestimonial = makeCreateHook<Tables<"testimonials">>(
     "testimonial",
-    "/api/testimonials"
+    "/api/entities/testimonials"
 );
 export const useUpdateTestimonial = makeUpdateHook<Tables<"testimonials">>(
     "testimonial",
-    "/api/testimonials"
+    "/api/entities/testimonials"
 );
 
 export function usePublicTestimonials() {
     return useQuery({
         queryKey: ["testimonial", { status: "approved" }],
         queryFn: async () => {
-            const res = await apiList<Tables<"testimonials">>("/api/testimonials", {
+            const res = await apiList<Tables<"testimonials">>("/api/entities/testimonials", {
                 status: "approved",
                 sort_by: "display_order",
                 sort_order: "asc",
@@ -208,18 +259,21 @@ export function usePublicTestimonials() {
 // REVIEWS
 // ═══════════════════════════════════════════════════════════════
 
-export const useReviews = makeListHook<Tables<"reviews">>("review", "/api/reviews", {
+export const useReviews = makeListHook<Tables<"reviews">>("review", "/api/entities/reviews", {
     sort_by: "review_date",
     sort_order: "desc",
 });
-export const useReview = makeDetailHook<Tables<"reviews">>("review", "/api/reviews");
-export const useCreateReview = makeCreateHook<Tables<"reviews">>("review", "/api/reviews");
+export const useReview = makeDetailHook<Tables<"reviews">>("review", "/api/entities/reviews");
+export const useCreateReview = makeCreateHook<Tables<"reviews">>("review", "/api/entities/reviews");
 
 export function useReviewStats() {
     return useQuery({
         queryKey: ["review_stat"],
         queryFn: async () => {
-            const res = await apiGet<Record<string, unknown>>("/api/review-stats", "summary");
+            const res = await apiGet<Record<string, unknown>>(
+                "/api/entities/review-stats",
+                "summary"
+            );
             return res;
         },
     });
@@ -231,28 +285,28 @@ export function useReviewStats() {
 
 export const useCaseStudies = makeListHook<Tables<"case_studies">>(
     "case_study",
-    "/api/case-studies",
+    "/api/entities/case-studies",
     { sort_by: "created_at", sort_order: "desc" }
 );
 export const useCaseStudy = makeDetailHook<Tables<"case_studies">>(
     "case_study",
-    "/api/case-studies"
+    "/api/entities/case-studies"
 );
 export const useCreateCaseStudy = makeCreateHook<Tables<"case_studies">>(
     "case_study",
-    "/api/case-studies"
+    "/api/entities/case-studies"
 );
 export const useUpdateCaseStudy = makeUpdateHook<Tables<"case_studies">>(
     "case_study",
-    "/api/case-studies"
+    "/api/entities/case-studies"
 );
-export const useDeleteCaseStudy = makeDeleteHook("case_study", "/api/case-studies");
+export const useDeleteCaseStudy = makeDeleteHook("case_study", "/api/entities/case-studies");
 
 export function usePublicCaseStudies() {
     return useQuery({
         queryKey: ["case_study", { is_published: true }],
         queryFn: async () => {
-            const res = await apiList<Tables<"case_studies">>("/api/case-studies", {
+            const res = await apiList<Tables<"case_studies">>("/api/entities/case-studies", {
                 is_published: true,
                 sort_by: "published_at",
                 sort_order: "desc",
@@ -268,22 +322,22 @@ export function usePublicCaseStudies() {
 
 export const useStakeholders = makeListHook<Tables<"stakeholders">>(
     "stakeholder",
-    "/api/stakeholders",
+    "/api/entities/stakeholders",
     { sort_by: "name", sort_order: "asc" }
 );
 export const useStakeholder = makeDetailHook<Tables<"stakeholders">>(
     "stakeholder",
-    "/api/stakeholders"
+    "/api/entities/stakeholders"
 );
 export const useCreateStakeholder = makeCreateHook<Tables<"stakeholders">>(
     "stakeholder",
-    "/api/stakeholders"
+    "/api/entities/stakeholders"
 );
 export const useUpdateStakeholder = makeUpdateHook<Tables<"stakeholders">>(
     "stakeholder",
-    "/api/stakeholders"
+    "/api/entities/stakeholders"
 );
-export const useDeleteStakeholder = makeDeleteHook("stakeholder", "/api/stakeholders");
+export const useDeleteStakeholder = makeDeleteHook("stakeholder", "/api/entities/stakeholders");
 
 // ─── Accounts (alias for stakeholders) ───
 export const useAccounts = useStakeholders;
@@ -295,16 +349,16 @@ export const useDeleteAccount = useDeleteStakeholder;
 // ─── Stakeholder Projects (junction) ───
 export const useStakeholderProjects = makeListHook<Tables<"stakeholder_projects">>(
     "stakeholder_project",
-    "/api/stakeholder-projects"
+    "/api/entities/stakeholder-projects"
 );
 export const useCreateStakeholderProject = makeCreateHook<Tables<"stakeholder_projects">>(
     "stakeholder_project",
-    "/api/stakeholder-projects",
+    "/api/entities/stakeholder-projects",
     ["stakeholder"]
 );
 export const useDeleteStakeholderProject = makeDeleteHook(
     "stakeholder_project",
-    "/api/stakeholder-projects",
+    "/api/entities/stakeholder-projects",
     ["stakeholder"]
 );
 
@@ -314,12 +368,12 @@ export const useDeleteStakeholderProject = makeDeleteHook(
 
 export const useLostReasons = makeListHook<Tables<"lost_reasons">>(
     "lost_reason",
-    "/api/lost-reasons",
+    "/api/entities/lost-reasons",
     { sort_by: "name", sort_order: "asc" }
 );
 export const useCreateLostReason = makeCreateHook<Tables<"lost_reasons">>(
     "lost_reason",
-    "/api/lost-reasons"
+    "/api/entities/lost-reasons"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -330,7 +384,10 @@ export function useLeadPipelineStats() {
     return useQuery({
         queryKey: ["lead_pipeline_stat"],
         queryFn: async () => {
-            const res = await apiList<Record<string, unknown>>("/api/lead-pipeline-stats", {});
+            const res = await apiList<Record<string, unknown>>(
+                "/api/entities/lead-pipeline-stats",
+                {}
+            );
             return res.data;
         },
     });

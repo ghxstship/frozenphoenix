@@ -1103,7 +1103,8 @@ html.theme-transition tr {
     --z-panel: 101;
     --z-toast: 100;
     --z-modal: 150;
-    --z-banner: 200;
+    --z-confirm: 200;
+    --z-banner: 250;
     --z-skip-link: 9999;
 }
 

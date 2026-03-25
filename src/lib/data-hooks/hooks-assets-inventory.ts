@@ -22,14 +22,14 @@ import {
 // ASSETS
 // ═══════════════════════════════════════════════════════════════
 
-export const useAssets = makeListHook<Tables<"assets">>("asset", "/api/assets", {
+export const useAssets = makeListHook<Tables<"assets">>("asset", "/api/entities/assets", {
     sort_by: "name",
     sort_order: "asc",
 });
-export const useAsset = makeDetailHook<Tables<"assets">>("asset", "/api/assets");
-export const useCreateAsset = makeCreateHook<Tables<"assets">>("asset", "/api/assets");
-export const useUpdateAsset = makeUpdateHook<Tables<"assets">>("asset", "/api/assets");
-export const useDeleteAsset = makeDeleteHook("asset", "/api/assets");
+export const useAsset = makeDetailHook<Tables<"assets">>("asset", "/api/entities/assets");
+export const useCreateAsset = makeCreateHook<Tables<"assets">>("asset", "/api/entities/assets");
+export const useUpdateAsset = makeUpdateHook<Tables<"assets">>("asset", "/api/entities/assets");
+export const useDeleteAsset = makeDeleteHook("asset", "/api/entities/assets");
 
 // ═══════════════════════════════════════════════════════════════
 // ASSET ASSIGNMENTS
@@ -37,25 +37,25 @@ export const useDeleteAsset = makeDeleteHook("asset", "/api/assets");
 
 export const useAssetAssignments = makeListHook<Tables<"asset_assignments">>(
     "asset_assignment",
-    "/api/asset-assignments",
+    "/api/entities/asset-assignments",
     { sort_by: "check_out_date", sort_order: "desc" }
 );
 export const useAssetAssignment = makeDetailHook<Tables<"asset_assignments">>(
     "asset_assignment",
-    "/api/asset-assignments"
+    "/api/entities/asset-assignments"
 );
 export const useCreateAssetAssignment = makeCreateHook<Tables<"asset_assignments">>(
     "asset_assignment",
-    "/api/asset-assignments",
+    "/api/entities/asset-assignments",
     ["asset"]
 );
 export const useUpdateAssetAssignment = makeUpdateHook<Tables<"asset_assignments">>(
     "asset_assignment",
-    "/api/asset-assignments"
+    "/api/entities/asset-assignments"
 );
 export const useDeleteAssetAssignment = makeDeleteHook(
     "asset_assignment",
-    "/api/asset-assignments"
+    "/api/entities/asset-assignments"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -64,16 +64,16 @@ export const useDeleteAssetAssignment = makeDeleteHook(
 
 export const useAssetVersions = makeListHook<Tables<"asset_versions">>(
     "asset_version",
-    "/api/asset-versions",
+    "/api/entities/asset-versions",
     { sort_by: "version_number", sort_order: "desc" }
 );
 export const useAssetVersion = makeDetailHook<Tables<"asset_versions">>(
     "asset_version",
-    "/api/asset-versions"
+    "/api/entities/asset-versions"
 );
 export const useCreateAssetVersion = makeCreateHook<Tables<"asset_versions">>(
     "asset_version",
-    "/api/asset-versions",
+    "/api/entities/asset-versions",
     ["asset"]
 );
 
@@ -81,29 +81,39 @@ export const useCreateAssetVersion = makeCreateHook<Tables<"asset_versions">>(
 // ASSET TAGS
 // ═══════════════════════════════════════════════════════════════
 
-export const useAssetTags = makeListHook<Tables<"asset_tags">>("asset_tag", "/api/asset-tags", {
-    sort_by: "tag_key",
-    sort_order: "asc",
-});
+export const useAssetTags = makeListHook<Tables<"asset_tags">>(
+    "asset_tag",
+    "/api/entities/asset-tags",
+    {
+        sort_by: "tag_key",
+        sort_order: "asc",
+    }
+);
 export const useCreateAssetTag = makeCreateHook<Tables<"asset_tags">>(
     "asset_tag",
-    "/api/asset-tags",
+    "/api/entities/asset-tags",
     ["asset"]
 );
-export const useDeleteAssetTag = makeDeleteHook("asset_tag", "/api/asset-tags");
+export const useDeleteAssetTag = makeDeleteHook("asset_tag", "/api/entities/asset-tags");
 
 // ═══════════════════════════════════════════════════════════════
 // VEHICLES
 // ═══════════════════════════════════════════════════════════════
 
-export const useVehicles = makeListHook<Tables<"vehicles">>("vehicle", "/api/fleet", {
+export const useVehicles = makeListHook<Tables<"vehicles">>("vehicle", "/api/entities/fleet", {
     sort_by: "name",
     sort_order: "asc",
 });
-export const useVehicle = makeDetailHook<Tables<"vehicles">>("vehicle", "/api/fleet");
-export const useCreateVehicle = makeCreateHook<Tables<"vehicles">>("vehicle", "/api/fleet");
-export const useUpdateVehicle = makeUpdateHook<Tables<"vehicles">>("vehicle", "/api/fleet");
-export const useDeleteVehicle = makeDeleteHook("vehicle", "/api/fleet");
+export const useVehicle = makeDetailHook<Tables<"vehicles">>("vehicle", "/api/entities/fleet");
+export const useCreateVehicle = makeCreateHook<Tables<"vehicles">>(
+    "vehicle",
+    "/api/entities/fleet"
+);
+export const useUpdateVehicle = makeUpdateHook<Tables<"vehicles">>(
+    "vehicle",
+    "/api/entities/fleet"
+);
+export const useDeleteVehicle = makeDeleteHook("vehicle", "/api/entities/fleet");
 
 // ─── Fleet aliases ───
 export const useFleetVehicles = useVehicles;
@@ -113,31 +123,38 @@ export const useCreateFleetVehicle = useCreateVehicle;
 // KITS
 // ═══════════════════════════════════════════════════════════════
 
-export const useKits = makeListHook<Tables<"kits">>("kit", "/api/kits", {
+export const useKits = makeListHook<Tables<"kits">>("kit", "/api/entities/kits", {
     sort_by: "name",
     sort_order: "asc",
 });
-export const useKit = makeDetailHook<Tables<"kits">>("kit", "/api/kits");
-export const useCreateKit = makeCreateHook<Tables<"kits">>("kit", "/api/kits");
-export const useUpdateKit = makeUpdateHook<Tables<"kits">>("kit", "/api/kits");
-export const useDeleteKit = makeDeleteHook("kit", "/api/kits");
+export const useKit = makeDetailHook<Tables<"kits">>("kit", "/api/entities/kits");
+export const useCreateKit = makeCreateHook<Tables<"kits">>("kit", "/api/entities/kits");
+export const useUpdateKit = makeUpdateHook<Tables<"kits">>("kit", "/api/entities/kits");
+export const useDeleteKit = makeDeleteHook("kit", "/api/entities/kits");
 
 // ═══════════════════════════════════════════════════════════════
 // LOAD PLANS
 // ═══════════════════════════════════════════════════════════════
 
-export const useLoadPlans = makeListHook<Tables<"load_plans">>("load_plan", "/api/load-plans", {
-    sort_by: "created_at",
-    sort_order: "desc",
-});
-export const useLoadPlan = makeDetailHook<Tables<"load_plans">>("load_plan", "/api/load-plans");
+export const useLoadPlans = makeListHook<Tables<"load_plans">>(
+    "load_plan",
+    "/api/entities/load-plans",
+    {
+        sort_by: "created_at",
+        sort_order: "desc",
+    }
+);
+export const useLoadPlan = makeDetailHook<Tables<"load_plans">>(
+    "load_plan",
+    "/api/entities/load-plans"
+);
 export const useCreateLoadPlan = makeCreateHook<Tables<"load_plans">>(
     "load_plan",
-    "/api/load-plans"
+    "/api/entities/load-plans"
 );
 export const useUpdateLoadPlan = makeUpdateHook<Tables<"load_plans">>(
     "load_plan",
-    "/api/load-plans"
+    "/api/entities/load-plans"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -146,53 +163,64 @@ export const useUpdateLoadPlan = makeUpdateHook<Tables<"load_plans">>(
 
 export const useInventoryAudits = makeListHook<Tables<"inventory_audits">>(
     "inventory_audit",
-    "/api/inventory-audits",
+    "/api/entities/inventory-audits",
     { sort_by: "audit_date", sort_order: "desc" }
 );
 export const useInventoryAudit = makeDetailHook<Tables<"inventory_audits">>(
     "inventory_audit",
-    "/api/inventory-audits"
+    "/api/entities/inventory-audits"
 );
 export const useCreateInventoryAudit = makeCreateHook<Tables<"inventory_audits">>(
     "inventory_audit",
-    "/api/inventory-audits"
+    "/api/entities/inventory-audits"
 );
 export const useUpdateInventoryAudit = makeUpdateHook<Tables<"inventory_audits">>(
     "inventory_audit",
-    "/api/inventory-audits"
+    "/api/entities/inventory-audits"
 );
 
 // ═══════════════════════════════════════════════════════════════
 // INVENTORY ITEMS (catalog)
 // ═══════════════════════════════════════════════════════════════
 
-export const useInventoryItems = makeListHook<Tables<"catalog_items">>("catalog", "/api/catalog", {
-    sort_by: "name",
-    sort_order: "asc",
-});
+export const useInventoryItems = makeListHook<Tables<"catalog_items">>(
+    "catalog",
+    "/api/entities/catalog",
+    {
+        sort_by: "name",
+        sort_order: "asc",
+    }
+);
 export const useCreateInventoryItem = makeCreateHook<Tables<"catalog_items">>(
     "catalog",
-    "/api/catalog"
+    "/api/entities/catalog"
 );
 
 // ═══════════════════════════════════════════════════════════════
 // WAREHOUSES
 // ═══════════════════════════════════════════════════════════════
 
-export const useWarehouses = makeListHook<Tables<"warehouses">>("warehouse", "/api/warehouses", {
-    sort_by: "name",
-    sort_order: "asc",
-});
-export const useWarehouse = makeDetailHook<Tables<"warehouses">>("warehouse", "/api/warehouses");
+export const useWarehouses = makeListHook<Tables<"warehouses">>(
+    "warehouse",
+    "/api/entities/warehouses",
+    {
+        sort_by: "name",
+        sort_order: "asc",
+    }
+);
+export const useWarehouse = makeDetailHook<Tables<"warehouses">>(
+    "warehouse",
+    "/api/entities/warehouses"
+);
 export const useCreateWarehouse = makeCreateHook<Tables<"warehouses">>(
     "warehouse",
-    "/api/warehouses"
+    "/api/entities/warehouses"
 );
 export const useUpdateWarehouse = makeUpdateHook<Tables<"warehouses">>(
     "warehouse",
-    "/api/warehouses"
+    "/api/entities/warehouses"
 );
-export const useDeleteWarehouse = makeDeleteHook("warehouse", "/api/warehouses");
+export const useDeleteWarehouse = makeDeleteHook("warehouse", "/api/entities/warehouses");
 
 // ═══════════════════════════════════════════════════════════════
 // RENTAL AGREEMENTS
@@ -200,24 +228,24 @@ export const useDeleteWarehouse = makeDeleteHook("warehouse", "/api/warehouses")
 
 export const useRentalAgreements = makeListHook<Tables<"rental_agreements">>(
     "rental_agreement",
-    "/api/rental-agreements",
+    "/api/entities/rental-agreements",
     { sort_by: "start_date", sort_order: "desc" }
 );
 export const useRentalAgreement = makeDetailHook<Tables<"rental_agreements">>(
     "rental_agreement",
-    "/api/rental-agreements"
+    "/api/entities/rental-agreements"
 );
 export const useCreateRentalAgreement = makeCreateHook<Tables<"rental_agreements">>(
     "rental_agreement",
-    "/api/rental-agreements"
+    "/api/entities/rental-agreements"
 );
 export const useUpdateRentalAgreement = makeUpdateHook<Tables<"rental_agreements">>(
     "rental_agreement",
-    "/api/rental-agreements"
+    "/api/entities/rental-agreements"
 );
 export const useDeleteRentalAgreement = makeDeleteHook(
     "rental_agreement",
-    "/api/rental-agreements"
+    "/api/entities/rental-agreements"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -226,35 +254,51 @@ export const useDeleteRentalAgreement = makeDeleteHook(
 
 export const useSpaceBookings = makeListHook<Tables<"space_bookings">>(
     "space_booking",
-    "/api/space-bookings",
+    "/api/entities/space-bookings",
     { sort_by: "start_time", sort_order: "desc" }
 );
 export const useSpaceBooking = makeDetailHook<Tables<"space_bookings">>(
     "space_booking",
-    "/api/space-bookings"
+    "/api/entities/space-bookings"
 );
 export const useCreateSpaceBooking = makeCreateHook<Tables<"space_bookings">>(
     "space_booking",
-    "/api/space-bookings"
+    "/api/entities/space-bookings"
 );
 export const useUpdateSpaceBooking = makeUpdateHook<Tables<"space_bookings">>(
     "space_booking",
-    "/api/space-bookings"
+    "/api/entities/space-bookings"
 );
-export const useDeleteSpaceBooking = makeDeleteHook("space_booking", "/api/space-bookings");
+export const useDeleteSpaceBooking = makeDeleteHook(
+    "space_booking",
+    "/api/entities/space-bookings"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // SHIPMENTS
 // ═══════════════════════════════════════════════════════════════
 
-export const useShipments = makeListHook<Tables<"shipments">>("shipment", "/api/shipments", {
-    sort_by: "pickup_date",
-    sort_order: "asc",
-});
-export const useShipment = makeDetailHook<Tables<"shipments">>("shipment", "/api/shipments");
-export const useCreateShipment = makeCreateHook<Tables<"shipments">>("shipment", "/api/shipments");
-export const useUpdateShipment = makeUpdateHook<Tables<"shipments">>("shipment", "/api/shipments");
-export const useDeleteShipment = makeDeleteHook("shipment", "/api/shipments");
+export const useShipments = makeListHook<Tables<"shipments">>(
+    "shipment",
+    "/api/entities/shipments",
+    {
+        sort_by: "pickup_date",
+        sort_order: "asc",
+    }
+);
+export const useShipment = makeDetailHook<Tables<"shipments">>(
+    "shipment",
+    "/api/entities/shipments"
+);
+export const useCreateShipment = makeCreateHook<Tables<"shipments">>(
+    "shipment",
+    "/api/entities/shipments"
+);
+export const useUpdateShipment = makeUpdateHook<Tables<"shipments">>(
+    "shipment",
+    "/api/entities/shipments"
+);
+export const useDeleteShipment = makeDeleteHook("shipment", "/api/entities/shipments");
 
 // ═══════════════════════════════════════════════════════════════
 // CONSUMABLES
@@ -262,34 +306,34 @@ export const useDeleteShipment = makeDeleteHook("shipment", "/api/shipments");
 
 export const useConsumables = makeListHook<Tables<"consumables">>(
     "consumable",
-    "/api/consumables",
+    "/api/entities/consumables",
     { sort_by: "name", sort_order: "asc" }
 );
 export const useConsumable = makeDetailHook<Tables<"consumables">>(
     "consumable",
-    "/api/consumables"
+    "/api/entities/consumables"
 );
 export const useCreateConsumable = makeCreateHook<Tables<"consumables">>(
     "consumable",
-    "/api/consumables"
+    "/api/entities/consumables"
 );
 export const useUpdateConsumable = makeUpdateHook<Tables<"consumables">>(
     "consumable",
-    "/api/consumables"
+    "/api/entities/consumables"
 );
-export const useDeleteConsumable = makeDeleteHook("consumable", "/api/consumables");
+export const useDeleteConsumable = makeDeleteHook("consumable", "/api/entities/consumables");
 
 // ─── Consumable Usage ───
 export const useConsumableUsage = makeListHook<Tables<"consumable_usage">>(
     "consumable_usage",
-    "/api/consumable-usage"
+    "/api/entities/consumable-usage"
 );
 
 export function useCreateConsumableUsage() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: (payload: Record<string, unknown>) =>
-            apiCreate<Tables<"consumable_usage">>("/api/consumable-usage", payload),
+            apiCreate<Tables<"consumable_usage">>("/api/entities/consumable-usage", payload),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: ["consumable_usage"] });
             qc.invalidateQueries({ queryKey: ["consumable"] });
@@ -303,21 +347,21 @@ export function useCreateConsumableUsage() {
 
 export const useMaintenanceRecords = makeListHook<Tables<"maintenance_records">>(
     "maintenance_record",
-    "/api/maintenance-records",
+    "/api/entities/maintenance-records",
     { sort_by: "scheduled_date", sort_order: "desc" }
 );
 export const useMaintenanceRecord = makeDetailHook<Tables<"maintenance_records">>(
     "maintenance_record",
-    "/api/maintenance-records"
+    "/api/entities/maintenance-records"
 );
 export const useCreateMaintenanceRecord = makeCreateHook<Tables<"maintenance_records">>(
     "maintenance_record",
-    "/api/maintenance-records",
+    "/api/entities/maintenance-records",
     ["asset"]
 );
 export const useUpdateMaintenanceRecord = makeUpdateHook<Tables<"maintenance_records">>(
     "maintenance_record",
-    "/api/maintenance-records"
+    "/api/entities/maintenance-records"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -326,36 +370,42 @@ export const useUpdateMaintenanceRecord = makeUpdateHook<Tables<"maintenance_rec
 
 export const useStorageObjects = makeListHook<Tables<"storage_objects">>(
     "storage_object",
-    "/api/storage-objects",
+    "/api/entities/storage-objects",
     { sort_by: "created_at", sort_order: "desc" }
 );
 export const useStorageObject = makeDetailHook<Tables<"storage_objects">>(
     "storage_object",
-    "/api/storage-objects"
+    "/api/entities/storage-objects"
 );
 export const useCreateStorageObject = makeCreateHook<Tables<"storage_objects">>(
     "storage_object",
-    "/api/storage-objects"
+    "/api/entities/storage-objects"
 );
-export const useDeleteStorageObject = makeDeleteHook("storage_object", "/api/storage-objects");
+export const useDeleteStorageObject = makeDeleteHook(
+    "storage_object",
+    "/api/entities/storage-objects"
+);
 
 // TRANSFER ORDERS
 // ═══════════════════════════════════════════════════════════════
 export const useTransferOrders = makeListHook<Tables<"transfer_orders">>(
     "transfer_order",
-    "/api/transfer-orders",
+    "/api/entities/transfer-orders",
     { sort_by: "created_at", sort_order: "desc" }
 );
 export const useTransferOrder = makeDetailHook<Tables<"transfer_orders">>(
     "transfer_order",
-    "/api/transfer-orders"
+    "/api/entities/transfer-orders"
 );
 export const useCreateTransferOrder = makeCreateHook<Tables<"transfer_orders">>(
     "transfer_order",
-    "/api/transfer-orders"
+    "/api/entities/transfer-orders"
 );
 export const useUpdateTransferOrder = makeUpdateHook<Tables<"transfer_orders">>(
     "transfer_order",
-    "/api/transfer-orders"
+    "/api/entities/transfer-orders"
 );
-export const useDeleteTransferOrder = makeDeleteHook("transfer_order", "/api/transfer-orders");
+export const useDeleteTransferOrder = makeDeleteHook(
+    "transfer_order",
+    "/api/entities/transfer-orders"
+);

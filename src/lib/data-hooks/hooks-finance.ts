@@ -22,14 +22,20 @@ import {
 // INVOICES
 // ═══════════════════════════════════════════════════════════════
 
-export const useInvoices = makeListHook<Tables<"invoices">>("invoice", "/api/invoices", {
+export const useInvoices = makeListHook<Tables<"invoices">>("invoice", "/api/entities/invoices", {
     sort_by: "created_at",
     sort_order: "desc",
 });
-export const useInvoice = makeDetailHook<Tables<"invoices">>("invoice", "/api/invoices");
-export const useCreateInvoice = makeCreateHook<Tables<"invoices">>("invoice", "/api/invoices");
-export const useUpdateInvoice = makeUpdateHook<Tables<"invoices">>("invoice", "/api/invoices");
-export const useDeleteInvoice = makeDeleteHook("invoice", "/api/invoices");
+export const useInvoice = makeDetailHook<Tables<"invoices">>("invoice", "/api/entities/invoices");
+export const useCreateInvoice = makeCreateHook<Tables<"invoices">>(
+    "invoice",
+    "/api/entities/invoices"
+);
+export const useUpdateInvoice = makeUpdateHook<Tables<"invoices">>(
+    "invoice",
+    "/api/entities/invoices"
+);
+export const useDeleteInvoice = makeDeleteHook("invoice", "/api/entities/invoices");
 
 // CLIENT INVOICES → canonical in hooks-sow.ts (join-aware)
 
@@ -39,40 +45,45 @@ export const useDeleteInvoice = makeDeleteHook("invoice", "/api/invoices");
 
 export const useRecurringInvoices = makeListHook<Tables<"recurring_invoices">>(
     "recurring_invoice",
-    "/api/recurring-invoices",
+    "/api/entities/recurring-invoices",
     { sort_by: "next_date", sort_order: "asc" }
 );
 export const useRecurringInvoice = makeDetailHook<Tables<"recurring_invoices">>(
     "recurring_invoice",
-    "/api/recurring-invoices"
+    "/api/entities/recurring-invoices"
 );
 export const useCreateRecurringInvoice = makeCreateHook<Tables<"recurring_invoices">>(
     "recurring_invoice",
-    "/api/recurring-invoices"
+    "/api/entities/recurring-invoices"
 );
 export const useUpdateRecurringInvoice = makeUpdateHook<Tables<"recurring_invoices">>(
     "recurring_invoice",
-    "/api/recurring-invoices"
+    "/api/entities/recurring-invoices"
 );
 export const useDeleteRecurringInvoice = makeDeleteHook(
     "recurring_invoice",
-    "/api/recurring-invoices"
+    "/api/entities/recurring-invoices"
 );
 
 // ═══════════════════════════════════════════════════════════════
 // PAYMENTS
 // ═══════════════════════════════════════════════════════════════
 
-export const usePayments = makeListHook<Tables<"payments">>("payment", "/api/payments", {
+export const usePayments = makeListHook<Tables<"payments">>("payment", "/api/entities/payments", {
     sort_by: "payment_date",
     sort_order: "desc",
 });
-export const usePayment = makeDetailHook<Tables<"payments">>("payment", "/api/payments");
-export const useCreatePayment = makeCreateHook<Tables<"payments">>("payment", "/api/payments", [
-    "invoice",
-]);
-export const useUpdatePayment = makeUpdateHook<Tables<"payments">>("payment", "/api/payments");
-export const useDeletePayment = makeDeleteHook("payment", "/api/payments");
+export const usePayment = makeDetailHook<Tables<"payments">>("payment", "/api/entities/payments");
+export const useCreatePayment = makeCreateHook<Tables<"payments">>(
+    "payment",
+    "/api/entities/payments",
+    ["invoice"]
+);
+export const useUpdatePayment = makeUpdateHook<Tables<"payments">>(
+    "payment",
+    "/api/entities/payments"
+);
+export const useDeletePayment = makeDeleteHook("payment", "/api/entities/payments");
 
 // ═══════════════════════════════════════════════════════════════
 // CREDIT NOTES
@@ -80,23 +91,23 @@ export const useDeletePayment = makeDeleteHook("payment", "/api/payments");
 
 export const useCreditNotes = makeListHook<Tables<"credit_notes">>(
     "credit_note",
-    "/api/credit-notes",
+    "/api/entities/credit-notes",
     { sort_by: "created_at", sort_order: "desc" }
 );
 export const useCreditNote = makeDetailHook<Tables<"credit_notes">>(
     "credit_note",
-    "/api/credit-notes"
+    "/api/entities/credit-notes"
 );
 export const useCreateCreditNote = makeCreateHook<Tables<"credit_notes">>(
     "credit_note",
-    "/api/credit-notes",
+    "/api/entities/credit-notes",
     ["client_invoice"]
 );
 export const useUpdateCreditNote = makeUpdateHook<Tables<"credit_notes">>(
     "credit_note",
-    "/api/credit-notes"
+    "/api/entities/credit-notes"
 );
-export const useDeleteCreditNote = makeDeleteHook("credit_note", "/api/credit-notes");
+export const useDeleteCreditNote = makeDeleteHook("credit_note", "/api/entities/credit-notes");
 
 // ═══════════════════════════════════════════════════════════════
 // PURCHASE ORDERS
@@ -104,22 +115,25 @@ export const useDeleteCreditNote = makeDeleteHook("credit_note", "/api/credit-no
 
 export const usePurchaseOrders = makeListHook<Tables<"purchase_orders">>(
     "purchase_order",
-    "/api/purchase-orders",
+    "/api/entities/purchase-orders",
     { sort_by: "created_at", sort_order: "desc" }
 );
 export const usePurchaseOrder = makeDetailHook<Tables<"purchase_orders">>(
     "purchase_order",
-    "/api/purchase-orders"
+    "/api/entities/purchase-orders"
 );
 export const useCreatePurchaseOrder = makeCreateHook<Tables<"purchase_orders">>(
     "purchase_order",
-    "/api/purchase-orders"
+    "/api/entities/purchase-orders"
 );
 export const useUpdatePurchaseOrder = makeUpdateHook<Tables<"purchase_orders">>(
     "purchase_order",
-    "/api/purchase-orders"
+    "/api/entities/purchase-orders"
 );
-export const useDeletePurchaseOrder = makeDeleteHook("purchase_order", "/api/purchase-orders");
+export const useDeletePurchaseOrder = makeDeleteHook(
+    "purchase_order",
+    "/api/entities/purchase-orders"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // PAYROLL BATCHES
@@ -127,22 +141,25 @@ export const useDeletePurchaseOrder = makeDeleteHook("purchase_order", "/api/pur
 
 export const usePayrollBatches = makeListHook<Tables<"payroll_batches">>(
     "payroll_batch",
-    "/api/payroll-batches",
+    "/api/entities/payroll-batches",
     { sort_by: "pay_period_start", sort_order: "desc" }
 );
 export const usePayrollBatch = makeDetailHook<Tables<"payroll_batches">>(
     "payroll_batch",
-    "/api/payroll-batches"
+    "/api/entities/payroll-batches"
 );
 export const useCreatePayrollBatch = makeCreateHook<Tables<"payroll_batches">>(
     "payroll_batch",
-    "/api/payroll-batches"
+    "/api/entities/payroll-batches"
 );
 export const useUpdatePayrollBatch = makeUpdateHook<Tables<"payroll_batches">>(
     "payroll_batch",
-    "/api/payroll-batches"
+    "/api/entities/payroll-batches"
 );
-export const useDeletePayrollBatch = makeDeleteHook("payroll_batch", "/api/payroll-batches");
+export const useDeletePayrollBatch = makeDeleteHook(
+    "payroll_batch",
+    "/api/entities/payroll-batches"
+);
 
 // ═══════════════════════════════════════════════════════════════
 // BUDGET APPROVALS
@@ -150,20 +167,20 @@ export const useDeletePayrollBatch = makeDeleteHook("payroll_batch", "/api/payro
 
 export const useBudgetApprovals = makeListHook<Tables<"budget_approvals">>(
     "budget_approval",
-    "/api/budget-approvals",
+    "/api/entities/budget-approvals",
     { sort_by: "created_at", sort_order: "desc" }
 );
 export const useBudgetApproval = makeDetailHook<Tables<"budget_approvals">>(
     "budget_approval",
-    "/api/budget-approvals"
+    "/api/entities/budget-approvals"
 );
 export const useCreateBudgetApproval = makeCreateHook<Tables<"budget_approvals">>(
     "budget_approval",
-    "/api/budget-approvals"
+    "/api/entities/budget-approvals"
 );
 export const useUpdateBudgetApproval = makeUpdateHook<Tables<"budget_approvals">>(
     "budget_approval",
-    "/api/budget-approvals"
+    "/api/entities/budget-approvals"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -172,28 +189,31 @@ export const useUpdateBudgetApproval = makeUpdateHook<Tables<"budget_approvals">
 
 export const useBudgetLineItems = makeListHook<Tables<"budget_line_items">>(
     "budget_line_item",
-    "/api/budget-line-items",
+    "/api/entities/budget-line-items",
     { sort_by: "category", sort_order: "asc" }
 );
 export const useBudgetLineItem = makeDetailHook<Tables<"budget_line_items">>(
     "budget_line_item",
-    "/api/budget-line-items"
+    "/api/entities/budget-line-items"
 );
 export const useCreateBudgetLineItem = makeCreateHook<Tables<"budget_line_items">>(
     "budget_line_item",
-    "/api/budget-line-items",
+    "/api/entities/budget-line-items",
     ["budget"]
 );
 export const useUpdateBudgetLineItem = makeUpdateHook<Tables<"budget_line_items">>(
     "budget_line_item",
-    "/api/budget-line-items"
+    "/api/entities/budget-line-items"
 );
-export const useDeleteBudgetLineItem = makeDeleteHook("budget_line_item", "/api/budget-line-items");
+export const useDeleteBudgetLineItem = makeDeleteHook(
+    "budget_line_item",
+    "/api/entities/budget-line-items"
+);
 
 // ─── Budget Lines (production_budget_lines alias for detail pages) ───
 export const useBudgetLines = makeListHook<Tables<"production_budget_lines">>(
     "production_budget_line",
-    "/api/production-budget-lines",
+    "/api/entities/production-budget-lines",
     { sort_by: "sort_order", sort_order: "asc" }
 );
 
@@ -203,67 +223,81 @@ export const useBudgetLines = makeListHook<Tables<"production_budget_lines">>(
 
 export const useProductionBudgetLines = makeListHook<Tables<"production_budget_lines">>(
     "production_budget_line",
-    "/api/production-budget-lines",
+    "/api/entities/production-budget-lines",
     { sort_by: "sort_order", sort_order: "asc" }
 );
 export const useProductionBudgetLine = makeDetailHook<Tables<"production_budget_lines">>(
     "production_budget_line",
-    "/api/production-budget-lines"
+    "/api/entities/production-budget-lines"
 );
 export const useCreateProductionBudgetLine = makeCreateHook<Tables<"production_budget_lines">>(
     "production_budget_line",
-    "/api/production-budget-lines",
+    "/api/entities/production-budget-lines",
     ["budget"]
 );
 export const useUpdateProductionBudgetLine = makeUpdateHook<Tables<"production_budget_lines">>(
     "production_budget_line",
-    "/api/production-budget-lines"
+    "/api/entities/production-budget-lines"
 );
 export const useDeleteProductionBudgetLine = makeDeleteHook(
     "production_budget_line",
-    "/api/production-budget-lines"
+    "/api/entities/production-budget-lines"
 );
 
 // ═══════════════════════════════════════════════════════════════
 // GL ACCOUNTS
 // ═══════════════════════════════════════════════════════════════
 
-export const useGlAccounts = makeListHook<Tables<"gl_accounts">>("gl_account", "/api/gl-accounts", {
-    sort_by: "account_code",
-    sort_order: "asc",
-});
-export const useGlAccount = makeDetailHook<Tables<"gl_accounts">>("gl_account", "/api/gl-accounts");
+export const useGlAccounts = makeListHook<Tables<"gl_accounts">>(
+    "gl_account",
+    "/api/entities/gl-accounts",
+    {
+        sort_by: "account_code",
+        sort_order: "asc",
+    }
+);
+export const useGlAccount = makeDetailHook<Tables<"gl_accounts">>(
+    "gl_account",
+    "/api/entities/gl-accounts"
+);
 export const useCreateGlAccount = makeCreateHook<Tables<"gl_accounts">>(
     "gl_account",
-    "/api/gl-accounts"
+    "/api/entities/gl-accounts"
 );
 export const useUpdateGlAccount = makeUpdateHook<Tables<"gl_accounts">>(
     "gl_account",
-    "/api/gl-accounts"
+    "/api/entities/gl-accounts"
 );
 
 // ═══════════════════════════════════════════════════════════════
 // RATE CARDS
 // ═══════════════════════════════════════════════════════════════
 
-export const useRateCards = makeListHook<Tables<"rate_cards">>("rate_card", "/api/rate-cards", {
-    sort_by: "name",
-    sort_order: "asc",
-});
-export const useRateCard = makeDetailHook<Tables<"rate_cards">>("rate_card", "/api/rate-cards");
+export const useRateCards = makeListHook<Tables<"rate_cards">>(
+    "rate_card",
+    "/api/entities/rate-cards",
+    {
+        sort_by: "name",
+        sort_order: "asc",
+    }
+);
+export const useRateCard = makeDetailHook<Tables<"rate_cards">>(
+    "rate_card",
+    "/api/entities/rate-cards"
+);
 export const useCreateRateCard = makeCreateHook<Tables<"rate_cards">>(
     "rate_card",
-    "/api/rate-cards"
+    "/api/entities/rate-cards"
 );
 export const useUpdateRateCard = makeUpdateHook<Tables<"rate_cards">>(
     "rate_card",
-    "/api/rate-cards"
+    "/api/entities/rate-cards"
 );
-export const useDeleteRateCard = makeDeleteHook("rate_card", "/api/rate-cards");
+export const useDeleteRateCard = makeDeleteHook("rate_card", "/api/entities/rate-cards");
 
 export const useCreateRateCardItem = makeCreateHook<Tables<"rate_card_items">>(
     "rate_card_item",
-    "/api/rate-card-items",
+    "/api/entities/rate-card-items",
     ["rate_card"]
 );
 
@@ -271,7 +305,7 @@ export function useAllRateCardItems() {
     return useQuery({
         queryKey: ["rate_card_item"],
         queryFn: async () => {
-            const res = await apiList<Tables<"rate_card_items">>("/api/rate-card-items", {
+            const res = await apiList<Tables<"rate_card_items">>("/api/entities/rate-card-items", {
                 sort_by: "service_name",
                 sort_order: "asc",
             });
@@ -286,7 +320,7 @@ export function useAllRateCardItems() {
 export function useRateCardWithItems(id: string) {
     return useQuery({
         queryKey: ["rate_card", "detail", id, "items"],
-        queryFn: () => apiGet<Tables<"rate_cards">>("/api/rate-cards", id),
+        queryFn: () => apiGet<Tables<"rate_cards">>("/api/entities/rate-cards", id),
         enabled: !!id,
     });
 }
@@ -297,12 +331,12 @@ export function useRateCardWithItems(id: string) {
 
 export const useJobCostEntries = makeListHook<Tables<"job_cost_entries">>(
     "job_cost_entry",
-    "/api/job-cost-entries",
+    "/api/entities/job-cost-entries",
     { sort_by: "created_at", sort_order: "desc" }
 );
 export const useCreateJobCostEntry = makeCreateHook<Tables<"job_cost_entries">>(
     "job_cost_entry",
-    "/api/job-cost-entries"
+    "/api/entities/job-cost-entries"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -311,7 +345,7 @@ export const useCreateJobCostEntry = makeCreateHook<Tables<"job_cost_entries">>(
 
 export const useRevenueSchedules = makeListHook<Tables<"revenue_schedules">>(
     "revenue_schedule",
-    "/api/revenue-schedules",
+    "/api/entities/revenue-schedules",
     { sort_by: "period_start", sort_order: "desc" }
 );
 
@@ -321,12 +355,12 @@ export const useRevenueSchedules = makeListHook<Tables<"revenue_schedules">>(
 
 export const useRevenueRecognitionEntries = makeListHook<Tables<"revenue_recognition_entries">>(
     "revenue_recognition_entry",
-    "/api/revenue-recognition-entries",
+    "/api/entities/revenue-recognition-entries",
     { sort_by: "period_start", sort_order: "desc" }
 );
 export const useCreateRevenueRecognition = makeCreateHook<Tables<"revenue_recognition_entries">>(
     "revenue_recognition_entry",
-    "/api/revenue-recognition-entries",
+    "/api/entities/revenue-recognition-entries",
     ["revenue_recognition_summary"]
 );
 
@@ -334,10 +368,13 @@ export function useRevenueRecognitionSummary() {
     return useQuery({
         queryKey: ["revenue_recognition_summary"],
         queryFn: async () => {
-            const res = await apiList<Record<string, unknown>>("/api/revenue-recognition-summary", {
-                sort_by: "project_name",
-                sort_order: "asc",
-            });
+            const res = await apiList<Record<string, unknown>>(
+                "/api/entities/revenue-recognition-summary",
+                {
+                    sort_by: "project_name",
+                    sort_order: "asc",
+                }
+            );
             return res.data;
         },
     });
@@ -349,21 +386,21 @@ export function useRevenueRecognitionSummary() {
 
 export const useDepreciationSchedules = makeListHook<Tables<"depreciation_schedules">>(
     "depreciation_schedule",
-    "/api/depreciation-schedules",
+    "/api/entities/depreciation-schedules",
     { sort_by: "start_date", sort_order: "desc" }
 );
 export const useDepreciationSchedule = makeDetailHook<Tables<"depreciation_schedules">>(
     "depreciation_schedule",
-    "/api/depreciation-schedules"
+    "/api/entities/depreciation-schedules"
 );
 export const useCreateDepreciationSchedule = makeCreateHook<Tables<"depreciation_schedules">>(
     "depreciation_schedule",
-    "/api/depreciation-schedules",
+    "/api/entities/depreciation-schedules",
     ["asset"]
 );
 export const useUpdateDepreciationSchedule = makeUpdateHook<Tables<"depreciation_schedules">>(
     "depreciation_schedule",
-    "/api/depreciation-schedules"
+    "/api/entities/depreciation-schedules"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -372,25 +409,29 @@ export const useUpdateDepreciationSchedule = makeUpdateHook<Tables<"depreciation
 
 export const useExpenseReports = makeListHook<Tables<"expenses">>(
     "expense_report",
-    "/api/expense-reports",
+    "/api/entities/expense-reports",
     { sort_by: "created_at", sort_order: "desc" }
 );
 export const useCreateExpenseReport = makeCreateHook<Tables<"expenses">>(
     "expense_report",
-    "/api/expense-reports"
+    "/api/entities/expense-reports"
 );
 
 // ═══════════════════════════════════════════════════════════════
 // TIMESHEETS
 // ═══════════════════════════════════════════════════════════════
 
-export const useTimesheets = makeListHook<Tables<"time_entries">>("timesheet", "/api/timesheets", {
-    sort_by: "period_start",
-    sort_order: "desc",
-});
+export const useTimesheets = makeListHook<Tables<"time_entries">>(
+    "timesheet",
+    "/api/entities/timesheets",
+    {
+        sort_by: "period_start",
+        sort_order: "desc",
+    }
+);
 export const useCreateTimesheet = makeCreateHook<Tables<"time_entries">>(
     "timesheet",
-    "/api/timesheets"
+    "/api/entities/timesheets"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -399,16 +440,16 @@ export const useCreateTimesheet = makeCreateHook<Tables<"time_entries">>(
 
 export const useInvoiceTemplates = makeListHook<Tables<"invoice_templates">>(
     "invoice_template",
-    "/api/invoice-templates",
+    "/api/entities/invoice-templates",
     { sort_by: "name", sort_order: "asc" }
 );
 export const useCreateInvoiceTemplate = makeCreateHook<Tables<"invoice_templates">>(
     "invoice_template",
-    "/api/invoice-templates"
+    "/api/entities/invoice-templates"
 );
 export const useUpdateInvoiceTemplate = makeUpdateHook<Tables<"invoice_templates">>(
     "invoice_template",
-    "/api/invoice-templates"
+    "/api/entities/invoice-templates"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -417,20 +458,20 @@ export const useUpdateInvoiceTemplate = makeUpdateHook<Tables<"invoice_templates
 
 export const usePaymentApprovals = makeListHook<Tables<"payment_approvals">>(
     "payment_approval",
-    "/api/payment-approvals",
+    "/api/entities/payment-approvals",
     { sort_by: "created_at", sort_order: "desc" }
 );
 export const usePaymentApproval = makeDetailHook<Tables<"payment_approvals">>(
     "payment_approval",
-    "/api/payment-approvals"
+    "/api/entities/payment-approvals"
 );
 export const useCreatePaymentApproval = makeCreateHook<Tables<"payment_approvals">>(
     "payment_approval",
-    "/api/payment-approvals"
+    "/api/entities/payment-approvals"
 );
 export const useUpdatePaymentApproval = makeUpdateHook<Tables<"payment_approvals">>(
     "payment_approval",
-    "/api/payment-approvals"
+    "/api/entities/payment-approvals"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -439,12 +480,12 @@ export const useUpdatePaymentApproval = makeUpdateHook<Tables<"payment_approvals
 
 export const useEngineeringApprovals = makeListHook<Tables<"engineering_approvals">>(
     "engineering_approval",
-    "/api/engineering-approvals",
+    "/api/entities/engineering-approvals",
     { sort_by: "created_at", sort_order: "desc" }
 );
 export const useCreateEngineeringApproval = makeCreateHook<Tables<"engineering_approvals">>(
     "engineering_approval",
-    "/api/engineering-approvals"
+    "/api/entities/engineering-approvals"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -453,24 +494,24 @@ export const useCreateEngineeringApproval = makeCreateHook<Tables<"engineering_a
 
 export const useFinancialPeriods = makeListHook<Tables<"financial_periods">>(
     "financial_period",
-    "/api/financial-periods",
+    "/api/entities/financial-periods",
     { sort_by: "start_date", sort_order: "desc" }
 );
 export const useFinancialPeriod = makeDetailHook<Tables<"financial_periods">>(
     "financial_period",
-    "/api/financial-periods"
+    "/api/entities/financial-periods"
 );
 export const useCreateFinancialPeriod = makeCreateHook<Tables<"financial_periods">>(
     "financial_period",
-    "/api/financial-periods"
+    "/api/entities/financial-periods"
 );
 export const useUpdateFinancialPeriod = makeUpdateHook<Tables<"financial_periods">>(
     "financial_period",
-    "/api/financial-periods"
+    "/api/entities/financial-periods"
 );
 export const useDeleteFinancialPeriod = makeDeleteHook(
     "financial_period",
-    "/api/financial-periods"
+    "/api/entities/financial-periods"
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -482,7 +523,7 @@ export function useBillingPlan() {
         queryKey: ["billing_plan"],
         queryFn: async () => {
             const res = await apiFetch<{ subscription: Record<string, unknown> | null }>(
-                "/api/billing/subscribe"
+                "/api/entities/billing/subscribe"
             );
             return res.subscription;
         },
@@ -496,10 +537,13 @@ export function useSelectPlan() {
             pricing_tier: "starter" | "core" | "team" | "pro" | "enterprise";
             billing_cycle: "monthly" | "annual";
         }) => {
-            const res = await apiFetch<{ subscription: unknown }>("/api/billing/subscribe", {
-                method: "POST",
-                body: JSON.stringify(params),
-            });
+            const res = await apiFetch<{ subscription: unknown }>(
+                "/api/entities/billing/subscribe",
+                {
+                    method: "POST",
+                    body: JSON.stringify(params),
+                }
+            );
             return res.subscription;
         },
         onSuccess: () => qc.invalidateQueries({ queryKey: ["billing_plan"] }),
@@ -520,10 +564,13 @@ export function useGenerateInvoiceFromTime() {
             projectId: string;
             timeEntryIds: string[];
         }) => {
-            const res = await apiFetch<{ data: unknown }>("/api/invoices/generate-from-time", {
-                method: "POST",
-                body: JSON.stringify({ project_id: projectId, time_entry_ids: timeEntryIds }),
-            });
+            const res = await apiFetch<{ data: unknown }>(
+                "/api/entities/invoices/generate-from-time",
+                {
+                    method: "POST",
+                    body: JSON.stringify({ project_id: projectId, time_entry_ids: timeEntryIds }),
+                }
+            );
             return res.data;
         },
         onSuccess: () => {

@@ -73,8 +73,8 @@ async function vectorSearch(
         match_count: topK,
         match_threshold: scoreThreshold,
         filter_org_id: orgId,
-        filter_source_types: options?.sourceTypes ?? undefined,
-        filter_document_ids: options?.documentIds ?? undefined,
+        ...(options?.sourceTypes ? { filter_source_types: options.sourceTypes } : {}),
+        ...(options?.documentIds ? { filter_document_ids: options.documentIds } : {}),
     });
 
     if (error) {

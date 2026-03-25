@@ -467,9 +467,13 @@ export function AssetDetailClient({
     const [maintenanceNote, setMaintenanceNote] = useState("");
     const updateAsset = useUpdateAsset();
     const createAssignment = useCreateAssetAssignment();
-    const { data: sbAssets } = useAssets();
 
-    const sbAsset = sbAssets?.find((a) => a.id === id);
+    // Performance: Skip the full-list fetch entirely for invalid UUIDs.
+    // This prevents an infinite loading state on broken/test links.
+    const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const { data: sbAssets } = useAssets(isValidUuid ? undefined : { _enabled: false });
+
+    const sbAsset = isValidUuid ? sbAssets?.find((a) => a.id === id) : undefined;
     const asset = sbAsset
         ? {
               id: sbAsset.id,
@@ -490,6 +494,9 @@ export function AssetDetailClient({
               status: ((sbAsset as Record<string, unknown>).status as string) ?? "available",
           }
         : null;
+
+    // For invalid UUIDs, immediately show "not found" without waiting for useAssets()
+    const isLoading = isValidUuid ? !sbAssets : false;
 
     const handleCheckOut = async () => {
         try {
@@ -530,7 +537,6 @@ export function AssetDetailClient({
         }
     };
 
-    const isLoading = !sbAssets;
     const conditionConfig = asset ? ASSET_CONDITION_MAP[asset.condition] : null;
     const isRental = asset?.ownedOrRental === "rental";
 

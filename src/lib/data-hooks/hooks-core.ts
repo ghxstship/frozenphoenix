@@ -57,10 +57,12 @@ export const useDeleteTask = makeDeleteHook("task", "/api/tasks");
 // DEALS
 // ═══════════════════════════════════════════════════════════════
 
-export const useDeals = makeListHook<Tables<"deals">>("deal", "/api/deals", {
-    sort_by: "created_at",
-    sort_order: "desc",
-});
+export const useDeals = makeListHook<Tables<"deals">>(
+    "deal",
+    "/api/deals",
+    { sort_by: "created_at", sort_order: "desc" },
+    { staleTime: 5 * 60_000, gcTime: 10 * 60_000 }
+);
 export const useDeal = makeDetailHook<Tables<"deals">>("deal", "/api/deals");
 export const useCreateDeal = makeCreateHook<Tables<"deals">>("deal", "/api/deals");
 export const useUpdateDeal = makeUpdateHook<Tables<"deals">>("deal", "/api/deals");
@@ -71,11 +73,18 @@ export const useDeleteDeal = makeDeleteHook("deal", "/api/deals");
 // ═══════════════════════════════════════════════════════════════
 
 // Performance: 5-min staleTime — locations are reference data that rarely change.
-export const useLocations = makeListHook<Tables<"locations">>("location", "/api/locations", {
-    sort_by: "name",
-    sort_order: "asc",
-}, { staleTime: 5 * 60_000 });
-export const useLocation = makeDetailHook<Tables<"locations">>("location", "/api/locations", { staleTime: 5 * 60_000 });
+export const useLocations = makeListHook<Tables<"locations">>(
+    "location",
+    "/api/locations",
+    {
+        sort_by: "name",
+        sort_order: "asc",
+    },
+    { staleTime: 5 * 60_000 }
+);
+export const useLocation = makeDetailHook<Tables<"locations">>("location", "/api/locations", {
+    staleTime: 5 * 60_000,
+});
 export const useCreateLocation = makeCreateHook<Tables<"locations">>("location", "/api/locations");
 export const useUpdateLocation = makeUpdateHook<Tables<"locations">>("location", "/api/locations");
 export const useDeleteLocation = makeDeleteHook("location", "/api/locations");

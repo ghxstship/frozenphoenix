@@ -277,6 +277,9 @@ export function useAllRateCardItems() {
             });
             return res.data;
         },
+        // Performance: Rate card items are reference data — cache for 5 min
+        staleTime: 5 * 60_000,
+        gcTime: 10 * 60_000,
     });
 }
 

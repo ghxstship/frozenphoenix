@@ -101,16 +101,16 @@ describe("Navigation RBAC Filtering", () => {
         expect(liveOps).toBeUndefined();
     });
 
-    it("live ops visible when contextual flag set", () => {
-        const sections = getNavigationSectionsForRole("exec", {
-            contextualVisibility: { "live-ops": true },
-        });
-        const liveOps = sections.find((s) => s.title === "Live Operations");
-        expect(liveOps).toBeDefined();
+    it("live ops is merged into operations — no separate contextual section", () => {
+        // Live Operations was merged into Operations section (always visible).
+        // Verify that no section has contextual: "live-ops" anymore.
+        const sections = getNavigationSectionsForRole("exec");
+        const ops = sections.find((s) => s.title === "Operations");
+        expect(ops).toBeDefined();
     });
 
-    it("navigation config has 13 sections total (12 + 1 contextual)", () => {
-        expect(navigationConfig).toHaveLength(13);
+    it("navigation config has 10 sections total", () => {
+        expect(navigationConfig).toHaveLength(10);
     });
 
     it("no section is empty after exec filtering", () => {

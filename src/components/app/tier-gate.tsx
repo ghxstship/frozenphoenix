@@ -38,7 +38,13 @@ export function TierGate({
 }: TierGateProps) {
     const { allowed, isLoading, requiredTier, requiredTierName } = useTierGate(requires);
 
-    if (isLoading) return null;
+    if (isLoading) {
+        return (
+            <div className="animate-pulse" aria-hidden="true">
+                <div className="h-32 bg-muted rounded-xl" />
+            </div>
+        );
+    }
 
     if (allowed) {
         return <>{children}</>;
@@ -70,6 +76,7 @@ interface TierGateInlineProps {
 
 export function TierGateInline({ requires, children }: TierGateInlineProps) {
     const { allowed, isLoading } = useTierGate(requires);
-    if (isLoading || !allowed) return null;
+    if (isLoading) return <span className="opacity-0 pointer-events-none">{children}</span>;
+    if (!allowed) return null;
     return <>{children}</>;
 }

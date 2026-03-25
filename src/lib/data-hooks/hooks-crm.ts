@@ -89,10 +89,12 @@ export const useDeleteOpportunity = makeDeleteHook("opportunity", "/api/opportun
 // COMPANIES
 // ═══════════════════════════════════════════════════════════════
 
-export const useCompanies = makeListHook<Tables<"companies">>("company", "/api/companies", {
-    sort_by: "name",
-    sort_order: "asc",
-});
+export const useCompanies = makeListHook<Tables<"companies">>(
+    "company",
+    "/api/companies",
+    { sort_by: "name", sort_order: "asc" },
+    { staleTime: 5 * 60_000, gcTime: 10 * 60_000 }
+);
 export const useCompany = makeDetailHook<Tables<"companies">>("company", "/api/companies");
 export const useCreateCompany = makeCreateHook<Tables<"companies">>("company", "/api/companies");
 export const useUpdateCompany = makeUpdateHook<Tables<"companies">>("company", "/api/companies");
@@ -102,10 +104,12 @@ export const useDeleteCompany = makeDeleteHook("company", "/api/companies");
 // CONTACTS
 // ═══════════════════════════════════════════════════════════════
 
-export const useContacts = makeListHook<Tables<"contacts">>("contact", "/api/contacts", {
-    sort_by: "full_name",
-    sort_order: "asc",
-});
+export const useContacts = makeListHook<Tables<"contacts">>(
+    "contact",
+    "/api/contacts",
+    { sort_by: "full_name", sort_order: "asc" },
+    { staleTime: 5 * 60_000, gcTime: 10 * 60_000 }
+);
 export const useContact = makeDetailHook<Tables<"contacts">>("contact", "/api/contacts");
 export const useCreateContact = makeCreateHook<Tables<"contacts">>("contact", "/api/contacts");
 export const useUpdateContact = makeUpdateHook<Tables<"contacts">>("contact", "/api/contacts");

@@ -40,11 +40,14 @@ export const useUpdateAutomation = makeUpdateHook<Tables<"automations">>(
 );
 export const useDeleteAutomation = makeDeleteHook("automation", "/api/automations");
 
-export function useAutomationWithRules(id: string) {
+const AUTO_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function useAutomationWithRules(id?: string) {
+    const isValid = !!id && AUTO_UUID_RE.test(id);
     return useQuery({
         queryKey: ["automation", "detail", id, "rules"],
-        queryFn: () => apiGet<Tables<"automations">>("/api/automations", id),
-        enabled: !!id,
+        queryFn: () => apiGet<Tables<"automations">>("/api/automations", id!),
+        enabled: isValid,
     });
 }
 
@@ -74,6 +77,7 @@ export const useUpdateAutomationExecution = makeUpdateHook<Tables<"automation_ex
 
 // ─── Automation Logs alias ───
 export function useAutomationLogs(automationId?: string) {
+    const isValid = !!automationId && AUTO_UUID_RE.test(automationId);
     return useQuery({
         queryKey: ["automation_log", { automation_id: automationId }],
         queryFn: () =>
@@ -82,6 +86,7 @@ export function useAutomationLogs(automationId?: string) {
                 sort_by: "executed_at",
                 sort_order: "desc",
             }).then((r) => r.data),
+        enabled: isValid,
     });
 }
 

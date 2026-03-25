@@ -346,9 +346,126 @@ const navigateTo: PlatformTool = {
     category: "navigate",
 };
 
+// ─── Phase 2: Write Tools (confirmation-gated) ──────────────
+
+const createTask: PlatformTool = {
+    name: "create_task",
+    description:
+        "Create a new task in a project. Requires user confirmation before executing. " +
+        "Use when user asks to create a task or add a to-do.",
+    parameters: {
+        type: "object",
+        properties: {
+            project_id: { type: "string", description: "Project UUID" },
+            title: { type: "string", description: "Task title" },
+            description: { type: "string", description: "Task description" },
+            assignee_id: { type: "string", description: "User UUID to assign to" },
+            priority: {
+                type: "string",
+                enum: ["low", "medium", "high", "urgent"],
+                default: "medium",
+            },
+            due_date: { type: "string", description: "ISO 8601 due date" },
+        },
+        required: ["project_id", "title"],
+    },
+    requiredPermission: { resource: "tasks", action: "write" },
+    isWrite: true,
+    category: "generate",
+};
+
+const updateTaskStatus: PlatformTool = {
+    name: "update_task_status",
+    description:
+        "Update the status of an existing task. Requires user confirmation. " +
+        "Use when user says 'mark task as done' or 'move to in progress'.",
+    parameters: {
+        type: "object",
+        properties: {
+            task_id: { type: "string", description: "Task UUID" },
+            status: {
+                type: "string",
+                enum: ["backlog", "todo", "in_progress", "review", "done"],
+            },
+        },
+        required: ["task_id", "status"],
+    },
+    requiredPermission: { resource: "tasks", action: "write" },
+    isWrite: true,
+    category: "generate",
+};
+
+const createNote: PlatformTool = {
+    name: "create_note",
+    description:
+        "Attach a note to any entity (project, task, event, vendor). Requires confirmation. " +
+        "Use when user wants to add a note, comment, or observation.",
+    parameters: {
+        type: "object",
+        properties: {
+            entity_type: {
+                type: "string",
+                enum: ["project", "task", "event", "vendor", "crew_member"],
+            },
+            entity_id: { type: "string", description: "Entity UUID" },
+            content: { type: "string", description: "Note content (markdown)" },
+        },
+        required: ["entity_type", "entity_id", "content"],
+    },
+    requiredPermission: { resource: "documents", action: "write" },
+    isWrite: true,
+    category: "generate",
+};
+
+const scheduleReminder: PlatformTool = {
+    name: "schedule_reminder",
+    description:
+        "Schedule a future notification/reminder for the user. " +
+        "Use when user says 'remind me to...' or 'set a reminder'.",
+    parameters: {
+        type: "object",
+        properties: {
+            message: { type: "string", description: "Reminder message" },
+            remind_at: { type: "string", description: "ISO 8601 datetime" },
+            entity_type: { type: "string", description: "Optional linked entity type" },
+            entity_id: { type: "string", description: "Optional linked entity UUID" },
+        },
+        required: ["message", "remind_at"],
+    },
+    requiredPermission: { resource: "dashboard", action: "write" },
+    isWrite: true,
+    category: "generate",
+};
+
+const suggestSchedule: PlatformTool = {
+    name: "suggest_schedule",
+    description:
+        "AI-powered schedule suggestion based on availability, skills, and labor rules. " +
+        "Returns suggested assignments for review — does NOT auto-create shifts. " +
+        "Use when user asks for schedule optimization or auto-scheduling.",
+    parameters: {
+        type: "object",
+        properties: {
+            event_id: { type: "string", description: "Event UUID" },
+            date_range_start: { type: "string", description: "ISO 8601 start date" },
+            date_range_end: { type: "string", description: "ISO 8601 end date" },
+            roles_needed: {
+                type: "array",
+                items: { type: "string" },
+                description: "List of role titles needed",
+            },
+        },
+        required: ["event_id", "date_range_start", "date_range_end"],
+    },
+    requiredPermission: { resource: "crew", action: "read" },
+    isWrite: false,
+    category: "generate",
+};
+
 // ─── Exports ─────────────────────────────────────────────────
 
 export const PLATFORM_TOOLS: PlatformTool[] = [
+    // Phase 1 — Read-only
     queryProjects,
     queryTasks,
     queryBudgets,
@@ -362,17 +479,26 @@ export const PLATFORM_TOOLS: PlatformTool[] = [
     generateSummary,
     calculateBudgetVariance,
     navigateTo,
+    // Phase 2 — Write tools (confirmation-gated)
+    createTask,
+    updateTaskStatus,
+    createNote,
+    scheduleReminder,
+    suggestSchedule,
 ];
 
 /**
  * Get tools available to a given role based on RBAC permissions.
- * Filters the full tool set to only those the user has access to.
+ * Phase 2 flag enables write tools when the organization has opted in.
  */
 export function getToolsForPermissions(
-    userPermissions: Array<{ resource: string; actions: string[] }>
+    userPermissions: Array<{ resource: string; actions: string[] }>,
+    options?: { enableWriteTools?: boolean | undefined } | undefined
 ): PlatformTool[] {
+    const allowWrites = options?.enableWriteTools ?? false;
+
     return PLATFORM_TOOLS.filter((tool) => {
-        if (tool.isWrite) return false; // Phase 1: no write tools
+        if (tool.isWrite && !allowWrites) return false;
 
         return userPermissions.some(
             (p) =>

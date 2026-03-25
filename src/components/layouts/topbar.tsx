@@ -16,6 +16,7 @@ import { useUnreadCounts } from "@/lib/supabase/hooks-messaging";
 import { FOCUS_RING, ICON_SIZES, LAYOUT } from "@/config/design-tokens";
 import { useReducedMotion } from "@/hooks/use-media-query";
 import { hasPermission } from "@/config/rbac";
+import { useHydrated } from "@/hooks/use-hydrated";
 import {
     getContextualNavigationVisibility,
     getNavigationBreadcrumbs,
@@ -771,7 +772,7 @@ function LocaleSwitcher() {
 // ─── User Menu (avatar + dropdown with org switcher) ───
 
 function UserMenu() {
-    const { user, profile, memberships, activeOrg, switchOrg, signOut } = useAuth();
+    const { user, profile, memberships, activeOrg, switchOrg, signOut, loading } = useAuth();
     const router = useRouter();
     const [signingOut, setSigningOut] = useState(false);
 
@@ -782,9 +783,13 @@ function UserMenu() {
         // signOut() handles navigation via window.location.href
     }, [signOut, signingOut]);
 
-    const displayName = profile?.display_name || user?.email?.split("@")[0] || "User";
+    const hydrated = useHydrated();
+    const profileLoading = !hydrated || loading || (!profile && !!user);
+    const displayName = profileLoading
+        ? ""
+        : profile?.display_name || user?.email?.split("@")[0] || "User";
     const displayEmail = user?.email || "";
-    const initials = getInitials(displayName);
+    const initials = profileLoading ? "" : getInitials(displayName);
     const orgName = activeOrg?.organizations?.name || "No Organization";
     const userRole = (activeOrg?.role ?? undefined) as PermissionLevel | undefined;
 
@@ -800,7 +805,9 @@ function UserMenu() {
                     aria-label="User menu"
                 >
                     <div className="relative h-7 w-7 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center ring-2 ring-background shrink-0 overflow-hidden">
-                        {(profile as Record<string, unknown>)?.avatar_url ? (
+                        {profileLoading ? (
+                            <div className="h-full w-full animate-shimmer bg-muted rounded-full" />
+                        ) : (profile as Record<string, unknown>)?.avatar_url ? (
                             <Image
                                 src={(profile as Record<string, unknown>).avatar_url as string}
                                 alt={displayName}
@@ -814,7 +821,11 @@ function UserMenu() {
                         )}
                     </div>
                     <span className="hidden lg:block text-sm font-medium text-foreground max-w-[120px] truncate">
-                        {displayName}
+                        {profileLoading ? (
+                            <span className="inline-block h-3.5 w-20 bg-muted animate-shimmer rounded" />
+                        ) : (
+                            displayName
+                        )}
                     </span>
                     <ChevronDown className="hidden lg:block h-3 w-3 text-muted-foreground" />
                 </button>
@@ -938,12 +949,15 @@ export function Topbar() {
     const isOpen = useSidebar((state) => state.isOpen);
     const setOpen = useSidebar((state) => state.setOpen);
     // Auth context (safe fallback for when not inside AuthProvider)
-    let userRole: PermissionLevel = "pm";
+    let userRole: PermissionLevel = "collaborator";
+    let _authLoading = true;
     try {
         const auth = useAuth();
-        userRole = ((auth.activeOrg?.role as string) || "pm") as PermissionLevel;
+        _authLoading = auth.loading;
+        userRole = ((auth.activeOrg?.role as string) || "collaborator") as PermissionLevel;
     } catch {
         // Outside AuthProvider — use defaults
+        _authLoading = false;
     }
 
     const contextualVisibility = useMemo(

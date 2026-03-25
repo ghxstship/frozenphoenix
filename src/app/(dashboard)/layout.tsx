@@ -12,6 +12,7 @@ import { BREAKPOINTS } from "@/config/design-tokens";
 import { ErrorBoundary } from "@/components/app/error-boundary";
 import { EmailCollectionBanner } from "@/components/auth";
 import { PageTransition } from "@/components/ui/page-transition";
+import { LoadingState } from "@/components/layouts/loading-state";
 import { useCopilotContext } from "@/hooks/use-copilot-context";
 import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
 
@@ -22,6 +23,10 @@ const MessagingPanel = dynamic(
 );
 const CopilotPanel = dynamic(
     () => import("@/components/copilot/copilot-panel").then((m) => m.CopilotPanel),
+    { ssr: false }
+);
+const CommandPalette = dynamic(
+    () => import("@/components/ui/command-palette").then((m) => m.CommandPalette),
     { ssr: false }
 );
 
@@ -97,7 +102,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     >
                         <ErrorBoundary level="page">
                             <PageTransition>
-                                <Suspense>{children}</Suspense>
+                                <Suspense fallback={<LoadingState variant="page" />}>
+                                    {children}
+                                </Suspense>
                             </PageTransition>
                         </ErrorBoundary>
                     </main>
@@ -108,6 +115,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {/* AI Copilot slide-over panel */}
                 <CopilotPanel />
+
+                {/* Global command palette (⌘K) */}
+                <CommandPalette />
 
                 {/* Mobile navigation — bottom tab bar + FAB */}
                 {isMobile && (

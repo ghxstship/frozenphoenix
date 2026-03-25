@@ -13,7 +13,7 @@ import { AlertTriangle, CheckCircle2, Loader2, Mail, X } from "lucide-react";
  * Consumes the `needsEmailCollection` flag from AuthContext.
  */
 export function EmailCollectionBanner() {
-    const { needsEmailCollection, refreshProfile } = useAuth();
+    const { needsEmailCollection, refreshProfile, loading: authLoading } = useAuth();
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -68,7 +68,7 @@ export function EmailCollectionBanner() {
         [email, refreshProfile]
     );
 
-    if (!needsEmailCollection || dismissed) return null;
+    if (authLoading || !needsEmailCollection || dismissed) return null;
 
     if (success) {
         return (

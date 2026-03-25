@@ -73,6 +73,12 @@ export async function prefetchList<T = Record<string, unknown>>(
 }
 
 /**
+ * UUID v4 format validation — prevents sending invalid IDs to internal API
+ * which would cause unnecessary SSR delay.
+ */
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
  * Server-side single record fetcher.
  */
 export async function prefetchDetail<T = Record<string, unknown>>(
@@ -80,6 +86,11 @@ export async function prefetchDetail<T = Record<string, unknown>>(
     id: string
 ): Promise<{ data: T | null; isError: boolean }> {
     try {
+        // Performance: Skip API call entirely for invalid UUIDs
+        if (!UUID_REGEX.test(id)) {
+            return { data: null, isError: false };
+        }
+
         const headerStore = await headers();
         const host = headerStore.get("host") ?? "localhost:3000";
         const protocol = headerStore.get("x-forwarded-proto") ?? "http";

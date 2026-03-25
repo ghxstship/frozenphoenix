@@ -44,6 +44,10 @@ const nextConfig: NextConfig = {
                     key: "X-DNS-Prefetch-Control",
                     value: "on",
                 },
+                {
+                    key: "X-Content-Type-Options",
+                    value: "nosniff",
+                },
             ],
         },
         {
@@ -52,6 +56,13 @@ const nextConfig: NextConfig = {
                 {
                     key: "X-Robots-Tag",
                     value: "noindex, nofollow",
+                },
+                {
+                    // Performance: Browser-level cache for API GET responses.
+                    // 60s max-age aligns with React Query's staleTime.
+                    // SWR for 5 min allows serving stale while revalidating.
+                    key: "Cache-Control",
+                    value: "public, max-age=60, s-maxage=60, stale-while-revalidate=300",
                 },
             ],
         },

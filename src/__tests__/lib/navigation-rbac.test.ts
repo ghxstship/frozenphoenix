@@ -30,8 +30,8 @@ import type { PermissionLevel } from "@/types";
 // ═══════════════════════════════════════════════════════════════
 
 describe("Navigation Config Structure", () => {
-    it("has 13 sections total (after WAYFINDER R1+R2 splits)", () => {
-        expect(navigationConfig).toHaveLength(13);
+    it("has 10 sections total (final IA optimization)", () => {
+        expect(navigationConfig).toHaveLength(10);
     });
 
     it("every section has a title and at least one item", () => {
@@ -68,35 +68,34 @@ describe("Navigation Config Structure", () => {
         }
     });
 
-    it("Admin and Platform sections exist (split from original Admin)", () => {
+    it("Admin section exists (Platform merged in)", () => {
         const admin = navigationConfig.find((s) => s.title === "Admin");
-        const platform = navigationConfig.find((s) => s.title === "Platform");
         expect(admin).toBeDefined();
-        expect(platform).toBeDefined();
-        // Admin should have ≤ 9 items after split (users, roles, settings etc.)
-        const adminItemCount = flattenNavItems([admin!]).length;
-        expect(adminItemCount).toBeLessThanOrEqual(20); // including settings children
     });
 
-    it("Crew & Scheduling and Vendors sections exist (split from Workforce)", () => {
-        const crew = navigationConfig.find((s) => s.title === "Crew & Scheduling");
-        const vendors = navigationConfig.find((s) => s.title === "Vendors");
-        expect(crew).toBeDefined();
-        expect(vendors).toBeDefined();
+    it("Workforce and Supply Chain sections exist", () => {
+        const workforce = navigationConfig.find((s) => s.title === "Workforce");
+        const supplyChain = navigationConfig.find((s) => s.title === "Supply Chain");
+        expect(workforce).toBeDefined();
+        expect(supplyChain).toBeDefined();
     });
 
-    it("WAYFINDER R6: labels are renamed correctly", () => {
+    it("v5: labels are renamed correctly", () => {
         const allItems = flattenNavItems(navigationConfig);
         const labels = allItems.map((i) => i.title);
         expect(labels).toContain("My Tasks");
         expect(labels).toContain("My Documents");
         expect(labels).toContain("Analytics");
-        expect(labels).toContain("Advance Orders");
-        expect(labels).toContain("Companies");
-        expect(labels).toContain("HR");
+        expect(labels).toContain("Advances");
+        expect(labels).toContain("Personnel");
+        expect(labels).toContain("Human Resources");
+        expect(labels).toContain("Vendors");
+        expect(labels).toContain("Warehousing");
+        expect(labels).toContain("Logistics");
         // Old labels should NOT exist
-        expect(labels).not.toContain("Insights");
-        expect(labels).not.toContain("Advancing");
+        expect(labels).not.toContain("Advance Orders");
+        expect(labels).not.toContain("HR");
+        expect(labels).not.toContain("Crew");
     });
 
     it("Home section is first and always expanded", () => {
@@ -104,9 +103,9 @@ describe("Navigation Config Structure", () => {
         expect(navigationConfig[0]!.defaultExpanded).toBe(true);
     });
 
-    it("contextual sections are marked with contextual property", () => {
+    it("no contextual sections after v5 merge", () => {
         const contextual = navigationConfig.filter((s) => s.contextual);
-        expect(contextual.length).toBeGreaterThanOrEqual(1);
+        expect(contextual.length).toBe(0);
     });
 });
 
@@ -203,24 +202,20 @@ describe("getNavigationSectionsForRole", () => {
         expect(items.length).toBeGreaterThanOrEqual(0);
     });
 
-    it("contextual sections hidden by default", () => {
+    it("all sections visible by default (no contextual gating)", () => {
         const sections = getNavigationSectionsForRole("exec");
-        const contextualInResult = sections.filter((s) =>
-            navigationConfig.some((nc) => nc.title === s.title && nc.contextual)
-        );
-        expect(contextualInResult).toHaveLength(0);
+        expect(sections.length).toBe(navigationConfig.length);
     });
 
-    it("contextual sections shown when opted in", () => {
-        const contextualSection = navigationConfig.find((s) => s.contextual);
-        if (!contextualSection) return; // Skip if no contextual sections
-
-        const sections = getNavigationSectionsForRole("exec", {
-            includeContextual: true,
-            contextualVisibility: { [contextualSection.contextual!]: true },
-        });
-        const found = sections.find((s) => s.title === contextualSection.title);
-        expect(found).toBeDefined();
+    it("Operations section contains core ops items", () => {
+        const sections = getNavigationSectionsForRole("exec");
+        const ops = sections.find((s) => s.title === "Operations");
+        expect(ops).toBeDefined();
+        const items = flattenNavItems([ops!]);
+        const titles = items.map((i) => i.title);
+        // Environment, Resilience, Data Health, Sustainability consolidated into Overview tabs
+        expect(titles).toContain("Documents");
+        expect(titles).toContain("Workflows");
     });
 });
 

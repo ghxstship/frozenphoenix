@@ -14,6 +14,12 @@ import { createClient, serverFromTable } from "@/lib/supabase/server";
 import { getEntityConfigBySlug } from "@/lib/api/entity-config";
 
 /**
+ * UUID v4 format validation — prevents sending invalid IDs to Supabase
+ * which would block SSR for 4-6 seconds waiting for a DB error response.
+ */
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
  * Prefetch a single record by ID for a detail page.
  * Returns null if the record is not found or if an error occurs.
  * This is a best-effort prefetch — the client will re-fetch independently.
@@ -23,6 +29,10 @@ export async function prefetchDetailRecord(
     id: string
 ): Promise<Record<string, unknown> | null> {
     try {
+        // Performance: Skip Supabase query entirely for invalid UUIDs.
+        // This eliminates 4-6s SSR blocking on broken/test links.
+        if (!UUID_REGEX.test(id)) return null;
+
         const config = getEntityConfigBySlug(slug);
         if (!config) return null;
 

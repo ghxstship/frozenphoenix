@@ -64,6 +64,13 @@ describe("Navigation → Page Route Coverage", () => {
             if (path === "/home/tasks") return false;
             if (path === "/home/documents") return false;
             if (path === "/live-ops") return false;
+            // Skip section overview/landing pages (dashboard-type, not entity lists)
+            if (path === "/production") return false;
+            if (path === "/workforce-overview") return false;
+            if (path === "/vendor-overview") return false;
+            if (path === "/resources") return false;
+            if (path === "/vendor-invoices") return false;
+            if (path === "/platform") return false;
             return true;
         })
         .map((item) => item.path);

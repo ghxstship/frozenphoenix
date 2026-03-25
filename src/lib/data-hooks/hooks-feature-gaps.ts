@@ -595,3 +595,310 @@ export function useLinkArticle() {
         },
     });
 }
+
+// ═══════════════════════════════════════════════════════════════
+// DATA COMPLETENESS (GAP-CRW-01)
+// Configurable per-entity required-field rules with weighted scoring.
+// ═══════════════════════════════════════════════════════════════
+
+export interface DataCompletenessRule {
+    /** Entity type this rule applies to */
+    entityType: string;
+    /** Supabase table name */
+    table: string;
+    /** Fields to check for completeness */
+    requiredFields: {
+        field: string;
+        label: string;
+        /** 1-3 importance weight (higher = more impact on score) */
+        weight: number;
+    }[];
+}
+
+export interface DataCompletenessResult {
+    id: string;
+    name: string;
+    completenessPercent: number;
+    filledCount: number;
+    totalCount: number;
+    missingFields: { field: string; label: string; weight: number }[];
+}
+
+export interface DataCompletenessSummary {
+    entityType: string;
+    totalRecords: number;
+    avgCompleteness: number;
+    fullyComplete: number;
+    needsAttention: number;
+    criticalGaps: number;
+}
+
+/** Configurable rules per entity type — extend as needed */
+export const DATA_COMPLETENESS_RULES: DataCompletenessRule[] = [
+    {
+        entityType: "crew",
+        table: "crew_members",
+        requiredFields: [
+            { field: "name", label: "Full Name", weight: 3 },
+            { field: "email", label: "Email Address", weight: 3 },
+            { field: "phone", label: "Phone Number", weight: 2 },
+            { field: "role", label: "Role / Title", weight: 2 },
+            { field: "department", label: "Department", weight: 1 },
+            { field: "emergency_contact", label: "Emergency Contact", weight: 2 },
+            { field: "shirt_size", label: "Shirt Size", weight: 1 },
+            { field: "dietary_restrictions", label: "Dietary Restrictions", weight: 1 },
+        ],
+    },
+    {
+        entityType: "vendors",
+        table: "vendors",
+        requiredFields: [
+            { field: "name", label: "Company Name", weight: 3 },
+            { field: "primary_contact_name", label: "Primary Contact", weight: 3 },
+            { field: "email", label: "Email Address", weight: 3 },
+            { field: "phone", label: "Phone Number", weight: 2 },
+            { field: "address", label: "Business Address", weight: 1 },
+            { field: "tax_id", label: "Tax ID / EIN", weight: 2 },
+            { field: "insurance_expiry", label: "Insurance Expiry", weight: 2 },
+            { field: "payment_terms", label: "Payment Terms", weight: 1 },
+        ],
+    },
+    {
+        entityType: "contacts",
+        table: "contacts",
+        requiredFields: [
+            { field: "name", label: "Full Name", weight: 3 },
+            { field: "email", label: "Email Address", weight: 3 },
+            { field: "phone", label: "Phone Number", weight: 2 },
+            { field: "company", label: "Company", weight: 1 },
+            { field: "title", label: "Job Title", weight: 1 },
+        ],
+    },
+    {
+        entityType: "assets",
+        table: "assets",
+        requiredFields: [
+            { field: "name", label: "Asset Name", weight: 3 },
+            { field: "asset_tag", label: "Asset Tag / ID", weight: 3 },
+            { field: "category", label: "Category", weight: 2 },
+            { field: "condition", label: "Condition", weight: 2 },
+            { field: "location", label: "Current Location", weight: 2 },
+            { field: "purchase_date", label: "Purchase Date", weight: 1 },
+            { field: "purchase_price", label: "Purchase Price", weight: 1 },
+        ],
+    },
+];
+
+/**
+ * Pure function: compute completeness for a single record against a rule set.
+ * Exported for unit testing.
+ */
+export function computeCompleteness(
+    record: Record<string, unknown>,
+    rule: DataCompletenessRule
+): DataCompletenessResult {
+    const missing: DataCompletenessResult["missingFields"] = [];
+    let totalWeight = 0;
+    let filledWeight = 0;
+    let filledCount = 0;
+
+    for (const rf of rule.requiredFields) {
+        totalWeight += rf.weight;
+        const val = record[rf.field];
+        const isFilled = val !== null && val !== undefined && val !== "" && val !== 0;
+        if (isFilled) {
+            filledWeight += rf.weight;
+            filledCount++;
+        } else {
+            missing.push({ field: rf.field, label: rf.label, weight: rf.weight });
+        }
+    }
+
+    const completenessPercent =
+        totalWeight > 0 ? Math.round((filledWeight / totalWeight) * 100) : 100;
+
+    return {
+        id: (record.id as string) ?? "",
+        name: (record.name as string) ?? (record.title as string) ?? "Unnamed",
+        completenessPercent,
+        filledCount,
+        totalCount: rule.requiredFields.length,
+        missingFields: missing,
+    };
+}
+
+export function useDataCompleteness(entityType: string) {
+    const rule = DATA_COMPLETENESS_RULES.find((r) => r.entityType === entityType);
+    return useQuery({
+        queryKey: ["data_completeness", entityType],
+        queryFn: async () => {
+            if (!rule) return [];
+            const selectFields = [
+                "id",
+                "name",
+                "title",
+                ...rule.requiredFields.map((f) => f.field),
+            ];
+            const uniqueFields = [...new Set(selectFields)];
+            const { data, error } = await fromTable(rule.table)
+                .select(uniqueFields.join(","))
+                .order("name")
+                .limit(500);
+            if (error) throw error;
+            return (data ?? []).map((record: Record<string, unknown>) =>
+                computeCompleteness(record, rule)
+            );
+        },
+        enabled: !!rule,
+    });
+}
+
+export function useDataCompletenessSummary(entityType: string) {
+    const { data: results, isLoading } = useDataCompleteness(entityType);
+
+    const summary: DataCompletenessSummary | null = results
+        ? {
+              entityType,
+              totalRecords: results.length,
+              avgCompleteness:
+                  results.length > 0
+                      ? Math.round(
+                            results.reduce(
+                                (sum: number, r: DataCompletenessResult) =>
+                                    sum + r.completenessPercent,
+                                0
+                            ) / results.length
+                        )
+                      : 0,
+              fullyComplete: results.filter(
+                  (r: DataCompletenessResult) => r.completenessPercent === 100
+              ).length,
+              needsAttention: results.filter(
+                  (r: DataCompletenessResult) =>
+                      r.completenessPercent < 100 && r.completenessPercent >= 50
+              ).length,
+              criticalGaps: results.filter(
+                  (r: DataCompletenessResult) => r.completenessPercent < 50
+              ).length,
+          }
+        : null;
+
+    return { summary, isLoading };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DUPLICATE ORDER DETECTION (GAP-PRC-01)
+// Fuzzy matching on vendor + items + amount within a time window.
+// ═══════════════════════════════════════════════════════════════
+
+export interface DuplicateCandidate {
+    id: string;
+    po_number: string;
+    vendor_id: string;
+    vendor_name: string;
+    total_amount: number;
+    created_at: string;
+    similarity: number;
+    matchReasons: string[];
+}
+
+/**
+ * Pure function: compute similarity between two POs.
+ * Exported for unit testing.
+ */
+export function computeOrderSimilarity(
+    newOrder: { vendorId: string; amount: number; description?: string | undefined },
+    existing: { vendor_id: string; total_amount: number; description?: string | null }
+): { similarity: number; reasons: string[] } {
+    const reasons: string[] = [];
+    let score = 0;
+
+    // Vendor match = 40% weight
+    if (newOrder.vendorId === existing.vendor_id) {
+        score += 40;
+        reasons.push("Same vendor");
+    }
+
+    // Amount within 10% tolerance = 40% weight
+    const amtDiff = Math.abs(newOrder.amount - existing.total_amount);
+    const amtTolerance = Math.max(newOrder.amount, existing.total_amount) * 0.1;
+    if (amtDiff <= amtTolerance) {
+        const amtScore = 40 * (1 - amtDiff / Math.max(amtTolerance, 1));
+        score += amtScore;
+        if (amtDiff === 0) {
+            reasons.push("Exact amount match");
+        } else {
+            reasons.push(
+                `Amount within ${Math.round((amtDiff / Math.max(newOrder.amount, 1)) * 100)}% tolerance`
+            );
+        }
+    }
+
+    // Description overlap = 20% weight (simple word overlap)
+    if (newOrder.description && existing.description) {
+        const newWords = new Set(newOrder.description.toLowerCase().split(/\s+/));
+        const existingWords = new Set(existing.description.toLowerCase().split(/\s+/));
+        const overlap = [...newWords].filter((w) => existingWords.has(w)).length;
+        const maxWords = Math.max(newWords.size, existingWords.size, 1);
+        const descScore = 20 * (overlap / maxWords);
+        if (descScore > 5) {
+            score += descScore;
+            reasons.push("Similar description");
+        }
+    }
+
+    return { similarity: Math.round(score), reasons };
+}
+
+export function useDuplicateOrderDetection(
+    vendorId: string | undefined,
+    amount: number | undefined,
+    description?: string,
+    windowDays = 30
+) {
+    return useQuery({
+        queryKey: ["duplicate_order_detection", vendorId, amount, windowDays],
+        queryFn: async () => {
+            if (!vendorId || amount === undefined) return [];
+
+            const windowStart = new Date();
+            windowStart.setDate(windowStart.getDate() - windowDays);
+
+            const { data, error } = await fromTable("purchase_orders")
+                .select(
+                    "id, po_number, vendor_id, total_amount, description, created_at, vendors(name)"
+                )
+                .eq("vendor_id", vendorId)
+                .gte("created_at", windowStart.toISOString())
+                .order("created_at", { ascending: false })
+                .limit(20);
+            if (error) throw error;
+
+            const candidates: DuplicateCandidate[] = [];
+            for (const po of data ?? []) {
+                const { similarity, reasons } = computeOrderSimilarity(
+                    { vendorId, amount, description },
+                    po as { vendor_id: string; total_amount: number; description?: string | null }
+                );
+                if (similarity >= 50) {
+                    candidates.push({
+                        id: (po as Record<string, unknown>).id as string,
+                        po_number: ((po as Record<string, unknown>).po_number as string) ?? "",
+                        vendor_id: (po as Record<string, unknown>).vendor_id as string,
+                        vendor_name:
+                            ((po as Record<string, unknown>).vendors as { name: string } | null)
+                                ?.name ?? "",
+                        total_amount: (po as Record<string, unknown>).total_amount as number,
+                        created_at: (po as Record<string, unknown>).created_at as string,
+                        similarity,
+                        matchReasons: reasons,
+                    });
+                }
+            }
+
+            return candidates.sort((a, b) => b.similarity - a.similarity);
+        },
+        enabled: !!vendorId && amount !== undefined && amount > 0,
+        staleTime: 30_000,
+    });
+}

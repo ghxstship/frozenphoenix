@@ -12,9 +12,10 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { apiList } from "@/lib/api/client";
+import { cn } from "@/lib/utils";
 import { LoadingState } from "@/components/layouts/loading-state";
 
 import { PageHeader } from "@/components/ui/page-header";
@@ -23,6 +24,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { StatsGrid } from "@/components/ui/stats-grid";
 import { AlertBanner } from "@/components/ui/alert-banner";
 import { FilterBar } from "@/components/ui/filter-bar";
+import { Tooltip } from "@/components/ui/tooltip";
 import { type ViewMode, ViewSwitcher } from "@/components/ui/view-switcher";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import dynamic from "next/dynamic";
@@ -77,10 +79,27 @@ const CsvImportDialog = dynamic(() =>
     import("@/components/csv/csv-import-dialog").then((m) => m.CsvImportDialog)
 );
 import { QuickViewPanel } from "@/components/shells/quick-view-panel";
-import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ColumnVisibilityPopover } from "@/components/ui/column-visibility-popover";
 import { useColumnPreferences } from "@/hooks/use-column-preferences";
-import { CheckCircle2, Clock, Eye, LayoutList, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import {
+    CheckCircle2,
+    Clock,
+    Eye,
+    LayoutList,
+    MoreVertical,
+    Pencil,
+    Plus,
+    RefreshCw,
+    Trash2,
+    Upload,
+} from "lucide-react";
 import type { ListAlertDef, ListPageConfig, ListRowActionDef } from "@/types/list-page-config";
 import {
     getResolvedConfig,
@@ -588,13 +607,19 @@ function ListPageShellInner({
 
     // Fetch data via API (skipped when external data is provided)
     // Query key aligned with makeListHook pattern: [entityKey, filterParams]
-    const { data: rawData, isLoading: apiLoading } = useQuery({
+    const {
+        data: rawData,
+        isLoading: apiLoading,
+        isFetching,
+    } = useQuery({
         queryKey: [config.entityKey, undefined],
         queryFn: async () => {
             const res = await apiList<EntityRecord>(basePath);
             return res.data;
         },
         enabled: externalData === undefined,
+        // Performance: Keep previous list visible during navigation/refetch
+        placeholderData: keepPreviousData,
     });
 
     const isLoading = externalData !== undefined ? (externalLoading ?? false) : apiLoading;
@@ -995,28 +1020,7 @@ function ListPageShellInner({
                 }}
             >
                 {/* Header */}
-                {config.headerSlot ?? (
-                    <PageHeader title={title} description={description}>
-                        {importable && (
-                            <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
-                                <Upload className="h-4 w-4" /> Import
-                            </Button>
-                        )}
-                        {exportable && (
-                            <CsvExportButton
-                                entity={config.entityKey}
-                                size="sm"
-                                variant="outline"
-                            />
-                        )}
-                        {hasCreate && (
-                            <Button size="sm" onClick={openCreate}>
-                                <Plus className="h-4 w-4" />{" "}
-                                {config.createLabel ?? `New ${displayName}`}
-                            </Button>
-                        )}
-                    </PageHeader>
-                )}
+                {config.headerSlot ?? <PageHeader title={title} description={description} />}
 
                 {/* Stats */}
                 {config.statsSlot ??
@@ -1068,6 +1072,64 @@ function ListPageShellInner({
                                         value={viewMode}
                                         onValueChange={setViewMode}
                                     />
+                                )}
+                                <Tooltip content="Refresh data" side="bottom">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        onClick={invalidateEntity}
+                                        aria-label="Refresh data"
+                                    >
+                                        <RefreshCw
+                                            className={cn(
+                                                "h-4 w-4 transition-transform",
+                                                isFetching && "animate-spin"
+                                            )}
+                                        />
+                                    </Button>
+                                </Tooltip>
+                                {(importable || exportable) && (
+                                    <DropdownMenu>
+                                        <Tooltip content="More actions" side="bottom">
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0"
+                                                    aria-label="More actions"
+                                                >
+                                                    <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                        </Tooltip>
+                                        <DropdownMenuContent align="end">
+                                            {importable && (
+                                                <DropdownMenuItem
+                                                    onClick={() => setImportOpen(true)}
+                                                >
+                                                    <Upload className="h-4 w-4 mr-2" />
+                                                    Import
+                                                </DropdownMenuItem>
+                                            )}
+                                            {exportable && (
+                                                <DropdownMenuItem>
+                                                    <CsvExportButton
+                                                        entity={config.entityKey}
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-auto p-0 font-normal hover:bg-transparent"
+                                                    />
+                                                </DropdownMenuItem>
+                                            )}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                )}
+                                {hasCreate && (
+                                    <Button size="sm" onClick={openCreate}>
+                                        <Plus className="h-4 w-4" />{" "}
+                                        {config.createLabel ?? `New ${displayName}`}
+                                    </Button>
                                 )}
                             </>
                         }

@@ -142,7 +142,21 @@ interface OwnerGateProps {
 }
 
 export function OwnerGate({ children, fallback, silent = false }: OwnerGateProps) {
+    const { loading } = useAuth();
     const owner = useIsOwner();
+
+    // While auth is hydrating, show a non-destructive loading state
+    // instead of flashing "Owner Access Required".
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[40vh] p-6">
+                <Loader2
+                    className="h-6 w-6 motion-safe:animate-spin text-muted-foreground"
+                    aria-label="Loading"
+                />
+            </div>
+        );
+    }
 
     if (owner) return <>{children}</>;
 

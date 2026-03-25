@@ -344,18 +344,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     setSession(freshSession);
                     setUser(validatedUser);
 
-                    // Set loading=false BEFORE fetching profile/memberships so the
-                    // UI isn't stuck on "Loading..." while those resolve. The user
-                    // is authenticated — profile/memberships populate asynchronously.
-                    if (!cancelled) {
-                        setLoading(false);
-                        initDoneRef.current = true;
-                    }
-
+                    // Fetch profile AND memberships BEFORE clearing loading.
+                    // Previously, loading was set to false here so the UI would
+                    // show content sooner — but this caused PermissionGate to
+                    // render with empty memberships (default "collaborator" role),
+                    // briefly flashing "Access Denied" on every page that requires
+                    // a higher permission level.
                     await Promise.all([
                         fetchProfileRef.current(validatedUser.id, validatedUser),
                         fetchMembershipsRef.current(validatedUser.id),
                     ]);
+
+                    if (!cancelled) {
+                        setLoading(false);
+                        initDoneRef.current = true;
+                    }
 
                     return; // Skip the setLoading(false) below
                 } else {

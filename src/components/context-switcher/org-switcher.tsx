@@ -8,6 +8,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { ContextSwitcherPopover } from "./popover";
 import { CONTEXT_SWITCHER_STRINGS } from "@/lib/i18n/context-switcher-strings";
 import { hasPermission } from "@/config/rbac";
+import { useHydrated } from "@/hooks/use-hydrated";
 import type { PermissionLevel } from "@/types";
 import type { SwitcherItem } from "@/types/workspace-context";
 
@@ -17,8 +18,13 @@ interface OrgSwitcherProps {
 }
 
 export function OrgSwitcher({ collapsed = false, isMobile = false }: OrgSwitcherProps) {
-    const { memberships, activeOrg, switchOrg } = useAuth();
+    const { memberships, activeOrg, switchOrg, loading } = useAuth();
+    const hydrated = useHydrated();
     const userRole = (activeOrg?.role ?? undefined) as PermissionLevel | undefined;
+
+    // During SSR + auth hydration, memberships is [] and activeOrg is null, causing
+    // "Select Organization" to flash. Show shimmer instead.
+    const orgLoading = !hydrated || loading || (memberships.length === 0 && !activeOrg);
 
     const orgItems: SwitcherItem[] = memberships.map((m) => ({
         id: m.organization_id,
@@ -33,6 +39,20 @@ export function OrgSwitcher({ collapsed = false, isMobile = false }: OrgSwitcher
     const canCreate = userRole ? hasPermission(userRole, "organizations", "write") : false;
 
     const showLabel = !collapsed || isMobile;
+
+    if (orgLoading) {
+        return (
+            <div
+                className={cn(
+                    "flex items-center gap-2",
+                    showLabel ? "px-2 py-1.5" : "justify-center p-1.5"
+                )}
+            >
+                <div className="h-7 w-7 rounded-md bg-muted animate-shimmer shrink-0" />
+                {showLabel && <div className="h-3.5 w-24 bg-muted animate-shimmer rounded" />}
+            </div>
+        );
+    }
 
     const trigger = (
         <div

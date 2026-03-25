@@ -24,10 +24,12 @@ import type { UserCertification } from "./hook-types";
 // CREW MEMBERS
 // ═══════════════════════════════════════════════════════════════
 
-export const useCrewMembers = makeListHook<Tables<"crew_members">>("crew_member", "/api/crew", {
-    sort_by: "name",
-    sort_order: "asc",
-});
+export const useCrewMembers = makeListHook<Tables<"crew_members">>(
+    "crew_member",
+    "/api/crew",
+    { sort_by: "name", sort_order: "asc" },
+    { staleTime: 5 * 60_000, gcTime: 10 * 60_000 }
+);
 export const useCrewMember = makeDetailHook<Tables<"crew_members">>("crew_member", "/api/crew");
 export const useCreateCrewMember = makeCreateHook<Tables<"crew_members">>(
     "crew_member",
@@ -144,7 +146,8 @@ export const useRejectTimeOffRequest = makeUpdateHook<Tables<"time_off_requests"
 export const useResourceBookings = makeListHook<Tables<"resource_bookings">>(
     "resource_booking",
     "/api/resource-bookings",
-    { sort_by: "start_date", sort_order: "asc" }
+    { sort_by: "start_date", sort_order: "asc" },
+    { staleTime: 5 * 60_000, gcTime: 10 * 60_000 }
 );
 export const useResourceBooking = makeDetailHook<Tables<"resource_bookings">>(
     "resource_booking",

@@ -1,115 +1,61 @@
 import {
     AlertTriangle,
-    ArrowLeftRight,
-    ArrowRightLeft,
-    Award,
     BadgeCheck,
-    Banknote,
     BarChart3,
     BarChartHorizontal,
     Bell,
-    Blocks,
     BookLock,
     BookMarked,
     BookOpen,
     Boxes,
-    Brain,
     Brush,
     Building2,
-    Calculator,
     Calendar,
     CalendarCheck,
     CalendarDays,
-    CalendarRange,
-    Car,
     CheckSquare,
     CircleDollarSign,
     ClipboardCheck,
-    ClipboardList,
     ClipboardMinus,
-    ClipboardPenLine,
     Clock,
-    Code2,
-    ContactRound,
-    Cpu,
-    CreditCard,
-    Crown,
+    Compass,
     DollarSign,
-    Download,
-    Drama,
     FileBadge,
-    FileBarChart,
     FileCheck,
-    FilePenLine,
     FileSignature,
-    FileSpreadsheet,
     Filter,
     Fingerprint,
-    FlaskConical,
     FolderKanban,
     FolderOpen,
-    GanttChart,
-    Gauge,
     GitBranch,
-    Handshake,
-    HardDriveDownload,
     HardHat,
-    HeartPulse,
-    ImagePlus,
     Inbox,
-    KeyRound,
-    Landmark,
     Layers,
     LayoutDashboard,
-    LayoutList,
-    LayoutTemplate,
     Link2,
-    ListChecks,
     Lock,
     Mail,
     MapPin,
     Megaphone,
-    MessageSquareMore,
-    MessageSquareQuote,
     Navigation,
     Package,
-    Palette,
-    Palmtree,
     PenTool,
     PiggyBank,
-    Presentation,
-    QrCode,
     Radio,
     Receipt,
-    ReceiptText,
-    RefreshCw,
-    Repeat,
-    Scale,
-    ScanBarcode,
-    ScrollText,
     SearchCheck,
-    Send,
     Settings,
     Shield,
-    ShieldAlert,
     ShieldCheck,
-    ShieldQuestion,
     ShoppingCart,
     Sparkles,
-    Star,
     Store,
     SwatchBook,
-    Target,
-    Thermometer,
     Ticket,
     Timer,
-    TrendingUp,
     Truck,
-    UserCircle,
-    UserPlus,
     Users,
     UsersRound,
-    WalletCards,
     Warehouse,
     Workflow,
     Wrench,
@@ -229,33 +175,8 @@ export function getNavigationSectionsForRole(
         .filter((section) => section.items.length > 0);
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// INFORMATION ARCHITECTURE v4
-//
-// Design principles:
-//   1. Tier 1 (always visible): Universal anchors — Dashboard, Calendar
-//   2. Tier 2 (primary domains): 6 groups aligned to user mental models
-//   3. Tier 3 (governance/admin): Collapsed by default, bottom of nav
-//   4. Contextual: Live Ops appears only when event is in-progress
-//   5. Two-level nesting via children[] for large sections
-//   6. Every item has a unique icon — no duplicates in collapsed view
-//   7. RBAC filtering removes inaccessible items (enforced in sidebar)
-//
-// v4 changes (from v3):
-//   - Reordered for workflow gravity: Production→Operations→Workforce
-//   - Merged People + vendor workforce items → "Workforce" section
-//   - Dissolved Marketing → Campaigns nested under Creative
-//   - Moved Documents (call/tech sheets) from Creative → Operations
-//   - Moved Procurement from Vendors → Finance
-//   - Renamed "Legal & Compliance" → "Legal"
-//   - Operations promoted to Tier 2, defaultExpanded: true
-//
-// Sections: 10 (+ 1 contextual)
-// Max visible top-level items per section: 7 (Miller's Law)
-// ═══════════════════════════════════════════════════════════════════════
-
 export const navigationConfig: NavSection[] = [
-    // ── Tier 1: Always Visible ──
+    // ── 1. Home ──
     {
         title: "Home",
         defaultExpanded: true,
@@ -265,18 +186,6 @@ export const navigationConfig: NavSection[] = [
                 path: "/dashboard",
                 icon: LayoutDashboard,
                 permission: "dashboard.read",
-            },
-            {
-                title: "Messages",
-                path: "/messages",
-                icon: Mail,
-                permission: "messaging_dm.read",
-            },
-            {
-                title: "My Tasks",
-                path: "/home/tasks",
-                icon: CheckSquare,
-                permission: "tasks.read",
             },
             {
                 title: "Calendar",
@@ -290,6 +199,8 @@ export const navigationConfig: NavSection[] = [
                 icon: Bell,
                 permission: "dashboard.read",
             },
+            { title: "Messages", path: "/messages", icon: Mail, permission: "messaging_dm.read" },
+            { title: "My Tasks", path: "/home/tasks", icon: CheckSquare, permission: "tasks.read" },
             {
                 title: "My Documents",
                 path: "/home/documents",
@@ -301,120 +212,11 @@ export const navigationConfig: NavSection[] = [
                 path: "/reports",
                 icon: BarChart3,
                 permission: "reports.read",
-                children: [
-                    {
-                        title: "Custom Dashboards",
-                        path: "/dashboards",
-                        icon: GanttChart,
-                        permission: "dashboards.read",
-                    },
-                    {
-                        title: "Forecasting",
-                        path: "/forecasting",
-                        icon: TrendingUp,
-                        permission: "forecasting.read",
-                    },
-                    {
-                        title: "Saved Views",
-                        path: "/saved-views",
-                        icon: LayoutList,
-                        permission: "saved_views.read",
-                    },
-                    {
-                        title: "AI Reports",
-                        path: "/reports/ai",
-                        icon: Brain,
-                        permission: "reports.read",
-                    },
-                    {
-                        title: "Scenarios",
-                        path: "/scenarios",
-                        icon: FlaskConical,
-                        permission: "scenarios.read",
-                    },
-                    {
-                        title: "Report Builder",
-                        path: "/report-definitions",
-                        icon: FilePenLine,
-                        permission: "reports.manage",
-                    },
-                ],
             },
         ],
     },
 
-    // ── Tier 2: Primary Domains ──
-    {
-        title: "Business",
-        defaultExpanded: false,
-        items: [
-            { title: "Pipeline", path: "/pipeline", icon: Filter, permission: "pipeline.read" },
-            { title: "Leads", path: "/leads", icon: UserPlus, permission: "leads.read" },
-            {
-                title: "Opportunities",
-                path: "/opportunities",
-                icon: Target,
-                permission: "opportunities.read",
-            },
-            {
-                title: "Deals",
-                path: "/deals",
-                icon: Handshake,
-                permission: "deals.read",
-                children: [
-                    {
-                        title: "Proposals",
-                        path: "/proposals",
-                        icon: FilePenLine,
-                        permission: "proposals.read",
-                    },
-                    {
-                        title: "Estimates",
-                        path: "/estimates",
-                        icon: FileSignature,
-                        permission: "estimates.read",
-                    },
-                    {
-                        title: "Change Orders",
-                        path: "/change-orders",
-                        icon: ArrowRightLeft,
-                        permission: "change_orders.read",
-                    },
-                    {
-                        title: "Upsell Events",
-                        path: "/upsell-events",
-                        icon: Sparkles,
-                        permission: "deals.read",
-                    },
-                    {
-                        title: "Upsell Triggers",
-                        path: "/upsell-triggers",
-                        icon: Zap,
-                        permission: "deals.manage",
-                    },
-                    {
-                        title: "Lost Reasons",
-                        path: "/lost-reasons",
-                        icon: AlertTriangle,
-                        permission: "deals.manage",
-                    },
-                ],
-            },
-            { title: "Accounts", path: "/accounts", icon: Building2, permission: "accounts.read" },
-            {
-                title: "Companies",
-                path: "/companies",
-                icon: ContactRound,
-                permission: "people.read",
-            },
-            {
-                title: "Stakeholders",
-                path: "/stakeholders",
-                icon: UsersRound,
-                permission: "people.read",
-            },
-        ],
-    },
+    // ── 2. Production ──
     {
         title: "Production",
         defaultExpanded: false,
@@ -425,143 +227,35 @@ export const navigationConfig: NavSection[] = [
                 icon: FolderKanban,
                 permission: "projects.read",
             },
+            { title: "Tasks", path: "/tasks", icon: CheckSquare, permission: "tasks.read" },
             {
-                title: "Scopes of Work",
-                path: "/scopes-of-work",
-                icon: ScrollText,
-                permission: "sow.read",
+                title: "Events",
+                path: "/events",
+                icon: Calendar,
+                permission: "events.read",
             },
-            { title: "Events", path: "/events", icon: Calendar, permission: "events.read" },
             {
                 title: "Activations",
                 path: "/activations",
                 icon: Sparkles,
                 permission: "activations.read",
             },
-            { title: "Tasks", path: "/tasks", icon: CheckSquare, permission: "tasks.read" },
             {
-                title: "Schedule",
-                path: "/scheduling",
-                icon: GanttChart,
-                permission: "schedule.read",
-            },
-            {
-                title: "Bills of Materials",
-                path: "/boms",
-                icon: Layers,
-                permission: "projects.read",
-            },
-            { title: "Locations", path: "/locations", icon: MapPin, permission: "locations.read" },
-            {
-                title: "Advance Orders",
+                title: "Advances",
                 path: "/advancing",
                 icon: ShoppingCart,
                 permission: "advancing.read",
-                children: [
-                    {
-                        title: "Catalog",
-                        path: "/advancing/catalog",
-                        icon: Boxes,
-                        permission: "advancing.manage",
-                    },
-                    {
-                        title: "New Advance",
-                        path: "/advancing/new",
-                        icon: Package,
-                        permission: "advancing.write",
-                    },
-                    {
-                        title: "Approval Queue",
-                        path: "/advancing/queue",
-                        icon: ClipboardCheck,
-                        permission: "advancing.manage",
-                    },
-                    {
-                        title: "Fulfillment",
-                        path: "/advancing/fulfillment",
-                        icon: Truck,
-                        permission: "advancing.manage",
-                    },
-                    {
-                        title: "Inventory",
-                        path: "/advancing/inventory",
-                        icon: Warehouse,
-                        permission: "advancing.manage",
-                    },
-                    {
-                        title: "Templates",
-                        path: "/advancing/templates",
-                        icon: LayoutTemplate,
-                        permission: "advancing.manage",
-                    },
-                    {
-                        title: "Reports",
-                        path: "/advancing/reports",
-                        icon: FileBarChart,
-                        permission: "advancing.manage",
-                    },
-                    {
-                        title: "Status History",
-                        path: "/advance-status-history",
-                        icon: ClipboardList,
-                        permission: "advancing.read",
-                    },
-                ],
             },
+            { title: "Locations", path: "/locations", icon: MapPin, permission: "locations.read" },
         ],
     },
+
+    // ── 3. Operations ──
     {
         title: "Operations",
         defaultExpanded: false,
         items: [
-            {
-                title: "Approvals",
-                path: "/approvals",
-                icon: ShieldCheck,
-                permission: "approvals.read",
-                children: [
-                    {
-                        title: "Workflows",
-                        path: "/approval-workflows",
-                        icon: Workflow,
-                        permission: "approvals.manage",
-                    },
-                ],
-            },
-            {
-                title: "Checklists",
-                path: "/checklists",
-                icon: ListChecks,
-                permission: "checklists.read",
-                children: [
-                    {
-                        title: "Templates",
-                        path: "/checklist-templates",
-                        icon: LayoutTemplate,
-                        permission: "checklists.manage",
-                    },
-                ],
-            },
-            {
-                title: "Service Requests",
-                path: "/service-requests",
-                icon: Inbox,
-                permission: "service_requests.read",
-                children: [
-                    {
-                        title: "SLA Dashboard",
-                        path: "/service-requests/sla",
-                        icon: Gauge,
-                        permission: "service_requests.read",
-                    },
-                    {
-                        title: "SLA Definitions",
-                        path: "/sla-definitions",
-                        icon: ScrollText,
-                        permission: "service_requests.manage",
-                    },
-                ],
-            },
+            { title: "Overview", path: "/live-ops", icon: Radio, permission: "live_events.read" },
             {
                 title: "Workflows",
                 path: "/workflows",
@@ -569,88 +263,50 @@ export const navigationConfig: NavSection[] = [
                 permission: "automations.read",
             },
             {
-                title: "Automations",
-                path: "/automations",
-                icon: Zap,
-                permission: "automations.read",
+                title: "Service Requests",
+                path: "/service-requests",
+                icon: Inbox,
+                permission: "service_requests.read",
+            },
+            {
+                title: "Approvals",
+                path: "/approvals",
+                icon: ShieldCheck,
+                permission: "approvals.read",
             },
             {
                 title: "Quality Checks",
                 path: "/quality-checks",
                 icon: SearchCheck,
                 permission: "approvals.read",
-                children: [
-                    {
-                        title: "Templates",
-                        path: "/quality-check-templates",
-                        icon: LayoutTemplate,
-                        permission: "approvals.manage",
-                    },
-                    {
-                        title: "Gates",
-                        path: "/qc-gates",
-                        icon: Gauge,
-                        permission: "approvals.manage",
-                    },
-                ],
             },
             {
                 title: "Documents",
                 path: "/documents",
                 icon: FolderOpen,
                 permission: "documents.read",
-                children: [
-                    {
-                        title: "Call Sheets",
-                        path: "/call-sheets",
-                        icon: ClipboardList,
-                        permission: "call_sheets.read",
-                    },
-                    {
-                        title: "Tech Sheets",
-                        path: "/tech-sheets",
-                        icon: Cpu,
-                        permission: "tech_sheets.read",
-                    },
-                    {
-                        title: "Templates",
-                        path: "/templates",
-                        icon: LayoutTemplate,
-                        permission: "templates.read",
-                    },
-                ],
-            },
-            {
-                title: "Email",
-                path: "/email-messages",
-                icon: Mail,
-                permission: "documents.read",
-            },
-            {
-                title: "Resilience",
-                path: "/resilience-targets",
-                icon: Target,
-                permission: "service_requests.read",
             },
         ],
     },
-    // ── R2: Crew & Scheduling (split from Workforce) ──
+
+    // ── 4. Workforce ──
     {
-        title: "Crew & Scheduling",
+        title: "Workforce",
         defaultExpanded: false,
         items: [
-            { title: "Crew", path: "/crew", icon: HardHat, permission: "crew.read" },
-            {
-                title: "Shifts",
-                path: "/shifts",
-                icon: Clock,
-                permission: "crew.read",
-            },
+            { title: "Personnel", path: "/crew", icon: HardHat, permission: "crew.read" },
+            { title: "Shifts", path: "/shifts", icon: Clock, permission: "crew.read" },
             {
                 title: "Availability",
                 path: "/crew-availability",
                 icon: CalendarCheck,
                 permission: "crew.read",
+            },
+            {
+                title: "Time Tracking",
+                path: "/time-tracking",
+                icon: Timer,
+                permission: "time_tracking.read",
             },
             {
                 title: "Resource Planner",
@@ -659,44 +315,10 @@ export const navigationConfig: NavSection[] = [
                 permission: "resource_planner.read",
             },
             {
-                title: "Time Tracking",
-                path: "/time-tracking",
-                icon: Timer,
-                permission: "time_tracking.read",
-                children: [
-                    {
-                        title: "Time Entries",
-                        path: "/time-entries",
-                        icon: Timer,
-                        permission: "time_tracking.read",
-                    },
-                    {
-                        title: "Timesheets",
-                        path: "/timesheets",
-                        icon: FileSpreadsheet,
-                        permission: "time_tracking.read",
-                    },
-                    {
-                        title: "Compliance",
-                        path: "/time-tracking/compliance",
-                        icon: ShieldCheck,
-                        permission: "time_tracking.read",
-                    },
-                ],
-            },
-            {
-                title: "Time Off",
-                path: "/time-off",
-                icon: Palmtree,
-                permission: "time_off.read",
-                children: [
-                    {
-                        title: "Requests",
-                        path: "/time-off-requests",
-                        icon: ClipboardList,
-                        permission: "time_off.read",
-                    },
-                ],
+                title: "Human Resources",
+                path: "/workforce",
+                icon: UsersRound,
+                permission: "workforce.read",
             },
             {
                 title: "Certifications",
@@ -704,68 +326,12 @@ export const navigationConfig: NavSection[] = [
                 icon: BadgeCheck,
                 permission: "certifications.read",
             },
-            {
-                title: "HR",
-                path: "/workforce",
-                icon: UsersRound,
-                permission: "workforce.read",
-                children: [
-                    {
-                        title: "Onboarding / Offboarding",
-                        path: "/workforce/onboarding",
-                        icon: UserPlus,
-                        permission: "workforce_onboarding.read",
-                    },
-                    {
-                        title: "Performance Reviews",
-                        path: "/workforce/reviews",
-                        icon: Star,
-                        permission: "workforce_reviews.read",
-                    },
-                    {
-                        title: "Goals & OKRs",
-                        path: "/workforce/goals",
-                        icon: Target,
-                        permission: "workforce.read",
-                    },
-                ],
-            },
         ],
     },
-    // ── R2: Vendors (split from Workforce) ──
+
+    // ── 5. Supply Chain (merged Vendors + Resources) ──
     {
-        title: "Vendors",
-        defaultExpanded: false,
-        items: [
-            { title: "Vendors", path: "/vendors", icon: Store, permission: "vendors.read" },
-            {
-                title: "Vendor Onboarding",
-                path: "/vendor-onboarding",
-                icon: Handshake,
-                permission: "vendor_onboarding.read",
-            },
-            {
-                title: "Vendor Compliance",
-                path: "/vendor-compliance",
-                icon: ShieldAlert,
-                permission: "vendor_compliance.read",
-            },
-            {
-                title: "Work Orders",
-                path: "/work-orders",
-                icon: ClipboardCheck,
-                permission: "work_orders.read",
-            },
-            {
-                title: "Vendor Reviews",
-                path: "/vendor-reviews",
-                icon: MessageSquareMore,
-                permission: "vendor_reviews.read",
-            },
-        ],
-    },
-    {
-        title: "Resources",
+        title: "Supply Chain",
         defaultExpanded: false,
         items: [
             {
@@ -773,255 +339,118 @@ export const navigationConfig: NavSection[] = [
                 path: "/assets",
                 icon: Package,
                 permission: "assets.read",
-                children: [
-                    {
-                        title: "Asset Scanner",
-                        path: "/assets/scan",
-                        icon: ScanBarcode,
-                        permission: "assets.read",
-                    },
-                    {
-                        title: "Batch Scanner",
-                        path: "/assets/scan/batch",
-                        icon: Layers,
-                        permission: "assets.read",
-                    },
-                    {
-                        title: "Transfer Orders",
-                        path: "/transfer-orders",
-                        icon: ArrowRightLeft,
-                        permission: "assets.manage",
-                    },
-                    {
-                        title: "Maintenance",
-                        path: "/maintenance-schedules",
-                        icon: Wrench,
-                        permission: "assets.manage",
-                    },
-                ],
             },
             { title: "Inventory", path: "/inventory", icon: Boxes, permission: "inventory.read" },
             {
-                title: "Warehouses",
+                title: "Warehousing",
                 path: "/warehouses",
                 icon: Warehouse,
                 permission: "warehouses.read",
             },
-            { title: "Fleet", path: "/fleet", icon: Car, permission: "fleet.read" },
-            { title: "Dispatch", path: "/dispatch", icon: Navigation, permission: "dispatch.read" },
-            { title: "Shipments", path: "/shipments", icon: Truck, permission: "shipments.read" },
+            { title: "Logistics", path: "/shipments", icon: Truck, permission: "shipments.read" },
             {
-                title: "Purchase Orders",
-                path: "/purchase-orders",
-                icon: ShoppingCart,
-                permission: "procurement.read",
+                title: "Dispatch",
+                path: "/dispatch",
+                icon: Navigation,
+                permission: "dispatch.read",
+            },
+            { title: "Vendors", path: "/vendors", icon: Store, permission: "vendors.read" },
+            {
+                title: "Work Orders",
+                path: "/work-orders",
+                icon: ClipboardCheck,
+                permission: "work_orders.read",
             },
             {
-                title: "Expense Reports",
-                path: "/expense-reports",
-                icon: Receipt,
-                permission: "expenses.read",
+                title: "Supplier Discovery",
+                path: "/supplier-discovery",
+                icon: Compass,
+                permission: "vendors.read",
             },
         ],
     },
+
+    // ── 6. Creative ──
     {
         title: "Creative",
         defaultExpanded: false,
         items: [
             { title: "Briefs", path: "/briefs", icon: PenTool, permission: "creative_briefs.read" },
-            { title: "Brand Kit", path: "/brand-kit", icon: SwatchBook, permission: "brand.read" },
+            { title: "Brand", path: "/brand-kit", icon: SwatchBook, permission: "brand.read" },
             {
-                title: "Brand Guidelines",
-                path: "/brand-guidelines",
-                icon: Palette,
-                permission: "brand_guidelines.read",
-            },
-            {
-                title: "Creative Assets",
+                title: "Creative",
                 path: "/creative-assets",
                 icon: Brush,
                 permission: "creative_reviews.read",
             },
             {
-                title: "Digital Assets",
-                path: "/digital-assets",
-                icon: ImagePlus,
-                permission: "digital_assets.read",
-            },
-            {
-                title: "Creative Reviews",
-                path: "/creative-reviews",
-                icon: Star,
-                permission: "creative_reviews.read",
-            },
-            { title: "Decks", path: "/decks", icon: Presentation, permission: "decks.read" },
-            {
                 title: "Campaigns",
                 path: "/campaigns",
                 icon: Megaphone,
                 permission: "campaigns.read",
-                children: [
-                    {
-                        title: "Case Studies",
-                        path: "/case-studies",
-                        icon: Award,
-                        permission: "case_studies.read",
-                    },
-                    {
-                        title: "Surveys",
-                        path: "/surveys",
-                        icon: ClipboardPenLine,
-                        permission: "surveys.read",
-                    },
-                    {
-                        title: "Testimonials",
-                        path: "/testimonials",
-                        icon: MessageSquareQuote,
-                        permission: "case_studies.read",
-                    },
-                ],
             },
         ],
     },
+
+    // ── 7. Finance ──
     {
         title: "Finance",
         defaultExpanded: false,
         items: [
-            { title: "Overview", path: "/finance", icon: Landmark, permission: "finance.read" },
-            { title: "Revenue", path: "/revenue", icon: DollarSign, permission: "revenue.read" },
             {
-                title: "Billing",
-                path: "/invoices",
-                icon: FileSpreadsheet,
-                permission: "invoices.read",
-                children: [
-                    {
-                        title: "Client Invoices",
-                        path: "/client-invoices",
-                        icon: Send,
-                        permission: "client_invoices.read",
-                    },
-                    {
-                        title: "Payments",
-                        path: "/payments",
-                        icon: Banknote,
-                        permission: "payments.read",
-                    },
-                    {
-                        title: "Recurring Invoices",
-                        path: "/recurring-invoices",
-                        icon: Repeat,
-                        permission: "recurring_invoices.read",
-                    },
-                    {
-                        title: "Credit Notes",
-                        path: "/credit-notes",
-                        icon: ReceiptText,
-                        permission: "credit_notes.read",
-                    },
-                ],
+                title: "Budgets",
+                path: "/budgets",
+                icon: PiggyBank,
+                permission: "budgets.read",
+            },
+            {
+                title: "Revenue",
+                path: "/revenue",
+                icon: DollarSign,
+                permission: "revenue.read",
             },
             {
                 title: "Expenses",
                 path: "/expenses",
                 icon: Receipt,
                 permission: "expenses.read",
-                children: [],
-            },
-            {
-                title: "Budgeting",
-                path: "/budgets",
-                icon: PiggyBank,
-                permission: "budgets.read",
-                children: [
-                    {
-                        title: "Milestones",
-                        path: "/milestones",
-                        icon: Target,
-                        permission: "budgets.read",
-                    },
-                    {
-                        title: "Job Costing",
-                        path: "/job-costing",
-                        icon: Calculator,
-                        permission: "job_costing.read",
-                    },
-                    {
-                        title: "Rate Cards",
-                        path: "/rate-cards",
-                        icon: CreditCard,
-                        permission: "rate_cards.read",
-                    },
-                ],
-            },
-            {
-                title: "Revenue Recognition",
-                path: "/finance/revenue-recognition",
-                icon: TrendingUp,
-                permission: "finance.read",
-            },
-            {
-                title: "Payroll Runs",
-                path: "/payroll-batches",
-                icon: Banknote,
-                permission: "finance.read",
             },
             {
                 title: "Procurement",
                 path: "/procurement",
                 icon: ShoppingCart,
                 permission: "procurement.read",
-                children: [
-                    {
-                        title: "Purchase Requisitions",
-                        path: "/purchase-requisitions",
-                        icon: ClipboardList,
-                        permission: "purchase_requisitions.read",
-                    },
-                    {
-                        title: "Goods Receipts",
-                        path: "/goods-receipts",
-                        icon: HardDriveDownload,
-                        permission: "goods_receipts.read",
-                    },
-                    {
-                        title: "Vendor Risk",
-                        path: "/vendor-risk",
-                        icon: Scale,
-                        permission: "vendor_risk.read",
-                    },
-                ],
             },
             {
                 title: "Governance",
                 path: "/gl-accounts",
                 icon: CircleDollarSign,
                 permission: "gl_accounts.read",
-                children: [
-                    {
-                        title: "Budget Approvals",
-                        path: "/budget-approvals",
-                        icon: ShieldCheck,
-                        permission: "budget_approvals.read",
-                    },
-                    {
-                        title: "Payment Approvals",
-                        path: "/payment-approvals",
-                        icon: WalletCards,
-                        permission: "payment_approvals.read",
-                    },
-                ],
-            },
-            {
-                title: "Financial Periods",
-                path: "/financial-periods",
-                icon: CalendarRange,
-                permission: "finance.manage",
             },
         ],
     },
 
-    // ── Tier 3: Governance & Admin ──
+    // ── 8. Sales (was Business — CRM funnel compressed) ──
+    {
+        title: "Sales",
+        defaultExpanded: false,
+        items: [
+            {
+                title: "CRM",
+                path: "/pipeline",
+                icon: Filter,
+                permission: "pipeline.read",
+            },
+            {
+                title: "Accounts",
+                path: "/accounts",
+                icon: Building2,
+                permission: "accounts.read",
+            },
+        ],
+    },
+
+    // ── 9. Legal ──
     {
         title: "Legal",
         defaultExpanded: false,
@@ -1033,22 +462,22 @@ export const navigationConfig: NavSection[] = [
                 permission: "contracts.read",
             },
             {
-                title: "Obligations",
-                path: "/obligations",
-                icon: ClipboardMinus,
-                permission: "obligations.read",
+                title: "Insurance",
+                path: "/insurance-policies",
+                icon: Shield,
+                permission: "insurance_policies.read",
             },
             {
-                title: "Permits & Licenses",
+                title: "Licences & Permits",
                 path: "/permits",
                 icon: FileBadge,
                 permission: "permits.read",
             },
             {
-                title: "Insurance",
-                path: "/insurance-policies",
-                icon: Shield,
-                permission: "insurance_policies.read",
+                title: "Engineering",
+                path: "/engineering-approvals",
+                icon: Wrench,
+                permission: "engineering_approvals.read",
             },
             {
                 title: "IP & Usage Rights",
@@ -1063,16 +492,16 @@ export const navigationConfig: NavSection[] = [
                 permission: "incidents.read",
             },
             {
-                title: "Compliance Checklists",
+                title: "Obligations",
+                path: "/obligations",
+                icon: ClipboardMinus,
+                permission: "obligations.read",
+            },
+            {
+                title: "Compliance",
                 path: "/compliance-checklists",
                 icon: FileCheck,
                 permission: "compliance_checklists.read",
-            },
-            {
-                title: "Engineering Approvals",
-                path: "/engineering-approvals",
-                icon: Wrench,
-                permission: "engineering_approvals.read",
             },
             {
                 title: "Clause Library",
@@ -1082,7 +511,8 @@ export const navigationConfig: NavSection[] = [
             },
         ],
     },
-    // ── R1: Admin (split — user/org management + settings) ──
+
+    // ── 10. Admin (merged with Platform) ──
     {
         title: "Admin",
         defaultExpanded: false,
@@ -1093,89 +523,14 @@ export const navigationConfig: NavSection[] = [
                 icon: UsersRound,
                 permission: "user_management.read",
             },
-            {
-                title: "Invitations",
-                path: "/user-management/invitations",
-                icon: UserPlus,
-                permission: "invitations.read",
-            },
             { title: "Roles", path: "/roles", icon: Shield, permission: "roles.manage" },
-            {
-                title: "Teams",
-                path: "/teams",
-                icon: Users,
-                permission: "teams.read",
-            },
+            { title: "Teams", path: "/teams", icon: Users, permission: "teams.read" },
             {
                 title: "Org Chart",
                 path: "/org-chart",
                 icon: GitBranch,
                 permission: "org_chart.read",
             },
-            { title: "People", path: "/people", icon: UserCircle, permission: "people.read" },
-            {
-                title: "Access Reviews",
-                path: "/user-management/access-reviews",
-                icon: ShieldQuestion,
-                permission: "access_reviews.read",
-            },
-            {
-                title: "Audit Log",
-                path: "/user-management/audit-log",
-                icon: KeyRound,
-                permission: "audit_log.read",
-            },
-            {
-                title: "Settings",
-                path: "/settings",
-                icon: Settings,
-                permission: "settings.read",
-                children: [
-                    {
-                        title: "Security",
-                        path: "/settings/security",
-                        icon: ShieldAlert,
-                        permission: "settings.read",
-                    },
-                    {
-                        title: "Notification Preferences",
-                        path: "/settings/notifications",
-                        icon: Bell,
-                        permission: "settings.read",
-                    },
-                    {
-                        title: "Email Integration",
-                        path: "/settings/email-integration",
-                        icon: Mail,
-                        permission: "settings.read",
-                    },
-                    {
-                        title: "Custom Fields",
-                        path: "/settings/custom-fields",
-                        icon: Blocks,
-                        permission: "settings.read",
-                    },
-                    {
-                        title: "AI Copilot",
-                        path: "/settings/ai",
-                        icon: Brain,
-                        permission: "settings.read",
-                    },
-                    {
-                        title: "Developer Portal",
-                        path: "/settings/developer",
-                        icon: Code2,
-                        permission: "settings.read",
-                    },
-                ],
-            },
-        ],
-    },
-    // ── R1: Platform (split — infrastructure, integrations, portals, data) ──
-    {
-        title: "Platform",
-        defaultExpanded: false,
-        items: [
             {
                 title: "Knowledge Base",
                 path: "/knowledge-base",
@@ -1185,45 +540,24 @@ export const navigationConfig: NavSection[] = [
             { title: "SOPs", path: "/sops", icon: BookMarked, permission: "sops.read" },
             { title: "Vault", path: "/vault", icon: Lock, permission: "vault.read" },
             {
-                title: "Tags",
-                path: "/tags",
-                icon: Layers,
-                permission: "settings.manage",
+                title: "Automations",
+                path: "/automations",
+                icon: Zap,
+                permission: "automations.read",
             },
             {
                 title: "Integrations",
                 path: "/integrations",
                 icon: Link2,
                 permission: "provider_connections.read",
-                children: [
-                    {
-                        title: "Sync Log",
-                        path: "/integrations/sync-log",
-                        icon: RefreshCw,
-                        permission: "sync_events.read",
-                    },
-                    {
-                        title: "Marketplace",
-                        path: "/integrations/marketplace",
-                        icon: Store,
-                        permission: "provider_connections.read",
-                    },
-                ],
             },
             {
                 title: "Credentials",
                 path: "/credentials",
                 icon: Ticket,
                 permission: "credential_types.read",
-                children: [
-                    {
-                        title: "Assignments",
-                        path: "/credentials/assignments",
-                        icon: BadgeCheck,
-                        permission: "credential_assignments.read",
-                    },
-                ],
             },
+            { title: "Tags", path: "/tags", icon: Layers, permission: "settings.manage" },
             {
                 title: "Client Portal",
                 path: "/client-portal",
@@ -1231,133 +565,10 @@ export const navigationConfig: NavSection[] = [
                 permission: "client_portal.read",
             },
             {
-                title: "Vendor Portal",
-                path: "/vendor-portal",
-                icon: ScanBarcode,
-                permission: "vendor_portal.read",
-            },
-            {
-                title: "System Health",
-                path: "/system-health",
-                icon: HeartPulse,
-                permission: "system_health.read",
-            },
-            {
-                title: "Data Export",
-                path: "/data-export",
-                icon: Download,
-                permission: "data_export.read",
-            },
-        ],
-    },
-
-    // ── Contextual: Live Operations (visible only when event is in-progress) ──
-    {
-        title: "Live Operations",
-        defaultExpanded: true,
-        contextual: "live-ops",
-        items: [
-            {
-                title: "Command Dashboard",
-                path: "/live-ops",
-                icon: Radio,
-                permission: "live_events.read",
-            },
-            {
-                title: "Run of Show",
-                path: "/live-ops/run-of-show",
-                icon: Megaphone,
-                permission: "ros_cues.read",
-            },
-            {
-                title: "Readiness Gates",
-                path: "/live-ops/readiness",
-                icon: Gauge,
-                permission: "readiness_gates.read",
-            },
-            {
-                title: "Department Status",
-                path: "/live-ops/departments",
-                icon: LayoutList,
-                permission: "department_statuses.read",
-            },
-            {
-                title: "Live Crew",
-                path: "/live-ops/crew",
-                icon: HardHat,
-                permission: "live_crew.read",
-            },
-            {
-                title: "Equipment",
-                path: "/live-ops/equipment",
-                icon: ScanBarcode,
-                permission: "equipment_check_ins.read",
-            },
-            {
-                title: "Comms",
-                path: "/live-ops/comms",
-                icon: Radio,
-                permission: "comm_channels.read",
-            },
-            {
-                title: "Front of House",
-                path: "/live-ops/foh",
-                icon: Drama,
-                permission: "foh_zones.read",
-            },
-            {
-                title: "Credentials",
-                path: "/live-ops/credentials",
-                icon: Ticket,
-                permission: "credential_assignments.read",
-            },
-            {
-                title: "Gate Scanner",
-                path: "/live-ops/gate",
-                icon: QrCode,
-                permission: "gate_operations.read",
-            },
-            {
-                title: "VIP Management",
-                path: "/live-ops/vip",
-                icon: Crown,
-                permission: "vip_guests.read",
-            },
-            {
-                title: "Guest Incidents",
-                path: "/live-ops/guest-incidents",
-                icon: AlertTriangle,
-                permission: "guest_incidents.read",
-            },
-            {
-                title: "Environment",
-                path: "/live-ops/environment",
-                icon: Thermometer,
-                permission: "environmental_readings.read",
-            },
-            {
-                title: "Financials",
-                path: "/live-ops/financials",
-                icon: Landmark,
-                permission: "live_financial.read",
-            },
-            {
-                title: "Strike & Load-Out",
-                path: "/live-ops/strike",
-                icon: ArrowLeftRight,
-                permission: "strike_sequences.read",
-            },
-            {
-                title: "Reconciliation",
-                path: "/live-ops/reconciliation",
-                icon: ClipboardCheck,
-                permission: "asset_reconciliation.read",
-            },
-            {
-                title: "Post-Event Reports",
-                path: "/live-ops/reports",
-                icon: FileBarChart,
-                permission: "post_event_reports.read",
+                title: "Settings",
+                path: "/settings",
+                icon: Settings,
+                permission: "settings.read",
             },
         ],
     },

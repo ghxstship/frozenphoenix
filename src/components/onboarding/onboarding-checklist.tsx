@@ -142,7 +142,19 @@ export function OnboardingChecklist() {
         [steps]
     );
 
-    if (loading) return null;
+    if (loading) {
+        return (
+            <div className="rounded-xl border border-border bg-card shadow-sm p-5 space-y-3">
+                <div className="h-4 w-40 bg-muted animate-shimmer rounded" />
+                <div className="h-2 w-full bg-muted animate-shimmer rounded" />
+                <div className="space-y-2">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="h-10 bg-muted animate-shimmer rounded-lg" />
+                    ))}
+                </div>
+            </div>
+        );
+    }
     if (dismissed) return null;
     if (!summary || summary.isComplete) return null;
     if (steps.length === 0) return null;

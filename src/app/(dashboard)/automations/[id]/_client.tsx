@@ -99,11 +99,17 @@ export function AutomationDetailPageClient({
     id: string;
     initialRecord?: Record<string, unknown> | null;
 }) {
-    const { data: allAutomations, isLoading: isListLoading } = useAutomations();
-    const { data: automationDetail, isLoading: isDetailLoading } = useAutomationWithRules(id);
-    const { data: logs } = useAutomationLogs(id);
+    // Performance: Skip all data fetches for invalid UUIDs
+    const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const { data: allAutomations, isLoading: isListLoading } = useAutomations(
+        isValidUuid ? undefined : { _enabled: false }
+    );
+    const { data: automationDetail, isLoading: isDetailLoading } = useAutomationWithRules(
+        isValidUuid ? id : undefined
+    );
+    const { data: logs } = useAutomationLogs(isValidUuid ? id : undefined);
 
-    const isLoading = isListLoading || isDetailLoading;
+    const isLoading = isValidUuid ? isListLoading || isDetailLoading : false;
     const automation = automationDetail
         ? (automationDetail as Record<string, unknown>)
         : ((allAutomations ?? []).find((a: Record<string, unknown>) => a.id === id) as

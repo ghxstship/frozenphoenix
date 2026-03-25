@@ -15,7 +15,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import React, { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/api/client";
 import { LoadingState } from "@/components/layouts/loading-state";
 import { SkeletonCrossfade } from "@/components/ui/skeleton-crossfade";
@@ -97,6 +97,8 @@ export function DetailPageShell({
             return apiGet<EntityRecord>(basePath, id);
         },
         enabled: !!id && !useExternalData,
+        // Performance: Keep previous record visible while loading new one
+        placeholderData: keepPreviousData,
     });
 
     const record: EntityRecord | null = useExternalData

@@ -36,6 +36,21 @@ export default function RootLayout({
             <head>
                 <link rel="manifest" href="/manifest.json" />
                 <meta name="theme-color" content="#6366f1" />
+                {/* Performance: Preconnect to Supabase to eliminate DNS+TLS latency (~100-300ms)
+                    on the first API request. Falls back gracefully if env var is missing. */}
+                {process.env.NEXT_PUBLIC_SUPABASE_URL && (
+                    <>
+                        <link
+                            rel="preconnect"
+                            href={new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin}
+                            crossOrigin="anonymous"
+                        />
+                        <link
+                            rel="dns-prefetch"
+                            href={new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin}
+                        />
+                    </>
+                )}
                 {/* SECURITY: dangerouslySetInnerHTML is safe here — static string literal with zero user input.
             Purpose: FOUC-free theme initialization before React hydration. */}
                 <script

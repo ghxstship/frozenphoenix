@@ -14,6 +14,8 @@ import {
 } from "@/config/navigation";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { LAYOUT } from "@/config/design-tokens";
+
+import { useHydrated } from "@/hooks/use-hydrated";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useEscapeKey, useFocusTrap } from "@/hooks/use-accessibility";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -220,6 +222,7 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
 export function Sidebar() {
     const pathname = usePathname();
     const { user, profile, activeOrg, loading: authLoading, signOut } = useAuth();
+    const hydrated = useHydrated();
     const isOpen = useSidebar((state) => state.isOpen);
     const isCollapsed = useSidebar((state) => state.isCollapsed);
     const isMobile = useSidebar((state) => state.isMobile);
@@ -671,13 +674,48 @@ export function Sidebar() {
 
                 {/* Footer */}
                 <div className="border-t border-sidebar-border px-3 py-2.5 shrink-0">
-                    {collapsed && !isMobile ? (
-                        <Tooltip
-                            content={authLoading ? "Loading..." : profile?.display_name || "Guest"}
-                            side="right"
-                        >
-                            <div className="flex justify-center">
-                                <div className="relative h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-bold text-sidebar-foreground/80 overflow-hidden">
+                    {(() => {
+                        // Covers SSR, auth hydration, AND the async gap where auth resolved
+                        // but profile/memberships haven't arrived yet.
+                        const profileLoading = !hydrated || authLoading || (!profile && !!user);
+
+                        if (collapsed && !isMobile) {
+                            return (
+                                <Tooltip
+                                    content={
+                                        profileLoading
+                                            ? "Loading..."
+                                            : profile?.display_name || "Guest"
+                                    }
+                                    side="right"
+                                >
+                                    <div className="flex justify-center">
+                                        <div className="relative h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-bold text-sidebar-foreground/80 overflow-hidden">
+                                            {profile?.avatar_url ? (
+                                                <Image
+                                                    src={profile.avatar_url}
+                                                    alt={profile.display_name ?? "Avatar"}
+                                                    fill
+                                                    sizes="32px"
+                                                    className="object-cover"
+                                                    unoptimized
+                                                />
+                                            ) : profileLoading ? (
+                                                <div className="h-full w-full animate-shimmer bg-muted rounded-full" />
+                                            ) : profile ? (
+                                                getInitials(profile.display_name)
+                                            ) : (
+                                                "??"
+                                            )}
+                                        </div>
+                                    </div>
+                                </Tooltip>
+                            );
+                        }
+
+                        return (
+                            <div className="flex items-center gap-2.5">
+                                <div className="relative h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-bold text-sidebar-foreground/80 shrink-0 overflow-hidden">
                                     {profile?.avatar_url ? (
                                         <Image
                                             src={profile.avatar_url}
@@ -687,64 +725,52 @@ export function Sidebar() {
                                             className="object-cover"
                                             unoptimized
                                         />
+                                    ) : profileLoading ? (
+                                        <div className="h-full w-full animate-shimmer bg-muted rounded-full" />
                                     ) : profile ? (
                                         getInitials(profile.display_name)
-                                    ) : authLoading ? null : (
+                                    ) : (
                                         "??"
                                     )}
                                 </div>
-                            </div>
-                        </Tooltip>
-                    ) : (
-                        <div className="flex items-center gap-2.5">
-                            <div className="relative h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-bold text-sidebar-foreground/80 shrink-0 overflow-hidden">
-                                {profile?.avatar_url ? (
-                                    <Image
-                                        src={profile.avatar_url}
-                                        alt={profile.display_name ?? "Avatar"}
-                                        fill
-                                        sizes="32px"
-                                        className="object-cover"
-                                        unoptimized
-                                    />
-                                ) : profile ? (
-                                    getInitials(profile.display_name)
-                                ) : authLoading ? null : (
-                                    "??"
+                                <div className="flex-1 min-w-0 transition-[opacity,transform] duration-200 motion-reduce:transition-none">
+                                    {profileLoading ? (
+                                        <>
+                                            <div className="h-3.5 w-24 bg-muted animate-shimmer rounded mb-1" />
+                                            <div className="h-2.5 w-16 bg-muted animate-shimmer rounded" />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <p className="text-xs font-medium truncate">
+                                                {profile?.display_name ||
+                                                    user?.email?.split("@")[0] ||
+                                                    "Guest"}
+                                            </p>
+                                            <p className="density-caption text-sidebar-foreground/40 truncate capitalize">
+                                                {activeOrg?.role ||
+                                                    (user ? "Member" : "Not signed in")}
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
+                                {user && (
+                                    <button
+                                        onClick={handleSignOut}
+                                        disabled={signingOut}
+                                        className="h-7 w-7 rounded-md flex items-center justify-center text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+                                        title="Sign out"
+                                        aria-label="Sign out"
+                                    >
+                                        {signingOut ? (
+                                            <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" />
+                                        ) : (
+                                            <LogOut className="h-3.5 w-3.5" />
+                                        )}
+                                    </button>
                                 )}
                             </div>
-                            <div className="flex-1 min-w-0 transition-[opacity,transform] duration-200 motion-reduce:transition-none">
-                                <p className="text-xs font-medium truncate">
-                                    {authLoading
-                                        ? "Loading..."
-                                        : profile?.display_name ||
-                                          user?.email?.split("@")[0] ||
-                                          "Guest"}
-                                </p>
-                                <p className="density-caption text-sidebar-foreground/40 truncate capitalize">
-                                    {authLoading
-                                        ? "Loading..."
-                                        : activeOrg?.role ||
-                                          (user ? "Loading role..." : "Not signed in")}
-                                </p>
-                            </div>
-                            {user && (
-                                <button
-                                    onClick={handleSignOut}
-                                    disabled={signingOut}
-                                    className="h-7 w-7 rounded-md flex items-center justify-center text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
-                                    title="Sign out"
-                                    aria-label="Sign out"
-                                >
-                                    {signingOut ? (
-                                        <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" />
-                                    ) : (
-                                        <LogOut className="h-3.5 w-3.5" />
-                                    )}
-                                </button>
-                            )}
-                        </div>
-                    )}
+                        );
+                    })()}
                 </div>
             </aside>
         </>

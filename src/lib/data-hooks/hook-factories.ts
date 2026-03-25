@@ -13,7 +13,7 @@
  *   - Real-time feeds (activity, notifications):   5_000 (5s)
  */
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiCreate, apiDelete, apiGet, apiList, apiUpdate } from "@/lib/api/client";
 
 export type FilterParams = Record<string, string | number | boolean | undefined>;
@@ -21,11 +21,17 @@ export type FilterParams = Record<string, string | number | boolean | undefined>
 interface HookFactoryOptions {
     /** Per-domain staleTime override (ms). Undefined = use global default (60s). */
     staleTime?: number | undefined;
+    /** Per-domain gcTime override (ms). Controls how long inactive data stays in cache.
+     *  Defaults: reference data = 10min, entity lists = 5min (TanStack default). */
+    gcTime?: number | undefined;
 }
 
 /**
  * Creates a list query hook for an entity.
  * Query key pattern: [key, mergedFilters]
+ *
+ * Pass `_enabled: false` in filters to skip the fetch entirely.
+ * This is used to disable queries for invalid IDs without breaking hooks rules.
  */
 export function makeListHook<T>(
     key: string,
@@ -34,26 +40,45 @@ export function makeListHook<T>(
     options?: HookFactoryOptions
 ) {
     return function useEntityList(filters?: FilterParams) {
-        const merged = { ...defaultParams, ...filters };
+        // Extract _enabled control flag — remove from API params.
+        const { _enabled, ...restFilters } = { ...defaultParams, ...filters };
+        const isEnabled = _enabled !== false && _enabled !== "false";
         return useQuery({
-            queryKey: [key, merged],
-            queryFn: () => apiList<T>(basePath, merged).then((r) => r.data),
+            queryKey: [key, restFilters],
+            queryFn: () => apiList<T>(basePath, restFilters).then((r) => r.data),
+            enabled: isEnabled,
+            // Performance: Keep previous data visible during refetch/filter changes
+            // instead of flashing a skeleton. Industry-standard SaaS pattern.
+            placeholderData: keepPreviousData,
             ...(options?.staleTime !== undefined && { staleTime: options.staleTime }),
+            ...(options?.gcTime !== undefined && { gcTime: options.gcTime }),
         });
     };
 }
 
 /**
+ * UUID v4 format — used to skip queries for invalid IDs
+ */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
  * Creates a single-record detail query hook for an entity.
  * Query key pattern: [key, "detail", id]
+ *
+ * Performance: If `id` is not a valid UUID, the query is disabled entirely.
+ * This prevents slow API/Supabase round-trips for invalid/test links.
  */
 export function makeDetailHook<T>(key: string, basePath: string, options?: HookFactoryOptions) {
     return function useEntityDetail(id?: string) {
+        const isValid = !!id && UUID_RE.test(id);
         return useQuery({
             queryKey: [key, "detail", id],
             queryFn: () => apiGet<T>(basePath, id!),
-            enabled: !!id,
+            enabled: isValid,
+            // Performance: Keep previous record visible while loading new one
+            placeholderData: keepPreviousData,
             ...(options?.staleTime !== undefined && { staleTime: options.staleTime }),
+            ...(options?.gcTime !== undefined && { gcTime: options.gcTime }),
         });
     };
 }

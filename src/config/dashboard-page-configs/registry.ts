@@ -60,6 +60,7 @@ export const DASHBOARD_PAGE_GROUPS = {
         "CREDENTIALS_ASSIGNMENTS",
         "DASHBOARDS",
         "DATA_EXPORT",
+        "DATA_HEALTH",
         "FORECASTING",
         "INTEGRATIONS_MARKETPLACE",
         "INTEGRATIONS_SYNC_LOG",
@@ -70,7 +71,10 @@ export const DASHBOARD_PAGE_GROUPS = {
         "REPORTS_AI",
         "RESOURCE_PLANNER",
         "SCHEDULING",
+        "SUSTAINABILITY",
+        "WORKFLOW_BUILDER",
     ],
+    vendors: ["SUPPLIER_DISCOVERY"],
     assets: ["ASSETS_SCAN", "ASSETS_SCAN_BATCH"],
     projects: ["PROJECTS_TEMPLATES"],
     templates: ["TEMPLATE_EDITOR"],
@@ -141,6 +145,7 @@ export const DASHBOARD_PAGE_ROUTES: Record<DashboardPageConfigKey, string> = {
     CREDENTIALS_ASSIGNMENTS: "/credentials/assignments",
     DASHBOARDS: "/dashboards",
     DATA_EXPORT: "/data-export",
+    DATA_HEALTH: "/data-health",
     FORECASTING: "/forecasting",
     INTEGRATIONS_MARKETPLACE: "/integrations/marketplace",
     INTEGRATIONS_SYNC_LOG: "/integrations/sync-log",
@@ -151,6 +156,11 @@ export const DASHBOARD_PAGE_ROUTES: Record<DashboardPageConfigKey, string> = {
     REPORTS_AI: "/reports/ai",
     RESOURCE_PLANNER: "/resource-planner",
     SCHEDULING: "/scheduling",
+    SUSTAINABILITY: "/sustainability",
+    WORKFLOW_BUILDER: "/workflows/builder",
+
+    // vendors
+    SUPPLIER_DISCOVERY: "/supplier-discovery",
 
     // assets
     ASSETS_SCAN: "/assets/scan",

@@ -56,7 +56,7 @@ export function computeDependencyPaths(
             const endX = toPos.startX;
             const endY = toPos.y;
 
-            const _midX = (sourceX + targetX) / 2;
+            const _midX = (startX + endX) / 2;
             const controlOffset = Math.abs(endY - startY) * 0.3 + 20;
 
             const pathData =

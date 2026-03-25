@@ -178,7 +178,7 @@ export async function logUsage(params: LogUsageParams): Promise<void> {
         user_id: params.userId,
         org_id: params.orgId,
         provider_id: params.providerId,
-        model_id: params.modelId,
+        model_id: params.modelId ?? null,
         token_count_input: params.tokenCountInput,
         token_count_output: params.tokenCountOutput,
         estimated_cost: params.estimatedCost,

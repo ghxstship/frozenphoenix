@@ -15,8 +15,37 @@ export const POST = withApiHandler(
         mutation: true,
     },
     async (request, { supabase, user }) => {
-        // Validate request body with Zod
-        const parsed = await parseAndValidate(request, invitationCreateSchema);
+        // ── Normalize flat form payloads from CreateEntityDialog ──
+        // The generic create dialog sends { email, full_name, role }
+        // but this route expects { invite_type, invitees: [{email, role}], organization_id }
+        const rawBody = await request.json();
+        let normalizedBody = rawBody;
+
+        if (rawBody.email && !rawBody.invitees) {
+            // Resolve organization_id from the user's active membership
+            const { data: membership } = await serverFromTable(supabase, "org_memberships")
+                .select("organization_id")
+                .eq("user_id", user.id)
+                .eq("status", "active")
+                .limit(1)
+                .single();
+
+            normalizedBody = {
+                invite_type: "org_invite",
+                invitees: [{ email: rawBody.email, role: rawBody.role || "member" }],
+                organization_id: membership?.organization_id ?? rawBody.organization_id,
+                message: rawBody.message,
+            };
+        }
+
+        // Validate (normalized) request body with Zod
+        // Create a new Request so parseAndValidate can read the body
+        const normalizedRequest = new Request(request.url, {
+            method: request.method,
+            headers: request.headers,
+            body: JSON.stringify(normalizedBody),
+        });
+        const parsed = await parseAndValidate(normalizedRequest, invitationCreateSchema);
         if (!parsed.success) return parsed.response;
 
         const { invite_type, invitees, organization_id, message, referral_code } = parsed.data;

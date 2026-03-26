@@ -18,20 +18,36 @@ interface FabAction {
 }
 
 const FAB_ACTIONS: FabAction[] = [
-    { label: "New Event", href: "/events/new", contexts: ["/events", "/dashboard", "/calendar"] },
+    {
+        label: "New Event",
+        href: "/events?action=create",
+        contexts: ["/events", "/dashboard", "/calendar"],
+    },
     {
         label: "New Task",
-        href: "/tasks/new",
+        href: "/tasks?action=create",
         contexts: ["/tasks", "/home/tasks", "/dashboard", "/projects"],
     },
-    { label: "New Project", href: "/projects/new", contexts: ["/projects", "/dashboard"] },
+    {
+        label: "New Project",
+        href: "/projects?action=create",
+        contexts: ["/projects", "/dashboard"],
+    },
     {
         label: "New Invoice",
-        href: "/invoices/new",
+        href: "/invoices?action=create",
         contexts: ["/invoices", "/finance", "/billing"],
     },
-    { label: "New Crew", href: "/crew/new", contexts: ["/crew", "/workforce", "/shifts"] },
-    { label: "New Vendor", href: "/vendors/new", contexts: ["/vendors", "/vendor-onboarding"] },
+    {
+        label: "New Crew",
+        href: "/crew?action=create",
+        contexts: ["/crew", "/workforce", "/shifts"],
+    },
+    {
+        label: "New Vendor",
+        href: "/vendors?action=create",
+        contexts: ["/vendors", "/vendor-onboarding"],
+    },
 ];
 
 // ── Component ──
@@ -99,7 +115,8 @@ export function MobileFab({ className }: { className?: string }) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.9 }}
                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                        className="fixed bottom-[140px] right-4 z-50 flex flex-col gap-2 lg:hidden"
+                        className="fixed right-4 z-50 flex flex-col gap-2 lg:hidden"
+                        style={{ bottom: "calc(140px + env(safe-area-inset-bottom, 0px))" }}
                     >
                         {actions.map((action) => (
                             <Link
@@ -129,12 +146,13 @@ export function MobileFab({ className }: { className?: string }) {
                     stiffness: 300,
                 }}
                 className={cn(
-                    "fixed bottom-[80px] right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-colors lg:hidden",
+                    "fixed right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-colors lg:hidden",
                     isOpen
                         ? "bg-destructive text-destructive-foreground"
                         : "bg-primary text-primary-foreground hover:bg-primary/90",
                     className
                 )}
+                style={{ bottom: "calc(80px + env(safe-area-inset-bottom, 0px))" }}
                 aria-label={isOpen ? "Close quick actions" : "Quick create"}
                 aria-expanded={isOpen}
             >

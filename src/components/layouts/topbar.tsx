@@ -141,7 +141,7 @@ function TopbarIconButton({
     );
 
     const buttonClasses = cn(
-        "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
+        "h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-lg flex items-center justify-center text-muted-foreground",
         "hover:text-foreground hover:bg-secondary transition-colors relative",
         FOCUS_RING,
         active && "text-foreground bg-secondary",
@@ -957,9 +957,12 @@ function UserMenu() {
     );
 }
 
-// ─── Responsive Overflow Menu (tablet: collapses less-used icons) ───
+// ─── Responsive Overflow Menu (mobile: collapses to ⋯ icon) ───
 
 function OverflowMenu() {
+    const router = useRouter();
+    const setPanelOpen = useMessaging((s) => s.setPanelOpen);
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -975,15 +978,26 @@ function OverflowMenu() {
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
+                {/* Quick Create — always visible (OverflowMenu itself is md:hidden) */}
+                <DropdownMenuItem onClick={() => router.push("/tasks?action=create")}>
+                    <Plus className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
+                    Create New…
+                </DropdownMenuItem>
+                {/* Messages — always visible (OverflowMenu itself is md:hidden) */}
+                <DropdownMenuItem onClick={() => setPanelOpen(true)}>
+                    <MessageSquare className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
+                    Messages
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => window.open("/docs", "_blank")}>
                     <HelpCircle className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
                     Help
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/settings")}>
                     <Globe className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
                     Language
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/settings")}>
                     <Settings className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
                     Settings
                 </DropdownMenuItem>

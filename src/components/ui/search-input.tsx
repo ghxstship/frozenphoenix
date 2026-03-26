@@ -125,9 +125,9 @@ export function SearchInput({
                         type="button"
                         onClick={handleClear}
                         className={cn(
-                            "absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors",
+                            "absolute top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors",
                             "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-sm",
-                            size === "sm" ? "right-2" : size === "lg" ? "right-3" : "right-2.5"
+                            size === "sm" ? "right-0" : size === "lg" ? "right-0" : "right-0"
                         )}
                         aria-label="Clear search"
                     >

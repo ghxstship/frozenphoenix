@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AnimatePresence, motion } from "@/lib/motion";
+import { AnimatePresence, motion, MOTION_TOKENS } from "@/lib/motion";
 import { useMotion } from "@/hooks/use-motion";
 
 export interface AnimatedListProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
@@ -61,10 +61,13 @@ export function AnimatedListItem({ children, className, layout = true }: Animate
     return (
         <motion.div
             layout={layout}
-            initial={{ opacity: 0, y: 8, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.12 } }}
-            transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}
+            initial={MOTION_TOKENS.preset.listItem.initial}
+            animate={MOTION_TOKENS.preset.listItem.animate}
+            exit={{
+                ...MOTION_TOKENS.preset.listItem.exit,
+                transition: MOTION_TOKENS.preset.listItem.exitTransition,
+            }}
+            transition={MOTION_TOKENS.preset.listItem.enterTransition}
             className={className}
         >
             {children}

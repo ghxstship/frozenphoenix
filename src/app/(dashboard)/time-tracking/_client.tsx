@@ -439,7 +439,7 @@ export function TimeTrackingPageClient() {
                 <Card className="border-primary/30 bg-primary/5">
                     <CardContent className="flex items-center justify-between py-4">
                         <div className="flex items-center gap-4">
-                            <div className="h-3 w-3 rounded-full bg-destructive animate-pulse" />
+                            <div className="h-3 w-3 rounded-full bg-destructive motion-safe:animate-pulse" />
                             <div>
                                 <p className="text-sm font-semibold">
                                     Timer Running — {timerProject}

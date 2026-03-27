@@ -283,6 +283,7 @@ export const MOTION_SCALE = {
     md: 250,
     lg: 400,
     xl: 600,
+    decorative: 500,
 } as const;
 
 export type MotionScaleToken = keyof typeof MOTION_SCALE;

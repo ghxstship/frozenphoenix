@@ -101,8 +101,8 @@ export function NfcWriter({
                 <Nfc
                     className={cn(
                         "h-12 w-12 transition-colors",
-                        status === "waiting" && "text-warning animate-pulse",
-                        status === "writing" && "text-primary animate-pulse",
+                        status === "waiting" && "text-warning motion-safe:animate-pulse",
+                        status === "writing" && "text-primary motion-safe:animate-pulse",
                         status === "success" && "text-success",
                         status === "error" && "text-destructive",
                         status === "idle" && "text-muted-foreground"

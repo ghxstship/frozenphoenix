@@ -163,7 +163,10 @@ export function TimerWidget() {
                 <Button
                     variant={isActive ? "default" : "ghost"}
                     size="sm"
-                    className={cn("gap-1.5 font-mono text-xs", state.running && "animate-pulse")}
+                    className={cn(
+                        "gap-1.5 font-mono text-xs",
+                        state.running && "motion-safe:animate-pulse"
+                    )}
                     aria-label={isActive ? `Timer: ${displayTime}` : "Start timer"}
                 >
                     <Timer className="h-3.5 w-3.5" />

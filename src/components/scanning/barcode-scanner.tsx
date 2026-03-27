@@ -211,7 +211,7 @@ export function BarcodeScanner({
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     {isScanning ? (
                         <>
-                            <Camera className="h-4 w-4 text-green-500 animate-pulse" />
+                            <Camera className="h-4 w-4 text-green-500 motion-safe:animate-pulse" />
                             <span>{S.scanning}</span>
                         </>
                     ) : error ? (

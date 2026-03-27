@@ -169,7 +169,7 @@ export function VoiceMessageRecorder({
             aria-label={ms("a11y_voice_recorder")}
         >
             {state === "recording" && (
-                <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+                <div className="h-2 w-2 rounded-full bg-destructive motion-safe:animate-pulse" />
             )}
 
             <span className="text-xs font-mono tabular-nums min-w-[3ch]">

@@ -233,7 +233,7 @@ export function CollaborativeEditorPageClient() {
                                         {activeDoc.activeEditors.length > 0 && (
                                             <div className="mb-4 p-3 rounded-lg bg-secondary/30">
                                                 <h4 className="text-xs font-semibold mb-2 flex items-center gap-1">
-                                                    <Circle className="h-2 w-2 fill-success text-success animate-pulse" />
+                                                    <Circle className="h-2 w-2 fill-success text-success motion-safe:animate-pulse" />
                                                     Currently editing
                                                 </h4>
                                                 <div className="space-y-2">

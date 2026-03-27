@@ -2,7 +2,8 @@
 
 import React, { createContext, useCallback, useContext, useState } from "react";
 import { useEscapeKey, useFocusReturn, useFocusTrap } from "@/hooks/use-accessibility";
-import { AnimatePresence, motion } from "@/lib/motion";
+import { AnimatePresence, motion, MOTION_TOKENS } from "@/lib/motion";
+import { SPRING_PRESETS } from "@/config/design-tokens";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 
@@ -64,7 +65,7 @@ export function ConfirmDialogProvider({ children }: { children: React.ReactNode 
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.15 }}
+                            transition={MOTION_TOKENS.preset.overlay.transition}
                             onClick={handleCancel}
                             aria-hidden="true"
                         />
@@ -100,7 +101,7 @@ function ConfirmDialogContent({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            transition={{ type: "spring", ...SPRING_PRESETS.snappy }}
             role="alertdialog"
             aria-modal="true"
             aria-labelledby="confirm-title"

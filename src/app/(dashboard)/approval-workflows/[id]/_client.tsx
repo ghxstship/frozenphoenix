@@ -296,7 +296,7 @@ export function ApprovalWorkflowDetailClient({
                                                             className="flex items-center gap-1 flex-1"
                                                         >
                                                             <div
-                                                                className={`h-2 flex-1 rounded-full transition-all ${isPast || inst.status === "completed" ? "bg-success" : isCurrent ? "bg-primary animate-pulse" : "bg-muted"}`}
+                                                                className={`h-2 flex-1 rounded-full transition-all ${isPast || inst.status === "completed" ? "bg-success" : isCurrent ? "bg-primary motion-safe:animate-pulse" : "bg-muted"}`}
                                                                 title={step.name}
                                                             />
                                                             {si < steps.length - 1 && (

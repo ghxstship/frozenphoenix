@@ -86,7 +86,10 @@ function CompletenessTable({ entityType }: { entityType: string }) {
         return (
             <div className="space-y-2">
                 {Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="h-16 bg-muted/50 rounded-lg animate-pulse" />
+                    <div
+                        key={i}
+                        className="h-16 bg-muted/50 rounded-lg motion-safe:animate-pulse"
+                    />
                 ))}
             </div>
         );

@@ -87,7 +87,7 @@ export function ConversationList({
                         {Array.from({ length: 5 }).map((_, i) => (
                             <div
                                 key={i}
-                                className="h-16 rounded-lg bg-secondary/30 animate-pulse"
+                                className="h-16 rounded-lg bg-secondary/30 motion-safe:animate-pulse"
                             />
                         ))}
                     </div>

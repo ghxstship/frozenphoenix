@@ -131,7 +131,12 @@ export function PushToTalkButton({
                 {state === "connecting" ? (
                     <Loader2 className="h-5 w-5 motion-safe:animate-spin" />
                 ) : (
-                    <Radio className={cn("h-5 w-5", state === "transmitting" && "animate-pulse")} />
+                    <Radio
+                        className={cn(
+                            "h-5 w-5",
+                            state === "transmitting" && "motion-safe:animate-pulse"
+                        )}
+                    />
                 )}
 
                 {/* Pulse ring when transmitting */}

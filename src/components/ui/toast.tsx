@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { cva } from "class-variance-authority";
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
 import { INTERACTION_TIMING } from "@/config/design-tokens";
-import { AnimatePresence, motion } from "@/lib/motion";
+import { AnimatePresence, motion, MOTION_TOKENS } from "@/lib/motion";
 
 const toastVariants = cva(
     "pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-lg border p-4 shadow-lg transition-all",
@@ -100,7 +100,7 @@ function ToastViewport() {
                         initial={{ opacity: 0, y: 16, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                        transition={{ duration: 0.2 }}
+                        transition={MOTION_TOKENS.preset.overlay.transition}
                     >
                         <ToastItem toast={toast} onDismiss={removeToast} />
                     </motion.div>
@@ -178,6 +178,7 @@ function ToastItem({ toast, onDismiss }: { toast: ToastData; onDismiss: (id: str
                             timerBarColor[toast.variant ?? "default"]
                         )}
                         style={{
+                            transformOrigin: "left",
                             animation: `toast-timer ${duration}ms linear forwards`,
                             animationPlayState: paused ? "paused" : "running",
                         }}

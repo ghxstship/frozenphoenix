@@ -573,7 +573,7 @@ export function DataTable<T extends object>({
                                                         "var(--density-table-py) var(--density-table-px)",
                                                 }}
                                             >
-                                                <div className="h-4 w-4 rounded bg-muted animate-pulse" />
+                                                <div className="h-4 w-4 rounded bg-muted motion-safe:animate-pulse" />
                                             </td>
                                         )}
                                         {visibleColumns.map((col) => (
@@ -587,7 +587,7 @@ export function DataTable<T extends object>({
                                                 }}
                                             >
                                                 <div
-                                                    className="h-4 rounded bg-muted animate-pulse"
+                                                    className="h-4 rounded bg-muted motion-safe:animate-pulse"
                                                     style={{
                                                         width: col.width
                                                             ? undefined
@@ -605,7 +605,7 @@ export function DataTable<T extends object>({
                                                         "var(--density-table-py) var(--density-table-px)",
                                                 }}
                                             >
-                                                <div className="h-4 w-6 rounded bg-muted animate-pulse" />
+                                                <div className="h-4 w-6 rounded bg-muted motion-safe:animate-pulse" />
                                             </td>
                                         )}
                                     </tr>

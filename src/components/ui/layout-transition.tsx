@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { LayoutGroup, motion } from "@/lib/motion";
+import { LayoutGroup, motion, MOTION_TOKENS } from "@/lib/motion";
 import { useMotion } from "@/hooks/use-motion";
 
 export interface LayoutTransitionProps {
@@ -66,7 +66,7 @@ export function LayoutTransitionItem({
         <motion.div
             {...(layoutId ? { layoutId } : {})}
             {...(layoutId ? {} : layout ? { layout } : {})}
-            transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+            transition={MOTION_TOKENS.preset.layout}
             {...(className ? { className } : {})}
         >
             {children}

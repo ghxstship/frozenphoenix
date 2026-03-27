@@ -110,7 +110,7 @@ export function ConversationMembersPanel({
                         {Array.from({ length: 4 }).map((_, i) => (
                             <div
                                 key={i}
-                                className="h-10 rounded-lg bg-secondary/30 animate-pulse"
+                                className="h-10 rounded-lg bg-secondary/30 motion-safe:animate-pulse"
                             />
                         ))}
                     </div>

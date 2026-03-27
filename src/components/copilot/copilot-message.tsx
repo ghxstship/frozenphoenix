@@ -67,7 +67,7 @@ export function CopilotMessage({ message, className }: CopilotMessageProps) {
                         {message.isStreaming ? (
                             <span>
                                 {message.content}
-                                <span className="inline-block w-1.5 h-4 ml-0.5 bg-current animate-pulse rounded-sm" />
+                                <span className="inline-block w-1.5 h-4 ml-0.5 bg-current motion-safe:animate-pulse rounded-sm" />
                             </span>
                         ) : (
                             <MessageContent content={message.content} />

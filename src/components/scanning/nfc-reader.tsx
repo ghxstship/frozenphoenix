@@ -154,7 +154,10 @@ export function NfcReader({ onRead, onError, enabled = true, className }: NfcRea
                         )}
                     >
                         <NfcIcon
-                            className={cn("h-4 w-4 mr-1", status === "reading" && "animate-pulse")}
+                            className={cn(
+                                "h-4 w-4 mr-1",
+                                status === "reading" && "motion-safe:animate-pulse"
+                            )}
                         />
                         {status === "reading" && S.reading}
                         {status === "success" && S.readSuccess}

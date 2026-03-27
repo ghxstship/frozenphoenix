@@ -164,7 +164,7 @@ export function ScanInput({
                         aria-pressed={nfcActive}
                         title={S.toggleNfc}
                     >
-                        <Nfc className={cn("h-4 w-4", nfcActive && "animate-pulse")} />
+                        <Nfc className={cn("h-4 w-4", nfcActive && "motion-safe:animate-pulse")} />
                     </Button>
                 )}
             </div>

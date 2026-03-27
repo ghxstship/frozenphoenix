@@ -40,7 +40,7 @@ export function TierGate({
 
     if (isLoading) {
         return (
-            <div className="animate-pulse" aria-hidden="true">
+            <div className="motion-safe:animate-pulse" aria-hidden="true">
                 <div className="h-32 bg-muted rounded-xl" />
             </div>
         );

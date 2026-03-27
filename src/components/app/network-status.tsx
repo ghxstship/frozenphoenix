@@ -2,6 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "@/lib/motion";
+import { SPRING_PRESETS } from "@/config/design-tokens";
 import { Wifi, WifiOff } from "lucide-react";
 
 interface NetworkContextValue {
@@ -54,7 +55,7 @@ export function NetworkStatusProvider({ children }: { children: React.ReactNode 
                         initial={{ y: -48, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: -48, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        transition={{ type: "spring", ...SPRING_PRESETS.snappy }}
                         role="alert"
                         aria-live="assertive"
                     >
@@ -70,7 +71,7 @@ export function NetworkStatusProvider({ children }: { children: React.ReactNode 
                         initial={{ y: -48, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: -48, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        transition={{ type: "spring", ...SPRING_PRESETS.snappy }}
                         role="status"
                         aria-live="polite"
                     >

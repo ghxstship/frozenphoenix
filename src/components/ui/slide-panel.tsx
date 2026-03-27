@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "@/lib/motion";
+import { AnimatePresence, motion, MOTION_TOKENS } from "@/lib/motion";
 import { SPRING_PRESETS } from "@/config/design-tokens";
 import { useFocusTrap } from "@/hooks/use-accessibility";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -49,7 +49,7 @@ export function SlidePanel({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
+                        transition={MOTION_TOKENS.preset.overlay.transition}
                         onClick={onClose}
                         aria-hidden="true"
                     />

@@ -278,7 +278,8 @@ function ConnectionIndicator() {
     if (status === "connected") return null;
 
     const icon = status === "disconnected" ? WifiOff : Wifi;
-    const color = status === "disconnected" ? "text-destructive" : "text-warning animate-pulse";
+    const color =
+        status === "disconnected" ? "text-destructive" : "text-warning motion-safe:animate-pulse";
 
     return (
         <Tooltip

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "@/lib/motion";
+import { AnimatePresence, motion, MOTION_TOKENS } from "@/lib/motion";
 import { SlidingIndicator } from "@/components/ui/sliding-indicator";
 
 export interface TabBarItem {
@@ -284,7 +284,7 @@ export function TabPanel({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
+                    transition={MOTION_TOKENS.preset.overlay.transition}
                     role="tabpanel"
                     id={`${prefix}tabpanel-${value}`}
                     aria-labelledby={tabId ?? `${prefix}tab-${value}`}

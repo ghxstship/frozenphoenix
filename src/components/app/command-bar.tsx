@@ -3,7 +3,8 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "@/lib/motion";
+import { AnimatePresence, motion, MOTION_TOKENS } from "@/lib/motion";
+import { SPRING_PRESETS } from "@/config/design-tokens";
 import { navigationConfig } from "@/config/navigation";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, Clock, Command, MessageSquare, Search, Sparkles, X } from "lucide-react";
@@ -261,7 +262,7 @@ export function CommandBar({ className }: CommandBarProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
+                        transition={MOTION_TOKENS.preset.overlay.transition}
                         onClick={() => setOpen(false)}
                         aria-hidden="true"
                     />
@@ -280,7 +281,7 @@ export function CommandBar({ className }: CommandBarProps) {
                         initial={{ opacity: 0, scale: 0.95, x: "-50%" }}
                         animate={{ opacity: 1, scale: 1, x: "-50%" }}
                         exit={{ opacity: 0, scale: 0.95, x: "-50%" }}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        transition={{ type: "spring", ...SPRING_PRESETS.snappy }}
                         role="dialog"
                         aria-label="Command bar"
                         aria-modal="true"

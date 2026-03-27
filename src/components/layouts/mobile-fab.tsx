@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useBreakpoint } from "@/hooks/use-media-query";
 import { Plus, X } from "lucide-react";
 import { AnimatePresence, motion } from "@/lib/motion";
+import { SPRING_PRESETS } from "@/config/design-tokens";
 
 // ── Quick Create Actions (context-aware) ──
 
@@ -114,7 +115,7 @@ export function MobileFab({ className }: { className?: string }) {
                         initial={{ opacity: 0, y: 20, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.9 }}
-                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                        transition={{ type: "spring", ...SPRING_PRESETS.bouncy }}
                         className="fixed right-4 z-50 flex flex-col gap-2 lg:hidden"
                         style={{ bottom: "calc(140px + env(safe-area-inset-bottom, 0px))" }}
                     >
@@ -142,8 +143,7 @@ export function MobileFab({ className }: { className?: string }) {
                 }}
                 transition={{
                     type: "spring",
-                    damping: 20,
-                    stiffness: 300,
+                    ...SPRING_PRESETS.bouncy,
                 }}
                 className={cn(
                     "fixed right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-colors lg:hidden",

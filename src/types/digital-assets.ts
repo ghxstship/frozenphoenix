@@ -4,8 +4,8 @@
 
 // ─── Storage Abstraction ───
 
-export type StorageProvider = 'supabase_storage' | 's3' | 'gcs' | 'azure_blob' | 'external_url';
-export type ProcessingStatus = 'uploading' | 'processing' | 'ready' | 'error';
+export type StorageProvider = "supabase_storage" | "s3" | "gcs" | "azure_blob" | "external_url";
+export type ProcessingStatus = "uploading" | "processing" | "ready" | "error";
 
 export interface StorageObject {
     id: string;
@@ -32,54 +32,54 @@ export interface StorageObject {
 // ─── Asset Classification ───
 
 export type AssetClassL1 =
-    | 'document'
-    | 'legal'
-    | 'engineering'
-    | 'creative'
-    | 'media'
-    | 'production'
-    | 'knowledge'
-    | 'financial'
-    | 'identity';
+    | "document"
+    | "legal"
+    | "engineering"
+    | "creative"
+    | "media"
+    | "production"
+    | "knowledge"
+    | "financial"
+    | "identity";
 
 export type ScopeLevel =
-    | 'global'
-    | 'company'
-    | 'project'
-    | 'location'
-    | 'activation'
-    | 'event'
-    | 'task'
-    | 'vendor'
-    | 'worker'
-    | 'department'
-    | 'personal';
+    | "global"
+    | "company"
+    | "project"
+    | "location"
+    | "activation"
+    | "event"
+    | "task"
+    | "vendor"
+    | "worker"
+    | "department"
+    | "personal";
 
 export type AssetStatus =
-    | 'draft'
-    | 'pending_review'
-    | 'in_review'
-    | 'approved'
-    | 'published'
-    | 'active'
-    | 'superseded'
-    | 'archived'
-    | 'expired'
-    | 'deleted';
+    | "draft"
+    | "pending_review"
+    | "in_review"
+    | "approved"
+    | "published"
+    | "active"
+    | "superseded"
+    | "archived"
+    | "expired"
+    | "deleted";
 
-export type AssetSensitivity = 'public' | 'internal' | 'confidential' | 'restricted';
+export type AssetSensitivity = "public" | "internal" | "confidential" | "restricted";
 
 export type FunctionalDomain =
-    | 'sales'
-    | 'legal'
-    | 'production'
-    | 'creative'
-    | 'finance'
-    | 'hr'
-    | 'operations'
-    | 'logistics'
-    | 'client_facing'
-    | 'internal';
+    | "sales"
+    | "legal"
+    | "production"
+    | "creative"
+    | "finance"
+    | "hr"
+    | "operations"
+    | "logistics"
+    | "client_facing"
+    | "internal";
 
 // ─── Core Metadata ───
 
@@ -105,7 +105,7 @@ export interface DigitalAsset {
     document_number: string | null;
     last_reviewed_at: string | null;
     next_review_date: string | null;
-    reviewer_ids: string[];
+
     requires_acknowledgment: boolean;
     sensitivity: AssetSensitivity;
     data_purpose: string | null;
@@ -119,13 +119,13 @@ export interface DigitalAsset {
 // ─── Version History ───
 
 export type VersionChangeType =
-    | 'create'
-    | 'update'
-    | 'amendment'
-    | 'revision'
-    | 'correction'
-    | 'reformat'
-    | 'merge';
+    | "create"
+    | "update"
+    | "amendment"
+    | "revision"
+    | "correction"
+    | "reformat"
+    | "merge";
 
 export interface AssetVersion {
     id: string;
@@ -149,35 +149,35 @@ export interface AssetVersion {
 // ─── Entity-Asset Linking ───
 
 export type AssetLinkType =
-    | 'primary'
-    | 'attachment'
-    | 'reference'
-    | 'deliverable'
-    | 'evidence'
-    | 'template_source'
-    | 'supersedes';
+    | "primary"
+    | "attachment"
+    | "reference"
+    | "deliverable"
+    | "evidence"
+    | "template_source"
+    | "supersedes";
 
 export type AssetEntityType =
-    | 'project'
-    | 'contract'
-    | 'event'
-    | 'activation'
-    | 'location'
-    | 'vendor'
-    | 'crew_member'
-    | 'task'
-    | 'incident'
-    | 'proposal'
-    | 'expense'
-    | 'work_order'
-    | 'brand_kit'
-    | 'case_study'
-    | 'tech_sheet'
-    | 'certification'
-    | 'vendor_compliance'
-    | 'scope_of_work'
-    | 'client_invoice'
-    | 'worker_profile';
+    | "project"
+    | "contract"
+    | "event"
+    | "activation"
+    | "location"
+    | "vendor"
+    | "crew_member"
+    | "task"
+    | "incident"
+    | "proposal"
+    | "expense"
+    | "work_order"
+    | "brand_kit"
+    | "case_study"
+    | "tech_sheet"
+    | "certification"
+    | "vendor_compliance"
+    | "scope_of_work"
+    | "client_invoice"
+    | "worker_profile";
 
 export interface AssetLink {
     id: string;
@@ -236,21 +236,21 @@ export interface AssetAccessControl {
 // ─── Audit Trail ───
 
 export type AssetAccessAction =
-    | 'viewed'
-    | 'downloaded'
-    | 'previewed'
-    | 'printed'
-    | 'shared'
-    | 'linked'
-    | 'unlinked'
-    | 'versioned'
-    | 'status_changed'
-    | 'permissions_changed'
-    | 'deleted'
-    | 'restored'
-    | 'exported';
+    | "viewed"
+    | "downloaded"
+    | "previewed"
+    | "printed"
+    | "shared"
+    | "linked"
+    | "unlinked"
+    | "versioned"
+    | "status_changed"
+    | "permissions_changed"
+    | "deleted"
+    | "restored"
+    | "exported";
 
-export type AccessActorType = 'user' | 'system' | 'api' | 'portal';
+export type AccessActorType = "user" | "system" | "api" | "portal";
 
 export interface AssetAccessLogEntry {
     id: string;
@@ -268,15 +268,15 @@ export interface AssetAccessLogEntry {
 // ─── Retention Policies ───
 
 export type RetentionTrigger =
-    | 'creation'
-    | 'expiration'
-    | 'project_closure'
-    | 'contract_termination'
-    | 'last_access'
-    | 'manual';
+    | "creation"
+    | "expiration"
+    | "project_closure"
+    | "contract_termination"
+    | "last_access"
+    | "manual";
 
-export type RetentionAction = 'archive' | 'delete' | 'review' | 'notify_owner';
-export type ExpirationAction = 'archive' | 'delete' | 'notify_owner' | 'lock' | 'none';
+export type RetentionAction = "archive" | "delete" | "review" | "notify_owner";
+export type ExpirationAction = "archive" | "delete" | "notify_owner" | "lock" | "none";
 
 export interface AssetRetentionPolicy {
     id: string;
@@ -300,8 +300,8 @@ export interface AssetRetentionPolicy {
 
 // ─── Legal Holds ───
 
-export type LegalHoldType = 'litigation' | 'regulatory' | 'investigation' | 'audit';
-export type LegalHoldScope = 'asset' | 'project' | 'company' | 'vendor' | 'global';
+export type LegalHoldType = "litigation" | "regulatory" | "investigation" | "audit";
+export type LegalHoldScope = "asset" | "project" | "company" | "vendor" | "global";
 
 export interface LegalHold {
     id: string;
@@ -324,13 +324,13 @@ export interface LegalHold {
 // ─── Asset Dependencies ───
 
 export type DependencyType =
-    | 'requires_approval'
-    | 'requires_signature'
-    | 'derived_from'
-    | 'supersedes'
-    | 'references'
-    | 'bundles'
-    | 'requires_upload';
+    | "requires_approval"
+    | "requires_signature"
+    | "derived_from"
+    | "supersedes"
+    | "references"
+    | "bundles"
+    | "requires_upload";
 
 export interface AssetDependency {
     id: string;

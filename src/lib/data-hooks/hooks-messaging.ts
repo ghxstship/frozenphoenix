@@ -792,7 +792,7 @@ function mapMessageWithSender(raw: Record<string, unknown>): MessageWithSender {
         thread_last_reply_at: raw.thread_last_reply_at as string | null,
         body: raw.body as string,
         body_html: raw.body_html as string | null,
-        mentioned_user_ids: (raw.mentioned_user_ids as string[]) ?? [],
+
         attachments: (raw.attachments as MessageWithSender["attachments"]) ?? [],
         entity_type: raw.entity_type as string | null,
         entity_id: raw.entity_id as string | null,

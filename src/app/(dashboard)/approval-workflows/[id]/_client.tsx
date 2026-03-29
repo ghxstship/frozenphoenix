@@ -118,9 +118,12 @@ export function ApprovalWorkflowDetailClient({
                 approver_role: (s as unknown as Record<string, unknown>).approver_role as
                     | string
                     | null,
-                approver_user_ids: (s as unknown as Record<string, unknown>).approver_user_ids as
-                    | string[]
-                    | null,
+                approver_user_ids:
+                    (
+                        (s as unknown as Record<string, unknown>).approval_step_approvers as
+                            | Record<string, unknown>[]
+                            | undefined
+                    )?.map((a) => String(a.user_id)) ?? [],
             })),
         [stepsData]
     );

@@ -270,7 +270,7 @@ export interface ProductionRun {
     completed_at?: string | undefined;
     operator_id?: string | undefined;
     location_id?: string | undefined;
-    equipment_ids: string[];
+
     notes?: string | undefined;
     organization_id: string;
     created_by?: string | undefined;

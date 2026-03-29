@@ -264,6 +264,78 @@ export type Database = {
                     },
                 ];
             };
+            activation_teams: {
+                Row: {
+                    activation_id: string;
+                    created_at: string | null;
+                    id: string;
+                    team_id: string;
+                };
+                Insert: {
+                    activation_id: string;
+                    created_at?: string | null;
+                    id?: string;
+                    team_id: string;
+                };
+                Update: {
+                    activation_id?: string;
+                    created_at?: string | null;
+                    id?: string;
+                    team_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "activation_teams_activation_id_fkey";
+                        columns: ["activation_id"];
+                        isOneToOne: false;
+                        referencedRelation: "activations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "activation_teams_team_id_fkey";
+                        columns: ["team_id"];
+                        isOneToOne: false;
+                        referencedRelation: "teams";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            activation_vendors: {
+                Row: {
+                    activation_id: string;
+                    created_at: string | null;
+                    id: string;
+                    vendor_id: string;
+                };
+                Insert: {
+                    activation_id: string;
+                    created_at?: string | null;
+                    id?: string;
+                    vendor_id: string;
+                };
+                Update: {
+                    activation_id?: string;
+                    created_at?: string | null;
+                    id?: string;
+                    vendor_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "activation_vendors_activation_id_fkey";
+                        columns: ["activation_id"];
+                        isOneToOne: false;
+                        referencedRelation: "activations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "activation_vendors_vendor_id_fkey";
+                        columns: ["vendor_id"];
+                        isOneToOne: false;
+                        referencedRelation: "vendors";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             activations: {
                 Row: {
                     backup_plan: string | null;
@@ -291,11 +363,9 @@ export type Database = {
                     status: Database["public"]["Enums"]["activation_status"];
                     strike_date: string | null;
                     target_audience: string | null;
-                    team_ids: string[] | null;
                     type: Database["public"]["Enums"]["activation_type"];
                     updated_at: string | null;
                     updated_by: string | null;
-                    vendor_ids: string[] | null;
                     weather_contingency: string | null;
                     width: number | null;
                     zone: string | null;
@@ -326,11 +396,9 @@ export type Database = {
                     status?: Database["public"]["Enums"]["activation_status"];
                     strike_date?: string | null;
                     target_audience?: string | null;
-                    team_ids?: string[] | null;
                     type?: Database["public"]["Enums"]["activation_type"];
                     updated_at?: string | null;
                     updated_by?: string | null;
-                    vendor_ids?: string[] | null;
                     weather_contingency?: string | null;
                     width?: number | null;
                     zone?: string | null;
@@ -361,11 +429,9 @@ export type Database = {
                     status?: Database["public"]["Enums"]["activation_status"];
                     strike_date?: string | null;
                     target_audience?: string | null;
-                    team_ids?: string[] | null;
                     type?: Database["public"]["Enums"]["activation_type"];
                     updated_at?: string | null;
                     updated_by?: string | null;
-                    vendor_ids?: string[] | null;
                     weather_contingency?: string | null;
                     width?: number | null;
                     zone?: string | null;
@@ -596,7 +662,6 @@ export type Database = {
                     project_id: string;
                     requirements: string[] | null;
                     specific_location: string | null;
-                    staff_ids: string[] | null;
                     start_time: string;
                     status: Database["public"]["Enums"]["activity_status"];
                     type: Database["public"]["Enums"]["activity_type"];
@@ -623,7 +688,6 @@ export type Database = {
                     project_id: string;
                     requirements?: string[] | null;
                     specific_location?: string | null;
-                    staff_ids?: string[] | null;
                     start_time: string;
                     status?: Database["public"]["Enums"]["activity_status"];
                     type?: Database["public"]["Enums"]["activity_type"];
@@ -650,7 +714,6 @@ export type Database = {
                     project_id?: string;
                     requirements?: string[] | null;
                     specific_location?: string | null;
-                    staff_ids?: string[] | null;
                     start_time?: string;
                     status?: Database["public"]["Enums"]["activity_status"];
                     type?: Database["public"]["Enums"]["activity_type"];
@@ -946,6 +1009,49 @@ export type Database = {
                         columns: ["organization_id"];
                         isOneToOne: false;
                         referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            activity_staff: {
+                Row: {
+                    activity_id: string;
+                    created_at: string | null;
+                    id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    activity_id: string;
+                    created_at?: string | null;
+                    id?: string;
+                    user_id: string;
+                };
+                Update: {
+                    activity_id?: string;
+                    created_at?: string | null;
+                    id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "activity_staff_activity_id_fkey";
+                        columns: ["activity_id"];
+                        isOneToOne: false;
+                        referencedRelation: "activities";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "activity_staff_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "activity_staff_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -1890,10 +1996,52 @@ export type Database = {
                     },
                 ];
             };
+            approval_step_approvers: {
+                Row: {
+                    created_at: string | null;
+                    id: string;
+                    step_id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    id?: string;
+                    step_id: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    id?: string;
+                    step_id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "approval_step_approvers_step_id_fkey";
+                        columns: ["step_id"];
+                        isOneToOne: false;
+                        referencedRelation: "approval_steps";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "approval_step_approvers_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "approval_step_approvers_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             approval_steps: {
                 Row: {
                     approver_role: string | null;
-                    approver_user_ids: string[] | null;
                     conditions: Json | null;
                     created_at: string | null;
                     description: string | null;
@@ -1911,7 +2059,6 @@ export type Database = {
                 };
                 Insert: {
                     approver_role?: string | null;
-                    approver_user_ids?: string[] | null;
                     conditions?: Json | null;
                     created_at?: string | null;
                     description?: string | null;
@@ -1929,7 +2076,6 @@ export type Database = {
                 };
                 Update: {
                     approver_role?: string | null;
-                    approver_user_ids?: string[] | null;
                     conditions?: Json | null;
                     created_at?: string | null;
                     description?: string | null;
@@ -4807,6 +4953,92 @@ export type Database = {
                     },
                 ];
             };
+            brief_approvers: {
+                Row: {
+                    brief_id: string;
+                    created_at: string | null;
+                    id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    brief_id: string;
+                    created_at?: string | null;
+                    id?: string;
+                    user_id: string;
+                };
+                Update: {
+                    brief_id?: string;
+                    created_at?: string | null;
+                    id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "brief_approvers_brief_id_fkey";
+                        columns: ["brief_id"];
+                        isOneToOne: false;
+                        referencedRelation: "creative_briefs";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "brief_approvers_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "brief_approvers_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            brief_contributors: {
+                Row: {
+                    brief_id: string;
+                    created_at: string | null;
+                    id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    brief_id: string;
+                    created_at?: string | null;
+                    id?: string;
+                    user_id: string;
+                };
+                Update: {
+                    brief_id?: string;
+                    created_at?: string | null;
+                    id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "brief_contributors_brief_id_fkey";
+                        columns: ["brief_id"];
+                        isOneToOne: false;
+                        referencedRelation: "creative_briefs";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "brief_contributors_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "brief_contributors_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             brief_deliverables: {
                 Row: {
                     assigned_to: string | null;
@@ -4902,6 +5134,92 @@ export type Database = {
                         columns: ["organization_id"];
                         isOneToOne: false;
                         referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            brief_previous_campaigns: {
+                Row: {
+                    brief_id: string;
+                    campaign_id: string;
+                    created_at: string | null;
+                    id: string;
+                };
+                Insert: {
+                    brief_id: string;
+                    campaign_id: string;
+                    created_at?: string | null;
+                    id?: string;
+                };
+                Update: {
+                    brief_id?: string;
+                    campaign_id?: string;
+                    created_at?: string | null;
+                    id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "brief_previous_campaigns_brief_id_fkey";
+                        columns: ["brief_id"];
+                        isOneToOne: false;
+                        referencedRelation: "creative_briefs";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "brief_previous_campaigns_campaign_id_fkey";
+                        columns: ["campaign_id"];
+                        isOneToOne: false;
+                        referencedRelation: "campaign_overview";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "brief_previous_campaigns_campaign_id_fkey";
+                        columns: ["campaign_id"];
+                        isOneToOne: false;
+                        referencedRelation: "campaigns";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            brief_reviewers: {
+                Row: {
+                    brief_id: string;
+                    created_at: string | null;
+                    id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    brief_id: string;
+                    created_at?: string | null;
+                    id?: string;
+                    user_id: string;
+                };
+                Update: {
+                    brief_id?: string;
+                    created_at?: string | null;
+                    id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "brief_reviewers_brief_id_fkey";
+                        columns: ["brief_id"];
+                        isOneToOne: false;
+                        referencedRelation: "creative_briefs";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "brief_reviewers_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "brief_reviewers_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -6384,6 +6702,56 @@ export type Database = {
                     },
                 ];
             };
+            campaign_team_members: {
+                Row: {
+                    campaign_id: string;
+                    created_at: string | null;
+                    id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    campaign_id: string;
+                    created_at?: string | null;
+                    id?: string;
+                    user_id: string;
+                };
+                Update: {
+                    campaign_id?: string;
+                    created_at?: string | null;
+                    id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "campaign_team_members_campaign_id_fkey";
+                        columns: ["campaign_id"];
+                        isOneToOne: false;
+                        referencedRelation: "campaign_overview";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "campaign_team_members_campaign_id_fkey";
+                        columns: ["campaign_id"];
+                        isOneToOne: false;
+                        referencedRelation: "campaigns";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "campaign_team_members_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "campaign_team_members_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             campaigns: {
                 Row: {
                     brand_guideline_version_id: string | null;
@@ -6410,7 +6778,6 @@ export type Database = {
                     status: Database["public"]["Enums"]["campaign_status"];
                     tags: string[] | null;
                     target_audience: string | null;
-                    team_member_ids: string[] | null;
                     total_budget: number | null;
                     total_conversions: number | null;
                     total_engagements: number | null;
@@ -6446,7 +6813,6 @@ export type Database = {
                     status?: Database["public"]["Enums"]["campaign_status"];
                     tags?: string[] | null;
                     target_audience?: string | null;
-                    team_member_ids?: string[] | null;
                     total_budget?: number | null;
                     total_conversions?: number | null;
                     total_engagements?: number | null;
@@ -6482,7 +6848,6 @@ export type Database = {
                     status?: Database["public"]["Enums"]["campaign_status"];
                     tags?: string[] | null;
                     target_audience?: string | null;
-                    team_member_ids?: string[] | null;
                     total_budget?: number | null;
                     total_conversions?: number | null;
                     total_engagements?: number | null;
@@ -8605,6 +8970,49 @@ export type Database = {
                     },
                 ];
             };
+            comment_mentions: {
+                Row: {
+                    comment_id: string;
+                    created_at: string | null;
+                    id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    comment_id: string;
+                    created_at?: string | null;
+                    id?: string;
+                    user_id: string;
+                };
+                Update: {
+                    comment_id?: string;
+                    created_at?: string | null;
+                    id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "comment_mentions_comment_id_fkey";
+                        columns: ["comment_id"];
+                        isOneToOne: false;
+                        referencedRelation: "record_comments";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "comment_mentions_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "comment_mentions_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             comments: {
                 Row: {
                     attachments: string[] | null;
@@ -9913,7 +10321,6 @@ export type Database = {
             };
             contracts: {
                 Row: {
-                    amendment_ids: string[] | null;
                     auto_renew: boolean | null;
                     confidentiality_level:
                         | Database["public"]["Enums"]["contract_confidentiality"]
@@ -9953,7 +10360,6 @@ export type Database = {
                     vendor_id: string | null;
                 };
                 Insert: {
-                    amendment_ids?: string[] | null;
                     auto_renew?: boolean | null;
                     confidentiality_level?:
                         | Database["public"]["Enums"]["contract_confidentiality"]
@@ -9993,7 +10399,6 @@ export type Database = {
                     vendor_id?: string | null;
                 };
                 Update: {
-                    amendment_ids?: string[] | null;
                     auto_renew?: boolean | null;
                     confidentiality_level?:
                         | Database["public"]["Enums"]["contract_confidentiality"]
@@ -10360,7 +10765,6 @@ export type Database = {
             creative_briefs: {
                 Row: {
                     amendment_of_id: string | null;
-                    approver_ids: string[] | null;
                     brand_guideline_id: string | null;
                     brand_guideline_version_id: string | null;
                     brief_type: Database["public"]["Enums"]["creative_brief_type"];
@@ -10371,7 +10775,6 @@ export type Database = {
                     competitive_context: string | null;
                     competitor_references: Json | null;
                     contingency_pct: number | null;
-                    contributor_ids: string[] | null;
                     created_at: string | null;
                     created_by: string | null;
                     deal_id: string | null;
@@ -10386,10 +10789,8 @@ export type Database = {
                     organization_id: string;
                     owner_id: string | null;
                     personas: Json | null;
-                    previous_campaign_ids: string[] | null;
                     project_id: string | null;
                     retrospective_notes: string | null;
-                    reviewer_ids: string[] | null;
                     start_date: string | null;
                     status: Database["public"]["Enums"]["creative_brief_status"];
                     success_criteria: Json | null;
@@ -10404,7 +10805,6 @@ export type Database = {
                 };
                 Insert: {
                     amendment_of_id?: string | null;
-                    approver_ids?: string[] | null;
                     brand_guideline_id?: string | null;
                     brand_guideline_version_id?: string | null;
                     brief_type?: Database["public"]["Enums"]["creative_brief_type"];
@@ -10415,7 +10815,6 @@ export type Database = {
                     competitive_context?: string | null;
                     competitor_references?: Json | null;
                     contingency_pct?: number | null;
-                    contributor_ids?: string[] | null;
                     created_at?: string | null;
                     created_by?: string | null;
                     deal_id?: string | null;
@@ -10430,10 +10829,8 @@ export type Database = {
                     organization_id: string;
                     owner_id?: string | null;
                     personas?: Json | null;
-                    previous_campaign_ids?: string[] | null;
                     project_id?: string | null;
                     retrospective_notes?: string | null;
-                    reviewer_ids?: string[] | null;
                     start_date?: string | null;
                     status?: Database["public"]["Enums"]["creative_brief_status"];
                     success_criteria?: Json | null;
@@ -10448,7 +10845,6 @@ export type Database = {
                 };
                 Update: {
                     amendment_of_id?: string | null;
-                    approver_ids?: string[] | null;
                     brand_guideline_id?: string | null;
                     brand_guideline_version_id?: string | null;
                     brief_type?: Database["public"]["Enums"]["creative_brief_type"];
@@ -10459,7 +10855,6 @@ export type Database = {
                     competitive_context?: string | null;
                     competitor_references?: Json | null;
                     contingency_pct?: number | null;
-                    contributor_ids?: string[] | null;
                     created_at?: string | null;
                     created_by?: string | null;
                     deal_id?: string | null;
@@ -10474,10 +10869,8 @@ export type Database = {
                     organization_id?: string;
                     owner_id?: string | null;
                     personas?: Json | null;
-                    previous_campaign_ids?: string[] | null;
                     project_id?: string | null;
                     retrospective_notes?: string | null;
-                    reviewer_ids?: string[] | null;
                     start_date?: string | null;
                     status?: Database["public"]["Enums"]["creative_brief_status"];
                     success_criteria?: Json | null;
@@ -13013,6 +13406,49 @@ export type Database = {
                     },
                 ];
             };
+            digital_asset_reviewers: {
+                Row: {
+                    asset_id: string;
+                    created_at: string | null;
+                    id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    asset_id: string;
+                    created_at?: string | null;
+                    id?: string;
+                    user_id: string;
+                };
+                Update: {
+                    asset_id?: string;
+                    created_at?: string | null;
+                    id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "digital_asset_reviewers_asset_id_fkey";
+                        columns: ["asset_id"];
+                        isOneToOne: false;
+                        referencedRelation: "digital_assets";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "digital_asset_reviewers_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "digital_asset_reviewers_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             digital_assets: {
                 Row: {
                     ai_generated: boolean;
@@ -13040,7 +13476,6 @@ export type Database = {
                     published_at: string | null;
                     requires_acknowledgment: boolean;
                     retention_policy_id: string | null;
-                    reviewer_ids: string[];
                     scope_entity_id: string | null;
                     scope_level: string;
                     search_text: unknown;
@@ -13075,7 +13510,6 @@ export type Database = {
                     published_at?: string | null;
                     requires_acknowledgment?: boolean;
                     retention_policy_id?: string | null;
-                    reviewer_ids?: string[];
                     scope_entity_id?: string | null;
                     scope_level?: string;
                     search_text?: unknown;
@@ -13110,7 +13544,6 @@ export type Database = {
                     published_at?: string | null;
                     requires_acknowledgment?: boolean;
                     retention_policy_id?: string | null;
-                    reviewer_ids?: string[];
                     scope_entity_id?: string | null;
                     scope_level?: string;
                     search_text?: unknown;
@@ -13316,6 +13749,42 @@ export type Database = {
                     },
                 ];
             };
+            document_team_shares: {
+                Row: {
+                    created_at: string | null;
+                    document_id: string;
+                    id: string;
+                    team_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    document_id: string;
+                    id?: string;
+                    team_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    document_id?: string;
+                    id?: string;
+                    team_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "document_team_shares_document_id_fkey";
+                        columns: ["document_id"];
+                        isOneToOne: false;
+                        referencedRelation: "documents";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "document_team_shares_team_id_fkey";
+                        columns: ["team_id"];
+                        isOneToOne: false;
+                        referencedRelation: "teams";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             document_templates: {
                 Row: {
                     category: string | null;
@@ -13386,6 +13855,49 @@ export type Database = {
                         columns: ["organization_id"];
                         isOneToOne: false;
                         referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            document_user_shares: {
+                Row: {
+                    created_at: string | null;
+                    document_id: string;
+                    id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    document_id: string;
+                    id?: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    document_id?: string;
+                    id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "document_user_shares_document_id_fkey";
+                        columns: ["document_id"];
+                        isOneToOne: false;
+                        referencedRelation: "documents";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "document_user_shares_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "document_user_shares_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -13462,8 +13974,6 @@ export type Database = {
                     parent_id: string | null;
                     project_id: string | null;
                     published_at: string | null;
-                    shared_with_team_ids: string[] | null;
-                    shared_with_user_ids: string[] | null;
                     status: Database["public"]["Enums"]["document_status"];
                     template_id: string | null;
                     title: string;
@@ -13485,8 +13995,6 @@ export type Database = {
                     parent_id?: string | null;
                     project_id?: string | null;
                     published_at?: string | null;
-                    shared_with_team_ids?: string[] | null;
-                    shared_with_user_ids?: string[] | null;
                     status?: Database["public"]["Enums"]["document_status"];
                     template_id?: string | null;
                     title: string;
@@ -13508,8 +14016,6 @@ export type Database = {
                     parent_id?: string | null;
                     project_id?: string | null;
                     published_at?: string | null;
-                    shared_with_team_ids?: string[] | null;
-                    shared_with_user_ids?: string[] | null;
                     status?: Database["public"]["Enums"]["document_status"];
                     template_id?: string | null;
                     title?: string;
@@ -15671,6 +16177,49 @@ export type Database = {
                     },
                 ];
             };
+            feature_flag_user_targets: {
+                Row: {
+                    created_at: string | null;
+                    flag_id: string;
+                    id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    flag_id: string;
+                    id?: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    flag_id?: string;
+                    id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "feature_flag_user_targets_flag_id_fkey";
+                        columns: ["flag_id"];
+                        isOneToOne: false;
+                        referencedRelation: "feature_flags";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "feature_flag_user_targets_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "feature_flag_user_targets_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             feature_flags: {
                 Row: {
                     created_at: string;
@@ -15691,7 +16240,6 @@ export type Database = {
                     target_orgs: string[] | null;
                     target_regions: string[] | null;
                     target_roles: string[] | null;
-                    target_user_ids: string[] | null;
                     updated_at: string;
                     variants: Json | null;
                 };
@@ -15714,7 +16262,6 @@ export type Database = {
                     target_orgs?: string[] | null;
                     target_regions?: string[] | null;
                     target_roles?: string[] | null;
-                    target_user_ids?: string[] | null;
                     updated_at?: string;
                     variants?: Json | null;
                 };
@@ -15737,7 +16284,6 @@ export type Database = {
                     target_orgs?: string[] | null;
                     target_regions?: string[] | null;
                     target_roles?: string[] | null;
-                    target_user_ids?: string[] | null;
                     updated_at?: string;
                     variants?: Json | null;
                 };
@@ -16650,7 +17196,6 @@ export type Database = {
                     discrepancies: string | null;
                     document_url: string | null;
                     id: string;
-                    line_items: Json;
                     notes: string | null;
                     organization_id: string;
                     photos: string[] | null;
@@ -16673,7 +17218,6 @@ export type Database = {
                     discrepancies?: string | null;
                     document_url?: string | null;
                     id?: string;
-                    line_items?: Json;
                     notes?: string | null;
                     organization_id: string;
                     photos?: string[] | null;
@@ -16696,7 +17240,6 @@ export type Database = {
                     discrepancies?: string | null;
                     document_url?: string | null;
                     id?: string;
-                    line_items?: Json;
                     notes?: string | null;
                     organization_id?: string;
                     photos?: string[] | null;
@@ -17083,6 +17626,49 @@ export type Database = {
                     },
                 ];
             };
+            incident_follow_up_tasks: {
+                Row: {
+                    created_at: string | null;
+                    id: string;
+                    incident_id: string;
+                    task_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    id?: string;
+                    incident_id: string;
+                    task_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    id?: string;
+                    incident_id?: string;
+                    task_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "incident_follow_up_tasks_incident_id_fkey";
+                        columns: ["incident_id"];
+                        isOneToOne: false;
+                        referencedRelation: "incidents";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "incident_follow_up_tasks_task_id_fkey";
+                        columns: ["task_id"];
+                        isOneToOne: false;
+                        referencedRelation: "production_tasks_view";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "incident_follow_up_tasks_task_id_fkey";
+                        columns: ["task_id"];
+                        isOneToOne: false;
+                        referencedRelation: "tasks";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             incident_insurance_links: {
                 Row: {
                     claim_amount: number | null;
@@ -17154,6 +17740,128 @@ export type Database = {
                     },
                 ];
             };
+            incident_involved_parties: {
+                Row: {
+                    created_at: string | null;
+                    id: string;
+                    incident_id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    id?: string;
+                    incident_id: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    id?: string;
+                    incident_id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "incident_involved_parties_incident_id_fkey";
+                        columns: ["incident_id"];
+                        isOneToOne: false;
+                        referencedRelation: "incidents";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "incident_involved_parties_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "incident_involved_parties_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            incident_response_teams: {
+                Row: {
+                    created_at: string | null;
+                    id: string;
+                    incident_id: string;
+                    team_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    id?: string;
+                    incident_id: string;
+                    team_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    id?: string;
+                    incident_id?: string;
+                    team_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "incident_response_teams_incident_id_fkey";
+                        columns: ["incident_id"];
+                        isOneToOne: false;
+                        referencedRelation: "incidents";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "incident_response_teams_team_id_fkey";
+                        columns: ["team_id"];
+                        isOneToOne: false;
+                        referencedRelation: "teams";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            incident_witnesses: {
+                Row: {
+                    created_at: string | null;
+                    id: string;
+                    incident_id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    id?: string;
+                    incident_id: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    id?: string;
+                    incident_id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "incident_witnesses_incident_id_fkey";
+                        columns: ["incident_id"];
+                        isOneToOne: false;
+                        referencedRelation: "incidents";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "incident_witnesses_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "incident_witnesses_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             incidents: {
                 Row: {
                     actual_cost: number | null;
@@ -17170,13 +17878,11 @@ export type Database = {
                     event_phase: string | null;
                     evidence_urls: string[] | null;
                     first_responder_id: string | null;
-                    follow_up_task_ids: string[] | null;
                     id: string;
                     immediate_actions: string | null;
                     insurance_claim: boolean | null;
                     insurance_notified: boolean | null;
                     insurance_notified_at: string | null;
-                    involved_party_ids: string[] | null;
                     live_event_id: string | null;
                     location_id: string | null;
                     medical_transport: boolean | null;
@@ -17190,7 +17896,6 @@ export type Database = {
                     reported_by_id: string | null;
                     resolution: string | null;
                     resolved_at: string | null;
-                    response_team_ids: string[] | null;
                     response_time_seconds: number | null;
                     root_cause: string | null;
                     severity: Database["public"]["Enums"]["incident_severity"];
@@ -17201,7 +17906,6 @@ export type Database = {
                     type: Database["public"]["Enums"]["incident_type"];
                     updated_at: string | null;
                     updated_by: string | null;
-                    witness_ids: string[] | null;
                     witness_statements: Json | null;
                 };
                 Insert: {
@@ -17219,13 +17923,11 @@ export type Database = {
                     event_phase?: string | null;
                     evidence_urls?: string[] | null;
                     first_responder_id?: string | null;
-                    follow_up_task_ids?: string[] | null;
                     id?: string;
                     immediate_actions?: string | null;
                     insurance_claim?: boolean | null;
                     insurance_notified?: boolean | null;
                     insurance_notified_at?: string | null;
-                    involved_party_ids?: string[] | null;
                     live_event_id?: string | null;
                     location_id?: string | null;
                     medical_transport?: boolean | null;
@@ -17239,7 +17941,6 @@ export type Database = {
                     reported_by_id?: string | null;
                     resolution?: string | null;
                     resolved_at?: string | null;
-                    response_team_ids?: string[] | null;
                     response_time_seconds?: number | null;
                     root_cause?: string | null;
                     severity?: Database["public"]["Enums"]["incident_severity"];
@@ -17250,7 +17951,6 @@ export type Database = {
                     type: Database["public"]["Enums"]["incident_type"];
                     updated_at?: string | null;
                     updated_by?: string | null;
-                    witness_ids?: string[] | null;
                     witness_statements?: Json | null;
                 };
                 Update: {
@@ -17268,13 +17968,11 @@ export type Database = {
                     event_phase?: string | null;
                     evidence_urls?: string[] | null;
                     first_responder_id?: string | null;
-                    follow_up_task_ids?: string[] | null;
                     id?: string;
                     immediate_actions?: string | null;
                     insurance_claim?: boolean | null;
                     insurance_notified?: boolean | null;
                     insurance_notified_at?: string | null;
-                    involved_party_ids?: string[] | null;
                     live_event_id?: string | null;
                     location_id?: string | null;
                     medical_transport?: boolean | null;
@@ -17288,7 +17986,6 @@ export type Database = {
                     reported_by_id?: string | null;
                     resolution?: string | null;
                     resolved_at?: string | null;
-                    response_team_ids?: string[] | null;
                     response_time_seconds?: number | null;
                     root_cause?: string | null;
                     severity?: Database["public"]["Enums"]["incident_severity"];
@@ -17299,7 +17996,6 @@ export type Database = {
                     type?: Database["public"]["Enums"]["incident_type"];
                     updated_at?: string | null;
                     updated_by?: string | null;
-                    witness_ids?: string[] | null;
                     witness_statements?: Json | null;
                 };
                 Relationships: [
@@ -18086,6 +18782,63 @@ export type Database = {
                     },
                 ];
             };
+            invitation_projects: {
+                Row: {
+                    created_at: string | null;
+                    id: string;
+                    invitation_id: string;
+                    project_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    id?: string;
+                    invitation_id: string;
+                    project_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    id?: string;
+                    invitation_id?: string;
+                    project_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "invitation_projects_invitation_id_fkey";
+                        columns: ["invitation_id"];
+                        isOneToOne: false;
+                        referencedRelation: "invitations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "invitation_projects_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "projects";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "invitation_projects_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_project_production_summary";
+                        referencedColumns: ["project_id"];
+                    },
+                    {
+                        foreignKeyName: "invitation_projects_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_project_profitability";
+                        referencedColumns: ["project_id"];
+                    },
+                    {
+                        foreignKeyName: "invitation_projects_project_id_fkey";
+                        columns: ["project_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_revenue_recognition_summary";
+                        referencedColumns: ["project_id"];
+                    },
+                ];
+            };
             invitations: {
                 Row: {
                     accepted_at: string | null;
@@ -18099,7 +18852,6 @@ export type Database = {
                     max_uses: number | null;
                     organization_id: string | null;
                     personal_message: string | null;
-                    project_ids: string[] | null;
                     referral_code: string | null;
                     revoked_at: string | null;
                     revoked_by: string | null;
@@ -18121,7 +18873,6 @@ export type Database = {
                     max_uses?: number | null;
                     organization_id?: string | null;
                     personal_message?: string | null;
-                    project_ids?: string[] | null;
                     referral_code?: string | null;
                     revoked_at?: string | null;
                     revoked_by?: string | null;
@@ -18143,7 +18894,6 @@ export type Database = {
                     max_uses?: number | null;
                     organization_id?: string | null;
                     personal_message?: string | null;
-                    project_ids?: string[] | null;
                     referral_code?: string | null;
                     revoked_at?: string | null;
                     revoked_by?: string | null;
@@ -21658,6 +22408,49 @@ export type Database = {
                     },
                 ];
             };
+            message_mentions: {
+                Row: {
+                    created_at: string | null;
+                    id: string;
+                    message_id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    id?: string;
+                    message_id: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    id?: string;
+                    message_id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "message_mentions_message_id_fkey";
+                        columns: ["message_id"];
+                        isOneToOne: false;
+                        referencedRelation: "messages";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "message_mentions_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "message_mentions_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             message_reactions: {
                 Row: {
                     created_at: string;
@@ -21763,7 +22556,6 @@ export type Database = {
                     is_mandatory_read: boolean;
                     is_pinned: boolean;
                     is_system_message: boolean;
-                    mentioned_user_ids: string[] | null;
                     organization_id: string | null;
                     parent_message_id: string | null;
                     pinned_at: string | null;
@@ -21796,7 +22588,6 @@ export type Database = {
                     is_mandatory_read?: boolean;
                     is_pinned?: boolean;
                     is_system_message?: boolean;
-                    mentioned_user_ids?: string[] | null;
                     organization_id?: string | null;
                     parent_message_id?: string | null;
                     pinned_at?: string | null;
@@ -21829,7 +22620,6 @@ export type Database = {
                     is_mandatory_read?: boolean;
                     is_pinned?: boolean;
                     is_system_message?: boolean;
-                    mentioned_user_ids?: string[] | null;
                     organization_id?: string | null;
                     parent_message_id?: string | null;
                     pinned_at?: string | null;
@@ -21996,11 +22786,60 @@ export type Database = {
                     },
                 ];
             };
+            milestone_approvers: {
+                Row: {
+                    created_at: string | null;
+                    id: string;
+                    milestone_id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    id?: string;
+                    milestone_id: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    id?: string;
+                    milestone_id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "milestone_approvers_milestone_id_fkey";
+                        columns: ["milestone_id"];
+                        isOneToOne: false;
+                        referencedRelation: "milestones";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "milestone_approvers_milestone_id_fkey";
+                        columns: ["milestone_id"];
+                        isOneToOne: false;
+                        referencedRelation: "production_milestones_view";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "milestone_approvers_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "milestone_approvers_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             milestones: {
                 Row: {
                     approval_id: string | null;
                     approval_required: boolean | null;
-                    approver_ids: string[] | null;
                     client_facing: boolean | null;
                     completed_at: string | null;
                     created_at: string | null;
@@ -22024,7 +22863,6 @@ export type Database = {
                 Insert: {
                     approval_id?: string | null;
                     approval_required?: boolean | null;
-                    approver_ids?: string[] | null;
                     client_facing?: boolean | null;
                     completed_at?: string | null;
                     created_at?: string | null;
@@ -22048,7 +22886,6 @@ export type Database = {
                 Update: {
                     approval_id?: string | null;
                     approval_required?: boolean | null;
-                    approver_ids?: string[] | null;
                     client_facing?: boolean | null;
                     completed_at?: string | null;
                     created_at?: string | null;
@@ -23581,6 +24418,42 @@ export type Database = {
                     },
                 ];
             };
+            payroll_batch_entries: {
+                Row: {
+                    batch_id: string;
+                    created_at: string | null;
+                    id: string;
+                    time_entry_id: string;
+                };
+                Insert: {
+                    batch_id: string;
+                    created_at?: string | null;
+                    id?: string;
+                    time_entry_id: string;
+                };
+                Update: {
+                    batch_id?: string;
+                    created_at?: string | null;
+                    id?: string;
+                    time_entry_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "payroll_batch_entries_batch_id_fkey";
+                        columns: ["batch_id"];
+                        isOneToOne: false;
+                        referencedRelation: "payroll_batches";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "payroll_batch_entries_time_entry_id_fkey";
+                        columns: ["time_entry_id"];
+                        isOneToOne: false;
+                        referencedRelation: "time_entries";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             payroll_batches: {
                 Row: {
                     created_at: string | null;
@@ -23593,7 +24466,6 @@ export type Database = {
                     project_id: string | null;
                     status: Database["public"]["Enums"]["payroll_status"];
                     tax_withholding_total: number | null;
-                    time_entry_ids: string[] | null;
                     total_deductions: number;
                     total_gross: number;
                     total_net: number;
@@ -23613,7 +24485,6 @@ export type Database = {
                     project_id?: string | null;
                     status?: Database["public"]["Enums"]["payroll_status"];
                     tax_withholding_total?: number | null;
-                    time_entry_ids?: string[] | null;
                     total_deductions?: number;
                     total_gross?: number;
                     total_net?: number;
@@ -23633,7 +24504,6 @@ export type Database = {
                     project_id?: string | null;
                     status?: Database["public"]["Enums"]["payroll_status"];
                     tax_withholding_total?: number | null;
-                    time_entry_ids?: string[] | null;
                     total_deductions?: number;
                     total_gross?: number;
                     total_net?: number;
@@ -25499,10 +26369,52 @@ export type Database = {
                     },
                 ];
             };
+            production_milestone_approvers: {
+                Row: {
+                    created_at: string | null;
+                    id: string;
+                    milestone_id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    id?: string;
+                    milestone_id: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    id?: string;
+                    milestone_id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "production_milestone_approvers_milestone_id_fkey";
+                        columns: ["milestone_id"];
+                        isOneToOne: false;
+                        referencedRelation: "production_milestones";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "production_milestone_approvers_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "production_milestone_approvers_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             production_milestones: {
                 Row: {
                     approval_id: string | null;
-                    approver_ids: string[] | null;
                     client_facing: boolean | null;
                     completed_at: string | null;
                     created_at: string | null;
@@ -25525,7 +26437,6 @@ export type Database = {
                 };
                 Insert: {
                     approval_id?: string | null;
-                    approver_ids?: string[] | null;
                     client_facing?: boolean | null;
                     completed_at?: string | null;
                     created_at?: string | null;
@@ -25548,7 +26459,6 @@ export type Database = {
                 };
                 Update: {
                     approval_id?: string | null;
-                    approver_ids?: string[] | null;
                     client_facing?: boolean | null;
                     completed_at?: string | null;
                     created_at?: string | null;
@@ -25663,6 +26573,42 @@ export type Database = {
                     },
                 ];
             };
+            production_run_equipment: {
+                Row: {
+                    asset_id: string;
+                    created_at: string | null;
+                    id: string;
+                    run_id: string;
+                };
+                Insert: {
+                    asset_id: string;
+                    created_at?: string | null;
+                    id?: string;
+                    run_id: string;
+                };
+                Update: {
+                    asset_id?: string;
+                    created_at?: string | null;
+                    id?: string;
+                    run_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "production_run_equipment_asset_id_fkey";
+                        columns: ["asset_id"];
+                        isOneToOne: false;
+                        referencedRelation: "assets";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "production_run_equipment_run_id_fkey";
+                        columns: ["run_id"];
+                        isOneToOne: false;
+                        referencedRelation: "production_runs";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             production_run_inputs: {
                 Row: {
                     actual_quantity: number;
@@ -25749,7 +26695,6 @@ export type Database = {
                     created_at: string;
                     created_by: string | null;
                     environmental_waste_kg: number | null;
-                    equipment_ids: string[] | null;
                     id: string;
                     location_id: string | null;
                     notes: string | null;
@@ -25773,7 +26718,6 @@ export type Database = {
                     created_at?: string;
                     created_by?: string | null;
                     environmental_waste_kg?: number | null;
-                    equipment_ids?: string[] | null;
                     id?: string;
                     location_id?: string | null;
                     notes?: string | null;
@@ -25797,7 +26741,6 @@ export type Database = {
                     created_at?: string;
                     created_by?: string | null;
                     environmental_waste_kg?: number | null;
-                    equipment_ids?: string[] | null;
                     id?: string;
                     location_id?: string | null;
                     notes?: string | null;
@@ -25900,13 +26843,11 @@ export type Database = {
                     created_by: string | null;
                     department: Database["public"]["Enums"]["department"];
                     effective_date: string;
-                    form_ids: string[] | null;
                     id: string;
                     number: string;
                     organization_id: string | null;
                     owner_id: string | null;
                     purpose: string | null;
-                    related_sop_ids: string[] | null;
                     requires_training: boolean | null;
                     review_date: string;
                     safety_related: boolean | null;
@@ -25914,7 +26855,6 @@ export type Database = {
                     status: Database["public"]["Enums"]["sop_status"];
                     steps: Json | null;
                     title: string;
-                    training_material_ids: string[] | null;
                     updated_at: string | null;
                     updated_by: string | null;
                     version: number;
@@ -25925,13 +26865,11 @@ export type Database = {
                     created_by?: string | null;
                     department: Database["public"]["Enums"]["department"];
                     effective_date: string;
-                    form_ids?: string[] | null;
                     id?: string;
                     number: string;
                     organization_id?: string | null;
                     owner_id?: string | null;
                     purpose?: string | null;
-                    related_sop_ids?: string[] | null;
                     requires_training?: boolean | null;
                     review_date: string;
                     safety_related?: boolean | null;
@@ -25939,7 +26877,6 @@ export type Database = {
                     status?: Database["public"]["Enums"]["sop_status"];
                     steps?: Json | null;
                     title: string;
-                    training_material_ids?: string[] | null;
                     updated_at?: string | null;
                     updated_by?: string | null;
                     version?: number;
@@ -25950,13 +26887,11 @@ export type Database = {
                     created_by?: string | null;
                     department?: Database["public"]["Enums"]["department"];
                     effective_date?: string;
-                    form_ids?: string[] | null;
                     id?: string;
                     number?: string;
                     organization_id?: string | null;
                     owner_id?: string | null;
                     purpose?: string | null;
-                    related_sop_ids?: string[] | null;
                     requires_training?: boolean | null;
                     review_date?: string;
                     safety_related?: boolean | null;
@@ -25964,7 +26899,6 @@ export type Database = {
                     status?: Database["public"]["Enums"]["sop_status"];
                     steps?: Json | null;
                     title?: string;
-                    training_material_ids?: string[] | null;
                     updated_at?: string | null;
                     updated_by?: string | null;
                     version?: number;
@@ -29017,9 +29951,80 @@ export type Database = {
                     },
                 ];
             };
+            readiness_gate_checklists: {
+                Row: {
+                    checklist_id: string;
+                    created_at: string | null;
+                    gate_id: string;
+                    id: string;
+                };
+                Insert: {
+                    checklist_id: string;
+                    created_at?: string | null;
+                    gate_id: string;
+                    id?: string;
+                };
+                Update: {
+                    checklist_id?: string;
+                    created_at?: string | null;
+                    gate_id?: string;
+                    id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "readiness_gate_checklists_checklist_id_fkey";
+                        columns: ["checklist_id"];
+                        isOneToOne: false;
+                        referencedRelation: "compliance_checklists";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "readiness_gate_checklists_gate_id_fkey";
+                        columns: ["gate_id"];
+                        isOneToOne: false;
+                        referencedRelation: "readiness_gates";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            readiness_gate_permits: {
+                Row: {
+                    created_at: string | null;
+                    gate_id: string;
+                    id: string;
+                    permit_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    gate_id: string;
+                    id?: string;
+                    permit_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    gate_id?: string;
+                    id?: string;
+                    permit_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "readiness_gate_permits_gate_id_fkey";
+                        columns: ["gate_id"];
+                        isOneToOne: false;
+                        referencedRelation: "readiness_gates";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "readiness_gate_permits_permit_id_fkey";
+                        columns: ["permit_id"];
+                        isOneToOne: false;
+                        referencedRelation: "permits";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             readiness_gates: {
                 Row: {
-                    checklist_ids: string[] | null;
                     created_at: string | null;
                     created_by: string | null;
                     description: string | null;
@@ -29031,7 +30036,6 @@ export type Database = {
                     live_event_id: string;
                     name: string;
                     organization_id: string | null;
-                    permit_ids: string[] | null;
                     status: Database["public"]["Enums"]["readiness_gate_status"];
                     updated_at: string | null;
                     updated_by: string | null;
@@ -29040,7 +30044,6 @@ export type Database = {
                     verifier_role: Database["public"]["Enums"]["command_position_type"];
                 };
                 Insert: {
-                    checklist_ids?: string[] | null;
                     created_at?: string | null;
                     created_by?: string | null;
                     description?: string | null;
@@ -29052,7 +30055,6 @@ export type Database = {
                     live_event_id: string;
                     name: string;
                     organization_id?: string | null;
-                    permit_ids?: string[] | null;
                     status?: Database["public"]["Enums"]["readiness_gate_status"];
                     updated_at?: string | null;
                     updated_by?: string | null;
@@ -29061,7 +30063,6 @@ export type Database = {
                     verifier_role: Database["public"]["Enums"]["command_position_type"];
                 };
                 Update: {
-                    checklist_ids?: string[] | null;
                     created_at?: string | null;
                     created_by?: string | null;
                     description?: string | null;
@@ -29073,7 +30074,6 @@ export type Database = {
                     live_event_id?: string;
                     name?: string;
                     organization_id?: string | null;
-                    permit_ids?: string[] | null;
                     status?: Database["public"]["Enums"]["readiness_gate_status"];
                     updated_at?: string | null;
                     updated_by?: string | null;
@@ -29222,7 +30222,6 @@ export type Database = {
                     entity_type: string;
                     id: string;
                     is_internal: boolean | null;
-                    mentioned_user_ids: string[] | null;
                     organization_id: string | null;
                     parent_comment_id: string | null;
                     updated_at: string | null;
@@ -29236,7 +30235,6 @@ export type Database = {
                     entity_type: string;
                     id?: string;
                     is_internal?: boolean | null;
-                    mentioned_user_ids?: string[] | null;
                     organization_id?: string | null;
                     parent_comment_id?: string | null;
                     updated_at?: string | null;
@@ -29250,7 +30248,6 @@ export type Database = {
                     entity_type?: string;
                     id?: string;
                     is_internal?: boolean | null;
-                    mentioned_user_ids?: string[] | null;
                     organization_id?: string | null;
                     parent_comment_id?: string | null;
                     updated_at?: string | null;
@@ -30632,6 +31629,42 @@ export type Database = {
                 };
                 Relationships: [];
             };
+            rfq_vendors: {
+                Row: {
+                    created_at: string | null;
+                    id: string;
+                    rfq_id: string;
+                    vendor_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    id?: string;
+                    rfq_id: string;
+                    vendor_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    id?: string;
+                    rfq_id?: string;
+                    vendor_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "rfq_vendors_rfq_id_fkey";
+                        columns: ["rfq_id"];
+                        isOneToOne: false;
+                        referencedRelation: "rfqs";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "rfq_vendors_vendor_id_fkey";
+                        columns: ["vendor_id"];
+                        isOneToOne: false;
+                        referencedRelation: "vendors";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             rfqs: {
                 Row: {
                     awarded_po_id: string | null;
@@ -30655,7 +31688,6 @@ export type Database = {
                     title: string;
                     updated_at: string | null;
                     updated_by: string | null;
-                    vendor_ids: string[] | null;
                 };
                 Insert: {
                     awarded_po_id?: string | null;
@@ -30679,7 +31711,6 @@ export type Database = {
                     title: string;
                     updated_at?: string | null;
                     updated_by?: string | null;
-                    vendor_ids?: string[] | null;
                 };
                 Update: {
                     awarded_po_id?: string | null;
@@ -30703,7 +31734,6 @@ export type Database = {
                     title?: string;
                     updated_at?: string | null;
                     updated_by?: string | null;
-                    vendor_ids?: string[] | null;
                 };
                 Relationships: [
                     {
@@ -31363,6 +32393,42 @@ export type Database = {
                     },
                 ];
             };
+            saved_view_team_shares: {
+                Row: {
+                    created_at: string | null;
+                    id: string;
+                    team_id: string;
+                    view_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    id?: string;
+                    team_id: string;
+                    view_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    id?: string;
+                    team_id?: string;
+                    view_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "saved_view_team_shares_team_id_fkey";
+                        columns: ["team_id"];
+                        isOneToOne: false;
+                        referencedRelation: "teams";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "saved_view_team_shares_view_id_fkey";
+                        columns: ["view_id"];
+                        isOneToOne: false;
+                        referencedRelation: "saved_views";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             saved_views: {
                 Row: {
                     board_config: Json | null;
@@ -31379,7 +32445,6 @@ export type Database = {
                     organization_id: string;
                     owner_id: string;
                     project_id: string | null;
-                    shared_with_team_ids: string[] | null;
                     sort_by: Json | null;
                     updated_at: string | null;
                     view_type: string;
@@ -31400,7 +32465,6 @@ export type Database = {
                     organization_id: string;
                     owner_id: string;
                     project_id?: string | null;
-                    shared_with_team_ids?: string[] | null;
                     sort_by?: Json | null;
                     updated_at?: string | null;
                     view_type: string;
@@ -31421,7 +32485,6 @@ export type Database = {
                     organization_id?: string;
                     owner_id?: string;
                     project_id?: string | null;
-                    shared_with_team_ids?: string[] | null;
                     sort_by?: Json | null;
                     updated_at?: string | null;
                     view_type?: string;
@@ -31888,7 +32951,6 @@ export type Database = {
             schedule_entries: {
                 Row: {
                     all_day: boolean | null;
-                    assignee_ids: string[] | null;
                     color: string | null;
                     created_at: string | null;
                     created_by: string | null;
@@ -31914,7 +32976,6 @@ export type Database = {
                 };
                 Insert: {
                     all_day?: boolean | null;
-                    assignee_ids?: string[] | null;
                     color?: string | null;
                     created_at?: string | null;
                     created_by?: string | null;
@@ -31940,7 +33001,6 @@ export type Database = {
                 };
                 Update: {
                     all_day?: boolean | null;
-                    assignee_ids?: string[] | null;
                     color?: string | null;
                     created_at?: string | null;
                     created_by?: string | null;
@@ -32052,6 +33112,49 @@ export type Database = {
                     {
                         foreignKeyName: "schedule_entries_updated_by_fkey";
                         columns: ["updated_by"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            schedule_entry_assignees: {
+                Row: {
+                    created_at: string | null;
+                    entry_id: string;
+                    id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    entry_id: string;
+                    id?: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    entry_id?: string;
+                    id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "schedule_entry_assignees_entry_id_fkey";
+                        columns: ["entry_id"];
+                        isOneToOne: false;
+                        referencedRelation: "schedule_entries";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "schedule_entry_assignees_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "schedule_entry_assignees_user_id_fkey";
+                        columns: ["user_id"];
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
                         referencedColumns: ["id"];
@@ -33157,7 +34260,6 @@ export type Database = {
                     incoterms: string | null;
                     inside_delivery: boolean | null;
                     insurance_value: number | null;
-                    items: Json | null;
                     liftgate_required: boolean | null;
                     number: string;
                     organization_id: string | null;
@@ -33204,7 +34306,6 @@ export type Database = {
                     incoterms?: string | null;
                     inside_delivery?: boolean | null;
                     insurance_value?: number | null;
-                    items?: Json | null;
                     liftgate_required?: boolean | null;
                     number: string;
                     organization_id?: string | null;
@@ -33251,7 +34352,6 @@ export type Database = {
                     incoterms?: string | null;
                     inside_delivery?: boolean | null;
                     insurance_value?: number | null;
-                    items?: Json | null;
                     liftgate_required?: boolean | null;
                     number?: string;
                     organization_id?: string | null;
@@ -34442,6 +35542,42 @@ export type Database = {
                     },
                 ];
             };
+            strike_sequence_dependencies: {
+                Row: {
+                    created_at: string | null;
+                    depends_on_id: string;
+                    id: string;
+                    sequence_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    depends_on_id: string;
+                    id?: string;
+                    sequence_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    depends_on_id?: string;
+                    id?: string;
+                    sequence_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "strike_sequence_dependencies_depends_on_id_fkey";
+                        columns: ["depends_on_id"];
+                        isOneToOne: false;
+                        referencedRelation: "strike_sequences";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "strike_sequence_dependencies_sequence_id_fkey";
+                        columns: ["sequence_id"];
+                        isOneToOne: false;
+                        referencedRelation: "strike_sequences";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             strike_sequences: {
                 Row: {
                     actual_duration_minutes: number | null;
@@ -34450,7 +35586,6 @@ export type Database = {
                     created_at: string | null;
                     created_by: string | null;
                     department: Database["public"]["Enums"]["department"] | null;
-                    depends_on_ids: string[] | null;
                     description: string | null;
                     direction: Database["public"]["Enums"]["strike_direction"];
                     estimated_duration_minutes: number | null;
@@ -34474,7 +35609,6 @@ export type Database = {
                     created_at?: string | null;
                     created_by?: string | null;
                     department?: Database["public"]["Enums"]["department"] | null;
-                    depends_on_ids?: string[] | null;
                     description?: string | null;
                     direction: Database["public"]["Enums"]["strike_direction"];
                     estimated_duration_minutes?: number | null;
@@ -34498,7 +35632,6 @@ export type Database = {
                     created_at?: string | null;
                     created_by?: string | null;
                     department?: Database["public"]["Enums"]["department"] | null;
-                    depends_on_ids?: string[] | null;
                     description?: string | null;
                     direction?: Database["public"]["Enums"]["strike_direction"];
                     estimated_duration_minutes?: number | null;
@@ -38863,13 +39996,62 @@ export type Database = {
                     },
                 ];
             };
+            work_order_crew: {
+                Row: {
+                    created_at: string | null;
+                    crew_member_id: string;
+                    id: string;
+                    work_order_id: string;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    crew_member_id: string;
+                    id?: string;
+                    work_order_id: string;
+                };
+                Update: {
+                    created_at?: string | null;
+                    crew_member_id?: string;
+                    id?: string;
+                    work_order_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "work_order_crew_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
+                        referencedRelation: "crew_members";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "work_order_crew_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_crew_utilization";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "work_order_crew_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
+                        referencedRelation: "v_time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "work_order_crew_work_order_id_fkey";
+                        columns: ["work_order_id"];
+                        isOneToOne: false;
+                        referencedRelation: "work_orders";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             work_orders: {
                 Row: {
                     actual_cost: number | null;
                     actual_end: string | null;
                     actual_hours: number | null;
                     actual_start: string | null;
-                    assigned_crew_ids: string[] | null;
                     bid_deadline: string | null;
                     billing_type: Database["public"]["Enums"]["billing_type"] | null;
                     category: string | null;
@@ -38912,7 +40094,6 @@ export type Database = {
                     actual_end?: string | null;
                     actual_hours?: number | null;
                     actual_start?: string | null;
-                    assigned_crew_ids?: string[] | null;
                     bid_deadline?: string | null;
                     billing_type?: Database["public"]["Enums"]["billing_type"] | null;
                     category?: string | null;
@@ -38955,7 +40136,6 @@ export type Database = {
                     actual_end?: string | null;
                     actual_hours?: number | null;
                     actual_start?: string | null;
-                    assigned_crew_ids?: string[] | null;
                     bid_deadline?: string | null;
                     billing_type?: Database["public"]["Enums"]["billing_type"] | null;
                     category?: string | null;
@@ -40694,7 +41874,6 @@ export type Database = {
             production_milestones_view: {
                 Row: {
                     approval_id: string | null;
-                    approver_ids: string[] | null;
                     client_facing: boolean | null;
                     completed_at: string | null;
                     created_at: string | null;
@@ -40717,7 +41896,6 @@ export type Database = {
                 };
                 Insert: {
                     approval_id?: string | null;
-                    approver_ids?: string[] | null;
                     client_facing?: boolean | null;
                     completed_at?: string | null;
                     created_at?: string | null;
@@ -40740,7 +41918,6 @@ export type Database = {
                 };
                 Update: {
                     approval_id?: string | null;
-                    approver_ids?: string[] | null;
                     client_facing?: boolean | null;
                     completed_at?: string | null;
                     created_at?: string | null;

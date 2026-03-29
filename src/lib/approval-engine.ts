@@ -659,18 +659,29 @@ async function assignStepApprovals(
     step: Record<string, unknown>,
     context?: { entityName?: string; workflowName?: string; organizationId?: string }
 ): Promise<string | null> {
-    const approverUserIds = step.approver_user_ids as string[] | null;
+    const stepId = step.id as string;
     const now = new Date().toISOString();
 
-    if (!approverUserIds || approverUserIds.length === 0) {
-        // If no explicit user IDs, we still create a placeholder so the step can be tracked.
-        // Role-based assignment would be resolved by the caller or a separate resolver.
+    // Query the approval_step_approvers junction table for this step's approvers
+    const { data: approverRows, error: lookupErr } = await supabase
+        .from("approval_step_approvers")
+        .select("user_id")
+        .eq("step_id", stepId);
+
+    if (lookupErr) {
+        return lookupErr.message;
+    }
+
+    const approverUserIds = (approverRows ?? []).map((r) => r.user_id as string);
+
+    if (approverUserIds.length === 0) {
+        // No explicit approvers — role-based assignment resolved by caller or a separate resolver.
         return null;
     }
 
     const rows = approverUserIds.map((uid) => ({
         instance_id: instanceId,
-        step_id: step.id as string,
+        step_id: stepId,
         approver_id: uid,
         assigned_at: now,
     }));

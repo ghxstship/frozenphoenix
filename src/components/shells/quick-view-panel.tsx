@@ -15,7 +15,7 @@
 
 import * as React from "react";
 import { useCallback, useEffect, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { apiGet } from "@/lib/api/client";
 import { SlidePanel } from "@/components/ui/slide-panel";
@@ -87,6 +87,7 @@ export function QuickViewPanel({
         queryKey: [entityKey, "quick-view", recordId],
         queryFn: async () => apiGet<EntityRecord>(basePath, recordId!),
         enabled: open && !!recordId,
+        placeholderData: keepPreviousData,
     });
 
     const record = (rawData as EntityRecord | undefined) ?? null;

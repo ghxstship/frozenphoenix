@@ -182,7 +182,7 @@ function seedWorkflow(supabase: ReturnType<typeof createMockSupabase>) {
         require_comments: false,
     });
 
-    // Create steps
+    // Create steps (no approver_user_ids — that column was dropped)
     supabase._getTable("approval_steps").push(
         {
             id: "step-1",
@@ -190,7 +190,6 @@ function seedWorkflow(supabase: ReturnType<typeof createMockSupabase>) {
             name: "Manager Review",
             step_order: 1,
             step_type: "single",
-            approver_user_ids: [APPROVER_ID],
             on_reject_action: null,
             escalation_to_user_id: null,
             escalation_to_role: null,
@@ -201,12 +200,20 @@ function seedWorkflow(supabase: ReturnType<typeof createMockSupabase>) {
             name: "Director Sign-off",
             step_order: 2,
             step_type: "all",
-            approver_user_ids: [APPROVER_ID, APPROVER_2_ID],
             on_reject_action: null,
             escalation_to_user_id: "escalation-user-1",
             escalation_to_role: null,
         }
     );
+
+    // Seed approval_step_approvers junction table (canonical source)
+    supabase
+        ._getTable("approval_step_approvers")
+        .push(
+            { id: "asa-1", step_id: "step-1", user_id: APPROVER_ID },
+            { id: "asa-2", step_id: "step-2", user_id: APPROVER_ID },
+            { id: "asa-3", step_id: "step-2", user_id: APPROVER_2_ID }
+        );
 }
 
 function basePayload(): InitiatePayload {

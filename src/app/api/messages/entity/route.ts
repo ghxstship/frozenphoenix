@@ -113,7 +113,6 @@ export const POST = withApiHandler(
                 body_html: body_html ?? null,
                 entity_type,
                 entity_id,
-                mentioned_user_ids: mentioned_user_ids ?? [],
                 is_internal: is_internal ?? false,
                 priority: priority ?? "normal",
                 organization_id: orgId,
@@ -124,6 +123,20 @@ export const POST = withApiHandler(
         if (error) {
             log.error("[POST /api/messages/entity] insert failed", { error });
             return ApiErrors.internalError("Failed to create message");
+        }
+
+        // Insert message_mentions junction records (replaces the dropped mentioned_user_ids column)
+        if (mentioned_user_ids && mentioned_user_ids.length > 0 && message) {
+            const mentionRows = mentioned_user_ids.map((uid: string) => ({
+                message_id: (message as Record<string, unknown>).id as string,
+                user_id: uid,
+            }));
+            await serverFromTable(admin!, "message_mentions")
+                .insert(mentionRows)
+                .then(() => {})
+                .catch(() => {
+                    // Best-effort mention tracking
+                });
         }
 
         // Dispatch @mention notifications (async, non-blocking)

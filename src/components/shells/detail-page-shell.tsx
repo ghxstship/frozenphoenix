@@ -33,6 +33,7 @@ import { CustomFieldsPanel } from "@/components/custom-fields/custom-fields-pane
 import { LayoutList, Link2, Settings2 } from "lucide-react";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import type { TabBarItem } from "@/components/ui/tab-bar";
+import { useQueryTabState } from "@/hooks/use-query-tab-state";
 import { computeStatValue, getNestedValue } from "@/lib/formatters/record-utils";
 import { useEntityMeta } from "@/hooks/use-entity-meta";
 import type { EntityRecord } from "@/types/entity";
@@ -73,7 +74,6 @@ export function DetailPageShell({
         slug: metaSlug,
         displayNamePlural,
     } = useEntityMeta(config.entityKey);
-    const [activeTab, setActiveTab] = useState("overview");
 
     // Resolve entity metadata
     const resource = entityConfig?.resource ?? metaResource;
@@ -182,6 +182,14 @@ export function DetailPageShell({
 
         return items;
     }, [config.relatedEntities, config.tabs, config.chatter]);
+
+    // URL-synced tab state (deep-linkable via ?tab=chatter etc.)
+    const tabIds = useMemo(() => tabs.map((t) => t.id), [tabs]);
+    const [activeTab, setActiveTab] = useQueryTabState({
+        key: "tab",
+        defaultValue: "overview",
+        validValues: tabIds,
+    });
 
     // Stat values
     const statValues = useMemo(() => {

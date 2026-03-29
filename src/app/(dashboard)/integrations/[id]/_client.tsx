@@ -23,7 +23,6 @@ import {
 } from "@/lib/supabase/hooks-external-sync";
 import {
     AlertTriangle,
-    ArrowLeftRight,
     CheckCircle2,
     Clock,
     Copy,
@@ -339,7 +338,7 @@ export function IntegrationDetailPageClient({
                 content:
                     syncs.length === 0 ? (
                         <EmptyState
-                            icon={ArrowLeftRight}
+                            icon={RefreshCw}
                             title="No sync events"
                             description="Sync events will appear here as data is synchronized."
                         />

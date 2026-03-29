@@ -74,7 +74,10 @@ export function DeveloperPortalPageClient() {
 
     const handleConfirmRevoke = useCallback(async () => {
         if (!revokeTarget) return;
-        await fetch(`/api/api-keys?id=${revokeTarget}`, { method: "DELETE" });
+        await fetch(`/api/api-keys?id=${revokeTarget}`, {
+            method: "DELETE",
+            headers: csrfHeaders(),
+        });
         setRevokeTarget(null);
         await fetchKeys();
     }, [revokeTarget, fetchKeys]);

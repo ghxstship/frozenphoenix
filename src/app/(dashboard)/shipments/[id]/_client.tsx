@@ -289,76 +289,95 @@ export function ShipmentDetailClient({
             {
                 id: "items",
                 label: "Items",
-                count: shipment && Array.isArray(shipment.items) ? shipment.items.length : 0,
-                content: shipment ? (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Shipment Items</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {!Array.isArray(shipment.items) || shipment.items.length === 0 ? (
-                                <EmptyState
-                                    icon={Package}
-                                    title="No items"
-                                    description={COMMON_STRINGS.empty_no_items_in.replace(
-                                        "{entity}",
-                                        "shipment"
-                                    )}
-                                />
-                            ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-sm">
-                                        <thead>
-                                            <tr className="border-b text-left">
-                                                <th className="py-2 pr-4 font-medium text-muted-foreground">
-                                                    Description
-                                                </th>
-                                                <th className="py-2 pr-4 font-medium text-muted-foreground text-right">
-                                                    Qty
-                                                </th>
-                                                <th className="py-2 pr-4 font-medium text-muted-foreground text-right">
-                                                    Weight
-                                                </th>
-                                                <th className="py-2 font-medium text-muted-foreground text-right">
-                                                    Value
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {shipment.items.map((rawItem: unknown, i: number) => {
-                                                const item = rawItem as Record<string, unknown>;
-                                                return (
-                                                    <tr
-                                                        key={String(item.id ?? i)}
-                                                        className="border-b last:border-0 hover:bg-secondary/30 transition-colors"
-                                                    >
-                                                        <td className="py-3 pr-4 font-medium">
-                                                            {String(item.description ?? "")}
-                                                        </td>
-                                                        <td className="py-3 pr-4 text-right">
-                                                            {String(item.quantity ?? 0)}
-                                                        </td>
-                                                        <td className="py-3 pr-4 text-right">
-                                                            {Number(
-                                                                item.weight ?? 0
-                                                            ).toLocaleString()}{" "}
-                                                            lbs
-                                                        </td>
-                                                        <td className="py-3 text-right">
-                                                            {formatCurrency(
-                                                                Number(item.value ?? 0)
-                                                            )}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                ) : null,
+                count:
+                    shipment && Array.isArray((shipment as Record<string, unknown>).shipment_items)
+                        ? ((shipment as Record<string, unknown>).shipment_items as unknown[]).length
+                        : 0,
+                content: shipment
+                    ? (() => {
+                          const items = Array.isArray(
+                              (shipment as Record<string, unknown>).shipment_items
+                          )
+                              ? ((shipment as Record<string, unknown>).shipment_items as Record<
+                                    string,
+                                    unknown
+                                >[])
+                              : [];
+                          return (
+                              <Card>
+                                  <CardHeader>
+                                      <CardTitle className="text-base">Shipment Items</CardTitle>
+                                  </CardHeader>
+                                  <CardContent>
+                                      {items.length === 0 ? (
+                                          <EmptyState
+                                              icon={Package}
+                                              title="No items"
+                                              description={COMMON_STRINGS.empty_no_items_in.replace(
+                                                  "{entity}",
+                                                  "shipment"
+                                              )}
+                                          />
+                                      ) : (
+                                          <div className="overflow-x-auto">
+                                              <table className="w-full text-sm">
+                                                  <thead>
+                                                      <tr className="border-b text-left">
+                                                          <th className="py-2 pr-4 font-medium text-muted-foreground">
+                                                              Description
+                                                          </th>
+                                                          <th className="py-2 pr-4 font-medium text-muted-foreground text-right">
+                                                              Qty
+                                                          </th>
+                                                          <th className="py-2 pr-4 font-medium text-muted-foreground text-right">
+                                                              Weight
+                                                          </th>
+                                                          <th className="py-2 font-medium text-muted-foreground text-right">
+                                                              Value
+                                                          </th>
+                                                      </tr>
+                                                  </thead>
+                                                  <tbody>
+                                                      {items.map((item, i: number) => {
+                                                          return (
+                                                              <tr
+                                                                  key={String(item.id ?? i)}
+                                                                  className="border-b last:border-0 hover:bg-secondary/30 transition-colors"
+                                                              >
+                                                                  <td className="py-3 pr-4 font-medium">
+                                                                      {String(
+                                                                          item.description ?? ""
+                                                                      )}
+                                                                  </td>
+                                                                  <td className="py-3 pr-4 text-right">
+                                                                      {String(item.quantity ?? 0)}
+                                                                  </td>
+                                                                  <td className="py-3 pr-4 text-right">
+                                                                      {Number(
+                                                                          item.weight ?? 0
+                                                                      ).toLocaleString()}{" "}
+                                                                      lbs
+                                                                  </td>
+                                                                  <td className="py-3 text-right">
+                                                                      {formatCurrency(
+                                                                          Number(
+                                                                              item.declared_value ??
+                                                                                  0
+                                                                          )
+                                                                      )}
+                                                                  </td>
+                                                              </tr>
+                                                          );
+                                                      })}
+                                                  </tbody>
+                                              </table>
+                                          </div>
+                                      )}
+                                  </CardContent>
+                              </Card>
+                          );
+                      })()
+                    : null,
             },
             {
                 id: "tracking",

@@ -259,7 +259,10 @@ export function IncidentDetailClient({
             {
                 label: "Witnesses",
                 icon: Users,
-                compute: (r) => ((r.witness_ids as string[]) ?? []).length,
+                compute: (r) =>
+                    Array.isArray((r as Record<string, unknown>).incident_witnesses)
+                        ? ((r as Record<string, unknown>).incident_witnesses as unknown[]).length
+                        : 0,
             },
         ],
         tabs: [

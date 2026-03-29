@@ -13,6 +13,7 @@ import {
     Send,
     XCircle,
 } from "lucide-react";
+import { csrfHeaders } from "@/lib/security/csrf";
 import { DetailPageShell } from "@/components/shells";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -199,7 +200,7 @@ export function AdvancingOrderDetailPageClient({
         try {
             const res = await fetch(`/api/advancing/${id}/${action}`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: csrfHeaders({ "Content-Type": "application/json" }),
                 body: body ? JSON.stringify(body) : null,
             });
             if (!res.ok) {

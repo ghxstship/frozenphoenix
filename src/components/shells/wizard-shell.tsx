@@ -7,21 +7,24 @@
    from a pure-data WizardConfig. Handles step validation,
    skip logic, back/next navigation, and completion callback.
 
-   Pattern D from NON_LIST_PAGE_INFRASTRUCTURE_AUDIT.md:
-   Step indicator → Step content panels → Navigation buttons
+   ⚠️  This shell is for OPAQUE-STEP wizards where each step owns
+   its own state (e.g., onboarding, org-setup, billing).
+   For DATA-ENTRY wizards where form fields are declared
+   and state is managed by the shell, use FormPageShell with
+   `layout: "wizard"` instead.
 
    Target: ~7 wizard/onboarding pages
    ═══════════════════════════════════════════════════════════════ */
 
-import React, { useCallback, useMemo, useState } from "react";
-import { cn } from "@/lib/utils";
+import { useCallback, useMemo, useState } from "react";
 import { PermissionGate } from "@/components/app/permission-guard";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, ChevronLeft, ChevronRight, SkipForward } from "lucide-react";
+import { StepIndicator } from "@/components/ui/step-indicator";
+import { ChevronLeft, ChevronRight, SkipForward } from "lucide-react";
 import { SHELLS_STRINGS } from "@/lib/i18n/shells-strings";
-import type { WizardConfig, WizardStepDef } from "@/types/wizard-config";
+import type { WizardConfig } from "@/types/wizard-config";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -31,95 +34,6 @@ export interface WizardShellProps {
     activeStep?: number | undefined; /** Controlled step change handler */
     onStepChange?: ((step: number) => void) | undefined; /** External submitting state */
     isSubmitting?: boolean | undefined;
-}
-
-// ─── Step Indicator ─────────────────────────────────────────
-
-function StepIndicator({
-    steps,
-    currentIndex,
-    onStepClick,
-}: {
-    steps: WizardStepDef[];
-    currentIndex: number;
-    onStepClick?: ((index: number) => void) | undefined;
-}) {
-    const visibleSteps = steps.filter((s) => !s.hidden);
-
-    return (
-        <nav aria-label={SHELLS_STRINGS.wizard_progress_label} className="w-full">
-            <ol className="flex items-center gap-2">
-                {visibleSteps.map((step, i) => {
-                    const originalIndex = steps.indexOf(step);
-                    const isComplete = originalIndex < currentIndex;
-                    const isCurrent = originalIndex === currentIndex;
-                    const StepIcon = step.icon;
-
-                    return (
-                        <li key={step.id} className="flex items-center flex-1 last:flex-initial">
-                            <button
-                                type="button"
-                                onClick={() => isComplete && onStepClick?.(originalIndex)}
-                                disabled={!isComplete}
-                                className={cn(
-                                    "flex items-center gap-2 text-left transition-colors",
-                                    isComplete && "cursor-pointer hover:text-primary",
-                                    !isComplete && !isCurrent && "cursor-default"
-                                )}
-                                aria-current={isCurrent ? "step" : undefined}
-                            >
-                                <span
-                                    className={cn(
-                                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-xs font-semibold transition-colors",
-                                        isComplete &&
-                                            "border-primary bg-primary text-primary-foreground",
-                                        isCurrent && "border-primary bg-background text-primary",
-                                        !isComplete &&
-                                            !isCurrent &&
-                                            "border-muted-foreground/30 text-muted-foreground/50"
-                                    )}
-                                >
-                                    {isComplete ? (
-                                        <Check className="h-4 w-4" />
-                                    ) : StepIcon ? (
-                                        <StepIcon className="h-4 w-4" />
-                                    ) : (
-                                        i + 1
-                                    )}
-                                </span>
-                                <span className="hidden sm:block">
-                                    <span
-                                        className={cn(
-                                            "block text-xs font-medium leading-tight",
-                                            isCurrent ? "text-foreground" : "text-muted-foreground"
-                                        )}
-                                    >
-                                        {step.label}
-                                    </span>
-                                    {step.description && (
-                                        <span className="block density-caption text-muted-foreground/70 leading-tight mt-0.5">
-                                            {step.description}
-                                        </span>
-                                    )}
-                                </span>
-                            </button>
-                            {i < visibleSteps.length - 1 && (
-                                <div
-                                    className={cn(
-                                        "flex-1 h-0.5 mx-2 rounded-full transition-colors",
-                                        originalIndex < currentIndex
-                                            ? "bg-primary"
-                                            : "bg-muted-foreground/20"
-                                    )}
-                                    aria-hidden
-                                />
-                            )}
-                        </li>
-                    );
-                })}
-            </ol>
-        </nav>
-    );
 }
 
 // ─── Main Component ─────────────────────────────────────────

@@ -185,7 +185,7 @@ function ProvidersPanel() {
             try {
                 await fetch(`/api/ai/providers/${id}`, {
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
+                    headers: csrfHeaders({ "Content-Type": "application/json" }),
                     body: JSON.stringify({ is_active: active }),
                 });
                 setProviders((prev) =>
@@ -206,7 +206,7 @@ function ProvidersPanel() {
             try {
                 const res = await fetch(`/api/ai/providers/${providerId}/key`, {
                     method: "PUT",
-                    headers: { "Content-Type": "application/json" },
+                    headers: csrfHeaders({ "Content-Type": "application/json" }),
                     body: JSON.stringify({ api_key: keyInput }),
                 });
                 if (res.ok) {
@@ -389,7 +389,7 @@ function ModelsPanel() {
             try {
                 await fetch(`/api/ai/models/${id}`, {
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
+                    headers: csrfHeaders({ "Content-Type": "application/json" }),
                     body: JSON.stringify({ is_active: active }),
                 });
                 setModels((prev) =>
@@ -528,7 +528,7 @@ function SystemPromptsPanel() {
             try {
                 const res = await fetch(`/api/ai/prompts/${id}`, {
                     method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
+                    headers: csrfHeaders({ "Content-Type": "application/json" }),
                     body: JSON.stringify({ prompt_text: editText }),
                 });
                 if (res.ok) {
@@ -815,7 +815,10 @@ function KnowledgeBasePanel() {
     const deleteDoc = useCallback(
         async (id: string) => {
             try {
-                await fetch(`/api/ai/documents/${id}`, { method: "DELETE" });
+                await fetch(`/api/ai/documents/${id}`, {
+                    method: "DELETE",
+                    headers: csrfHeaders(),
+                });
                 setDocuments((prev) => prev.filter((d) => d.id !== id));
                 addToast({ title: "Document deleted" });
             } catch {

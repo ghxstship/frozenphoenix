@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { csrfHeaders } from "@/lib/security/csrf";
 import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import {
     Dialog,
@@ -111,6 +112,7 @@ export function CustomFieldsPageClient() {
         try {
             const res = await fetch(`/api/custom-field-definitions?id=${field.id}`, {
                 method: "DELETE",
+                headers: csrfHeaders(),
             });
             if (!res.ok) {
                 addToast({

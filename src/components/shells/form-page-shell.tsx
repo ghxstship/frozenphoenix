@@ -14,7 +14,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { SHELLS_STRINGS } from "@/lib/i18n/shells-strings";
 import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import { logger } from "@/lib/logger";
@@ -28,6 +27,7 @@ import { FormSection } from "@/components/layouts/form-layout";
 import { PermissionGate } from "@/components/app/permission-guard";
 import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Plus, Trash2 } from "lucide-react";
 import { useEntityMeta } from "@/hooks/use-entity-meta";
+import { StepIndicator } from "@/components/ui/step-indicator";
 import type { FormFieldDef, FormPageConfig, FormWizardStepDef } from "@/types/form-page-config";
 
 // ─── Types ───────────────────────────────────────────────────
@@ -417,51 +417,7 @@ function WizardStepIndicator({
     steps: FormWizardStepDef[];
     currentIndex: number;
 }) {
-    return (
-        <div className="flex items-center gap-2">
-            {steps.map((step, i) => {
-                const Icon = step.icon;
-                const isActive = i === currentIndex;
-                const isComplete = i < currentIndex;
-                return (
-                    <div key={step.id} className="flex items-center gap-2 flex-1">
-                        <div
-                            className={cn(
-                                "h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors",
-                                isComplete && "bg-success text-success-foreground",
-                                isActive && !isComplete && "bg-primary text-primary-foreground",
-                                !isActive && !isComplete && "bg-muted text-muted-foreground"
-                            )}
-                        >
-                            {isComplete ? (
-                                <CheckCircle2 className="h-4 w-4" />
-                            ) : Icon ? (
-                                <Icon className="h-4 w-4" />
-                            ) : (
-                                <span>{i + 1}</span>
-                            )}
-                        </div>
-                        <span
-                            className={cn(
-                                "text-xs font-medium hidden sm:block",
-                                isActive ? "text-foreground" : "text-muted-foreground"
-                            )}
-                        >
-                            {step.label}
-                        </span>
-                        {i < steps.length - 1 && (
-                            <div
-                                className={cn(
-                                    "flex-1 h-0.5",
-                                    isComplete ? "bg-success" : "bg-muted"
-                                )}
-                            />
-                        )}
-                    </div>
-                );
-            })}
-        </div>
-    );
+    return <StepIndicator steps={steps} currentIndex={currentIndex} />;
 }
 
 // ─── Main Component (outer wrapper) ─────────────────────────

@@ -321,7 +321,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         stateMachine: SHIPMENT_MACHINE,
         selectList: "*, origin:origin_location_id(name), destination:destination_location_id(name)",
         selectDetail:
-            "*, origin:origin_location_id(name), destination:destination_location_id(name), projects:project_id(name)",
+            "*, origin:origin_location_id(name), destination:destination_location_id(name), projects:project_id(name), shipment_items(*)",
         searchColumns: ["tracking_number"],
         icon: "Truck",
     }),
@@ -478,7 +478,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         stateMachine: INCIDENT_MACHINE,
         selectList: "*, projects:project_id(name), events:event_id(name)",
         selectDetail:
-            "*, projects:project_id(name), events:event_id(name), locations:location_id(name), reporter:reported_by(name), assignee:assigned_to(name)",
+            "*, projects:project_id(name), events:event_id(name), locations:location_id(name), reporter:reported_by(name), assignee:assigned_to(name), incident_witnesses(*)",
         searchColumns: ["title", "description"],
         icon: "AlertTriangle",
     }),

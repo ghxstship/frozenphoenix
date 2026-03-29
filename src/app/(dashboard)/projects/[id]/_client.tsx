@@ -29,7 +29,6 @@ import {
     useProject,
     useProjectAssignments,
     useStakeholderProjects,
-    useStakeholders,
     useTasks,
     useUpdateProject,
 } from "@/lib/supabase";
@@ -382,15 +381,13 @@ export function ProjectDetailPageClient({
     const requestCoi = useRequestCoi();
     const { data: sbBudgetLines } = useBudgetLineItems({ project_id: id });
     const { data: sbApprovals } = useApprovals();
-    const { data: sbStakeholders } = useStakeholders();
+
     const projectTasks = sbTasks ?? [];
     const projectApprovals = (sbApprovals ?? []).filter(
         (a: Record<string, unknown>) => a.project_id === id
     );
-    const projectStakeholders = (sbStakeholders ?? []).filter((s: Record<string, unknown>) => {
-        const pIds = s.project_ids ?? s.ids;
-        return Array.isArray(pIds) ? pIds.includes(id) : false;
-    });
+    // Stakeholders resolved via stakeholder_projects junction (queried by StakeholderProjectsTab)
+    const projectStakeholders: Record<string, unknown>[] = [];
 
     const phaseConfig = project
         ? PROJECT_PHASE_MAP[project.current_phase as keyof typeof PROJECT_PHASE_MAP]
@@ -653,22 +650,22 @@ export function ProjectDetailPageClient({
                                 <div className="space-y-3">
                                     {projectStakeholders.map((person) => (
                                         <div
-                                            key={person.id}
+                                            key={String(person.id)}
                                             className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/30 transition-colors"
                                         >
                                             <div className="flex items-center gap-3">
                                                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold">
-                                                    {person.name
+                                                    {String(person.name ?? "")
                                                         .split(" ")
-                                                        .map((n) => n[0])
+                                                        .map((n: string) => n[0])
                                                         .join("")}
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-medium">
-                                                        {person.name}
+                                                        {String(person.name ?? "")}
                                                     </p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {person.role}
+                                                        {String(person.role ?? "")}
                                                     </p>
                                                 </div>
                                             </div>
@@ -681,7 +678,7 @@ export function ProjectDetailPageClient({
                                                           : "secondary"
                                                 }
                                             >
-                                                {person.type}
+                                                {String(person.type ?? "")}
                                             </Badge>
                                         </div>
                                     ))}

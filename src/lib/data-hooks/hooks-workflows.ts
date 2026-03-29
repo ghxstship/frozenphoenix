@@ -306,7 +306,7 @@ export function useApprovalSteps(workflowId: string) {
         queryFn: async () => {
             const { data, error } = await getSupabase()
                 .from("approval_steps")
-                .select("*")
+                .select("*, approval_step_approvers(user_id)")
                 .eq("workflow_id", workflowId)
                 .order("step_order");
             if (error) throw error;

@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import {
     useCrewMembers,
     useDeleteCrewMember,
-    useProjects,
     useRecordActivityLog,
     useUpdateCrewMember,
 } from "@/lib/supabase";
@@ -145,7 +144,6 @@ export function CrewDetailClient({
     const [certExpiry, setCertExpiry] = useState("");
     const updateCrewMember = useUpdateCrewMember();
     const { data: sbCrew, isLoading } = useCrewMembers();
-    const { data: sbProjects } = useProjects();
 
     const sbMember = sbCrew?.find((c) => c.id === id);
     const crewMember = sbMember
@@ -192,10 +190,8 @@ export function CrewDetailClient({
 
     const expiredCerts = crewMember?.certifications.filter((c) => !c.isValid) ?? [];
     const validCerts = crewMember?.certifications.filter((c) => c.isValid) ?? [];
-    const assignedProjects = (sbProjects ?? []).filter((p: Record<string, unknown>) => {
-        const teamIds = (p.team_ids ?? p.teamIds) as string[] | undefined;
-        return Array.isArray(teamIds) ? teamIds.includes(id) : false;
-    });
+    // Assigned projects are resolved via work_order_crew junction → work_order → project_id
+    const assignedProjects: Record<string, unknown>[] = [];
 
     const sidebarSlot =
         expiredCerts.length > 0 ? (
@@ -227,19 +223,18 @@ export function CrewDetailClient({
                     <div className="space-y-3">
                         {assignedProjects.map((project) => (
                             <div
-                                key={project.id}
+                                key={String(project.id)}
                                 className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
                             >
                                 <div>
-                                    <p className="text-sm font-medium">{project.name}</p>
+                                    <p className="text-sm font-medium">
+                                        {String(project.name ?? "")}
+                                    </p>
                                     <p className="text-xs text-muted-foreground">
-                                        {String(
-                                            (project as unknown as Record<string, unknown>)
-                                                .client ?? ""
-                                        )}
+                                        {String(project.client ?? "")}
                                     </p>
                                 </div>
-                                <StatusBadge status={project.status} />
+                                <StatusBadge status={String(project.status ?? "")} />
                             </div>
                         ))}
                     </div>

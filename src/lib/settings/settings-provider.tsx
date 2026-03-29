@@ -129,6 +129,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }): R
     const [settingValues, setSettingValues] = useState<SettingValue[]>([]);
     const [flags, setFlags] = useState<FeatureFlag[]>([]);
     const [flagOverrides, setFlagOverrides] = useState<FeatureFlagOverride[]>([]);
+    const [flagUserTargets, setFlagUserTargets] = useState<
+        Array<{ flag_id: string; user_id: string }>
+    >([]);
     const [loading, setLoading] = useState(true);
 
     const userId = user?.id ?? null;
@@ -145,22 +148,28 @@ export function SettingsProvider({ children }: { children: React.ReactNode }): R
 
             // Parallel: fetch all 4 datasets concurrently instead of sequentially.
             // This cuts ~200-400ms off provider initialization.
-            const [defsResult, valuesResult, flagsResult, overridesResult] = await Promise.all([
-                fromTable("setting_definitions")
-                    .select("*")
-                    .is("deprecated_at", null)
-                    .order("category")
-                    .order("display_order"),
-                fromTable("settings").select("*").in("scope_type", scopeTypes),
-                fromTable("feature_flags").select("*").eq("is_active", true),
-                fromTable("feature_flag_overrides").select("*"),
-            ]);
+            const [defsResult, valuesResult, flagsResult, overridesResult, userTargetsResult] =
+                await Promise.all([
+                    fromTable("setting_definitions")
+                        .select("*")
+                        .is("deprecated_at", null)
+                        .order("category")
+                        .order("display_order"),
+                    fromTable("settings").select("*").in("scope_type", scopeTypes),
+                    fromTable("feature_flags").select("*").eq("is_active", true),
+                    fromTable("feature_flag_overrides").select("*"),
+                    fromTable("feature_flag_user_targets").select("flag_id, user_id"),
+                ]);
 
             if (defsResult.data) setDefinitions(defsResult.data as SettingDefinition[]);
             if (valuesResult.data) setSettingValues(valuesResult.data as SettingValue[]);
             if (flagsResult.data) setFlags(flagsResult.data as FeatureFlag[]);
             if (overridesResult.data)
                 setFlagOverrides(overridesResult.data as FeatureFlagOverride[]);
+            if (userTargetsResult.data)
+                setFlagUserTargets(
+                    userTargetsResult.data as Array<{ flag_id: string; user_id: string }>
+                );
         } catch {
             // Settings fetch failed — fall back to defaults silently
         } finally {
@@ -181,16 +190,35 @@ export function SettingsProvider({ children }: { children: React.ReactNode }): R
         [definitions, settingValues, scopeChain, userRole]
     );
 
+    // Build targetUserIds map from junction table
+    const targetUserIdsByFlagId = useMemo(() => {
+        const map = new Map<string, string[]>();
+        for (const row of flagUserTargets) {
+            const existing = map.get(row.flag_id);
+            if (existing) {
+                existing.push(row.user_id);
+            } else {
+                map.set(row.flag_id, [row.user_id]);
+            }
+        }
+        return map;
+    }, [flagUserTargets]);
+
     // Evaluate feature flags
     const featureFlags = useMemo(
         () =>
-            evaluateAllFlags(flags, flagOverrides, {
-                userId: userId ?? undefined,
-                orgId: orgId ?? undefined,
-                role: userRole ?? undefined,
-                environment: process.env.NODE_ENV,
-            }),
-        [flags, flagOverrides, userId, orgId, userRole]
+            evaluateAllFlags(
+                flags,
+                flagOverrides,
+                {
+                    userId: userId ?? undefined,
+                    orgId: orgId ?? undefined,
+                    role: userRole ?? undefined,
+                    environment: process.env.NODE_ENV,
+                },
+                targetUserIdsByFlagId
+            ),
+        [flags, flagOverrides, userId, orgId, userRole, targetUserIdsByFlagId]
     );
 
     const getSetting = useCallback(

@@ -16,11 +16,14 @@ interface FlagContext {
 /**
  * Client-side feature flag evaluation.
  * Mirrors the DB function evaluate_feature_flag() for offline/fast evaluation.
+ *
+ * @param targetUserIds - User IDs from feature_flag_user_targets junction table
  */
 export function evaluateFlag(
     flag: FeatureFlag,
     overrides: FeatureFlagOverride[],
-    context: FlagContext
+    context: FlagContext,
+    targetUserIds: string[] = []
 ): unknown {
     // Inactive flags return default
     if (!flag.is_active) {
@@ -46,8 +49,8 @@ export function evaluateFlag(
         );
         if (userOverride) return userOverride.value;
 
-        // Check if user is directly targeted
-        if (flag.target_user_ids.includes(context.userId)) {
+        // Check if user is directly targeted (via feature_flag_user_targets junction table)
+        if (targetUserIds.includes(context.userId)) {
             return true;
         }
     }
@@ -101,9 +104,10 @@ export function evaluateFlag(
 export function evaluateFlagBoolean(
     flag: FeatureFlag,
     overrides: FeatureFlagOverride[],
-    context: FlagContext
+    context: FlagContext,
+    targetUserIds: string[] = []
 ): boolean {
-    const result = evaluateFlag(flag, overrides, context);
+    const result = evaluateFlag(flag, overrides, context, targetUserIds);
     if (typeof result === "boolean") return result;
     if (result === "true") return true;
     if (result === "false") return false;
@@ -113,16 +117,20 @@ export function evaluateFlagBoolean(
 /**
  * Batch-evaluate all flags for a context.
  * Returns a Map<flagKey, boolean> for fast lookups.
+ *
+ * @param targetUserIdsByFlagId - Map of flagId → user IDs from feature_flag_user_targets
  */
 export function evaluateAllFlags(
     flags: FeatureFlag[],
     overrides: FeatureFlagOverride[],
-    context: FlagContext
+    context: FlagContext,
+    targetUserIdsByFlagId: Map<string, string[]> = new Map()
 ): Map<string, boolean> {
     const result = new Map<string, boolean>();
     for (const flag of flags) {
         const flagOverrides = overrides.filter((o) => o.flag_id === flag.id);
-        result.set(flag.key, evaluateFlagBoolean(flag, flagOverrides, context));
+        const flagTargetUsers = targetUserIdsByFlagId.get(flag.id) ?? [];
+        result.set(flag.key, evaluateFlagBoolean(flag, flagOverrides, context, flagTargetUsers));
     }
     return result;
 }

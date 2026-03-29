@@ -6,6 +6,13 @@ const nextConfig: NextConfig = {
     reactCompiler: true,
     compress: true,
 
+    // FIX: Turbopack barrel-file resolution for lucide-react (1500+ icon exports).
+    // Without this, Turbopack may fail to instantiate individual icon modules
+    // during HMR, causing "module factory not available" client-side errors.
+    experimental: {
+        optimizePackageImports: ["lucide-react"],
+    },
+
     // Performance: Keep server-only packages out of client bundles.
     // AI SDKs (~175KB combined), tiktoken (1.2MB WASM), doc parsers (~90KB).
     serverExternalPackages: [

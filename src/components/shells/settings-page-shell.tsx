@@ -44,7 +44,11 @@ export interface SettingsPageShellProps {
 
 // ─── Row Renderer ────────────────────────────────────────────
 
-function SettingsRowRenderer({ row }: { row: SettingsRowDef }) {
+const SettingsRowRenderer = React.memo(function SettingsRowRenderer({
+    row,
+}: {
+    row: SettingsRowDef;
+}) {
     if (row.render) return <>{row.render()}</>;
 
     const RowIcon = row.icon;
@@ -106,11 +110,15 @@ function SettingsRowRenderer({ row }: { row: SettingsRowDef }) {
             </div>
         </div>
     );
-}
+});
 
 // ─── Section Renderer ────────────────────────────────────────
 
-function SettingsSectionRenderer({ section }: { section: SettingsSectionDef }) {
+const SettingsSectionRenderer = React.memo(function SettingsSectionRenderer({
+    section,
+}: {
+    section: SettingsSectionDef;
+}) {
     if (section.content) {
         return (
             <Card>
@@ -142,7 +150,7 @@ function SettingsSectionRenderer({ section }: { section: SettingsSectionDef }) {
             </CardContent>
         </Card>
     );
-}
+});
 
 // ─── Main Component ─────────────────────────────────────────
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { csrfHeaders } from "@/lib/security/csrf";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -181,7 +182,7 @@ export function AutomationDetailPageClient({
         try {
             const res = await fetch(`/api/automations/execute`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: csrfHeaders({ "Content-Type": "application/json" }),
                 body: JSON.stringify({
                     automation_id: id,
                     rules: rules.map((r) => ({

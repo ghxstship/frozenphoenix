@@ -61,7 +61,7 @@ export interface Message {
     thread_last_reply_at: string | null;
     body: string;
     body_html: string | null;
-    mentioned_user_ids: string[];
+
     attachments: MessageAttachment[];
     entity_type: string | null;
     entity_id: string | null;

@@ -206,12 +206,8 @@ export interface CreativeBrief {
     milestone_dates: MilestoneDate[];
     kpi_definitions: KpiDefinition[];
     owner_id: string | null;
-    approver_ids: string[];
-    reviewer_ids: string[];
-    contributor_ids: string[];
     inspiration_assets: Record<string, unknown>[];
     competitor_references: Record<string, unknown>[];
-    previous_campaign_ids: string[];
     version: number;
     amendment_of_id: string | null;
     retrospective_notes: string | null;
@@ -265,7 +261,7 @@ export interface Campaign {
     end_date: string | null;
     launch_date: string | null;
     owner_id: string | null;
-    team_member_ids: string[];
+
     total_reach: number | null;
     total_impressions: number | null;
     total_engagements: number | null;

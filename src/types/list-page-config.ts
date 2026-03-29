@@ -66,6 +66,9 @@ export interface ListFilterDef {
     column: string;
     /** Available filter options */
     options: ListFilterOption[];
+    /** Default selected value — when provided, the filter starts pre-selected
+     *  instead of "All". Useful for showing only active/open items by default. */
+    defaultValue?: string | undefined;
 }
 
 // ─── Alert Definition ───────────────────────────────────────

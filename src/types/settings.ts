@@ -126,7 +126,7 @@ export interface FeatureFlag {
     target_roles: string[];
     target_environments: string[];
     target_regions: string[];
-    target_user_ids: string[];
+
     rollout_percentage: number;
     variants: unknown[];
     starts_at: string | null;

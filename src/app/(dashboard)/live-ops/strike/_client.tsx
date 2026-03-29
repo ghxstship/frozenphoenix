@@ -58,10 +58,21 @@ const CONFIG: ListPageConfig = {
                         <div className="flex items-center gap-3 density-caption text-muted-foreground mt-0.5">
                             <span>{(item.department as string) ?? ""}</span>
                             <span>{(item.responsible_id as string) ?? ""}</span>
-                            {Array.isArray(item.depends_on_ids) &&
-                                (item.depends_on_ids as string[]).length > 0 && (
+                            {Array.isArray(
+                                (item as Record<string, unknown>).strike_sequence_dependencies
+                            ) &&
+                                (
+                                    (item as Record<string, unknown>)
+                                        .strike_sequence_dependencies as unknown[]
+                                ).length > 0 && (
                                     <span>
-                                        After: {(item.depends_on_ids as string[]).join(", ")}
+                                        Dependencies:{" "}
+                                        {
+                                            (
+                                                (item as Record<string, unknown>)
+                                                    .strike_sequence_dependencies as unknown[]
+                                            ).length
+                                        }
                                     </span>
                                 )}
                         </div>

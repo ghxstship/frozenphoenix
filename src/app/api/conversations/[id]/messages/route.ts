@@ -233,7 +233,6 @@ export const POST = withApiHandlerParams(
                 parent_message_id: parent_message_id ?? null,
                 body,
                 body_html: body_html ?? null,
-                mentioned_user_ids: mentioned_user_ids ?? [],
                 attachments: attachments ?? [],
                 is_internal: is_internal ?? false,
                 priority: priority ?? "normal",
@@ -247,6 +246,20 @@ export const POST = withApiHandlerParams(
         if (error) {
             log.error("[POST /api/conversations/[id]/messages] insert failed", { error });
             return ApiErrors.internalError("Failed to send message");
+        }
+
+        // Insert message_mentions junction records (replaces dropped mentioned_user_ids column)
+        if (mentioned_user_ids && mentioned_user_ids.length > 0 && message) {
+            const mentionRows = mentioned_user_ids.map((uid: string) => ({
+                message_id: (message as Record<string, unknown>).id as string,
+                user_id: uid,
+            }));
+            await serverFromTable(admin!, "message_mentions")
+                .insert(mentionRows)
+                .then(() => {})
+                .catch(() => {
+                    // Best-effort mention tracking
+                });
         }
 
         // Dispatch notifications for @mentions (async, non-blocking)

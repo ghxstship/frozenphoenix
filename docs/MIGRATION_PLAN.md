@@ -207,6 +207,19 @@ CREATE TRIGGER sync_shipment_carrier_name_trigger
 
 ---
 
+## ✅ Batch 3.2: Function Type-Cast Fixes — COMPLETED
+
+### Migration 113: `bedrock_function_typecast_fixes.sql` — Applied
+
+- Fixed `evaluate_feature_flag` — explicit `::jsonb` casts on all `RETURN 'true'`/`RETURN 'false'` statements
+- Fixed `check_three_way_match` — explicit `::three_way_match_status` casts on all RETURN statements
+
+### Application Code Fix (no migration needed)
+
+- Fixed `conversations/[id]/messages/route.ts` — removed dropped `mentioned_user_ids` column from INSERT, added `message_mentions` junction table inserts
+
+---
+
 ## Batch 4: JSONB Normalization (Deferred)
 
 > [!NOTE]

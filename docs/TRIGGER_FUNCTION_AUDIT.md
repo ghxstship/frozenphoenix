@@ -135,6 +135,8 @@ The following function errors were identified and fixed during the BEDROCK re-au
 | 5   | `evaluate_feature_flag`     | `field "target_user_ids" does not exist`                     | Queries `feature_flag_user_targets` junction table                   | 111       |
 | 6   | `convert_deal_to_project`   | `column "client" does not exist` on `projects`               | Uses `client_company_id` instead                                     | 111       |
 | 7   | `check_three_way_match`     | `column gr.line_items does not exist`                        | Queries `goods_receipt_lines` table (JSONB dropped in Migration 108) | 111       |
+| 8   | `evaluate_feature_flag`     | implicit text→jsonb cast on `RETURN 'false'`/`'true'`        | Added explicit `::jsonb` casts on all RETURN literals                | 113       |
+| 9   | `check_three_way_match`     | implicit text→enum cast on RETURN statements                 | Added explicit `::three_way_match_status` casts on all RETURNs       | 113       |
 
 ---
 
@@ -147,4 +149,5 @@ The following function errors were identified and fixed during the BEDROCK re-au
 | RPC functions well-organized              | ✅       | 38 functions, well-categorized          |
 | SECURITY DEFINER usage                    | ✅       | All justified                           |
 | Function naming conventions               | ✅       | Consistent `snake_case`                 |
-| Broken function references                | ✅       | All 7 errors fixed (Migrations 111-112) |
+| Broken function references                | ✅       | All 9 errors fixed (Migrations 111-113) |
+| DB lint (plpgsql_check)                   | ✅       | 0 errors, 0 warnings                    |

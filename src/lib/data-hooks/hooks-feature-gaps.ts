@@ -138,7 +138,6 @@ export interface RecordCommentRow {
     parent_comment_id: string | null;
     body: string;
     attachments: unknown[];
-    mentioned_user_ids: string[];
     is_internal: boolean;
     created_at: string;
     updated_at: string;

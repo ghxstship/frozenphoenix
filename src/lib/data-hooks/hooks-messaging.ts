@@ -141,18 +141,37 @@ export function useConversationMembers(conversationId: string | undefined) {
         queryFn: async (): Promise<ConversationMemberPreview[]> => {
             if (!conversationId) return [];
             const supabase = getSupabase();
-            const { data, error } = await supabase
-                .from("conversation_members")
-                .select("user_id, role, user_profiles(display_name, avatar_url)")
-                .eq("conversation_id", conversationId);
+            // Use RPC function to get all members (bypasses restrictive RLS
+            // that only shows own row, while still verifying membership)
+            const { data, error } = await supabase.rpc("get_conversation_members", {
+                p_conversation_id: conversationId,
+            });
             if (error || !data) return [];
-            return (data as Record<string, unknown>[]).map((m) => {
-                const profile = m.user_profiles as {
-                    display_name: string;
-                    avatar_url: string | null;
-                } | null;
+
+            // Fetch profiles for the member user IDs
+            const memberRows = data as Array<{ user_id: string; role: string }>;
+            const userIds = memberRows.map((m) => m.user_id);
+            if (userIds.length === 0) return [];
+
+            const { data: profiles } = await supabase
+                .from("user_profiles")
+                .select("id, display_name, avatar_url")
+                .in("id", userIds);
+
+            const profileMap = new Map(
+                (
+                    (profiles as Array<{
+                        id: string;
+                        display_name: string;
+                        avatar_url: string | null;
+                    }>) ?? []
+                ).map((p) => [p.id, p])
+            );
+
+            return memberRows.map((m) => {
+                const profile = profileMap.get(m.user_id);
                 return {
-                    user_id: m.user_id as string,
+                    user_id: m.user_id,
                     name: profile?.display_name ?? "Unknown",
                     avatar_url: profile?.avatar_url ?? null,
                     role: m.role as ConversationMemberPreview["role"],

@@ -233,6 +233,8 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         // Teams
         { resource: "teams", actions: ["read", "write", "manage"] },
         { resource: "team_members", actions: ["read", "write", "manage"] },
+        // Onboarding (personal)
+        { resource: "onboarding", actions: ["read", "write"] },
     ],
     pm: [
         // Command Center
@@ -437,6 +439,8 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         // Teams
         { resource: "teams", actions: ["read", "write"] },
         { resource: "team_members", actions: ["read", "write"] },
+        // Onboarding (personal)
+        { resource: "onboarding", actions: ["read", "write"] },
     ],
     client: [
         { resource: "dashboard", actions: ["read"] },
@@ -503,6 +507,8 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         // Teams (client — read own team only)
         { resource: "teams", actions: ["read"] },
         { resource: "team_members", actions: ["read"] },
+        // Onboarding (personal)
+        { resource: "onboarding", actions: ["read", "write"] },
     ],
     member: [
         // Command Center (limited)
@@ -599,6 +605,8 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         // Teams
         { resource: "teams", actions: ["read"] },
         { resource: "team_members", actions: ["read"] },
+        // Onboarding (personal)
+        { resource: "onboarding", actions: ["read", "write"] },
     ],
     collaborator: [
         // Command Center — collaborator is also DEFAULT_LEVEL fallback,
@@ -650,6 +658,8 @@ export const PERMISSION_MATRIX: Record<PermissionLevel, Permission[]> = {
         // Teams (collaborator — read own team only)
         { resource: "teams", actions: ["read"] },
         { resource: "team_members", actions: ["read"] },
+        // Onboarding (personal)
+        { resource: "onboarding", actions: ["read", "write"] },
     ],
 };
 

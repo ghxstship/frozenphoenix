@@ -42214,6 +42214,21 @@ export type Database = {
             };
             generate_proposal_number: { Args: { p_org_id: string }; Returns: string };
             generate_sow_number: { Args: { p_org_id: string }; Returns: string };
+            get_conversation_members: {
+                Args: { p_conversation_id: string };
+                Returns: {
+                    conversation_id: string;
+                    id: string;
+                    is_muted: boolean;
+                    is_pinned: boolean;
+                    joined_at: string;
+                    last_read_at: string;
+                    last_read_message_id: string;
+                    notification_preference: Database["public"]["Enums"]["notification_preference_level"];
+                    role: Database["public"]["Enums"]["conversation_member_role"];
+                    user_id: string;
+                }[];
+            };
             get_messaging_unread_count: {
                 Args: { p_user_id: string };
                 Returns: number;

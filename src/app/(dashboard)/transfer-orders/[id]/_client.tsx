@@ -13,6 +13,18 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Transfer Orders",
     chatterRecordType: "transfer_order",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Items",
+            entityKey: "transfer_order_item",
+            foreignKey: "transfer_order_id",
+            columns: [
+                { id: "item_name", header: "Item", accessorKey: "item_name" },
+                { id: "quantity", header: "Qty", accessorKey: "quantity", fieldType: "number" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

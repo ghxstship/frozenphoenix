@@ -13,6 +13,18 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Quality Checks",
     chatterRecordType: "quality_check",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Check Items",
+            entityKey: "quality_check_item",
+            foreignKey: "quality_check_id",
+            columns: [
+                { id: "name", header: "Check Point", accessorKey: "name" },
+                { id: "result", header: "Result", accessorKey: "result", fieldType: "status" },
+                { id: "notes", header: "Notes", accessorKey: "notes" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

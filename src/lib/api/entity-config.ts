@@ -83,6 +83,9 @@ export interface EntityConfig {
     selectDetail: string;
     /** Searchable columns for ?search= */
     searchColumns: string[];
+    /** Lean select for lookup/dropdown queries — flat columns only, no FK joins.
+     *  Defaults to "id, name" — override for entities whose label field differs. */
+    selectLookup: string;
     /** Soft delete via deleted_at */
     softDelete: boolean;
     /** Track created_by / updated_by */
@@ -108,6 +111,7 @@ function defineEntity(
         statusColumn: "status",
         selectList: "*",
         selectDetail: "*",
+        selectLookup: "id, name",
         searchColumns: ["name"],
         softDelete: true,
         trackAuthor: true,
@@ -135,6 +139,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectList: "*, user_profiles:manager_id(display_name), companies:client_company_id(name)",
         selectDetail:
             "*, user_profiles:manager_id(display_name, avatar_url), companies:client_company_id(name), project_members(profile_id, user_profiles(display_name, email, avatar_url))",
+        selectLookup: "id, name, status",
         searchColumns: ["name", "description"],
         icon: "FolderKanban",
     }),
@@ -150,6 +155,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectList: "*, projects:project_id(name), user_profiles:assigned_to(display_name)",
         selectDetail:
             "*, projects:project_id(name), user_profiles:assigned_to(display_name, avatar_url)",
+        selectLookup: "id, title, status",
         searchColumns: ["title", "description"],
         icon: "CheckSquare",
         relatedKeys: [["project"]],
@@ -4969,6 +4975,7 @@ export function toCrudConfig(entity: EntityConfig): CrudConfig {
         displayName: entity.displayName,
         selectList: entity.selectList,
         selectDetail: entity.selectDetail,
+        selectLookup: entity.selectLookup,
         createSchema: entity.createSchema,
         updateSchema: entity.updateSchema,
         searchColumns: entity.searchColumns,

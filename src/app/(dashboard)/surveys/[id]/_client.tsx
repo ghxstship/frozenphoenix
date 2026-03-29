@@ -13,6 +13,23 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Surveys",
     chatterRecordType: "survey",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Responses",
+            entityKey: "survey_response",
+            foreignKey: "survey_id",
+            columns: [
+                { id: "respondent_name", header: "Respondent", accessorKey: "respondent_name" },
+                {
+                    id: "submitted_at",
+                    header: "Submitted",
+                    accessorKey: "submitted_at",
+                    fieldType: "date",
+                },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

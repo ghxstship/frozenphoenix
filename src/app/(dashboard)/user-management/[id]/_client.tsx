@@ -13,6 +13,18 @@ const CONFIG: DetailPageConfig = {
     backLabel: "User Management",
     chatterRecordType: "user_management",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Activity Log",
+            entityKey: "activity_log",
+            foreignKey: "user_id",
+            columns: [
+                { id: "action", header: "Action", accessorKey: "action" },
+                { id: "entity_type", header: "Entity", accessorKey: "entity_type" },
+                { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

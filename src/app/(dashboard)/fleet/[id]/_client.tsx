@@ -15,6 +15,24 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Fleet",
     chatterRecordType: "vehicle",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Maintenance Records",
+            entityKey: "maintenance_schedule",
+            foreignKey: "vehicle_id",
+            columns: [
+                { id: "title", header: "Title", accessorKey: "title" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+                {
+                    id: "next_date",
+                    header: "Next Date",
+                    accessorKey: "next_date",
+                    fieldType: "date",
+                },
+            ],
+            linkPattern: "/maintenance-schedules/{id}",
+        },
+    ],
     tabs: [],
 };
 

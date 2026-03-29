@@ -13,6 +13,29 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Payroll Batches",
     chatterRecordType: "payroll_batch",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Payroll Entries",
+            entityKey: "payroll_entry",
+            foreignKey: "payroll_batch_id",
+            columns: [
+                { id: "employee_name", header: "Employee", accessorKey: "employee_name" },
+                {
+                    id: "gross_amount",
+                    header: "Gross",
+                    accessorKey: "gross_amount",
+                    fieldType: "currency",
+                },
+                {
+                    id: "net_amount",
+                    header: "Net",
+                    accessorKey: "net_amount",
+                    fieldType: "currency",
+                },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

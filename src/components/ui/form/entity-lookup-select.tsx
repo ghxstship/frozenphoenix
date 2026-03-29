@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Loader2, Search } from "lucide-react";
+import { ChevronDown, Loader2, RefreshCw, Search } from "lucide-react";
 import { apiList, type ApiListResponse } from "@/lib/api/client";
 
 // ─── Types ──────────────────────────────────────────────────
@@ -44,22 +44,36 @@ export function EntityLookupSelect({
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [fetchKey, setFetchKey] = useState(lookupConfig.apiPath);
+    const [retryCount, setRetryCount] = useState(0);
+    const [prevRetryCount, setPrevRetryCount] = useState(0);
 
     const labelField = lookupConfig.labelField ?? "name";
     const secondaryField = lookupConfig.secondaryField;
 
-    // Reset loading when apiPath changes
+    // Reset loading/error when apiPath changes (render-time sync)
     if (fetchKey !== lookupConfig.apiPath) {
         setFetchKey(lookupConfig.apiPath);
         setLoading(true);
         setError(null);
     }
 
-    // Fetch entity list on mount / when API path changes
+    // Reset loading/error on retry (render-time sync)
+    if (prevRetryCount !== retryCount) {
+        setPrevRetryCount(retryCount);
+        setLoading(true);
+        setError(null);
+    }
+
+    // Fetch entity list on mount / when API path changes / on retry
     useEffect(() => {
         let cancelled = false;
 
-        apiList<Record<string, unknown>>(lookupConfig.apiPath, { per_page: 500 })
+        // mode=lookup tells the server to use selectLookup (flat columns, no FK joins)
+        // instead of the default selectList which may include expensive joins.
+        apiList<Record<string, unknown>>(lookupConfig.apiPath, {
+            per_page: 500,
+            mode: "lookup",
+        })
             .then((res: ApiListResponse<Record<string, unknown>>) => {
                 if (cancelled) return;
                 const mapped = res.data.map((item) => {
@@ -83,7 +97,11 @@ export function EntityLookupSelect({
         return () => {
             cancelled = true;
         };
-    }, [lookupConfig.apiPath, labelField, secondaryField]);
+    }, [lookupConfig.apiPath, labelField, secondaryField, retryCount]);
+
+    const handleRetry = useCallback(() => {
+        setRetryCount((c) => c + 1);
+    }, []);
 
     // Filter options by search term
     const filtered = useMemo(() => {
@@ -116,11 +134,20 @@ export function EntityLookupSelect({
         return (
             <div
                 className={cn(
-                    "flex h-9 items-center rounded-lg border border-destructive/50 bg-destructive/5 px-3 text-sm text-destructive",
+                    "flex h-9 items-center justify-between rounded-lg border border-destructive/50 bg-destructive/5 px-3 text-sm text-destructive",
                     className
                 )}
             >
-                {error}
+                <span className="truncate">Failed to load options</span>
+                <button
+                    type="button"
+                    onClick={handleRetry}
+                    className="ml-2 inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                    aria-label="Retry loading options"
+                >
+                    <RefreshCw className="h-3 w-3" />
+                    Retry
+                </button>
             </div>
         );
     }

@@ -15,6 +15,19 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Payments",
     chatterRecordType: "payment",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Applied Invoices",
+            entityKey: "invoice",
+            foreignKey: "payment_id",
+            columns: [
+                { id: "invoice_number", header: "Invoice #", accessorKey: "invoice_number" },
+                { id: "amount", header: "Amount", accessorKey: "amount", fieldType: "currency" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+            linkPattern: "/invoices/{id}",
+        },
+    ],
     tabs: [],
 };
 

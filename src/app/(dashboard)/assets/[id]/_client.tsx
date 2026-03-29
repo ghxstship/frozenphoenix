@@ -442,6 +442,24 @@ const BASE_CONFIG: DetailPageConfig = {
         { id: "barcode", label: "Barcode", accessorKey: "barcode" },
         { id: "location", label: "Location", accessorKey: "location" },
     ],
+    relatedEntities: [
+        {
+            title: "Maintenance Schedules",
+            entityKey: "maintenance_schedule",
+            foreignKey: "asset_id",
+            columns: [
+                { id: "title", header: "Title", accessorKey: "title" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+                {
+                    id: "next_date",
+                    header: "Next Date",
+                    accessorKey: "next_date",
+                    fieldType: "date",
+                },
+            ],
+            linkPattern: "/maintenance-schedules/{id}",
+        },
+    ],
     tabs: [],
 };
 

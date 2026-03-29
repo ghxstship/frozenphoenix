@@ -26,6 +26,30 @@ const CONFIG: DetailPageConfig = {
         { id: "company_name", label: "Company", accessorKey: "company_name", icon: Building2 },
         { id: "notes", label: "Notes", accessorKey: "notes", fullWidth: true },
     ],
+    relatedEntities: [
+        {
+            title: "Companies",
+            entityKey: "company",
+            foreignKey: "primary_contact_id",
+            columns: [
+                { id: "name", header: "Company", accessorKey: "name" },
+                { id: "industry", header: "Industry", accessorKey: "industry" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+            linkPattern: "/companies/{id}",
+        },
+        {
+            title: "Deals",
+            entityKey: "deal",
+            foreignKey: "contact_id",
+            columns: [
+                { id: "name", header: "Deal", accessorKey: "name" },
+                { id: "value", header: "Value", accessorKey: "value", fieldType: "currency" },
+                { id: "stage", header: "Stage", accessorKey: "stage", fieldType: "status" },
+            ],
+            linkPattern: "/deals/{id}",
+        },
+    ],
     tabs: [],
 };
 

@@ -13,6 +13,28 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Credentials",
     chatterRecordType: "credential",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Holders",
+            entityKey: "credential_holder",
+            foreignKey: "credential_id",
+            columns: [
+                { id: "holder_name", header: "Name", accessorKey: "holder_name" },
+                {
+                    id: "issued_date",
+                    header: "Issued",
+                    accessorKey: "issued_date",
+                    fieldType: "date",
+                },
+                {
+                    id: "expiry_date",
+                    header: "Expires",
+                    accessorKey: "expiry_date",
+                    fieldType: "date",
+                },
+            ],
+        },
+    ],
     tabs: [],
 };
 

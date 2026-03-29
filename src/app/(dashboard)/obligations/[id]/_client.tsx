@@ -13,6 +13,18 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Obligations",
     chatterRecordType: "contract_obligation",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Requirements",
+            entityKey: "obligation_requirement",
+            foreignKey: "contract_obligation_id",
+            columns: [
+                { id: "title", header: "Requirement", accessorKey: "title" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+                { id: "due_date", header: "Due", accessorKey: "due_date", fieldType: "date" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

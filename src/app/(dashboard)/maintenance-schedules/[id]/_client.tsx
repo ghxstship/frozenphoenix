@@ -13,6 +13,19 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Maintenance Schedules",
     chatterRecordType: "maintenance_schedule",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Tasks",
+            entityKey: "task",
+            foreignKey: "maintenance_schedule_id",
+            columns: [
+                { id: "title", header: "Title", accessorKey: "title" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+                { id: "due_date", header: "Due", accessorKey: "due_date", fieldType: "date" },
+            ],
+            linkPattern: "/tasks/{id}",
+        },
+    ],
     tabs: [],
 };
 

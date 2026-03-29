@@ -13,6 +13,24 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Engineering Approvals",
     chatterRecordType: "engineering_approval",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Documents",
+            entityKey: "document",
+            foreignKey: "engineering_approval_id",
+            columns: [
+                { id: "title", header: "Document", accessorKey: "title" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+                {
+                    id: "created_at",
+                    header: "Created",
+                    accessorKey: "created_at",
+                    fieldType: "date",
+                },
+            ],
+            linkPattern: "/documents/{id}",
+        },
+    ],
     tabs: [],
 };
 

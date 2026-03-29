@@ -15,6 +15,18 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Shifts",
     chatterRecordType: "crew_shift",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Crew Members",
+            entityKey: "crew_shift_assignment",
+            foreignKey: "crew_shift_id",
+            columns: [
+                { id: "crew_member_name", header: "Name", accessorKey: "crew_member_name" },
+                { id: "role", header: "Role", accessorKey: "role" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

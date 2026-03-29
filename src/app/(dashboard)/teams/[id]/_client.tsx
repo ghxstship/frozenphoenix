@@ -13,6 +13,18 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Teams",
     chatterRecordType: "team",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Members",
+            entityKey: "team_member",
+            foreignKey: "team_id",
+            columns: [
+                { id: "name", header: "Name", accessorKey: "name" },
+                { id: "role", header: "Role", accessorKey: "role" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

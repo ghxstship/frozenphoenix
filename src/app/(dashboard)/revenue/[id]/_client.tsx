@@ -13,6 +13,23 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Revenue",
     chatterRecordType: "revenue_recognition_entry",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Line Items",
+            entityKey: "revenue_line_item",
+            foreignKey: "revenue_recognition_entry_id",
+            columns: [
+                { id: "description", header: "Description", accessorKey: "description" },
+                { id: "amount", header: "Amount", accessorKey: "amount", fieldType: "currency" },
+                {
+                    id: "recognized_date",
+                    header: "Date",
+                    accessorKey: "recognized_date",
+                    fieldType: "date",
+                },
+            ],
+        },
+    ],
     tabs: [],
 };
 

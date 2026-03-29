@@ -13,6 +13,19 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Clause Library",
     chatterRecordType: "clause_library_entry",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Contracts Using This Clause",
+            entityKey: "contract",
+            foreignKey: "clause_library_entry_id",
+            columns: [
+                { id: "title", header: "Contract", accessorKey: "title" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+                { id: "value", header: "Value", accessorKey: "value", fieldType: "currency" },
+            ],
+            linkPattern: "/contracts/{id}",
+        },
+    ],
     tabs: [],
 };
 

@@ -113,7 +113,10 @@ export interface CrudConfig {
     /** Display name for error messages */
     displayName?: string | undefined; /** Select clause for list queries */
     selectList?: string | undefined; /** Select clause for detail queries */
-    selectDetail?: string | undefined; /** Zod schema for create validation */
+    selectDetail?:
+        | string
+        | undefined; /** Lean select clause for lookup/dropdown queries (no FK joins) */
+    selectLookup?: string | undefined; /** Zod schema for create validation */
     createSchema?: ZodSchema | undefined; /** Zod schema for update validation */
     updateSchema?: ZodSchema | undefined; /** Allowed filters (query params → column filters) */
     filters?: FilterConfig[] | undefined; /** Search column(s) for ?search= query param */
@@ -256,6 +259,7 @@ interface ResolvedConfig {
     displayName: string;
     selectList: string;
     selectDetail: string;
+    selectLookup: string;
     createSchema?: ZodSchema | undefined;
     updateSchema?: ZodSchema | undefined;
     filters: FilterConfig[];
@@ -282,6 +286,7 @@ function resolveConfig(config: CrudConfig): ResolvedConfig {
         displayName: config.displayName ?? resource,
         selectList: config.selectList ?? "*",
         selectDetail: config.selectDetail ?? "*",
+        selectLookup: config.selectLookup ?? "id, name",
         createSchema: config.createSchema,
         updateSchema: config.updateSchema,
         filters: config.filters ?? [],

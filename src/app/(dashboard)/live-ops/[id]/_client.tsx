@@ -30,6 +30,35 @@ const CONFIG: DetailPageConfig = {
         { id: "doors_time", label: "Doors Time", accessorKey: "doors_time", icon: Clock },
         { id: "notes", label: "Notes", accessorKey: "notes", fullWidth: true },
     ],
+    relatedEntities: [
+        {
+            title: "Crew Shifts",
+            entityKey: "crew_shift",
+            foreignKey: "event_id",
+            columns: [
+                { id: "crew_member_name", header: "Crew", accessorKey: "crew_member_name" },
+                { id: "role", header: "Role", accessorKey: "role" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+            linkPattern: "/shifts/{id}",
+        },
+        {
+            title: "Incidents",
+            entityKey: "incident",
+            foreignKey: "event_id",
+            columns: [
+                { id: "title", header: "Incident", accessorKey: "title" },
+                {
+                    id: "severity",
+                    header: "Severity",
+                    accessorKey: "severity",
+                    fieldType: "status",
+                },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+            linkPattern: "/incidents/{id}",
+        },
+    ],
     tabs: [],
 };
 

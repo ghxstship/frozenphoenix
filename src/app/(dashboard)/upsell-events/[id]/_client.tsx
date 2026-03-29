@@ -13,6 +13,19 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Upsell Events",
     chatterRecordType: "upsell_event",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Triggers",
+            entityKey: "upsell_trigger",
+            foreignKey: "upsell_event_id",
+            columns: [
+                { id: "name", header: "Trigger", accessorKey: "name" },
+                { id: "type", header: "Type", accessorKey: "type" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+            linkPattern: "/upsell-triggers/{id}",
+        },
+    ],
     tabs: [],
 };
 

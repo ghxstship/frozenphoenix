@@ -13,6 +13,24 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Stakeholders",
     chatterRecordType: "stakeholder",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Projects",
+            entityKey: "project",
+            foreignKey: "stakeholder_id",
+            columns: [
+                { id: "name", header: "Project", accessorKey: "name" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+                {
+                    id: "progress",
+                    header: "Progress",
+                    accessorKey: "progress",
+                    fieldType: "number",
+                },
+            ],
+            linkPattern: "/projects/{id}",
+        },
+    ],
     tabs: [],
 };
 

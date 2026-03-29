@@ -13,6 +13,19 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Credit Notes",
     chatterRecordType: "credit_note",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Line Items",
+            entityKey: "credit_note_line_item",
+            foreignKey: "credit_note_id",
+            columns: [
+                { id: "description", header: "Description", accessorKey: "description" },
+                { id: "amount", header: "Amount", accessorKey: "amount", fieldType: "currency" },
+                { id: "quantity", header: "Qty", accessorKey: "quantity", fieldType: "number" },
+            ],
+            linkPattern: "/credit-notes/{id}",
+        },
+    ],
     tabs: [],
 };
 

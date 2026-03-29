@@ -40,7 +40,6 @@ export * from "./search-input";
 export * from "./select";
 export * from "./stagger-container";
 export * from "./tab-bar";
-export * from "./tabs";
 export * from "./table";
 export * from "./toast";
 export * from "./view-switcher";

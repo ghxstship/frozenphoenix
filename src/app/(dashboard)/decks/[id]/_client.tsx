@@ -53,6 +53,18 @@ const BASE_CONFIG: DetailPageConfig = {
     backLabel: "Decks",
     chatterRecordType: "deck",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Slides",
+            entityKey: "deck_slide",
+            foreignKey: "deck_id",
+            columns: [
+                { id: "title", header: "Title", accessorKey: "title" },
+                { id: "order", header: "Order", accessorKey: "order", fieldType: "number" },
+                { id: "type", header: "Type", accessorKey: "type" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

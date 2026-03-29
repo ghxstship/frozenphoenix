@@ -13,6 +13,19 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Payment Approvals",
     chatterRecordType: "payment_approval",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Payments",
+            entityKey: "payment",
+            foreignKey: "payment_approval_id",
+            columns: [
+                { id: "reference", header: "Reference", accessorKey: "reference" },
+                { id: "amount", header: "Amount", accessorKey: "amount", fieldType: "currency" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+            linkPattern: "/payments/{id}",
+        },
+    ],
     tabs: [],
 };
 

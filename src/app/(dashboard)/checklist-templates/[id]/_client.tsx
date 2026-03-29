@@ -13,6 +13,23 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Checklist Templates",
     chatterRecordType: "checklist_template",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Template Items",
+            entityKey: "checklist_template_item",
+            foreignKey: "checklist_template_id",
+            columns: [
+                { id: "title", header: "Item", accessorKey: "title" },
+                { id: "order", header: "Order", accessorKey: "order", fieldType: "number" },
+                {
+                    id: "required",
+                    header: "Required",
+                    accessorKey: "required",
+                    fieldType: "boolean",
+                },
+            ],
+        },
+    ],
     tabs: [],
 };
 

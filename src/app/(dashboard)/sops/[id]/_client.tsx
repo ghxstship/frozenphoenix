@@ -15,6 +15,18 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Sops",
     chatterRecordType: "sop",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Steps",
+            entityKey: "sop_step",
+            foreignKey: "sop_id",
+            columns: [
+                { id: "title", header: "Step", accessorKey: "title" },
+                { id: "order", header: "Order", accessorKey: "order", fieldType: "number" },
+                { id: "description", header: "Description", accessorKey: "description" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

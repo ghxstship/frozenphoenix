@@ -13,6 +13,24 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Sla Definitions",
     chatterRecordType: "sla_definition",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Incidents",
+            entityKey: "incident",
+            foreignKey: "sla_definition_id",
+            columns: [
+                { id: "title", header: "Incident", accessorKey: "title" },
+                {
+                    id: "severity",
+                    header: "Severity",
+                    accessorKey: "severity",
+                    fieldType: "status",
+                },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+            linkPattern: "/incidents/{id}",
+        },
+    ],
     tabs: [],
 };
 

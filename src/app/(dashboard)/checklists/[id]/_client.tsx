@@ -13,6 +13,18 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Checklists",
     chatterRecordType: "checklist",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Items",
+            entityKey: "checklist_item",
+            foreignKey: "checklist_id",
+            columns: [
+                { id: "title", header: "Item", accessorKey: "title" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+                { id: "assigned_to", header: "Assigned To", accessorKey: "assigned_to" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

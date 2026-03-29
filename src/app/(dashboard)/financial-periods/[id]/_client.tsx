@@ -13,6 +13,19 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Financial Periods",
     chatterRecordType: "financial_period",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Journal Entries",
+            entityKey: "journal_entry",
+            foreignKey: "financial_period_id",
+            columns: [
+                { id: "description", header: "Description", accessorKey: "description" },
+                { id: "amount", header: "Amount", accessorKey: "amount", fieldType: "currency" },
+                { id: "entry_date", header: "Date", accessorKey: "entry_date", fieldType: "date" },
+            ],
+            linkPattern: "/financial-periods/{id}",
+        },
+    ],
     tabs: [],
 };
 

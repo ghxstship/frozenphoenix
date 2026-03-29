@@ -13,6 +13,18 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Case Studies",
     chatterRecordType: "case_study",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Testimonials",
+            entityKey: "testimonial",
+            foreignKey: "case_study_id",
+            columns: [
+                { id: "author_name", header: "Author", accessorKey: "author_name" },
+                { id: "quote", header: "Quote", accessorKey: "quote" },
+                { id: "created_at", header: "Date", accessorKey: "created_at", fieldType: "date" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

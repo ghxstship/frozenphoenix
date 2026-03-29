@@ -14,6 +14,19 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Warehouses",
     chatterRecordType: "warehouse",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Inventory",
+            entityKey: "catalog_item",
+            foreignKey: "warehouse_id",
+            columns: [
+                { id: "name", header: "Item", accessorKey: "name" },
+                { id: "quantity", header: "Qty", accessorKey: "quantity", fieldType: "number" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+            linkPattern: "/inventory/{id}",
+        },
+    ],
     tabs: [],
 };
 

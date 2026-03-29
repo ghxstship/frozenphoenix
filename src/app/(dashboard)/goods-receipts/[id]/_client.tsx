@@ -13,6 +13,18 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Goods Receipts",
     chatterRecordType: "goods_receipt",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Line Items",
+            entityKey: "goods_receipt_line_item",
+            foreignKey: "goods_receipt_id",
+            columns: [
+                { id: "description", header: "Description", accessorKey: "description" },
+                { id: "quantity", header: "Qty", accessorKey: "quantity", fieldType: "number" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

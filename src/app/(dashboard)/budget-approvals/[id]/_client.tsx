@@ -13,6 +13,19 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Budget Approvals",
     chatterRecordType: "budget_approval",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Line Items",
+            entityKey: "budget_line_item",
+            foreignKey: "budget_approval_id",
+            columns: [
+                { id: "description", header: "Description", accessorKey: "description" },
+                { id: "amount", header: "Amount", accessorKey: "amount", fieldType: "currency" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+            linkPattern: "/budgets/{id}",
+        },
+    ],
     tabs: [],
 };
 

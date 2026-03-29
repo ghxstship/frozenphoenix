@@ -14,6 +14,18 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Rate Cards",
     chatterRecordType: "rate_card",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Rates",
+            entityKey: "rate_card_entry",
+            foreignKey: "rate_card_id",
+            columns: [
+                { id: "role", header: "Role", accessorKey: "role" },
+                { id: "rate", header: "Rate", accessorKey: "rate", fieldType: "currency" },
+                { id: "unit", header: "Unit", accessorKey: "unit" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

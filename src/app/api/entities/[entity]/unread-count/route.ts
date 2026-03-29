@@ -33,8 +33,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ ent
         const { count, error } = await serverFromTable(supabase, "notifications")
             .select("id", { count: "exact", head: true })
             .eq("user_id", user.id)
-            .eq("read", false)
-            .is("deleted_at", null);
+            .eq("read", false);
 
         if (error) {
             log.error("Failed to fetch unread count", { error });

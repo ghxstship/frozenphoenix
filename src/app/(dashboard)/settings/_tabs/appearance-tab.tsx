@@ -197,8 +197,12 @@ export function AppearanceTab({ handleSaveSetting }: AppearanceTabProps) {
                                     aria-label={`Border radius: ${preset.label}`}
                                 >
                                     <div
-                                        className="h-6 w-10 border-2 border-foreground/30 bg-muted"
-                                        style={{ borderRadius: preset.value }}
+                                        className={`border-2 border-foreground/30 bg-muted ${
+                                            key === "pill" ? "h-5 w-12" : "h-6 w-10"
+                                        }`}
+                                        style={{
+                                            borderRadius: key === "pill" ? "9999px" : preset.value,
+                                        }}
                                     />
                                     <span className="text-xs font-medium">{preset.label}</span>
                                 </button>

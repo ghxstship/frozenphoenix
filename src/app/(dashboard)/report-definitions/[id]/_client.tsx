@@ -13,6 +13,18 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Report Definitions",
     chatterRecordType: "report_definition",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Parameters",
+            entityKey: "report_parameter",
+            foreignKey: "report_definition_id",
+            columns: [
+                { id: "name", header: "Parameter", accessorKey: "name" },
+                { id: "type", header: "Type", accessorKey: "type" },
+                { id: "default_value", header: "Default", accessorKey: "default_value" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

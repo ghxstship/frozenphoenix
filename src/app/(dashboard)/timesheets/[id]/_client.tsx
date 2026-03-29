@@ -13,6 +13,20 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Timesheets",
     chatterRecordType: "timesheet",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Time Entries",
+            entityKey: "time_entry",
+            foreignKey: "timesheet_id",
+            columns: [
+                { id: "description", header: "Description", accessorKey: "description" },
+                { id: "hours", header: "Hours", accessorKey: "hours", fieldType: "number" },
+                { id: "date", header: "Date", accessorKey: "date", fieldType: "date" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+            linkPattern: "/time-entries/{id}",
+        },
+    ],
     tabs: [],
 };
 

@@ -13,6 +13,25 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Pipeline",
     chatterRecordType: "pipeline",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Deals",
+            entityKey: "deal",
+            foreignKey: "pipeline_id",
+            columns: [
+                { id: "name", header: "Deal", accessorKey: "name" },
+                { id: "value", header: "Value", accessorKey: "value", fieldType: "currency" },
+                { id: "stage", header: "Stage", accessorKey: "stage", fieldType: "status" },
+                {
+                    id: "expected_close",
+                    header: "Close Date",
+                    accessorKey: "expected_close",
+                    fieldType: "date",
+                },
+            ],
+            linkPattern: "/deals/{id}",
+        },
+    ],
     tabs: [],
 };
 

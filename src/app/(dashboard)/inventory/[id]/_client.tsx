@@ -13,6 +13,24 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Inventory",
     chatterRecordType: "catalog_item",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Purchase Orders",
+            entityKey: "purchase_order",
+            foreignKey: "catalog_item_id",
+            columns: [
+                { id: "po_number", header: "PO #", accessorKey: "po_number" },
+                {
+                    id: "total_amount",
+                    header: "Total",
+                    accessorKey: "total_amount",
+                    fieldType: "currency",
+                },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+            ],
+            linkPattern: "/purchase-orders/{id}",
+        },
+    ],
     tabs: [],
 };
 

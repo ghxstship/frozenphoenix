@@ -293,6 +293,18 @@
     --transition-timing-function-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ═══════ Pill Radius Overrides ═══════
+   When pill mode is active (--radius: 9999px), the calc()-derived tokens
+   produce absurd values (10003px etc.) that break cards, modals, and panels.
+   We cap the larger tokens so only small inline elements get the pill shape. */
+[data-radius="pill"] {
+    --radius-sm: 9999px;
+    --radius-md: 9999px;
+    --radius-lg: 9999px;
+    --radius-xl: 1.25rem;
+    --radius-2xl: 1.5rem;
+}
+
 /* ═══════ Base Reset ═══════ */
 * {
     border-color: hsl(var(--border));

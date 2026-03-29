@@ -15,6 +15,23 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Ip Rights",
     chatterRecordType: "ip_right",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Licenses",
+            entityKey: "ip_license",
+            foreignKey: "ip_right_id",
+            columns: [
+                { id: "licensee_name", header: "Licensee", accessorKey: "licensee_name" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+                {
+                    id: "expiry_date",
+                    header: "Expires",
+                    accessorKey: "expiry_date",
+                    fieldType: "date",
+                },
+            ],
+        },
+    ],
     tabs: [],
 };
 

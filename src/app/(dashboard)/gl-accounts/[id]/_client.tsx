@@ -14,6 +14,18 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Gl Accounts",
     chatterRecordType: "gl_account",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Journal Entries",
+            entityKey: "journal_entry",
+            foreignKey: "gl_account_id",
+            columns: [
+                { id: "description", header: "Description", accessorKey: "description" },
+                { id: "amount", header: "Amount", accessorKey: "amount", fieldType: "currency" },
+                { id: "entry_date", header: "Date", accessorKey: "entry_date", fieldType: "date" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

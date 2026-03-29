@@ -14,6 +14,25 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Milestones",
     chatterRecordType: "milestone",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Tasks",
+            entityKey: "task",
+            foreignKey: "milestone_id",
+            columns: [
+                { id: "title", header: "Title", accessorKey: "title" },
+                { id: "status", header: "Status", accessorKey: "status", fieldType: "status" },
+                { id: "due_date", header: "Due", accessorKey: "due_date", fieldType: "date" },
+                {
+                    id: "priority",
+                    header: "Priority",
+                    accessorKey: "priority",
+                    fieldType: "status",
+                },
+            ],
+            linkPattern: "/tasks/{id}",
+        },
+    ],
     tabs: [],
 };
 

@@ -11,8 +11,14 @@ import { COLLECTION_ROUTES } from "@/lib/api/route-registry";
  * etc.) live in their own explicit directories and are unaffected.
  *
  * URL pattern: /api/entities/[entity]
+ *
+ * Supports ?mode=lookup for lightweight dropdown queries that use the
+ * entity's selectLookup (flat columns, no FK joins) instead of selectList.
  */
-export async function GET(request: NextRequest, { params }: { params: Promise<{ entity: string }> }) {
+export async function GET(
+    request: NextRequest,
+    { params }: { params: Promise<{ entity: string }> }
+) {
     const { entity: slug } = await params;
     const routeConfig = COLLECTION_ROUTES[slug];
     if (!routeConfig) {
@@ -20,15 +26,23 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const config = getEntityCrudConfig(routeConfig.entity);
+
+    // When mode=lookup, swap selectList for the entity's lean selectLookup.
+    // This avoids expensive FK joins that can fail on missing relations.
+    const isLookup = new URL(request.url).searchParams.get("mode") === "lookup";
     const handlers = createCollectionRoute({
         ...config,
         filters: routeConfig.filters,
+        ...(isLookup ? { selectList: config.selectLookup } : {}),
     });
 
     return handlers.GET(request);
 }
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ entity: string }> }) {
+export async function POST(
+    request: NextRequest,
+    { params }: { params: Promise<{ entity: string }> }
+) {
     const { entity: slug } = await params;
     const routeConfig = COLLECTION_ROUTES[slug];
     if (!routeConfig) {

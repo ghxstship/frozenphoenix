@@ -13,6 +13,28 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Job Costing",
     chatterRecordType: "job_cost_entry",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Labor Entries",
+            entityKey: "job_cost_labor",
+            foreignKey: "job_cost_entry_id",
+            columns: [
+                { id: "worker_name", header: "Worker", accessorKey: "worker_name" },
+                { id: "hours", header: "Hours", accessorKey: "hours", fieldType: "number" },
+                { id: "cost", header: "Cost", accessorKey: "cost", fieldType: "currency" },
+            ],
+        },
+        {
+            title: "Material Entries",
+            entityKey: "job_cost_material",
+            foreignKey: "job_cost_entry_id",
+            columns: [
+                { id: "description", header: "Description", accessorKey: "description" },
+                { id: "quantity", header: "Qty", accessorKey: "quantity", fieldType: "number" },
+                { id: "cost", header: "Cost", accessorKey: "cost", fieldType: "currency" },
+            ],
+        },
+    ],
     tabs: [],
 };
 

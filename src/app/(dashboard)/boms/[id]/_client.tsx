@@ -15,6 +15,23 @@ const CONFIG: DetailPageConfig = {
     backLabel: "Boms",
     chatterRecordType: "bom",
     fields: [],
+    relatedEntities: [
+        {
+            title: "Components",
+            entityKey: "bom_component",
+            foreignKey: "bom_id",
+            columns: [
+                { id: "name", header: "Component", accessorKey: "name" },
+                { id: "quantity", header: "Qty", accessorKey: "quantity", fieldType: "number" },
+                {
+                    id: "unit_cost",
+                    header: "Unit Cost",
+                    accessorKey: "unit_cost",
+                    fieldType: "currency",
+                },
+            ],
+        },
+    ],
     tabs: [],
 };
 

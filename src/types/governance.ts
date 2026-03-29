@@ -623,7 +623,6 @@ export interface PurchaseRequisition {
     title: string;
     description?: string | undefined;
     requester_id: string;
-    line_items: unknown[];
     estimated_cost: number;
     budget_code?: string | undefined;
     gl_account_id?: string | undefined;
@@ -654,7 +653,6 @@ export interface GoodsReceipt {
     receipt_number: string;
     received_by: string;
     received_at: string;
-    line_items: unknown[];
     status: GoodsReceiptStatus;
     condition_notes?: string | undefined;
     discrepancies?: string | undefined;

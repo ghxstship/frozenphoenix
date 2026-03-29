@@ -25,7 +25,7 @@ function parseLineItems(raw: unknown): EstLineItem[] {
         description: (li.description as string) ?? "",
         quantity: (li.quantity as number) ?? 0,
         unitPrice: (li.unit_price as number) ?? (li.unitPrice as number) ?? 0,
-        total: (li.total as number) ?? 0,
+        total: (li.amount as number) ?? (li.total as number) ?? 0,
     }));
 }
 
@@ -74,7 +74,7 @@ export function EstimateDetailClient({
         useDeleteHook: useDeleteEstimate,
     });
 
-    const lineItems = parseLineItems(rec?.line_items ?? rec?.lineItems);
+    const lineItems = parseLineItems(rec?.estimate_items ?? rec?.line_items ?? rec?.lineItems);
 
     const config: DetailPageConfig = {
         ...BASE_CONFIG,

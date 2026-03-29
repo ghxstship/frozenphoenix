@@ -492,7 +492,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "estimates",
         stateMachine: ESTIMATE_MACHINE,
         selectList: "*, projects:project_id(name)",
-        selectDetail: "*, projects:project_id(name), deals:deal_id(title)",
+        selectDetail: "*, projects:project_id(name), deals:deal_id(title), estimate_items(*)",
         searchColumns: ["title", "client_name"],
         icon: "Calculator",
     }),
@@ -723,7 +723,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectList:
             "id, description, amount, frequency, status, next_due_date, vendor_id, created_at",
         selectDetail:
-            "id, description, amount, frequency, status, next_due_date, vendor_id, last_sent_date, notes, created_at, updated_at, organization_id",
+            "id, description, amount, frequency, status, next_due_date, vendor_id, last_sent_date, notes, created_at, updated_at, organization_id, recurring_invoice_items(*)",
         searchColumns: ["description"],
         icon: "Repeat",
     }),

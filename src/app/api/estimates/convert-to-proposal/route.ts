@@ -28,7 +28,7 @@ export const POST = withApiHandler(
 
         const { data: estimate, error: estErr } = await serverFromTable(supabase, "estimates")
             .select(
-                "id, title, description, company_id, contact_id, deal_id, subtotal, total, tax_amount, tax_percent, discount_amount, discount_percent, currency, proposed_start_date, proposed_end_date, line_items, status, converted_sow_id, organization_id"
+                "id, title, description, company_id, contact_id, deal_id, subtotal, total, tax_amount, tax_percent, discount_amount, discount_percent, currency, proposed_start_date, proposed_end_date, status, converted_sow_id, organization_id"
             )
             .eq("id", estimate_id)
             .eq("organization_id", orgId)

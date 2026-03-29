@@ -36,7 +36,7 @@ function parseLineItems(raw: unknown): RILineItem[] {
         description: (li.description as string) ?? "",
         quantity: (li.quantity as number) ?? 0,
         unitPrice: (li.unit_price as number) ?? (li.unitPrice as number) ?? 0,
-        total: (li.total as number) ?? 0,
+        total: (li.amount as number) ?? (li.total as number) ?? 0,
     }));
 }
 function parseHistory(raw: unknown): HistoryItem[] {
@@ -106,7 +106,9 @@ export function RecurringInvoiceDetailClient({
         (ri?.last_invoice_date as string) ?? (ri?.lastInvoiceDate as string) ?? "";
     const amount = (ri?.amount as number) ?? 0;
     const currency = (ri?.currency as string) ?? "USD";
-    const lineItems = parseLineItems(ri?.line_items ?? ri?.lineItems);
+    const lineItems = parseLineItems(
+        ri?.recurring_invoice_items ?? ri?.line_items ?? ri?.lineItems
+    );
     const isActive = (ri?.is_active as boolean) ?? (ri?.isActive as boolean) ?? true;
     const invoicesGenerated =
         (ri?.invoices_generated as number) ?? (ri?.invoicesGenerated as number) ?? 0;

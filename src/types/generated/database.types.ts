@@ -3448,6 +3448,87 @@ export type Database = {
                     },
                 ];
             };
+            asset_scan_log: {
+                Row: {
+                    asset_id: string;
+                    created_at: string;
+                    id: string;
+                    location_id: string | null;
+                    matched_by: string | null;
+                    notes: string | null;
+                    organization_id: string;
+                    scan_action: string;
+                    scan_method: string | null;
+                    scanned_at: string;
+                    scanned_by: string;
+                    scanned_identifier: string | null;
+                };
+                Insert: {
+                    asset_id: string;
+                    created_at?: string;
+                    id?: string;
+                    location_id?: string | null;
+                    matched_by?: string | null;
+                    notes?: string | null;
+                    organization_id: string;
+                    scan_action: string;
+                    scan_method?: string | null;
+                    scanned_at?: string;
+                    scanned_by: string;
+                    scanned_identifier?: string | null;
+                };
+                Update: {
+                    asset_id?: string;
+                    created_at?: string;
+                    id?: string;
+                    location_id?: string | null;
+                    matched_by?: string | null;
+                    notes?: string | null;
+                    organization_id?: string;
+                    scan_action?: string;
+                    scan_method?: string | null;
+                    scanned_at?: string;
+                    scanned_by?: string;
+                    scanned_identifier?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "asset_scan_log_asset_id_fkey";
+                        columns: ["asset_id"];
+                        isOneToOne: false;
+                        referencedRelation: "assets";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "asset_scan_log_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "asset_scan_log_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "asset_scan_log_scanned_by_fkey";
+                        columns: ["scanned_by"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "asset_scan_log_scanned_by_fkey";
+                        columns: ["scanned_by"];
+                        isOneToOne: false;
+                        referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             asset_tag_assignments: {
                 Row: {
                     asset_id: string;
@@ -6146,6 +6227,13 @@ export type Database = {
                         foreignKeyName: "call_sheet_crew_crew_member_id_fkey";
                         columns: ["crew_member_id"];
                         isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "call_sheet_crew_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
                         referencedRelation: "v_crew_utilization";
                         referencedColumns: ["crew_member_id"];
                     },
@@ -7659,6 +7747,13 @@ export type Database = {
                         foreignKeyName: "certifications_crew_member_id_fkey";
                         columns: ["crew_member_id"];
                         isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "certifications_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
                         referencedRelation: "v_crew_utilization";
                         referencedColumns: ["crew_member_id"];
                     },
@@ -8060,6 +8155,50 @@ export type Database = {
                     },
                 ];
             };
+            checklist_template_items: {
+                Row: {
+                    created_at: string;
+                    description: string | null;
+                    id: string;
+                    is_required: boolean;
+                    item_order: number;
+                    item_type: string;
+                    label: string;
+                    template_id: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    description?: string | null;
+                    id?: string;
+                    is_required?: boolean;
+                    item_order?: number;
+                    item_type?: string;
+                    label?: string;
+                    template_id: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    created_at?: string;
+                    description?: string | null;
+                    id?: string;
+                    is_required?: boolean;
+                    item_order?: number;
+                    item_type?: string;
+                    label?: string;
+                    template_id?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "checklist_template_items_template_id_fkey";
+                        columns: ["template_id"];
+                        isOneToOne: false;
+                        referencedRelation: "checklist_templates";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             checklist_templates: {
                 Row: {
                     category: string | null;
@@ -8069,7 +8208,6 @@ export type Database = {
                     description: string | null;
                     id: string;
                     is_active: boolean | null;
-                    items: Json;
                     name: string;
                     organization_id: string;
                     updated_at: string | null;
@@ -8083,7 +8221,6 @@ export type Database = {
                     description?: string | null;
                     id?: string;
                     is_active?: boolean | null;
-                    items?: Json;
                     name: string;
                     organization_id: string;
                     updated_at?: string | null;
@@ -8097,7 +8234,6 @@ export type Database = {
                     description?: string | null;
                     id?: string;
                     is_active?: boolean | null;
-                    items?: Json;
                     name?: string;
                     organization_id?: string;
                     updated_at?: string | null;
@@ -11214,6 +11350,13 @@ export type Database = {
                         foreignKeyName: "credential_assignments_crew_member_id_fkey";
                         columns: ["crew_member_id"];
                         isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "credential_assignments_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
                         referencedRelation: "v_crew_utilization";
                         referencedColumns: ["crew_member_id"];
                     },
@@ -11648,6 +11791,13 @@ export type Database = {
                         foreignKeyName: "crew_availability_crew_member_id_fkey";
                         columns: ["crew_member_id"];
                         isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "crew_availability_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
                         referencedRelation: "v_crew_utilization";
                         referencedColumns: ["crew_member_id"];
                     },
@@ -11864,6 +12014,13 @@ export type Database = {
                         foreignKeyName: "crew_members_reports_to_fkey";
                         columns: ["reports_to"];
                         isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "crew_members_reports_to_fkey";
+                        columns: ["reports_to"];
+                        isOneToOne: false;
                         referencedRelation: "v_crew_utilization";
                         referencedColumns: ["crew_member_id"];
                     },
@@ -12009,6 +12166,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "crew_members";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "crew_shifts_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
                     },
                     {
                         foreignKeyName: "crew_shifts_crew_member_id_fkey";
@@ -13709,6 +13873,13 @@ export type Database = {
                         foreignKeyName: "dispatch_entries_crew_member_id_fkey";
                         columns: ["crew_member_id"];
                         isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "dispatch_entries_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
                         referencedRelation: "v_crew_utilization";
                         referencedColumns: ["crew_member_id"];
                     },
@@ -15103,6 +15274,65 @@ export type Database = {
                     },
                 ];
             };
+            estimate_items: {
+                Row: {
+                    amount: number | null;
+                    created_at: string;
+                    description: string | null;
+                    display_order: number | null;
+                    estimate_id: string;
+                    id: string;
+                    line_number: number;
+                    name: string;
+                    quantity: number;
+                    tax_rate: number | null;
+                    taxable: boolean | null;
+                    unit: string | null;
+                    unit_price: number;
+                    updated_at: string;
+                };
+                Insert: {
+                    amount?: number | null;
+                    created_at?: string;
+                    description?: string | null;
+                    display_order?: number | null;
+                    estimate_id: string;
+                    id?: string;
+                    line_number?: number;
+                    name?: string;
+                    quantity?: number;
+                    tax_rate?: number | null;
+                    taxable?: boolean | null;
+                    unit?: string | null;
+                    unit_price?: number;
+                    updated_at?: string;
+                };
+                Update: {
+                    amount?: number | null;
+                    created_at?: string;
+                    description?: string | null;
+                    display_order?: number | null;
+                    estimate_id?: string;
+                    id?: string;
+                    line_number?: number;
+                    name?: string;
+                    quantity?: number;
+                    tax_rate?: number | null;
+                    taxable?: boolean | null;
+                    unit?: string | null;
+                    unit_price?: number;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "estimate_items_estimate_id_fkey";
+                        columns: ["estimate_id"];
+                        isOneToOne: false;
+                        referencedRelation: "estimates";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             estimates: {
                 Row: {
                     accepted_at: string | null;
@@ -15120,7 +15350,6 @@ export type Database = {
                     discount_percent: number | null;
                     id: string;
                     internal_notes: string | null;
-                    line_items: Json;
                     number: string;
                     organization_id: string;
                     proposed_end_date: string | null;
@@ -15157,7 +15386,6 @@ export type Database = {
                     discount_percent?: number | null;
                     id?: string;
                     internal_notes?: string | null;
-                    line_items?: Json;
                     number: string;
                     organization_id: string;
                     proposed_end_date?: string | null;
@@ -15194,7 +15422,6 @@ export type Database = {
                     discount_percent?: number | null;
                     id?: string;
                     internal_notes?: string | null;
-                    line_items?: Json;
                     number?: string;
                     organization_id?: string;
                     proposed_end_date?: string | null;
@@ -19735,6 +19962,13 @@ export type Database = {
                         foreignKeyName: "job_cost_entries_crew_member_id_fkey";
                         columns: ["crew_member_id"];
                         isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "job_cost_entries_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
                         referencedRelation: "v_crew_utilization";
                         referencedColumns: ["crew_member_id"];
                     },
@@ -20568,6 +20802,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "crew_members";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "live_crew_assignments_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
                     },
                     {
                         foreignKeyName: "live_crew_assignments_crew_member_id_fkey";
@@ -24821,6 +25062,56 @@ export type Database = {
                     },
                 ];
             };
+            pipeline_stages: {
+                Row: {
+                    color: string | null;
+                    created_at: string;
+                    description: string | null;
+                    id: string;
+                    is_lost: boolean;
+                    is_won: boolean;
+                    name: string;
+                    pipeline_id: string;
+                    probability_percent: number | null;
+                    stage_order: number;
+                    updated_at: string;
+                };
+                Insert: {
+                    color?: string | null;
+                    created_at?: string;
+                    description?: string | null;
+                    id?: string;
+                    is_lost?: boolean;
+                    is_won?: boolean;
+                    name?: string;
+                    pipeline_id: string;
+                    probability_percent?: number | null;
+                    stage_order?: number;
+                    updated_at?: string;
+                };
+                Update: {
+                    color?: string | null;
+                    created_at?: string;
+                    description?: string | null;
+                    id?: string;
+                    is_lost?: boolean;
+                    is_won?: boolean;
+                    name?: string;
+                    pipeline_id?: string;
+                    probability_percent?: number | null;
+                    stage_order?: number;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "pipeline_stages_pipeline_id_fkey";
+                        columns: ["pipeline_id"];
+                        isOneToOne: false;
+                        referencedRelation: "pipelines";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             pipelines: {
                 Row: {
                     color: string | null;
@@ -24834,7 +25125,6 @@ export type Database = {
                     is_default: boolean | null;
                     name: string;
                     organization_id: string;
-                    stages: Json;
                     updated_at: string | null;
                     updated_by: string | null;
                 };
@@ -24850,7 +25140,6 @@ export type Database = {
                     is_default?: boolean | null;
                     name: string;
                     organization_id: string;
-                    stages?: Json;
                     updated_at?: string | null;
                     updated_by?: string | null;
                 };
@@ -24866,7 +25155,6 @@ export type Database = {
                     is_default?: boolean | null;
                     name?: string;
                     organization_id?: string;
-                    stages?: Json;
                     updated_at?: string | null;
                     updated_by?: string | null;
                 };
@@ -26853,7 +27141,6 @@ export type Database = {
                     safety_related: boolean | null;
                     scope: string | null;
                     status: Database["public"]["Enums"]["sop_status"];
-                    steps: Json | null;
                     title: string;
                     updated_at: string | null;
                     updated_by: string | null;
@@ -26875,7 +27162,6 @@ export type Database = {
                     safety_related?: boolean | null;
                     scope?: string | null;
                     status?: Database["public"]["Enums"]["sop_status"];
-                    steps?: Json | null;
                     title: string;
                     updated_at?: string | null;
                     updated_by?: string | null;
@@ -26897,7 +27183,6 @@ export type Database = {
                     safety_related?: boolean | null;
                     scope?: string | null;
                     status?: Database["public"]["Enums"]["sop_status"];
-                    steps?: Json | null;
                     title?: string;
                     updated_at?: string | null;
                     updated_by?: string | null;
@@ -27368,6 +27653,13 @@ export type Database = {
                         foreignKeyName: "production_time_entries_crew_member_id_fkey";
                         columns: ["crew_member_id"];
                         isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "production_time_entries_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
                         referencedRelation: "v_crew_utilization";
                         referencedColumns: ["crew_member_id"];
                     },
@@ -27627,6 +27919,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "crew_members";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "project_assignments_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
                     },
                     {
                         foreignKeyName: "project_assignments_crew_member_id_fkey";
@@ -28030,6 +28329,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "crew_members";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "project_crew_submissions_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
                     },
                     {
                         foreignKeyName: "project_crew_submissions_crew_member_id_fkey";
@@ -29268,6 +29574,59 @@ export type Database = {
                     },
                 ];
             };
+            purchase_requisition_items: {
+                Row: {
+                    amount: number | null;
+                    created_at: string;
+                    description: string | null;
+                    display_order: number | null;
+                    id: string;
+                    line_number: number;
+                    name: string;
+                    purchase_requisition_id: string;
+                    quantity: number;
+                    unit: string | null;
+                    unit_price: number;
+                    updated_at: string;
+                };
+                Insert: {
+                    amount?: number | null;
+                    created_at?: string;
+                    description?: string | null;
+                    display_order?: number | null;
+                    id?: string;
+                    line_number?: number;
+                    name?: string;
+                    purchase_requisition_id: string;
+                    quantity?: number;
+                    unit?: string | null;
+                    unit_price?: number;
+                    updated_at?: string;
+                };
+                Update: {
+                    amount?: number | null;
+                    created_at?: string;
+                    description?: string | null;
+                    display_order?: number | null;
+                    id?: string;
+                    line_number?: number;
+                    name?: string;
+                    purchase_requisition_id?: string;
+                    quantity?: number;
+                    unit?: string | null;
+                    unit_price?: number;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "purchase_requisition_items_purchase_requisition_id_fkey";
+                        columns: ["purchase_requisition_id"];
+                        isOneToOne: false;
+                        referencedRelation: "purchase_requisitions";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             purchase_requisitions: {
                 Row: {
                     approved_at: string | null;
@@ -29282,7 +29641,6 @@ export type Database = {
                     gl_account_id: string | null;
                     id: string;
                     justification: string | null;
-                    line_items: Json;
                     needed_by: string | null;
                     notes: string | null;
                     number: string;
@@ -29309,7 +29667,6 @@ export type Database = {
                     gl_account_id?: string | null;
                     id?: string;
                     justification?: string | null;
-                    line_items?: Json;
                     needed_by?: string | null;
                     notes?: string | null;
                     number: string;
@@ -29336,7 +29693,6 @@ export type Database = {
                     gl_account_id?: string | null;
                     id?: string;
                     justification?: string | null;
-                    line_items?: Json;
                     needed_by?: string | null;
                     notes?: string | null;
                     number?: string;
@@ -30344,6 +30700,65 @@ export type Database = {
                     },
                 ];
             };
+            recurring_invoice_items: {
+                Row: {
+                    amount: number | null;
+                    created_at: string;
+                    description: string | null;
+                    display_order: number | null;
+                    id: string;
+                    line_number: number;
+                    name: string;
+                    quantity: number;
+                    recurring_invoice_id: string;
+                    tax_rate: number | null;
+                    taxable: boolean | null;
+                    unit: string | null;
+                    unit_price: number;
+                    updated_at: string;
+                };
+                Insert: {
+                    amount?: number | null;
+                    created_at?: string;
+                    description?: string | null;
+                    display_order?: number | null;
+                    id?: string;
+                    line_number?: number;
+                    name?: string;
+                    quantity?: number;
+                    recurring_invoice_id: string;
+                    tax_rate?: number | null;
+                    taxable?: boolean | null;
+                    unit?: string | null;
+                    unit_price?: number;
+                    updated_at?: string;
+                };
+                Update: {
+                    amount?: number | null;
+                    created_at?: string;
+                    description?: string | null;
+                    display_order?: number | null;
+                    id?: string;
+                    line_number?: number;
+                    name?: string;
+                    quantity?: number;
+                    recurring_invoice_id?: string;
+                    tax_rate?: number | null;
+                    taxable?: boolean | null;
+                    unit?: string | null;
+                    unit_price?: number;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "recurring_invoice_items_recurring_invoice_id_fkey";
+                        columns: ["recurring_invoice_id"];
+                        isOneToOne: false;
+                        referencedRelation: "recurring_invoices";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             recurring_invoices: {
                 Row: {
                     amount: number;
@@ -30360,7 +30775,6 @@ export type Database = {
                     invoices_generated: number | null;
                     is_active: boolean | null;
                     last_invoice_date: string | null;
-                    line_items: Json | null;
                     next_invoice_date: string;
                     organization_id: string;
                     project_id: string | null;
@@ -30383,7 +30797,6 @@ export type Database = {
                     invoices_generated?: number | null;
                     is_active?: boolean | null;
                     last_invoice_date?: string | null;
-                    line_items?: Json | null;
                     next_invoice_date: string;
                     organization_id: string;
                     project_id?: string | null;
@@ -30406,7 +30819,6 @@ export type Database = {
                     invoices_generated?: number | null;
                     is_active?: boolean | null;
                     last_invoice_date?: string | null;
-                    line_items?: Json | null;
                     next_invoice_date?: string;
                     organization_id?: string;
                     project_id?: string | null;
@@ -31029,6 +31441,13 @@ export type Database = {
                         foreignKeyName: "resource_bookings_crew_member_id_fkey";
                         columns: ["crew_member_id"];
                         isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "resource_bookings_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
                         referencedRelation: "v_crew_utilization";
                         referencedColumns: ["crew_member_id"];
                     },
@@ -31629,6 +32048,119 @@ export type Database = {
                 };
                 Relationships: [];
             };
+            rfq_line_items: {
+                Row: {
+                    amount: number | null;
+                    created_at: string;
+                    description: string | null;
+                    display_order: number | null;
+                    id: string;
+                    line_number: number;
+                    name: string;
+                    quantity: number;
+                    rfq_id: string;
+                    unit: string | null;
+                    unit_price: number;
+                    updated_at: string;
+                };
+                Insert: {
+                    amount?: number | null;
+                    created_at?: string;
+                    description?: string | null;
+                    display_order?: number | null;
+                    id?: string;
+                    line_number?: number;
+                    name?: string;
+                    quantity?: number;
+                    rfq_id: string;
+                    unit?: string | null;
+                    unit_price?: number;
+                    updated_at?: string;
+                };
+                Update: {
+                    amount?: number | null;
+                    created_at?: string;
+                    description?: string | null;
+                    display_order?: number | null;
+                    id?: string;
+                    line_number?: number;
+                    name?: string;
+                    quantity?: number;
+                    rfq_id?: string;
+                    unit?: string | null;
+                    unit_price?: number;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "rfq_line_items_rfq_id_fkey";
+                        columns: ["rfq_id"];
+                        isOneToOne: false;
+                        referencedRelation: "rfqs";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            rfq_vendor_responses: {
+                Row: {
+                    created_at: string;
+                    id: string;
+                    lead_time_days: number | null;
+                    notes: string | null;
+                    response_data: Json | null;
+                    rfq_id: string;
+                    status: string;
+                    submitted_at: string | null;
+                    total_price: number | null;
+                    unit_price: number | null;
+                    updated_at: string;
+                    vendor_id: string | null;
+                };
+                Insert: {
+                    created_at?: string;
+                    id?: string;
+                    lead_time_days?: number | null;
+                    notes?: string | null;
+                    response_data?: Json | null;
+                    rfq_id: string;
+                    status?: string;
+                    submitted_at?: string | null;
+                    total_price?: number | null;
+                    unit_price?: number | null;
+                    updated_at?: string;
+                    vendor_id?: string | null;
+                };
+                Update: {
+                    created_at?: string;
+                    id?: string;
+                    lead_time_days?: number | null;
+                    notes?: string | null;
+                    response_data?: Json | null;
+                    rfq_id?: string;
+                    status?: string;
+                    submitted_at?: string | null;
+                    total_price?: number | null;
+                    unit_price?: number | null;
+                    updated_at?: string;
+                    vendor_id?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "rfq_vendor_responses_rfq_id_fkey";
+                        columns: ["rfq_id"];
+                        isOneToOne: false;
+                        referencedRelation: "rfqs";
+                        referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "rfq_vendor_responses_vendor_id_fkey";
+                        columns: ["vendor_id"];
+                        isOneToOne: false;
+                        referencedRelation: "vendors";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             rfq_vendors: {
                 Row: {
                     created_at: string | null;
@@ -31676,14 +32208,12 @@ export type Database = {
                     id: string;
                     issue_date: string;
                     justification: string | null;
-                    line_items: Json | null;
                     number: string;
                     organization_id: string | null;
                     project_id: string;
                     requested_by_id: string | null;
                     required_by_date: string;
                     response_deadline: string;
-                    responses: Json | null;
                     status: string;
                     title: string;
                     updated_at: string | null;
@@ -31699,14 +32229,12 @@ export type Database = {
                     id?: string;
                     issue_date: string;
                     justification?: string | null;
-                    line_items?: Json | null;
                     number: string;
                     organization_id?: string | null;
                     project_id: string;
                     requested_by_id?: string | null;
                     required_by_date: string;
                     response_deadline: string;
-                    responses?: Json | null;
                     status?: string;
                     title: string;
                     updated_at?: string | null;
@@ -31722,14 +32250,12 @@ export type Database = {
                     id?: string;
                     issue_date?: string;
                     justification?: string | null;
-                    line_items?: Json | null;
                     number?: string;
                     organization_id?: string | null;
                     project_id?: string;
                     requested_by_id?: string | null;
                     required_by_date?: string;
                     response_deadline?: string;
-                    responses?: Json | null;
                     status?: string;
                     title?: string;
                     updated_at?: string | null;
@@ -33161,6 +33687,69 @@ export type Database = {
                     },
                 ];
             };
+            scheduled_messages: {
+                Row: {
+                    body: string | null;
+                    channel: string;
+                    created_at: string;
+                    error_message: string | null;
+                    id: string;
+                    metadata: Json | null;
+                    organization_id: string;
+                    recipient: string;
+                    scheduled_for: string;
+                    sent_at: string | null;
+                    status: string;
+                    subject: string | null;
+                    updated_at: string;
+                };
+                Insert: {
+                    body?: string | null;
+                    channel?: string;
+                    created_at?: string;
+                    error_message?: string | null;
+                    id?: string;
+                    metadata?: Json | null;
+                    organization_id: string;
+                    recipient: string;
+                    scheduled_for: string;
+                    sent_at?: string | null;
+                    status?: string;
+                    subject?: string | null;
+                    updated_at?: string;
+                };
+                Update: {
+                    body?: string | null;
+                    channel?: string;
+                    created_at?: string;
+                    error_message?: string | null;
+                    id?: string;
+                    metadata?: Json | null;
+                    organization_id?: string;
+                    recipient?: string;
+                    scheduled_for?: string;
+                    sent_at?: string | null;
+                    status?: string;
+                    subject?: string | null;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "scheduled_messages_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "scheduled_messages_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
             scopes_of_work: {
                 Row: {
                     acceptance_criteria: string | null;
@@ -34052,6 +34641,13 @@ export type Database = {
                         foreignKeyName: "shifts_crew_member_id_fkey";
                         columns: ["crew_member_id"];
                         isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "shifts_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
                         referencedRelation: "v_crew_utilization";
                         referencedColumns: ["crew_member_id"];
                     },
@@ -34441,6 +35037,13 @@ export type Database = {
                         foreignKeyName: "shipments_driver_id_fkey";
                         columns: ["driver_id"];
                         isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "shipments_driver_id_fkey";
+                        columns: ["driver_id"];
+                        isOneToOne: false;
                         referencedRelation: "v_crew_utilization";
                         referencedColumns: ["crew_member_id"];
                     },
@@ -34778,6 +35381,53 @@ export type Database = {
                         columns: ["user_id"];
                         isOneToOne: false;
                         referencedRelation: "user_profiles_with_org";
+                        referencedColumns: ["id"];
+                    },
+                ];
+            };
+            sop_steps: {
+                Row: {
+                    created_at: string;
+                    description: string | null;
+                    duration_minutes: number | null;
+                    id: string;
+                    media_url: string | null;
+                    safety_notes: string | null;
+                    sop_id: string;
+                    step_order: number;
+                    title: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    description?: string | null;
+                    duration_minutes?: number | null;
+                    id?: string;
+                    media_url?: string | null;
+                    safety_notes?: string | null;
+                    sop_id: string;
+                    step_order?: number;
+                    title?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    created_at?: string;
+                    description?: string | null;
+                    duration_minutes?: number | null;
+                    id?: string;
+                    media_url?: string | null;
+                    safety_notes?: string | null;
+                    sop_id?: string;
+                    step_order?: number;
+                    title?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "sop_steps_sop_id_fkey";
+                        columns: ["sop_id"];
+                        isOneToOne: false;
+                        referencedRelation: "production_sops";
                         referencedColumns: ["id"];
                     },
                 ];
@@ -37280,6 +37930,13 @@ export type Database = {
                         foreignKeyName: "time_entries_crew_member_id_fkey";
                         columns: ["crew_member_id"];
                         isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "time_entries_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
                         referencedRelation: "v_crew_utilization";
                         referencedColumns: ["crew_member_id"];
                     },
@@ -37462,6 +38119,13 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: "crew_members";
                         referencedColumns: ["id"];
+                    },
+                    {
+                        foreignKeyName: "time_off_requests_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
                     },
                     {
                         foreignKeyName: "time_off_requests_crew_member_id_fkey";
@@ -40027,6 +40691,13 @@ export type Database = {
                         foreignKeyName: "work_order_crew_crew_member_id_fkey";
                         columns: ["crew_member_id"];
                         isOneToOne: false;
+                        referencedRelation: "time_tracking_compliance";
+                        referencedColumns: ["crew_member_id"];
+                    },
+                    {
+                        foreignKeyName: "work_order_crew_crew_member_id_fkey";
+                        columns: ["crew_member_id"];
+                        isOneToOne: false;
                         referencedRelation: "v_crew_utilization";
                         referencedColumns: ["crew_member_id"];
                     },
@@ -42329,6 +43000,39 @@ export type Database = {
                     total_reviews: number | null;
                 };
                 Relationships: [];
+            };
+            time_tracking_compliance: {
+                Row: {
+                    approved_entries: number | null;
+                    billable_hours: number | null;
+                    created_at: string | null;
+                    crew_member_id: string | null;
+                    is_compliant: boolean | null;
+                    last_entry_date: string | null;
+                    name: string | null;
+                    organization_id: string | null;
+                    overtime_entries: number | null;
+                    pending_entries: number | null;
+                    rejected_entries: number | null;
+                    total_entries: number | null;
+                    total_hours: number | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "crew_members_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "mv_dashboard_kpis";
+                        referencedColumns: ["organization_id"];
+                    },
+                    {
+                        foreignKeyName: "crew_members_organization_id_fkey";
+                        columns: ["organization_id"];
+                        isOneToOne: false;
+                        referencedRelation: "organizations";
+                        referencedColumns: ["id"];
+                    },
+                ];
             };
             user_profiles_with_org: {
                 Row: {

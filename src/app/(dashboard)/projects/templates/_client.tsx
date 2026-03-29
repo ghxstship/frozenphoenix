@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_PROJECT_TEMPLATE_CONFIG } from "@/config/create-entity-configs";
-import { OperationalDashboardShell } from "@/components/shells";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -238,7 +238,8 @@ export function ProjectTemplatesPageClient() {
         </div>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "projects",
         resource: "projects",
         action: "read",
         title: "Project Templates",
@@ -257,5 +258,5 @@ export function ProjectTemplatesPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} isLoading={isLoading} />;
+    return <ListPageShell config={config} isLoading={isLoading} />;
 }

@@ -20,8 +20,8 @@ import {
     Users,
 } from "lucide-react";
 import { useKnowledgeBaseArticles } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { getStatusVariant } from "@/config/ui-variants";
 
 interface CollaborativeDocument {
@@ -78,14 +78,14 @@ export function CollaborativeEditorPageClient() {
 
     const totalEditors = documents.reduce((s, d) => s + d.activeEditors.length, 0);
 
-    const config: DashboardPageConfig = useMemo(
+    const config: ListPageConfig = useMemo(
         () => ({
+            entityKey: "knowledge_base",
             resource: "knowledge_base",
             action: "read",
             title: "Collaborative Editing",
             description:
                 "Real-time multi-user document editing with presence indicators and conflict resolution",
-            searchable: false,
             headerActions: (
                 <Badge variant="info" className="text-sm px-3 py-1">
                     <Users className="mr-2 h-3.5 w-3.5" />
@@ -383,7 +383,7 @@ export function CollaborativeEditorPageClient() {
     );
 
     return (
-        <OperationalDashboardShell
+        <ListPageShell
             config={config}
             data={documents as unknown as Record<string, unknown>[]}
             isLoading={isLoading}

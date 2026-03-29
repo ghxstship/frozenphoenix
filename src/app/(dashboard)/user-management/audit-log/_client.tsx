@@ -24,8 +24,8 @@ import {
     Smartphone,
 } from "lucide-react";
 import type { LoginEventType, RoleChangeType } from "@/types";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 const EVENT_ICONS: Partial<Record<LoginEventType, typeof LogIn>> = {
     login_success: LogIn,
@@ -386,12 +386,12 @@ export function AuditLogPageClient() {
         </Card>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "audit_log",
         resource: "audit_log",
         title: "Audit Log",
         description:
             "Immutable log of authentication events, role changes, and access modifications",
-        searchable: false,
         stats: [
             { label: "Login Events", value: loginAudit.length, icon: LogIn },
             { label: "Successful", value: successCount, icon: ShieldCheck },
@@ -409,5 +409,5 @@ export function AuditLogPageClient() {
         ],
     };
 
-    return <OperationalDashboardShell config={config} />;
+    return <ListPageShell config={config} />;
 }

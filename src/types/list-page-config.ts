@@ -236,55 +236,78 @@ export interface ListCardConfig {
     fields?: ListCardFieldDef[] | undefined;
 }
 
+// ─── Tab Definition ─────────────────────────────────────────
+
+export interface ListTabDef {
+    /** Tab ID — used as URL search param value */
+    id: string;
+    /** Tab label */
+    label: string;
+    /** Tab icon */
+    icon?: LucideIcon | undefined;
+    /** Tab content (slot) */
+    content?: React.ReactNode | undefined;
+}
+
 // ─── Main Config ────────────────────────────────────────────
 
 export interface ListPageConfig {
-    /** Entity config key (snake_case) — resolves EntityConfig for RBAC, title, API path */
+    /** Entity config key (snake_case) — resolves EntityConfig for RBAC, title, API path.
+     *  For dashboard-style pages without a matching entity config, set this to any
+     *  unique identifier and use `resource` for RBAC gating. */
     entityKey: string;
     /** Override page description */
-    description?: string | undefined; /** Override page title */
-    title?: string | undefined; /** Page icon */
+    description?: string | undefined;
+    /** Override page title */
+    title?: string | undefined;
+    /** Page icon */
     icon?: LucideIcon | undefined;
+    // ─── RBAC ───
+    /** RBAC resource key override — when provided, used instead of the resource
+     *  resolved from `entityKey`. Required for dashboard pages that don't have
+     *  a matching EntityConfig. */
+    resource?: string | undefined;
+    /** RBAC action (default: "read") */
+    action?: string | undefined;
     // ─── Stats ───
     /** Stat cards (computed from live data). If omitted, default stats are shown. */
     stats?: ListStatDef[] | undefined;
     // ─── Columns ───
     /** Column definitions for DataTable. If omitted, default columns are inferred. */
-    columns?: ListColumnDef[] | undefined; /** Default sort state */
-    defaultSort?:
-        | { column: string; direction: "asc" | "desc" }
-        | undefined; /** Record keys to search against */
+    columns?: ListColumnDef[] | undefined;
+    /** Default sort state */
+    defaultSort?: { column: string; direction: "asc" | "desc" } | undefined;
+    /** Record keys to search against */
     searchKeys?: string[] | undefined;
+    /** Search input placeholder text override */
+    searchPlaceholder?: string | undefined;
     // ─── Views ───
     /** Allowed display modes (default: ["table"]). Only views listed here appear in the switcher.
      *  This is the contextual visibility mechanism — omit a view type if it isn't
      *  meaningful for this entity's data shape. */
-    views?: ViewMode[] | undefined; /** Default display mode */
-    defaultView?:
-        | ViewMode
-        | undefined; /** Board (kanban) configuration — required when views includes "board" */
-    boardConfig?:
-        | ListBoardConfig
-        | undefined; /** Card grid configuration — required when views includes "cards" */
-    cardConfig?:
-        | ListCardConfig
-        | undefined; /** Timeline configuration — required when views includes "timeline" */
-    timelineConfig?:
-        | ListTimelineConfig
-        | undefined; /** Calendar configuration — required when views includes "calendar" */
-    calendarConfig?:
-        | ListCalendarConfig
-        | undefined; /** Gallery configuration — required when views includes "gallery" */
-    galleryConfig?:
-        | ListGalleryConfig
-        | undefined; /** Chart configuration — required when views includes "chart" */
-    chartConfig?:
-        | ListChartConfig
-        | undefined; /** Map configuration — required when views includes "map" */
-    mapConfig?:
-        | ListMapConfig
-        | undefined; /** Workload configuration — required when views includes "workload" */
+    views?: ViewMode[] | undefined;
+    /** Default display mode */
+    defaultView?: ViewMode | undefined;
+    /** Board (kanban) configuration — required when views includes "board" */
+    boardConfig?: ListBoardConfig | undefined;
+    /** Card grid configuration — required when views includes "cards" */
+    cardConfig?: ListCardConfig | undefined;
+    /** Timeline configuration — required when views includes "timeline" */
+    timelineConfig?: ListTimelineConfig | undefined;
+    /** Calendar configuration — required when views includes "calendar" */
+    calendarConfig?: ListCalendarConfig | undefined;
+    /** Gallery configuration — required when views includes "gallery" */
+    galleryConfig?: ListGalleryConfig | undefined;
+    /** Chart configuration — required when views includes "chart" */
+    chartConfig?: ListChartConfig | undefined;
+    /** Map configuration — required when views includes "map" */
+    mapConfig?: ListMapConfig | undefined;
+    /** Workload configuration — required when views includes "workload" */
     workloadConfig?: ListWorkloadConfig | undefined;
+    // ─── Tabs ───
+    /** Tab definitions — when provided, shell uses tabbed layout with URL-synced state.
+     *  Renders TabBar below the toolbar and TabPanel for each tab. */
+    tabs?: ListTabDef[] | undefined;
     // ─── Filters ───
     /** Declarative filter definitions */
     filters?: ListFilterDef[] | undefined;
@@ -293,28 +316,64 @@ export interface ListPageConfig {
     alerts?: ListAlertDef[] | undefined;
     // ─── Actions ───
     /** Create form config */
-    createConfig?: CreateEntityConfig | undefined; /** Override create button label */
-    createLabel?: string | undefined; /** Bulk actions on selected rows */
-    bulkActions?: ListBulkActionDef[] | undefined; /** Per-row actions */
+    createConfig?: CreateEntityConfig | undefined;
+    /** Override create button label */
+    createLabel?: string | undefined;
+    /** Bulk actions on selected rows */
+    bulkActions?: ListBulkActionDef[] | undefined;
+    /** Per-row actions */
     rowActions?: ListRowActionDef[] | undefined;
     // ─── Quick View ───
     /** Quick-view panel config — enables slide-panel preview on row click instead of full-page navigation */
     quickViewConfig?: QuickViewConfig | undefined;
     // ─── CSV ───
     /** Enable CSV export */
-    exportable?: boolean | undefined; /** Enable CSV import */
+    exportable?: boolean | undefined;
+    /** Enable CSV import */
     importable?: boolean | undefined;
     // ─── Empty State ───
     /** Custom empty state title */
-    emptyTitle?: string | undefined; /** Custom empty state description */
+    emptyTitle?: string | undefined;
+    /** Custom empty state description */
     emptyDescription?: string | undefined;
+    /** Custom empty state icon */
+    emptyIcon?: LucideIcon | undefined;
+    // ─── Card Renderer (Dashboard-style) ───
+    /** Custom card renderer — when provided, renders each filtered item through this
+     *  function instead of DataTable/Board/Cards. Used by dashboard-style pages. */
+    cardRenderer?: ((item: Record<string, unknown>, index: number) => React.ReactNode) | undefined;
+    /** Card layout mode for cardRenderer (default: "list") */
+    cardLayout?: "grid" | "list" | undefined;
+    /** Grid columns for "grid" layout (default: responsive 1/2/3) */
+    gridCols?: string | undefined;
+    // ─── Header ───
+    /** Action buttons rendered inside PageHeader */
+    headerActions?: React.ReactNode | undefined;
+    // ─── Toolbar ───
+    /** Additional action buttons for the toolbar right zone (alongside built-in actions) */
+    toolbarActions?: React.ReactNode | undefined;
+    /** External search state override — when provided, the shell uses this instead of
+     *  its own internal search state. Use for pages that manage their own search. */
+    searchState?:
+        | {
+              value: string;
+              onValueChange: (value: string) => void;
+              placeholder?: string | undefined;
+          }
+        | undefined;
     // ─── Slots (escape hatches) ───
     /** Override the header section */
-    headerSlot?: React.ReactNode | undefined; /** Override the stats section */
-    statsSlot?: React.ReactNode | undefined; /** Override the toolbar section */
-    toolbarSlot?:
-        | React.ReactNode
-        | undefined; /** Override the content section (replaces DataTable/Board/Cards) */
-    contentSlot?: React.ReactNode | undefined; /** Additional content after the main content */
+    headerSlot?: React.ReactNode | undefined;
+    /** Override the stats section */
+    statsSlot?: React.ReactNode | undefined;
+    /** Override the toolbar section */
+    toolbarSlot?: React.ReactNode | undefined;
+    /** Override the content section (replaces DataTable/Board/Cards) */
+    contentSlot?: React.ReactNode | undefined;
+    /** Additional content between stats and toolbar */
+    afterStatsSlot?: React.ReactNode | undefined;
+    /** Additional content after the main content area */
+    afterCardsSlot?: React.ReactNode | undefined;
+    /** Additional content after the main content */
     footerSlot?: React.ReactNode | undefined;
 }

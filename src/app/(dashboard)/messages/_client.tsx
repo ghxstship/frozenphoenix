@@ -38,8 +38,8 @@ import {
     useTypingIndicator,
 } from "@/lib/supabase/hooks-messaging-realtime";
 import type { MessageWithSender } from "@/types/messaging";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 export function MessagesPageClient() {
     const searchParams = useSearchParams();
@@ -340,13 +340,13 @@ export function MessagesPageClient() {
         [setActiveConversation]
     );
 
-    const config: DashboardPageConfig = React.useMemo(
+    const config: ListPageConfig = React.useMemo(
         () => ({
+            entityKey: "messaging_dm",
             resource: "messaging_dm",
             action: "read",
             title: "Messages",
             description: "Conversations, channels, and direct messages",
-            searchable: false,
             contentSlot: (
                 <div className="h-[calc(100vh-12rem)]">
                     <div className="flex-1 flex border border-border rounded-xl overflow-hidden bg-background h-full">
@@ -517,7 +517,7 @@ export function MessagesPageClient() {
     );
 
     return (
-        <OperationalDashboardShell
+        <ListPageShell
             config={config}
             data={conversations as unknown as Record<string, unknown>[]}
             isLoading={convLoading}

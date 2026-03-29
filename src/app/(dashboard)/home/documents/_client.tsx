@@ -1,8 +1,8 @@
 "use client";
 
 import { DocCard } from "@/components/home";
-import { OperationalDashboardShell } from "@/components/shells";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { OverlineText } from "@/components/ui/overline-text";
 import { Button } from "@/components/ui/button";
@@ -137,7 +137,8 @@ export function DocumentsPageClient() {
         </div>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "documents",
         resource: "documents",
         action: "read",
         title: "Documents",
@@ -191,5 +192,5 @@ export function DocumentsPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} />;
+    return <ListPageShell config={config} />;
 }

@@ -19,8 +19,8 @@ import {
     Users,
     X,
 } from "lucide-react";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 interface OrgSecuritySettings {
     id: string;
@@ -59,13 +59,13 @@ export function OrgSecurityPageClient() {
 
     if (!orgId || !activeOrg) {
         return (
-            <OperationalDashboardShell
+            <ListPageShell
                 config={{
+                    entityKey: "security",
                     resource: "security",
                     action: "read",
                     title: "Organization Security",
                     description: "",
-                    searchable: false,
                     contentSlot: (
                         <div className="flex items-center gap-2 p-4 rounded-lg bg-muted text-muted-foreground text-sm">
                             <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -81,13 +81,13 @@ export function OrgSecurityPageClient() {
 
     if (fetchError && !fetchedSettings) {
         return (
-            <OperationalDashboardShell
+            <ListPageShell
                 config={{
+                    entityKey: "security",
                     resource: "security",
                     action: "read",
                     title: "Organization Security",
                     description: "",
-                    searchable: false,
                     contentSlot: (
                         <div
                             className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 text-destructive text-sm"
@@ -176,13 +176,13 @@ function OrgSecurityForm({
         [settings, updateField]
     );
 
-    const config: DashboardPageConfig = useMemo(
+    const config: ListPageConfig = useMemo(
         () => ({
+            entityKey: "security",
             resource: "security",
             action: "read",
             title: "Organization Security",
             description: `Security policies for ${settings.name}`,
-            searchable: false,
             headerActions: (
                 <Button onClick={handleSave} disabled={saving} aria-busy={saving}>
                     {saving ? (
@@ -526,5 +526,5 @@ function OrgSecurityForm({
         ]
     );
 
-    return <OperationalDashboardShell config={config} data={[]} isLoading={false} />;
+    return <ListPageShell config={config} data={[]} isLoading={false} />;
 }

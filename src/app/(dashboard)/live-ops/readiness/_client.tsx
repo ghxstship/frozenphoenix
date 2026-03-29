@@ -5,14 +5,15 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { AlertTriangle, CheckCircle2, Clock, Gauge, XCircle } from "lucide-react";
 import { READINESS_GATE_STATUS_MAP } from "@/config/domain-config";
 import { useReadinessGates } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type Row = Record<string, unknown>;
 
 const STATUS_OPTIONS = ["all", "passed", "in_progress", "not_started", "failed", "waived"] as const;
 
-const CONFIG: DashboardPageConfig = {
+const CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     title: "Readiness Gates",
     description:
@@ -43,7 +44,7 @@ const CONFIG: DashboardPageConfig = {
     ],
     alerts: [
         {
-            condition: (d) =>
+            when: (d) =>
                 d.filter((r) => r.is_blocking && !["passed", "waived"].includes(r.status as string))
                     .length > 0,
             message: (d) => {
@@ -60,7 +61,7 @@ const CONFIG: DashboardPageConfig = {
         {
             id: "status",
             label: "Status",
-            type: "button-group",
+            column: "status",
             options: STATUS_OPTIONS.map((s) => ({
                 value: s,
                 label:
@@ -69,8 +70,6 @@ const CONFIG: DashboardPageConfig = {
                         : (READINESS_GATE_STATUS_MAP[s as keyof typeof READINESS_GATE_STATUS_MAP]
                               ?.label ?? s),
             })),
-            defaultValue: "all",
-            predicate: (item, val) => item.status === val,
         },
     ],
     cardRenderer: (item: Row) => (
@@ -118,21 +117,13 @@ const CONFIG: DashboardPageConfig = {
             </CardContent>
         </Card>
     ),
-    emptyState: {
-        icon: Gauge,
-        title: "No readiness gates",
-        description: "Readiness gates will appear here when configured for an event.",
-    },
+    emptyIcon: Gauge,
+    emptyTitle: "No readiness gates",
+    emptyDescription: "Readiness gates will appear here when configured for an event.",
 };
 
 export function ReadinessGatesPageClient() {
     const { data, isLoading } = useReadinessGates();
 
-    return (
-        <OperationalDashboardShell
-            config={CONFIG}
-            data={data as Row[] | null}
-            isLoading={isLoading}
-        />
-    );
+    return <ListPageShell config={CONFIG} data={data as Row[] | undefined} isLoading={isLoading} />;
 }

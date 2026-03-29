@@ -4,16 +4,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { AlertTriangle, CheckCircle2, Package, Wrench } from "lucide-react";
 import { useEquipmentCheckIns } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type Row = Record<string, unknown>;
 
-const CONFIG: DashboardPageConfig = {
+const CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     title: "Equipment Check-Ins",
     description: "On-site equipment status, deployment tracking, and condition monitoring",
-    searchable: true,
     searchPlaceholder: "Search equipment...",
     searchKeys: ["asset_id", "department"],
     stats: [
@@ -83,21 +83,13 @@ const CONFIG: DashboardPageConfig = {
             </CardContent>
         </Card>
     ),
-    emptyState: {
-        icon: Package,
-        title: "No equipment",
-        description: "Equipment check-in records will appear here during live events.",
-    },
+    emptyIcon: Package,
+    emptyTitle: "No equipment",
+    emptyDescription: "Equipment check-in records will appear here during live events.",
 };
 
 export function EquipmentPageClient() {
     const { data, isLoading } = useEquipmentCheckIns();
 
-    return (
-        <OperationalDashboardShell
-            config={CONFIG}
-            data={data as Row[] | null}
-            isLoading={isLoading}
-        />
-    );
+    return <ListPageShell config={CONFIG} data={data as Row[] | undefined} isLoading={isLoading} />;
 }

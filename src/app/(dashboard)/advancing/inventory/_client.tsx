@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { AlertTriangle, Box, Package } from "lucide-react";
-import { OperationalDashboardShell } from "@/components/shells";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useCatalogItems } from "@/lib/supabase/hooks-advancing";
@@ -137,7 +137,8 @@ export function AdvancingInventoryPageClient() {
         </div>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "advancing",
         resource: "advancing",
         action: "manage",
         title: "Inventory Dashboard",
@@ -150,5 +151,5 @@ export function AdvancingInventoryPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} isLoading={isLoading} />;
+    return <ListPageShell config={config} isLoading={isLoading} />;
 }

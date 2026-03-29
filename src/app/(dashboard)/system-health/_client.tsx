@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { OperationalDashboardShell } from "@/components/shells";
+import { ListPageShell } from "@/components/shells";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/ui/stat-card";
@@ -21,7 +21,7 @@ import {
     Zap,
 } from "lucide-react";
 import { EmptyRow } from "@/components/ui/empty-row";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import type { ListPageConfig } from "@/types/list-page-config";
 import {
     useDomainEvents,
     useResilienceTargets,
@@ -371,7 +371,8 @@ export function SystemHealthPageClient() {
         </div>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "system_health",
         resource: "system_health",
         action: "read",
         title: "System Health",
@@ -389,5 +390,5 @@ export function SystemHealthPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} isLoading={isLoading} />;
+    return <ListPageShell config={config} isLoading={isLoading} />;
 }

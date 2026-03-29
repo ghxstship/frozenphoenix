@@ -9,22 +9,21 @@ import { OT_ALERT_LEVEL_MAP } from "@/config/domain-config";
 import { usePosTransactions } from "@/lib/supabase/hooks-external-sync";
 import { useLiveFinancialSnapshots } from "@/lib/supabase";
 import { formatCurrency } from "@/lib/utils";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type Row = Record<string, unknown>;
 
 const fmt = (n: number) => `$${n.toLocaleString()}`;
 
-const BASE_CONFIG: DashboardPageConfig = {
+const BASE_CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     title: "Live Financials",
     description: "Real-time budget burn, labor costs, revenue tracking, and margin monitoring",
-    emptyState: {
-        icon: DollarSign,
-        title: "No financial data",
-        description: "Financial snapshots will appear here during live events.",
-    },
+    emptyIcon: DollarSign,
+    emptyTitle: "No financial data",
+    emptyDescription: "Financial snapshots will appear here during live events.",
 };
 
 export function LiveFinancialsPageClient() {
@@ -65,7 +64,7 @@ export function LiveFinancialsPageClient() {
         [posTxns]
     );
 
-    const config = useMemo<DashboardPageConfig>(() => {
+    const config = useMemo<ListPageConfig>(() => {
         if (!latest) return BASE_CONFIG;
         return {
             ...BASE_CONFIG,
@@ -79,7 +78,7 @@ export function LiveFinancialsPageClient() {
                 otAlertLevel !== "none"
                     ? [
                           {
-                              condition: () => true,
+                              when: () => true,
                               message: `Overtime alert: ${OT_ALERT_LEVEL_MAP[otAlertLevel as keyof typeof OT_ALERT_LEVEL_MAP]?.label ?? otAlertLevel} — labor overtime at ${fmt(laborOvertime)}`,
                               severity: "warning" as const,
                               icon: AlertTriangle,
@@ -90,7 +89,7 @@ export function LiveFinancialsPageClient() {
     }, [latest, burnPct, remaining, burnRatePerHour, marginPercent, otAlertLevel, laborOvertime]);
 
     return (
-        <OperationalDashboardShell config={config} data={rows} isLoading={isLoading}>
+        <ListPageShell config={config} data={rows} isLoading={isLoading}>
             {latest && (
                 <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 density-gap-card">
@@ -253,6 +252,6 @@ export function LiveFinancialsPageClient() {
                     </Card>
                 </>
             )}
-        </OperationalDashboardShell>
+        </ListPageShell>
     );
 }

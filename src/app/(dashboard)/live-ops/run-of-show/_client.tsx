@@ -9,12 +9,13 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { SearchInput } from "@/components/ui/search-input";
 import { CheckCircle2, Clock, Megaphone, Play, Plus } from "lucide-react";
 import { useRosCues, useUpdateRosCue } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type Row = Record<string, unknown>;
 
-const BASE_CONFIG: DashboardPageConfig = {
+const BASE_CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     title: "Run of Show",
     description: "Live cue management — sequence, timing, and execution tracking",
@@ -24,11 +25,9 @@ const BASE_CONFIG: DashboardPageConfig = {
             Add Cue
         </Button>
     ),
-    emptyState: {
-        icon: Megaphone,
-        title: "No cues",
-        description: "Run of show cues will appear here when configured for a live event.",
-    },
+    emptyIcon: Megaphone,
+    emptyTitle: "No cues",
+    emptyDescription: "Run of show cues will appear here when configured for a live event.",
 };
 
 export function RunOfShowPageClient() {
@@ -58,7 +57,7 @@ export function RunOfShowPageClient() {
         return matchesSearch && matchesStatus;
     });
 
-    const config = useMemo<DashboardPageConfig>(
+    const config = useMemo<ListPageConfig>(
         () => ({
             ...BASE_CONFIG,
             stats: [
@@ -72,7 +71,7 @@ export function RunOfShowPageClient() {
     );
 
     return (
-        <OperationalDashboardShell config={config} data={rows} isLoading={isLoading}>
+        <ListPageShell config={config} data={rows} isLoading={isLoading}>
             <div className="flex items-center gap-3">
                 <SearchInput
                     value={search}
@@ -253,6 +252,6 @@ export function RunOfShowPageClient() {
                     </CardContent>
                 </Card>
             )}
-        </OperationalDashboardShell>
+        </ListPageShell>
     );
 }

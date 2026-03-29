@@ -1,8 +1,8 @@
 "use client";
 
 import { TaskRow, TimeHorizonGroup } from "@/components/home";
-import { OperationalDashboardShell } from "@/components/shells";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -174,7 +174,8 @@ export function TasksHomePageClient() {
         </div>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "tasks",
         resource: "tasks",
         action: "read",
         title: "Tasks",
@@ -214,7 +215,7 @@ export function TasksHomePageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} />;
+    return <ListPageShell config={config} />;
 }
 
 function KpiCard({

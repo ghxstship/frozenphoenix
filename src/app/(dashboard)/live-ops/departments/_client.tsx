@@ -10,12 +10,13 @@ import {
     useCreateDepartmentStatus,
     useUpdateDepartmentStatus,
 } from "@/lib/supabase/hooks-live-ops";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type Row = Record<string, unknown>;
 
-const CONFIG: DashboardPageConfig = {
+const CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     title: "Department Status",
     description: "Real-time department readiness and crew check-in status",
@@ -76,11 +77,9 @@ const CONFIG: DashboardPageConfig = {
             </Card>
         );
     },
-    emptyState: {
-        icon: LayoutList,
-        title: "No departments",
-        description: "Department statuses will appear here during live events.",
-    },
+    emptyIcon: LayoutList,
+    emptyTitle: "No departments",
+    emptyDescription: "Department statuses will appear here during live events.",
 };
 
 export function DepartmentStatusPageClient() {
@@ -88,7 +87,7 @@ export function DepartmentStatusPageClient() {
     const createDeptStatus = useCreateDepartmentStatus();
     const updateDeptStatus = useUpdateDepartmentStatus();
 
-    const configWithActions: DashboardPageConfig = {
+    const configWithActions: ListPageConfig = {
         ...CONFIG,
         headerActions: (
             <Button
@@ -160,9 +159,9 @@ export function DepartmentStatusPageClient() {
     };
 
     return (
-        <OperationalDashboardShell
+        <ListPageShell
             config={configWithActions}
-            data={data as Row[] | null}
+            data={data as Row[] | undefined}
             isLoading={isLoading}
         />
     );

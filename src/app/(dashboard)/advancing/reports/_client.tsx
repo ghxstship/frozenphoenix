@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { BarChart3, DollarSign, Package, TrendingUp } from "lucide-react";
-import { OperationalDashboardShell } from "@/components/shells";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { AdvanceStatusBadge } from "@/components/advancing";
@@ -183,7 +183,8 @@ export function AdvancingReportsPageClient() {
         </div>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "advancing",
         resource: "advancing",
         action: "manage",
         title: "Advancing Reports",
@@ -191,5 +192,5 @@ export function AdvancingReportsPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} />;
+    return <ListPageShell config={config} />;
 }

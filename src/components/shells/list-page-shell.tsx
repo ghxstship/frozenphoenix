@@ -11,7 +11,7 @@
    Replaces: EntityPageShell, hand-built PageShell list pages.
    ═══════════════════════════════════════════════════════════════ */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { apiList } from "@/lib/api/client";
@@ -98,6 +98,7 @@ import {
     CheckCircle2,
     Clock,
     Eye,
+    Inbox,
     LayoutList,
     MoreVertical,
     Pencil,
@@ -116,20 +117,26 @@ import {
 import { apiCreate, apiDelete, apiUpdate } from "@/lib/api/client";
 import { humanizeSnakeCase } from "@/lib/utils";
 import { useConfirm } from "@/components/ui/confirm-dialog";
-import { matchesSearch, toDataTableColumn } from "@/lib/formatters/record-utils";
+import { computeStatValue, matchesSearch, toDataTableColumn } from "@/lib/formatters/record-utils";
 import { useEntityMeta } from "@/hooks/use-entity-meta";
 import type { EntityRecord } from "@/types/entity";
+import { TabBar, TabPanel } from "@/components/ui/tab-bar";
+import { useQueryTabState } from "@/hooks/use-query-tab-state";
+import { StaggerItem } from "@/components/ui/stagger-container";
+import { Card, CardContent } from "@/components/ui/card";
 
 export interface ListPageShellProps {
     /** Direct config object (client-side only — NOT serializable across RSC boundary) */
-    config?:
-        | ListPageConfig
-        | undefined; /** Registry key — serializable alternative to config for RSC→client boundary */
-    configKey?:
-        | ListPageConfigKey
-        | undefined; /** Pre-fetched data — bypasses built-in apiList query when provided */
-    data?: EntityRecord[] | undefined; /** Loading state for externally-provided data */
+    config?: ListPageConfig | undefined;
+    /** Registry key — serializable alternative to config for RSC→client boundary */
+    configKey?: ListPageConfigKey | undefined;
+    /** Pre-fetched data — bypasses built-in apiList query when provided */
+    data?: EntityRecord[] | undefined;
+    /** Loading state for externally-provided data */
     isLoading?: boolean | undefined;
+    /** Children override — when provided, replaces the content area entirely.
+     *  Absorbs the dashboard-style children pattern. */
+    children?: React.ReactNode | undefined;
 }
 
 // ─── List Alert Renderer ─────────────────────────────────────
@@ -478,6 +485,7 @@ export function ListPageShell({
     configKey,
     data: externalData,
     isLoading: externalLoading,
+    children,
 }: ListPageShellProps) {
     // Lazy config resolution: load only the needed module chunk on demand.
     // getResolvedConfig is synchronous (returns from cache if already loaded).
@@ -514,7 +522,11 @@ export function ListPageShell({
         );
     }
 
-    return <ListPageShellInner config={config} data={externalData} isLoading={externalLoading} />;
+    return (
+        <ListPageShellInner config={config} data={externalData} isLoading={externalLoading}>
+            {children}
+        </ListPageShellInner>
+    );
 }
 
 ListPageShell.displayName = "ListPageShell";
@@ -525,12 +537,14 @@ interface ListPageShellInnerProps {
     config: ListPageConfig;
     data?: Record<string, unknown>[] | undefined;
     isLoading?: boolean | undefined;
+    children?: React.ReactNode | undefined;
 }
 
 function ListPageShellInner({
     config,
     data: externalData,
     isLoading: externalLoading,
+    children,
 }: ListPageShellInnerProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -590,7 +604,10 @@ function ListPageShellInner({
     const [quickViewRecordId, setQuickViewRecordId] = useState<string | null>(null);
 
     // Resolve entity metadata
-    const resource = entityConfig?.resource ?? metaResource;
+    // resource/action: config overrides take precedence (required for dashboard pages
+    // that don't have a matching EntityConfig)
+    const resource = config.resource ?? entityConfig?.resource ?? metaResource;
+    const rbacAction = (config.action ?? "read") as "read" | "write" | "delete" | "manage";
     const title = config.title ?? displayNamePlural;
     const description = config.description ?? `Manage ${title.toLowerCase()}`;
     const basePath = entityConfig?.basePath ?? metaBasePath;
@@ -601,6 +618,33 @@ function ListPageShellInner({
     );
     const Icon = config.icon ?? LayoutList;
     const views = config.views ?? ["table"];
+
+    // ─── Tab state (URL-synced) ──────────────────────────────
+    const hasTabs = Boolean(config.tabs && config.tabs.length > 0);
+    const tabIds = useMemo(() => (config.tabs ?? []).map((t) => t.id), [config.tabs]);
+    const [activeTab, setActiveTab] = useQueryTabState({
+        defaultValue: config.tabs?.[0]?.id ?? "default",
+        validValues: tabIds,
+    });
+    const tabItems = useMemo(() => {
+        if (!config.tabs) return [];
+        return config.tabs.map((t) => ({
+            id: t.id,
+            label: t.label,
+            icon: t.icon ? React.createElement(t.icon, { className: "h-4 w-4" }) : undefined,
+        }));
+    }, [config.tabs]);
+
+    // Dashboard-style: is this page using cardRenderer or children instead of DataTable?
+    const isDashboardMode = Boolean(config.cardRenderer || children || config.contentSlot);
+
+    // Search state: use external override if provided, else internal
+    const effectiveSearch = config.searchState ? config.searchState.value : search;
+    const effectiveSetSearch = config.searchState ? config.searchState.onValueChange : setSearch;
+    const effectiveSearchPlaceholder =
+        config.searchState?.placeholder ??
+        config.searchPlaceholder ??
+        `Search ${title.toLowerCase()}...`;
 
     // Smart defaults: auto-enable export/import when entity has a config
     const exportable = config.exportable ?? entityConfig != null;
@@ -679,21 +723,26 @@ function ListPageShellInner({
         });
     }, [records, search, searchKeys, filterValues, resolvedFilters]);
 
-    // Compute stats
+    // Compute stats — uses shared computeStatValue() for consistency with
+    // DetailPageShell and the former dashboard shell.
     const computedStats = useMemo(() => {
         if (!config.stats) return null;
         return config.stats.map((s) => {
-            let val: string | number = records.length;
-            if (s.value != null) val = s.value;
-            else if (s.compute) val = s.compute(records) ?? 0;
-            else if (s.filter) val = records.filter(s.filter).length;
+            // computeStatValue handles compute/value/accessorKey resolution.
+            // ListStatDef also has a `filter` predicate — handle that here.
+            let val: string | number;
+            if (s.filter) {
+                val = records.filter(s.filter).length;
+            } else {
+                val = computeStatValue(s, records);
+            }
             return { label: s.label, icon: s.icon, computedValue: val };
         });
     }, [records, config.stats]);
 
-    // Default stats when none configured
+    // Default stats when none configured (only for entity list pages, not dashboard mode)
     const defaultStats = useMemo(() => {
-        if (config.stats) return null;
+        if (config.stats || isDashboardMode) return null;
         const recentCutoff = new Date();
         recentCutoff.setDate(recentCutoff.getDate() - 30);
         const recentTs = recentCutoff.getTime();
@@ -710,7 +759,7 @@ function ListPageShellInner({
             { label: "Active", icon: CheckCircle2, computedValue: activeCount },
             { label: "Recent (30d)", icon: Clock, computedValue: recentCount },
         ];
-    }, [records, config.stats, title, Icon]);
+    }, [records, config.stats, isDashboardMode, title, Icon]);
 
     const statsToRender = computedStats ?? defaultStats;
 
@@ -1040,8 +1089,11 @@ function ListPageShellInner({
     // (e.g. "No data to chart", "No items with date ranges to display"),
     // so we always render ViewContent regardless of data length.
 
+    // Empty state icon for dashboard-style rendering
+    const EmptyIcon = config.emptyIcon ?? Inbox;
+
     return (
-        <PermissionGate resource={resource} action="read">
+        <PermissionGate resource={resource} action={rbacAction}>
             <div
                 className="motion-safe:animate-fade-in"
                 style={{
@@ -1051,7 +1103,11 @@ function ListPageShellInner({
                 }}
             >
                 {/* Header */}
-                {config.headerSlot ?? <PageHeader title={title} description={description} />}
+                {config.headerSlot ?? (
+                    <PageHeader title={title} description={description}>
+                        {config.headerActions}
+                    </PageHeader>
+                )}
 
                 {/* Stats */}
                 {config.statsSlot ??
@@ -1061,7 +1117,7 @@ function ListPageShellInner({
                                 <StatCard
                                     key={s.label}
                                     title={s.label}
-                                    value={s.computedValue}
+                                    value={isLoading ? "—" : s.computedValue}
                                     icon={s.icon}
                                 />
                             ))}
@@ -1069,20 +1125,26 @@ function ListPageShellInner({
                     ))}
 
                 {/* Alerts */}
-                {config.alerts?.map((alert, i) => (
-                    <ListAlertRenderer key={i} alert={alert} records={records} />
-                ))}
+                {!isLoading &&
+                    config.alerts?.map((alert, i) => (
+                        <ListAlertRenderer key={i} alert={alert} records={records} />
+                    ))}
 
-                {/* Toolbar */}
+                {/* After-stats slot */}
+                {config.afterStatsSlot}
+
+                {/* Toolbar — show search/filters/actions unless completely overridden */}
                 {config.toolbarSlot ?? (
                     <FilterBar
                         search={{
-                            value: search,
-                            onValueChange: setSearch,
-                            placeholder: `Search ${title.toLowerCase()}...`,
+                            value: effectiveSearch,
+                            onValueChange: effectiveSetSearch,
+                            placeholder: effectiveSearchPlaceholder,
                         }}
                         actions={
                             <>
+                                {/* Dashboard-injected toolbar actions (left of built-in actions) */}
+                                {config.toolbarActions}
                                 {advancedFilterFields.length > 0 && (
                                     <AdvancedFilterPopover
                                         fields={advancedFilterFields}
@@ -1091,7 +1153,7 @@ function ListPageShellInner({
                                         activeCount={activeFilterCount}
                                     />
                                 )}
-                                {colVisibilityItems.length > 1 && (
+                                {!isDashboardMode && colVisibilityItems.length > 1 && (
                                     <ColumnVisibilityPopover
                                         columns={colVisibilityItems}
                                         onToggle={columnPrefs.toggleVisibility}
@@ -1102,7 +1164,7 @@ function ListPageShellInner({
                                         label={fieldPopoverLabel}
                                     />
                                 )}
-                                {hasMultiView && (
+                                {!isDashboardMode && hasMultiView && (
                                     <ViewSwitcher
                                         views={views}
                                         value={viewMode}
@@ -1172,8 +1234,66 @@ function ListPageShellInner({
                     />
                 )}
 
-                {/* Content */}
-                {config.contentSlot ?? (
+                {/* Content — loading state for dashboard mode */}
+                {isLoading && isDashboardMode ? (
+                    <LoadingState />
+                ) : config.contentSlot ? (
+                    config.contentSlot
+                ) : hasTabs && config.tabs ? (
+                    /* ─── Tabbed content (dashboard mode) ─── */
+                    <>
+                        <TabBar
+                            items={tabItems}
+                            value={activeTab}
+                            onValueChange={setActiveTab}
+                            ariaLabel={`${title} tabs`}
+                        />
+                        {config.tabs.map((tab) => (
+                            <TabPanel key={tab.id} value={tab.id} activeValue={activeTab}>
+                                {tab.content}
+                            </TabPanel>
+                        ))}
+                    </>
+                ) : children ? (
+                    /* ─── Children override (dashboard mode) ─── */
+                    children
+                ) : config.cardRenderer ? (
+                    /* ─── Card renderer (dashboard mode) ─── */
+                    filtered.length > 0 ? (
+                        <div
+                            className={cn(
+                                config.cardLayout === "grid"
+                                    ? (config.gridCols ??
+                                          "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 density-gap-card")
+                                    : "density-gap-section"
+                            )}
+                        >
+                            {filtered.map((item, i) => (
+                                <StaggerItem
+                                    key={(item.id as string) ?? i}
+                                    index={i}
+                                    stagger="tight"
+                                >
+                                    {config.cardRenderer!(item, i)}
+                                </StaggerItem>
+                            ))}
+                        </div>
+                    ) : (
+                        <Card>
+                            <CardContent className="py-12 flex flex-col items-center justify-center text-center">
+                                <EmptyIcon className="h-10 w-10 text-muted-foreground/50 mb-3" />
+                                <h3 className="text-sm font-semibold">
+                                    {config.emptyTitle ?? "No data"}
+                                </h3>
+                                <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+                                    {config.emptyDescription ??
+                                        "No records found matching your criteria."}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    )
+                ) : (
+                    /* ─── Standard entity list view (DataTable / Board / Cards / etc.) ─── */
                     <ViewContent
                         viewMode={viewMode}
                         filtered={filtered}
@@ -1207,6 +1327,9 @@ function ListPageShellInner({
                         }
                     />
                 )}
+
+                {/* After-cards slot */}
+                {config.afterCardsSlot}
 
                 {/* Footer slot */}
                 {config.footerSlot}

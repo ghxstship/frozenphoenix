@@ -6,8 +6,8 @@ import { CatalogBrowser } from "@/components/advancing/catalog-browser";
 import { AdvanceCart, CartToggle } from "@/components/advancing/advance-cart";
 import { AdvanceCheckout } from "@/components/advancing/advance-checkout";
 import { useAdvanceCart } from "@/hooks/use-advance-cart";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type ViewState = "browse" | "checkout";
 
@@ -46,8 +46,9 @@ export function NewAdvancingOrderPageClient() {
         [router]
     );
 
-    const config: DashboardPageConfig = React.useMemo(
+    const config: ListPageConfig = React.useMemo(
         () => ({
+            entityKey: "advancing",
             resource: "advancing",
             action: "write",
             title: view === "browse" ? "New Advance" : "Review Advance",
@@ -55,7 +56,6 @@ export function NewAdvancingOrderPageClient() {
                 view === "browse"
                     ? "Browse the catalog and add items to your advance"
                     : "Review and submit your advance for approval",
-            searchable: false,
             headerActions:
                 view === "browse" ? (
                     <CartToggle onClick={() => setCartOpen(!cartOpen)} />
@@ -86,5 +86,5 @@ export function NewAdvancingOrderPageClient() {
         [view, cartOpen, handleAddItem, handleSuccess]
     );
 
-    return <OperationalDashboardShell config={config} data={[]} isLoading={false} />;
+    return <ListPageShell config={config} data={[]} isLoading={false} />;
 }

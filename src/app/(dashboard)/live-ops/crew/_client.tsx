@@ -8,16 +8,16 @@ import { StaggerItem } from "@/components/ui/stagger-container";
 import { AlertTriangle, CheckCircle2, Clock, Coffee, LogIn, LogOut, Users } from "lucide-react";
 import { useLiveCrewAssignments, useUpdateLiveCrewAssignment } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type Row = Record<string, unknown>;
 
-const CONFIG: DashboardPageConfig = {
+const CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     title: "Live Crew",
     description: "On-site crew assignments, check-in status, and overtime tracking",
-    searchable: true,
     searchPlaceholder: "Search crew...",
     searchKeys: ["role_description", "department"],
     stats: [
@@ -41,11 +41,9 @@ const CONFIG: DashboardPageConfig = {
         },
         { label: "Total Crew", icon: Users, compute: (d) => d.length },
     ],
-    emptyState: {
-        icon: Users,
-        title: "No crew assigned",
-        description: "Crew assignments will appear here during live events.",
-    },
+    emptyIcon: Users,
+    emptyTitle: "No crew assigned",
+    emptyDescription: "Crew assignments will appear here during live events.",
 };
 
 export function LiveCrewPageClient() {
@@ -70,11 +68,7 @@ export function LiveCrewPageClient() {
     }, [rows, search]);
 
     return (
-        <OperationalDashboardShell
-            config={{ ...CONFIG, searchable: false }}
-            data={rows}
-            isLoading={isLoading}
-        >
+        <ListPageShell config={CONFIG} data={rows} isLoading={isLoading}>
             {/* Search managed locally because crew cards have mutations that need the typed row */}
             <SearchInput
                 value={search}
@@ -232,6 +226,6 @@ export function LiveCrewPageClient() {
                     </StaggerItem>
                 ))}
             </div>
-        </OperationalDashboardShell>
+        </ListPageShell>
     );
 }

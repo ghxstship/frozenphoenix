@@ -2,7 +2,7 @@
 
 import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_WORKER_REVIEW_CONFIG } from "@/config/create-entity-configs";
-import { OperationalDashboardShell } from "@/components/shells";
+import { ListPageShell } from "@/components/shells";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { Calendar, ClipboardCheck, Plus, Star, ThumbsUp } from "lucide-react";
 import type { WorkerReview } from "@/types/workforce";
 import type { ReviewTargetType } from "@/types/workforce";
 import { useWorkerReviewsList } from "@/lib/supabase";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 const TARGET_LABELS: Record<ReviewTargetType, string> = {
     employee: "Employee",
@@ -52,7 +52,8 @@ export function ReviewsPageClient() {
     const { data: sbReviews, isLoading } = useWorkerReviewsList();
     const reviews: WorkerReview[] = (sbReviews ?? []) as unknown as WorkerReview[];
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "workforce",
         resource: "workforce",
         title: "Performance Reviews",
         description:
@@ -89,20 +90,17 @@ export function ReviewsPageClient() {
                 compute: (d) => d.filter((r) => !r.acknowledgedAt).length,
             },
         ],
-        searchable: true,
         searchPlaceholder: "Search reviews...",
         searchKeys: ["workerName", "reviewerName", "projectName"],
         filters: [
             {
                 id: "targetType",
                 label: "Type",
-                type: "select",
+                column: "targetType",
                 options: [
                     { value: "all", label: "All Types" },
                     ...Object.entries(TARGET_LABELS).map(([value, label]) => ({ value, label })),
                 ],
-                defaultValue: "all",
-                predicate: (item, val) => val === "all" || item.targetType === val,
             },
         ],
         cardLayout: "grid",
@@ -221,15 +219,13 @@ export function ReviewsPageClient() {
                 </StaggerItem>
             );
         },
-        emptyState: {
-            icon: Star,
-            title: "No reviews found",
-        },
+        emptyIcon: Star,
+        emptyTitle: "No reviews found",
     };
 
     return (
         <>
-            <OperationalDashboardShell
+            <ListPageShell
                 config={config}
                 data={(reviews ?? []) as unknown as Record<string, unknown>[]}
                 isLoading={isLoading}

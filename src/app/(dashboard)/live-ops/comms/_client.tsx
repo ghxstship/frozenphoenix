@@ -4,13 +4,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Lock, Radio } from "lucide-react";
 import { useCommChannels } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { PRIORITY_BORDER_CLASSES } from "@/config/ui-variants";
 
 type Row = Record<string, unknown>;
 
-const CONFIG: DashboardPageConfig = {
+const CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     title: "Communications",
     description: "Radio channel assignments, priority routing, and communication log",
@@ -61,21 +62,13 @@ const CONFIG: DashboardPageConfig = {
             </CardContent>
         </Card>
     ),
-    emptyState: {
-        icon: Radio,
-        title: "No channels",
-        description: "Communication channels will appear here during live events.",
-    },
+    emptyIcon: Radio,
+    emptyTitle: "No channels",
+    emptyDescription: "Communication channels will appear here during live events.",
 };
 
 export function CommsPageClient() {
     const { data, isLoading } = useCommChannels();
 
-    return (
-        <OperationalDashboardShell
-            config={CONFIG}
-            data={data as Row[] | null}
-            isLoading={isLoading}
-        />
-    );
+    return <ListPageShell config={CONFIG} data={data as Row[] | undefined} isLoading={isLoading} />;
 }

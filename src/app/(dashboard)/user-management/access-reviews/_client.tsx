@@ -6,8 +6,8 @@ import {
     useRevokeTemporaryGrant,
     useTemporaryAccessGrants,
 } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -280,7 +280,8 @@ export function AccessReviewsPageClient() {
         </div>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "security",
         resource: "security",
         title: "Access Reviews",
         description: "Periodic review of user permissions, stale access, and temporary grants",
@@ -300,5 +301,5 @@ export function AccessReviewsPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} />;
+    return <ListPageShell config={config} />;
 }

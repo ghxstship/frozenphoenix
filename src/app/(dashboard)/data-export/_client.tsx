@@ -17,8 +17,8 @@ import {
 } from "lucide-react";
 import type { DataExportStatus } from "@/types";
 import { useCreateDataExportRequest, useDataExportRequests } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 const statusBadge = (status: DataExportStatus) => {
     const variants: Record<
@@ -78,13 +78,13 @@ export function DataExportPageClient() {
         [createExport]
     );
 
-    const config: DashboardPageConfig = useMemo(
+    const config: ListPageConfig = useMemo(
         () => ({
+            entityKey: "data_export",
             resource: "data_export",
             action: "read",
             title: "Data Export",
             description: "Export your personal data (GDPR/CCPA compliant self-service)",
-            searchable: false,
             stats: [
                 {
                     label: "Total Exports",
@@ -222,7 +222,7 @@ export function DataExportPageClient() {
     );
 
     return (
-        <OperationalDashboardShell
+        <ListPageShell
             config={config}
             data={exports as unknown as Record<string, unknown>[]}
             isLoading={isLoading}

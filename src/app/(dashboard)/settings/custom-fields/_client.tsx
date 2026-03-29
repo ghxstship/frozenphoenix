@@ -30,8 +30,8 @@ import {
     Type,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { useCustomFieldDefinitions, useUpdateCustomFieldDefinition } from "@/lib/supabase";
 import { useCreateCustomFieldDefinition } from "@/lib/supabase/hooks-automation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -288,7 +288,8 @@ export function CustomFieldsPageClient() {
         </>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "settings",
         resource: "settings",
         action: "read",
         title: "Custom Property Fields",
@@ -315,7 +316,7 @@ export function CustomFieldsPageClient() {
 
     return (
         <>
-            <OperationalDashboardShell config={config} isLoading={isLoading} />
+            <ListPageShell config={config} isLoading={isLoading} />
             <CreateEntityDialog
                 config={CREATE_CUSTOM_FIELD_CONFIG}
                 open={createOpen}

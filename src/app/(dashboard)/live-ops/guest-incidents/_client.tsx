@@ -6,8 +6,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { useGuestIncidents } from "@/lib/supabase";
 import { useCreateGuestIncident, useUpdateGuestIncident } from "@/lib/supabase/hooks-live-ops";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type Row = Record<string, unknown>;
 
@@ -17,11 +17,11 @@ const SEVERITY_BORDERS: Record<string, string> = {
     major: "border-l-destructive",
 };
 
-const CONFIG: DashboardPageConfig = {
+const CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     title: "Guest Incidents",
     description: "Complaints, injuries, lost items, and disturbances — tracking and resolution",
-    searchable: true,
     searchPlaceholder: "Search incidents...",
     searchKeys: ["description", "guest_name"],
     stats: [
@@ -96,11 +96,9 @@ const CONFIG: DashboardPageConfig = {
             </CardContent>
         </Card>
     ),
-    emptyState: {
-        icon: AlertTriangle,
-        title: "No incidents",
-        description: "Guest incident reports will appear here during live events.",
-    },
+    emptyIcon: AlertTriangle,
+    emptyTitle: "No incidents",
+    emptyDescription: "Guest incident reports will appear here during live events.",
 };
 
 export function GuestIncidentsPageClient() {
@@ -108,7 +106,7 @@ export function GuestIncidentsPageClient() {
     const createIncident = useCreateGuestIncident();
     const updateIncident = useUpdateGuestIncident();
 
-    const configWithActions: DashboardPageConfig = {
+    const configWithActions: ListPageConfig = {
         ...CONFIG,
         headerActions: (
             <Button
@@ -213,9 +211,9 @@ export function GuestIncidentsPageClient() {
     };
 
     return (
-        <OperationalDashboardShell
+        <ListPageShell
             config={configWithActions}
-            data={data as Row[] | null}
+            data={data as Row[] | undefined}
             isLoading={isLoading}
         />
     );

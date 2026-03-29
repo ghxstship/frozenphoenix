@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { OperationalDashboardShell } from "@/components/shells";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCredentialAssignments, useCredentialTypes } from "@/lib/supabase/hooks-credentialing";
@@ -178,7 +178,8 @@ export function CredentialAssignmentsPageClient() {
         </div>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "credential_assignments",
         resource: "credential_assignments",
         action: "read",
         title: "Credential Assignments",
@@ -205,5 +206,5 @@ export function CredentialAssignmentsPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} isLoading={isLoading} />;
+    return <ListPageShell config={config} isLoading={isLoading} />;
 }

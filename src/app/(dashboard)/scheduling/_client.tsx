@@ -31,8 +31,8 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 interface Shift {
     id: string;
@@ -224,13 +224,13 @@ export function SchedulingPageClient() {
         []
     );
 
-    const config: DashboardPageConfig = useMemo(
+    const config: ListPageConfig = useMemo(
         () => ({
+            entityKey: "scheduling",
             resource: "scheduling",
             action: "read",
             title: "Crew Scheduling",
             description: "Shift management and labor allocation across productions",
-            searchable: false,
             headerActions: (
                 <Button size="sm" onClick={openCreate}>
                     <Plus className="h-4 w-4" />
@@ -591,7 +591,7 @@ export function SchedulingPageClient() {
 
     return (
         <>
-            <OperationalDashboardShell
+            <ListPageShell
                 config={config}
                 data={shifts as unknown as Record<string, unknown>[]}
                 isLoading={isLoading}

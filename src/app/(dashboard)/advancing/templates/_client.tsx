@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { FileText, Plus, Trash2 } from "lucide-react";
-import { OperationalDashboardShell } from "@/components/shells";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/layouts/empty-state";
@@ -100,7 +100,8 @@ export function AdvancingTemplatesPageClient() {
         </div>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "advancing",
         resource: "advancing",
         action: "manage",
         title: "Advance Templates",
@@ -118,5 +119,5 @@ export function AdvancingTemplatesPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} />;
+    return <ListPageShell config={config} />;
 }

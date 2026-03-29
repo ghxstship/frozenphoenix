@@ -4,12 +4,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { CheckCircle2, Clock, ListOrdered, Timer } from "lucide-react";
 import { useStrikeSequences } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type Row = Record<string, unknown>;
 
-const CONFIG: DashboardPageConfig = {
+const CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     title: "Strike & Load-Out",
     description: "Demobilization sequence, dependency tracking, and load-out progress",
@@ -85,21 +86,13 @@ const CONFIG: DashboardPageConfig = {
             </CardContent>
         </Card>
     ),
-    emptyState: {
-        icon: ListOrdered,
-        title: "No strike sequences",
-        description: "Strike & load-out sequences will appear here when created.",
-    },
+    emptyIcon: ListOrdered,
+    emptyTitle: "No strike sequences",
+    emptyDescription: "Strike & load-out sequences will appear here when created.",
 };
 
 export function StrikePageClient() {
     const { data, isLoading } = useStrikeSequences();
 
-    return (
-        <OperationalDashboardShell
-            config={CONFIG}
-            data={data as Row[] | null}
-            isLoading={isLoading}
-        />
-    );
+    return <ListPageShell config={CONFIG} data={data as Row[] | undefined} isLoading={isLoading} />;
 }

@@ -18,8 +18,8 @@ import {
 } from "@/components/ui/select";
 import { CheckCircle2, Download, Layers, Loader2, Package, Trash2, XCircle } from "lucide-react";
 import { ScanFeedback, ScanInput } from "@/components/scanning";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import type { ScanFeedbackResult, ScanMethod } from "@/components/scanning";
 import {
     type AssetScanAction,
@@ -156,13 +156,13 @@ export function BatchAssetScannerPageClient() {
     const successCount = entries.filter((e) => e.status === "success").length;
     const errorCount = entries.filter((e) => e.status === "error").length;
 
-    const config: DashboardPageConfig = useMemo(
+    const config: ListPageConfig = useMemo(
         () => ({
+            entityKey: "assets",
             resource: "assets",
             action: "read",
             title: S.batchTitle,
             description: S.batchSubtitle,
-            searchable: false,
             contentSlot: (
                 <>
                     <ScanFeedback
@@ -371,7 +371,7 @@ export function BatchAssetScannerPageClient() {
     );
 
     return (
-        <OperationalDashboardShell
+        <ListPageShell
             config={config}
             data={entries as unknown as Record<string, unknown>[]}
             isLoading={false}

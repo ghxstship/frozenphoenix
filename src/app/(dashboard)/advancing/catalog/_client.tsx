@@ -3,8 +3,8 @@
 import * as React from "react";
 import { ChevronRight, Package, Plus } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { OperationalDashboardShell } from "@/components/shells";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_CATALOG_ITEM_CONFIG } from "@/config/create-entity-configs";
 import { Button } from "@/components/ui/button";
@@ -307,7 +307,8 @@ export function CatalogPageClient() {
         </div>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "advancing",
         resource: "advancing",
         action: "manage",
         title: "Catalog Management",
@@ -329,5 +330,5 @@ export function CatalogPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} isLoading={isLoading} />;
+    return <ListPageShell config={config} isLoading={isLoading} />;
 }

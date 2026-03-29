@@ -16,8 +16,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GripVertical, User } from "lucide-react";
 import { useCrewMembers, useProjects, useUpdateCrewMember } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 // ─── Types ───
 
@@ -268,13 +268,13 @@ export function OrgChartPageClient() {
         (c) => c.supervisor_id !== null && !crewIdSet.has(c.supervisor_id)
     );
 
-    const config: DashboardPageConfig = useMemo(
+    const config: ListPageConfig = useMemo(
         () => ({
+            entityKey: "org_chart",
             resource: "org_chart",
             action: "read",
             title: "Org Chart",
             description: "Drag crew members to reorganize the reporting hierarchy",
-            searchable: false,
             toolbarActions: (
                 <select className="h-8 rounded-lg border border-input bg-background px-2 text-xs">
                     {projects.map((p) => (
@@ -328,7 +328,7 @@ export function OrgChartPageClient() {
     );
 
     return (
-        <OperationalDashboardShell
+        <ListPageShell
             config={config}
             data={crewRows as unknown as Record<string, unknown>[]}
             isLoading={loadingProjects || loadingCrew}

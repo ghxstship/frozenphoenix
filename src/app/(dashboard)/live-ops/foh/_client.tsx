@@ -10,8 +10,8 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { formatCurrency } from "@/lib/utils";
 import { useCredentialAssignments } from "@/lib/supabase/hooks-credentialing";
 import { useFohZoneReadings, useFohZones } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type Row = Record<string, unknown>;
 
@@ -28,15 +28,14 @@ interface ZoneView {
     incidents: number;
 }
 
-const BASE_CONFIG: DashboardPageConfig = {
+const BASE_CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     title: "Front of House",
     description: "Zone occupancy, queue management, sales tracking, and crowd flow",
-    emptyState: {
-        icon: Users,
-        title: "No zones configured",
-        description: "Front of house zones will appear here when configured for an event.",
-    },
+    emptyIcon: Users,
+    emptyTitle: "No zones configured",
+    emptyDescription: "Front of house zones will appear here when configured for an event.",
 };
 
 export function FohPageClient() {
@@ -85,7 +84,7 @@ export function FohPageClient() {
     const totalSales = zoneViews.reduce((s, z) => s + z.salesAmount, 0);
     const totalIncidents = zoneViews.reduce((s, z) => s + z.incidents, 0);
 
-    const config = useMemo<DashboardPageConfig>(
+    const config = useMemo<ListPageConfig>(
         () => ({
             ...BASE_CONFIG,
             stats: [
@@ -110,7 +109,7 @@ export function FohPageClient() {
     );
 
     return (
-        <OperationalDashboardShell config={config} data={zoneRows} isLoading={isLoading}>
+        <ListPageShell config={config} data={zoneRows} isLoading={isLoading}>
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-2 text-sm">
@@ -198,6 +197,6 @@ export function FohPageClient() {
                     );
                 })}
             </div>
-        </OperationalDashboardShell>
+        </ListPageShell>
     );
 }

@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSyncEvents, useWebhookEvents } from "@/lib/supabase/hooks-external-sync";
 import { AlertTriangle, CheckCircle2, Clock, RefreshCw, Webhook, XCircle } from "lucide-react";
 import { type ColumnDef, DataTable } from "@/components/data-view/data-table";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 interface SyncEventRow {
     id: string;
@@ -203,12 +203,12 @@ export function SyncLogPageClient() {
     const failedSyncs = syncs.filter((s) => s.status === "failed").length;
     const processedWebhooks = webhooks.filter((w) => w.status === "processed").length;
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "sync_events",
         resource: "sync_events",
         action: "read",
         title: "Sync Log",
         description: "Monitor data synchronization events and webhook activity",
-        searchable: false,
         stats: [
             { label: "Total Syncs", value: syncs.length, icon: RefreshCw },
             { label: "Completed", value: completedSyncs, icon: CheckCircle2 },
@@ -260,5 +260,5 @@ export function SyncLogPageClient() {
         ),
     };
 
-    return <OperationalDashboardShell config={config} isLoading={isLoading} />;
+    return <ListPageShell config={config} isLoading={isLoading} />;
 }

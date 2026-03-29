@@ -7,20 +7,19 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { AlertTriangle, CloudSun, Thermometer, Volume2, Zap } from "lucide-react";
 import { useEnvironmentalReadings } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type Row = Record<string, unknown>;
 
-const BASE_CONFIG: DashboardPageConfig = {
+const BASE_CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     title: "Environmental Readings",
     description: "Weather, noise, and power monitoring — real-time conditions and alerts",
-    emptyState: {
-        icon: Thermometer,
-        title: "No readings",
-        description: "Environmental readings will appear here when recorded.",
-    },
+    emptyIcon: Thermometer,
+    emptyTitle: "No readings",
+    emptyDescription: "Environmental readings will appear here when recorded.",
 };
 
 function computePowerUtil(row: Row): number {
@@ -34,7 +33,7 @@ export function EnvironmentPageClient() {
     const rows = useMemo(() => (data ?? []) as Row[], [data]);
     const latest = rows[0] as Row | undefined;
 
-    const config = useMemo<DashboardPageConfig>(() => {
+    const config = useMemo<ListPageConfig>(() => {
         if (!latest) return BASE_CONFIG;
         const powerUtil = computePowerUtil(latest);
         return {
@@ -56,7 +55,7 @@ export function EnvironmentPageClient() {
             alerts: latest.weather_alert
                 ? [
                       {
-                          condition: () => true,
+                          when: () => true,
                           message: String(latest.weather_alert),
                           severity: "warning" as const,
                           icon: AlertTriangle,
@@ -67,7 +66,7 @@ export function EnvironmentPageClient() {
     }, [latest]);
 
     return (
-        <OperationalDashboardShell config={config} data={rows} isLoading={isLoading}>
+        <ListPageShell config={config} data={rows} isLoading={isLoading}>
             {latest && (
                 <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 density-gap-card">
@@ -266,6 +265,6 @@ export function EnvironmentPageClient() {
                     </Card>
                 </>
             )}
-        </OperationalDashboardShell>
+        </ListPageShell>
     );
 }

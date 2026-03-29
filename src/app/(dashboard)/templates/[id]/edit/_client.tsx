@@ -24,8 +24,8 @@ import {
     Variable,
 } from "lucide-react";
 import { useDocumentTemplate, useUpdateDocumentTemplate } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type BlockType = "heading" | "paragraph" | "variable" | "image" | "divider" | "table";
 
@@ -92,13 +92,13 @@ export function TemplateEditorPageClient({ params }: { params: Promise<{ id: str
 
     if (isLoading)
         return (
-            <OperationalDashboardShell
+            <ListPageShell
                 config={{
+                    entityKey: "templates",
                     resource: "templates",
                     action: "write",
                     title: "Template Editor",
                     description: "",
-                    searchable: false,
                 }}
                 data={[]}
                 isLoading={true}
@@ -172,13 +172,13 @@ function TemplateEditorInner({
         []
     );
 
-    const config: DashboardPageConfig = useMemo(
+    const config: ListPageConfig = useMemo(
         () => ({
+            entityKey: "templates",
             resource: "templates",
             action: "write",
             title: "Template Editor",
             description: `Editing: ${templateName}`,
-            searchable: false,
             headerActions: (
                 <div className="flex gap-2">
                     <Link href={`/templates/${templateId}`}>
@@ -462,7 +462,7 @@ function TemplateEditorInner({
     );
 
     return (
-        <OperationalDashboardShell
+        <ListPageShell
             config={config}
             data={blocks as unknown as Record<string, unknown>[]}
             isLoading={false}

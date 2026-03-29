@@ -9,21 +9,20 @@ import {
     useCredentialScanLogs,
 } from "@/lib/supabase/hooks-credentialing";
 import { BadgeCheck, LogIn, LogOut, ShieldAlert, Ticket, Users } from "lucide-react";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type Row = Record<string, unknown>;
 
-const BASE_CONFIG: DashboardPageConfig = {
+const BASE_CONFIG: ListPageConfig = {
+    entityKey: "credential_assignments",
     resource: "credential_assignments",
     action: "read" as const,
     title: "Live Credentials",
     description: "Real-time credential status and scan activity",
-    emptyState: {
-        icon: Ticket,
-        title: "No credentials",
-        description: "Active credential assignments will appear here during live events.",
-    },
+    emptyIcon: Ticket,
+    emptyTitle: "No credentials",
+    emptyDescription: "Active credential assignments will appear here during live events.",
 };
 
 export function LiveOpsCredentialsPageClient() {
@@ -43,7 +42,7 @@ export function LiveOpsCredentialsPageClient() {
         ["denied", "revoked", "zone_denied", "expired"].includes(s.scan_result as string)
     ).length;
 
-    const config = useMemo<DashboardPageConfig>(
+    const config = useMemo<ListPageConfig>(
         () => ({
             ...BASE_CONFIG,
             stats: [
@@ -57,7 +56,7 @@ export function LiveOpsCredentialsPageClient() {
     );
 
     return (
-        <OperationalDashboardShell config={config} data={rows} isLoading={isLoading}>
+        <ListPageShell config={config} data={rows} isLoading={isLoading}>
             <div className="grid grid-cols-1 lg:grid-cols-2 density-gap-card">
                 <Card>
                     <CardHeader>
@@ -160,6 +159,6 @@ export function LiveOpsCredentialsPageClient() {
                     </CardContent>
                 </Card>
             </div>
-        </OperationalDashboardShell>
+        </ListPageShell>
     );
 }

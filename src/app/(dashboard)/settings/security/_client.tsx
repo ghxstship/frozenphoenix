@@ -19,8 +19,8 @@ import {
     Smartphone,
     Trash2,
 } from "lucide-react";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 interface MfaFactor {
     id: string;
@@ -214,11 +214,11 @@ export function SecuritySettingsPageClient() {
 
     const verifiedFactors = mfaFactors.filter((f) => f.status === "verified");
 
-    const shellConfig: DashboardPageConfig = {
+    const shellConfig: ListPageConfig = {
+        entityKey: "security",
         resource: "security",
         title: "Security Settings",
         description: "Manage your password, two-factor authentication, and active sessions.",
-        searchable: false,
         contentSlot: (
             <div className="density-gap-page max-w-2xl">
                 {/* Password Change */}
@@ -477,5 +477,5 @@ export function SecuritySettingsPageClient() {
         ),
     };
 
-    return <OperationalDashboardShell config={shellConfig} />;
+    return <ListPageShell config={shellConfig} />;
 }

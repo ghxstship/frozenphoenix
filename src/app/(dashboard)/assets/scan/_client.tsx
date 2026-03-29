@@ -18,8 +18,8 @@ import {
 } from "@/components/ui/select";
 import { BadgeCheck, CheckCircle2, MapPin, Package, QrCode, XCircle } from "lucide-react";
 import { ScanFeedback, ScanInput } from "@/components/scanning";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import type { ScanFeedbackResult, ScanMethod } from "@/components/scanning";
 import {
     type AssetScanAction,
@@ -99,13 +99,13 @@ export function AssetScannerPageClient() {
         minLength: 4,
     });
 
-    const config: DashboardPageConfig = useMemo(
+    const config: ListPageConfig = useMemo(
         () => ({
+            entityKey: "assets",
             resource: "assets",
             action: "read",
             title: S.title,
             description: S.subtitle,
-            searchable: false,
             contentSlot: (
                 <>
                     <OfflineIndicator
@@ -288,7 +288,7 @@ export function AssetScannerPageClient() {
     );
 
     return (
-        <OperationalDashboardShell
+        <ListPageShell
             config={config}
             data={history as unknown as Record<string, unknown>[]}
             isLoading={false}

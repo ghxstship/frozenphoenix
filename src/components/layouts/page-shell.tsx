@@ -3,7 +3,7 @@
 /**
  * @deprecated This entire module is deprecated. Zero consumers remain.
  * New pages should use one of the purpose-built shells:
- * - ListPageShell, DetailPageShell, OperationalDashboardShell,
+ * - ListPageShell, DetailPageShell,
  *   SettingsPageShell, WizardShell, FormPageShell
  */
 
@@ -38,9 +38,7 @@ export interface PageShellProps {
 /**
  * @internal Legacy thin wrapper — retained for 21 justified-bespoke pages (tool/editor patterns).
  * New pages should use one of the purpose-built shells:
- * - `ListPageShell` — list / card-grid pages
- * - `DetailPageShell` — record detail pages
- * - `OperationalDashboardShell` — stats + tabs + card grids
+ * - `ListPageShell` — list / card-grid / dashboard pages
  * - `SettingsPageShell` — settings panels
  * - `WizardShell` — multi-step flows
  * - `FormPageShell` — create/edit forms

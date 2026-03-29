@@ -4,16 +4,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { AlertTriangle, CheckCircle2, ClipboardCheck } from "lucide-react";
 import { useEquipmentCheckIns } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type Row = Record<string, unknown>;
 
-const CONFIG: DashboardPageConfig = {
+const CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     title: "Asset Reconciliation",
     description: "Post-event asset condition tracking, damage logging, and discrepancy resolution",
-    searchable: true,
     searchPlaceholder: "Search assets...",
     searchKeys: ["asset_id", "department"],
     stats: [
@@ -99,21 +99,13 @@ const CONFIG: DashboardPageConfig = {
             </Card>
         );
     },
-    emptyState: {
-        icon: ClipboardCheck,
-        title: "No equipment records",
-        description: "Asset reconciliation data will appear here after load-out.",
-    },
+    emptyIcon: ClipboardCheck,
+    emptyTitle: "No equipment records",
+    emptyDescription: "Asset reconciliation data will appear here after load-out.",
 };
 
 export function ReconciliationPageClient() {
     const { data, isLoading } = useEquipmentCheckIns();
 
-    return (
-        <OperationalDashboardShell
-            config={CONFIG}
-            data={data as Row[] | null}
-            isLoading={isLoading}
-        />
-    );
+    return <ListPageShell config={CONFIG} data={data as Row[] | undefined} isLoading={isLoading} />;
 }

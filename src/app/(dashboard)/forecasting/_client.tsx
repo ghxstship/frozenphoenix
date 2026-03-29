@@ -1,8 +1,8 @@
 "use client";
 
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { OperationalDashboardShell } from "@/components/shells";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { Badge } from "@/components/ui/badge";
 import { TabBar } from "@/components/ui/tab-bar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -570,7 +570,8 @@ export function ForecastingPageClient() {
         </>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "forecasting",
         resource: "forecasting",
         action: "read",
         title: "Forecasting",
@@ -578,5 +579,5 @@ export function ForecastingPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} isLoading={loadingForecasting} />;
+    return <ListPageShell config={config} isLoading={loadingForecasting} />;
 }

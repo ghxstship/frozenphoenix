@@ -141,7 +141,7 @@ export const SHELLS_STRINGS = {
     wizard_progress_label: "Wizard progress",
     wizard_step_of: "Step {current} of {total}",
 
-    // ─── OperationalDashboardShell ────────────────────────────
+    // ─── Dashboard Mode ──────────────────────────────────────
     dashboard_no_data: "No data",
     dashboard_no_data_desc: "No records found matching your criteria.",
     dashboard_search_placeholder: "Search...",

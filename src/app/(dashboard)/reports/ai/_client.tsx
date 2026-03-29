@@ -20,8 +20,8 @@ import {
     TrendingUp,
 } from "lucide-react";
 import { useAiReportQueries, useCreateAiReportQuery } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 interface AiReportQuery {
     id: string;
@@ -122,14 +122,14 @@ export function AiReportsPageClient() {
 
     const activeQuery = selectedQuery ?? queries[0] ?? null;
 
-    const config: DashboardPageConfig = useMemo(
+    const config: ListPageConfig = useMemo(
         () => ({
+            entityKey: "reports",
             resource: "reports",
             action: "read",
             title: "AI Report Generation",
             description:
                 "Ask questions in natural language and get instant charts and data visualizations",
-            searchable: false,
             headerActions: (
                 <Badge variant="info" className="text-sm px-3 py-1">
                     <Sparkles className="mr-2 h-3.5 w-3.5" />
@@ -306,7 +306,7 @@ export function AiReportsPageClient() {
     );
 
     return (
-        <OperationalDashboardShell
+        <ListPageShell
             config={config}
             data={queries as unknown as Record<string, unknown>[]}
             isLoading={isLoading}

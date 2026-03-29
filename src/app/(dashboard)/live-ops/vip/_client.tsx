@@ -5,17 +5,17 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Chip } from "@/components/ui/chip";
 import { CheckCircle2, Crown, Users } from "lucide-react";
 import { useVipGuests } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { TIER_BORDER_CLASSES } from "@/config/ui-variants";
 
 type Row = Record<string, unknown>;
 
-const CONFIG: DashboardPageConfig = {
+const CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     title: "VIP Management",
     description: "Guest arrivals, escort assignments, zone access, and service requests",
-    searchable: true,
     searchPlaceholder: "Search VIPs...",
     searchKeys: ["name", "affiliation"],
     stats: [
@@ -106,21 +106,13 @@ const CONFIG: DashboardPageConfig = {
             </Card>
         );
     },
-    emptyState: {
-        icon: Crown,
-        title: "No VIP guests",
-        description: "VIP guest records will appear here during live events.",
-    },
+    emptyIcon: Crown,
+    emptyTitle: "No VIP guests",
+    emptyDescription: "VIP guest records will appear here during live events.",
 };
 
 export function VipPageClient() {
     const { data, isLoading } = useVipGuests();
 
-    return (
-        <OperationalDashboardShell
-            config={CONFIG}
-            data={data as Row[] | null}
-            isLoading={isLoading}
-        />
-    );
+    return <ListPageShell config={CONFIG} data={data as Row[] | undefined} isLoading={isLoading} />;
 }

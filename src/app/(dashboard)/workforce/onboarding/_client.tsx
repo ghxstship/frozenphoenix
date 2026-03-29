@@ -4,7 +4,7 @@ import { useState } from "react";
 import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_ONBOARDING_RUN_CONFIG } from "@/config/create-entity-configs";
 import { useQueryTabState } from "@/hooks/use-query-tab-state";
-import { OperationalDashboardShell } from "@/components/shells";
+import { ListPageShell } from "@/components/shells";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +23,7 @@ import {
 import type { WorkerOffboardingRun, WorkerOnboardingRun } from "@/types/workforce";
 import type { LifecycleStepStatus } from "@/types/workforce";
 import { useWorkerOffboardingRuns, useWorkerOnboardingRuns } from "@/lib/supabase";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 const STEP_ICONS: Record<LifecycleStepStatus, { icon: typeof CheckCircle2; color: string }> = {
     not_started: { icon: Circle, color: "text-muted-foreground" },
@@ -282,7 +282,8 @@ export function OnboardingPageClient() {
         </div>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "workforce",
         resource: "workforce",
         action: "read",
         title: "Onboarding & Offboarding",
@@ -306,5 +307,5 @@ export function OnboardingPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} isLoading={isLoading} />;
+    return <ListPageShell config={config} isLoading={isLoading} />;
 }

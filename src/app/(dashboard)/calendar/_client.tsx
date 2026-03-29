@@ -43,8 +43,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type EventType = "project" | "task" | "approval" | "milestone" | "event";
 
@@ -340,13 +340,13 @@ export function CalendarPageClient() {
         return days;
     }, [startDay, daysInMonth]);
 
-    const config: DashboardPageConfig = useMemo(
+    const config: ListPageConfig = useMemo(
         () => ({
+            entityKey: "calendar",
             resource: "calendar",
             action: "read",
             title: "Calendar",
             description: "Unified view of projects, tasks, and milestones",
-            searchable: false,
             headerActions: (
                 <div className="flex items-center gap-2">
                     <DropdownMenu>
@@ -584,7 +584,7 @@ export function CalendarPageClient() {
 
     return (
         <>
-            <OperationalDashboardShell
+            <ListPageShell
                 config={config}
                 data={events as unknown as Record<string, unknown>[]}
                 isLoading={isLoading}

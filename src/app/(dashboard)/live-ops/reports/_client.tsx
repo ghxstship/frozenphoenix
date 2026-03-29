@@ -5,8 +5,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { AlertTriangle, DollarSign, FileBarChart, Users } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { usePostEventReports } from "@/lib/supabase";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type Row = Record<string, unknown>;
 
@@ -16,7 +16,8 @@ function formatVariance(mins: number): string {
     return `${sign}${abs}m`;
 }
 
-const CONFIG: DashboardPageConfig = {
+const CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     title: "Post-Event Reports",
     description:
@@ -136,21 +137,13 @@ const CONFIG: DashboardPageConfig = {
             </CardContent>
         </Card>
     ),
-    emptyState: {
-        icon: FileBarChart,
-        title: "No reports",
-        description: "Post-event reports will appear here after events are completed.",
-    },
+    emptyIcon: FileBarChart,
+    emptyTitle: "No reports",
+    emptyDescription: "Post-event reports will appear here after events are completed.",
 };
 
 export function PostEventReportsPageClient() {
     const { data, isLoading } = usePostEventReports();
 
-    return (
-        <OperationalDashboardShell
-            config={CONFIG}
-            data={data as Row[] | null}
-            isLoading={isLoading}
-        />
-    );
+    return <ListPageShell config={CONFIG} data={data as Row[] | undefined} isLoading={isLoading} />;
 }

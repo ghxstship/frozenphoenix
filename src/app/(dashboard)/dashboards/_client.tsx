@@ -20,8 +20,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn, formatCompactCurrency } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { OperationalDashboardShell } from "@/components/shells";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import { useCreateDashboard } from "@/lib/supabase/hooks-automation";
 import { useMemo } from "react";
 
@@ -452,7 +452,8 @@ export function DashboardsPageClient() {
         </>
     );
 
-    const config: DashboardPageConfig = {
+    const config: ListPageConfig = {
+        entityKey: "dashboards",
         resource: "dashboards",
         action: "read",
         title: "Dashboards",
@@ -469,5 +470,5 @@ export function DashboardsPageClient() {
         contentSlot,
     };
 
-    return <OperationalDashboardShell config={config} isLoading={loadingData} />;
+    return <ListPageShell config={config} isLoading={loadingData} />;
 }

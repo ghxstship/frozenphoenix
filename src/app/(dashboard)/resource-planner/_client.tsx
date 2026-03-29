@@ -22,8 +22,8 @@ import {
 import { useCrewMembers } from "@/lib/supabase";
 import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_RESOURCE_BOOKING_CONFIG } from "@/config/create-entity-configs";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type BookingStatus = "tentative" | "confirmed" | "cancelled";
 type BookingType = "project_work" | "internal" | "time_off" | "training" | "admin";
@@ -196,13 +196,13 @@ export function ResourcePlannerPageClient() {
         [bookings]
     );
 
-    const config: DashboardPageConfig = useMemo(
+    const config: ListPageConfig = useMemo(
         () => ({
+            entityKey: "resource_planner",
             resource: "resource_planner",
             action: "read",
             title: "Resource Planner",
             description: "Schedule and manage team capacity across projects",
-            searchable: false,
             headerActions: (
                 <Button onClick={openCreate}>
                     <Plus className="mr-2 h-4 w-4" />
@@ -506,7 +506,7 @@ export function ResourcePlannerPageClient() {
 
     return (
         <>
-            <OperationalDashboardShell
+            <ListPageShell
                 config={config}
                 data={bookings as unknown as Record<string, unknown>[]}
                 isLoading={loadingBookings || loadingCrew}

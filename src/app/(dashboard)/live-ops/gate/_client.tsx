@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BadgeCheck, LogIn, LogOut, ShieldAlert, ShieldCheck, XCircle } from "lucide-react";
 import { ScanFeedback, ScanInput } from "@/components/scanning";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 import type { ScanFeedbackResult, ScanMethod } from "@/components/scanning";
 import {
     type GateScanResult,
@@ -138,13 +138,13 @@ export function GateScannerPageClient() {
                 ? "border-destructive/50 bg-destructive/5"
                 : "border-border bg-card";
 
-    const config: DashboardPageConfig = useMemo(
+    const config: ListPageConfig = useMemo(
         () => ({
+            entityKey: "gate_operations",
             resource: "gate_operations",
             action: "read",
             title: S.title,
             description: "Scan credentials for check-in / check-out at entry points",
-            searchable: false,
             contentSlot: (
                 <>
                     <OfflineIndicator
@@ -361,7 +361,7 @@ export function GateScannerPageClient() {
     );
 
     return (
-        <OperationalDashboardShell
+        <ListPageShell
             config={config}
             data={scanHistory as unknown as Record<string, unknown>[]}
             isLoading={false}

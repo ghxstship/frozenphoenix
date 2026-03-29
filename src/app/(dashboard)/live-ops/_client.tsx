@@ -14,22 +14,21 @@ import { useLiveEventInstances } from "@/lib/supabase";
 import { useCreateLiveEventInstance } from "@/lib/supabase/hooks-live-ops";
 import { CreateEntityDialog, useCreateAction } from "@/components/app/create-entity-dialog";
 import { CREATE_LIVE_EVENT_INSTANCE_CONFIG } from "@/config/create-entity-configs";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import { ListPageShell } from "@/components/shells";
+import type { ListPageConfig } from "@/types/list-page-config";
 
 type Row = Record<string, unknown>;
 
-const BASE_CONFIG: DashboardPageConfig = {
+const BASE_CONFIG: ListPageConfig = {
+    entityKey: "live_ops",
     resource: "live_ops",
     action: "read" as const,
     title: "Live Operations — Command Dashboard",
     description: "Real-time operational overview of all active live events",
     headerActions: null,
-    emptyState: {
-        icon: Radio,
-        title: "No live events",
-        description: "Live event instances will appear here when events are activated.",
-    },
+    emptyIcon: Radio,
+    emptyTitle: "No live events",
+    emptyDescription: "Live event instances will appear here when events are activated.",
 };
 
 const PHASES = [
@@ -81,7 +80,7 @@ export function LiveOpsPageClient() {
 
     const filtered = rows.filter((e) => phaseFilter === "all" || e.phase === phaseFilter);
 
-    const config = useMemo<DashboardPageConfig>(
+    const config = useMemo<ListPageConfig>(
         () => ({
             ...BASE_CONFIG,
             stats: [
@@ -108,7 +107,7 @@ export function LiveOpsPageClient() {
     );
 
     return (
-        <OperationalDashboardShell config={config} data={rows} isLoading={isLoading}>
+        <ListPageShell config={config} data={rows} isLoading={isLoading}>
             <SegmentedControl
                 ariaLabel="Phase filter"
                 value={phaseFilter}
@@ -200,6 +199,6 @@ export function LiveOpsPageClient() {
                     );
                 }}
             />
-        </OperationalDashboardShell>
+        </ListPageShell>
     );
 }

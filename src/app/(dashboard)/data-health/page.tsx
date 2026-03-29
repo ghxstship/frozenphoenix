@@ -5,7 +5,7 @@
 
    Surfaces missing/incomplete data across crew, vendors, contacts,
    and assets using configurable completeness rules with weighted
-   scoring. Built on OperationalDashboardShell pattern.
+   scoring. Built on ListPageShell (dashboard mode) pattern.
 
    Key features:
    - Per-entity-type tabs with completeness bars
@@ -15,7 +15,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 import React, { useMemo, useState } from "react";
-import { OperationalDashboardShell } from "@/components/shells/operational-dashboard-shell";
+import { ListPageShell } from "@/components/shells";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -29,7 +29,7 @@ import {
     useDataCompletenessSummary,
 } from "@/lib/data-hooks/hooks-feature-gaps";
 import type { DataCompletenessResult } from "@/lib/data-hooks/hooks-feature-gaps";
-import type { DashboardPageConfig } from "@/types/dashboard-page-config";
+import type { ListPageConfig } from "@/types/list-page-config";
 import {
     AlertTriangle,
     Building2,
@@ -246,12 +246,13 @@ export default function DataHealthPage() {
     const totalComplete = allSummaries.reduce((s, summary) => s + (summary?.fullyComplete ?? 0), 0);
     const totalCritical = allSummaries.reduce((s, summary) => s + (summary?.criticalGaps ?? 0), 0);
 
-    const config: DashboardPageConfig = useMemo(
+    const config: ListPageConfig = useMemo(
         () => ({
             configKey: "DATA_HEALTH",
             title: "Data Health",
             description:
                 "Monitor data completeness across your organization. Identify missing fields and ensure records meet quality standards.",
+            entityKey: "dashboard",
             resource: "dashboard",
             action: "read",
             stats: [
@@ -276,12 +277,8 @@ export default function DataHealthPage() {
                     compute: () => String(totalCritical),
                 },
             ],
-            emptyState: {
-                title: "No Entity Data Found",
-                description:
-                    "Add crew members, vendors, contacts, or assets to begin tracking data completeness.",
-                icon: HeartPulse,
-            },
+            emptyIcon: HeartPulse,
+            emptyTitle: "No Entity Data Found",
             contentSlot: (
                 <>
                     <TabBar
@@ -305,5 +302,5 @@ export default function DataHealthPage() {
         [activeTab, setActiveTab, overallAvg, totalComplete, totalNeedsAttention, totalCritical]
     );
 
-    return <OperationalDashboardShell config={config} />;
+    return <ListPageShell config={config} />;
 }

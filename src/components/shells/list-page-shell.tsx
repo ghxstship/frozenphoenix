@@ -75,6 +75,7 @@ import {
 import { apiCreate, apiDelete, apiUpdate } from "@/lib/api/client";
 import { humanizeSnakeCase } from "@/lib/utils";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 import { computeStatValue, matchesSearch, toDataTableColumn } from "@/lib/formatters/record-utils";
 import { useEntityMeta } from "@/hooks/use-entity-meta";
 import type { EntityRecord } from "@/types/entity";
@@ -573,6 +574,7 @@ function ListPageShellInner({
 
     // ─── Confirm Dialog ───────────────────────────────────────
     const { confirm } = useConfirm();
+    const { addToast } = useToast();
 
     // ─── Row Actions ─────────────────────────────────────────
     const defaultRowActions = useMemo<ListRowActionDef[]>(
@@ -600,9 +602,12 @@ function ListPageShellInner({
                 variant: "destructive",
                 onExecute: async (record) => {
                     if (!record.id) return;
+                    const recordName = String(record.name ?? record.title ?? "");
                     const confirmed = await confirm({
                         title: `Delete ${displayName}`,
-                        description: `Are you sure you want to delete this ${displayName}? This action cannot be undone.`,
+                        description: recordName
+                            ? `Are you sure you want to delete "${recordName}"? This action cannot be undone.`
+                            : `Are you sure you want to delete this ${displayName}? This action cannot be undone.`,
                         confirmLabel: "Delete",
                         variant: "destructive",
                     });
@@ -610,13 +615,21 @@ function ListPageShellInner({
                     try {
                         await apiDelete(basePath, String(record.id));
                         invalidateEntity();
-                    } catch {
-                        // API errors surface via toast in production
+                        addToast({ title: `${displayName} deleted`, variant: "success" });
+                    } catch (err) {
+                        addToast({
+                            title: `Failed to delete ${displayName}`,
+                            description:
+                                err instanceof Error
+                                    ? err.message
+                                    : "An unexpected error occurred.",
+                            variant: "destructive",
+                        });
                     }
                 },
             },
         ],
-        [router, slug, basePath, displayName, confirm, invalidateEntity]
+        [router, slug, basePath, displayName, confirm, invalidateEntity, addToast]
     );
 
     const resolvedRowActions = useMemo<ListRowActionDef[]>(() => {
@@ -696,13 +709,32 @@ function ListPageShellInner({
                         await Promise.all(selectedIds.map((id) => apiDelete(basePath, id)));
                         setSelectedKeys(new Set());
                         invalidateEntity();
-                    } catch {
-                        // API errors surface via toast in production
+                        addToast({
+                            title: `${count} ${count === 1 ? name : plural} deleted`,
+                            variant: "success",
+                        });
+                    } catch (err) {
+                        addToast({
+                            title: `Failed to delete ${count === 1 ? name : plural}`,
+                            description:
+                                err instanceof Error
+                                    ? err.message
+                                    : "An unexpected error occurred.",
+                            variant: "destructive",
+                        });
                     }
                 },
             },
         ];
-    }, [config.bulkActions, displayName, displayNamePlural, basePath, confirm, invalidateEntity]);
+    }, [
+        config.bulkActions,
+        displayName,
+        displayNamePlural,
+        basePath,
+        confirm,
+        invalidateEntity,
+        addToast,
+    ]);
 
     const hasBulkActions = resolvedBulkActions.length > 0;
     const hasMultiView = views.length > 1;
@@ -949,8 +981,16 @@ function ListPageShellInner({
                                                   toColumn,
                                           });
                                           invalidateEntity();
-                                      } catch {
-                                          // API errors surface via toast
+                                      } catch (err) {
+                                          addToast({
+                                              title: "Failed to update status",
+                                              description:
+                                                  err instanceof Error
+                                                      ? err.message
+                                                      : "An unexpected error occurred.",
+                                              variant: "destructive",
+                                          });
+                                          invalidateEntity();
                                       }
                                   }
                                 : undefined
@@ -984,6 +1024,7 @@ function ListPageShellInner({
                     onSubmit={async (values) => {
                         await apiCreate(basePath, values);
                         invalidateEntity();
+                        addToast({ title: `${displayName} created`, variant: "success" });
                     }}
                 />
             )}

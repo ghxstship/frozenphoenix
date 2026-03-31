@@ -26,6 +26,7 @@ import { BackLink } from "@/components/ui/back-link";
 import { FormSection } from "@/components/layouts/form-layout";
 import { PermissionGate } from "@/components/app/permission-guard";
 import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Plus, Trash2 } from "lucide-react";
+import { useToast } from "@/components/ui/toast";
 import { useEntityMeta } from "@/hooks/use-entity-meta";
 import { StepIndicator } from "@/components/ui/step-indicator";
 import type { FormFieldDef, FormPageConfig, FormWizardStepDef } from "@/types/form-page-config";
@@ -543,6 +544,7 @@ function FormPageShellInner({
     }, [formData, config]);
 
     // ─── Submit ───
+    const { addToast } = useToast();
     const handleSubmit = useCallback(
         async (e: React.FormEvent) => {
             e.preventDefault();
@@ -554,6 +556,14 @@ function FormPageShellInner({
                     : formData;
                 await onSubmit(payload ?? formData);
 
+                addToast({
+                    title:
+                        config.mode === "edit"
+                            ? "Changes saved"
+                            : `${config.title ?? "Record"} created`,
+                    variant: "success",
+                });
+
                 if (config.successRedirect) {
                     router.push(config.successRedirect);
                 } else {
@@ -561,9 +571,15 @@ function FormPageShellInner({
                 }
             } catch (error) {
                 logger.error(`Failed to ${config.mode} ${config.entityKey}`, { error });
+                addToast({
+                    title: `Failed to ${config.mode === "edit" ? "save changes" : "create record"}`,
+                    description:
+                        error instanceof Error ? error.message : "An unexpected error occurred.",
+                    variant: "destructive",
+                });
             }
         },
-        [formData, validate, onSubmit, config, router]
+        [formData, validate, onSubmit, config, router, addToast]
     );
 
     // ─── Keyboard shortcut (Cmd/Ctrl+S) ───

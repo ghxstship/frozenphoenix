@@ -16,7 +16,7 @@
 | Files     | `dialog.tsx`, `confirm-dialog.tsx`                                                       |
 | Pattern   | iOS action sheet / Material bottom sheet                                                 |
 | Animation | `slide-in-from-bottom-[10%]` on mobile, `zoom-in-95 + slide-in-from-top-[2%]` on desktop |
-| Safe area | `pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]`                                     |
+| Safe area | `.safe-bottom-sheet` CSS class                                                           |
 
 ### 2. DataTable → Card Reflow on Mobile
 
@@ -92,14 +92,14 @@
 
 ## Safe Area Compliance
 
-| Component       | Top             | Bottom               | Left/Right |
-| --------------- | --------------- | -------------------- | ---------- |
-| Dashboard shell | ✅ `pt-[env()]` | N/A                  | N/A        |
-| MobileTabBar    | N/A             | ✅ `pb-[env()]`      | N/A        |
-| MobileFab       | N/A             | ✅ `bottom-[calc()]` | N/A        |
-| Dialog (mobile) | N/A             | ✅ `pb-[calc()]`     | N/A        |
-| Confirm dialog  | N/A             | ✅ `pb-[calc()]`     | N/A        |
-| Main content    | N/A             | ✅ `pb-20 lg:pb-8`   | N/A        |
+| Component       | Top            | Bottom                  | Left/Right |
+| --------------- | -------------- | ----------------------- | ---------- |
+| Dashboard shell | ✅ `.safe-top` | N/A                     | N/A        |
+| MobileTabBar    | N/A            | ✅ `.safe-bottom`       | N/A        |
+| MobileFab       | N/A            | ✅ inline `calc()`      | N/A        |
+| Dialog (mobile) | N/A            | ✅ `.safe-bottom-sheet` | N/A        |
+| Confirm dialog  | N/A            | ✅ `.safe-bottom-sheet` | N/A        |
+| Main content    | N/A            | ✅ `pb-20 lg:pb-8`      | N/A        |
 
 ---
 

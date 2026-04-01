@@ -241,6 +241,7 @@ export const COLLECTION_ROUTES: Record<string, CollectionRouteConfig> = {
         ],
     },
     consumables: { entity: "consumable", filters: [] },
+    conversations: { entity: "conversation", filters: [] },
     contacts: {
         entity: "contact",
         filters: [
@@ -323,6 +324,7 @@ export const COLLECTION_ROUTES: Record<string, CollectionRouteConfig> = {
         ],
     },
     "data-export-requests": { entity: "data_export_request", filters: [] },
+    "data-retention-policies": { entity: "data_retention_policy", filters: [] },
     deals: {
         entity: "deal",
         filters: [
@@ -496,6 +498,10 @@ export const COLLECTION_ROUTES: Record<string, CollectionRouteConfig> = {
         entity: "invoice_template",
         filters: [{ column: "organization_id", operator: "eq" }],
     },
+    "invoice-line-items": {
+        entity: "invoice_line_item",
+        filters: [{ column: "invoice_id", operator: "eq" }],
+    },
     invoices: {
         entity: "invoice",
         filters: [
@@ -549,12 +555,20 @@ export const COLLECTION_ROUTES: Record<string, CollectionRouteConfig> = {
             { column: "organization_id", operator: "eq" },
         ],
     },
+    "lead-sources": { entity: "lead_source", filters: [] },
     "legal-holds": { entity: "legal_hold", filters: [] },
     "live-crew-assignments": {
         entity: "live_crew_assignment",
         filters: [{ column: "event_id", operator: "eq" }],
     },
     "live-event-instances": { entity: "live_event_instance", filters: [] },
+    "live-events": {
+        entity: "live_event",
+        filters: [
+            { column: "status", operator: "eq" },
+            { column: "organization_id", operator: "eq" },
+        ],
+    },
     "live-financial-snapshots": { entity: "live_financial_snapshot", filters: [] },
     "load-plans": { entity: "load_plan", filters: [] },
     locations: {
@@ -581,6 +595,7 @@ export const COLLECTION_ROUTES: Record<string, CollectionRouteConfig> = {
         ],
     },
     "maintenance-schedules": { entity: "maintenance_schedule", filters: [] },
+    messages: { entity: "message", filters: [{ column: "conversation_id", operator: "eq" }] },
     milestones: {
         entity: "milestone",
         filters: [
@@ -906,6 +921,18 @@ export const COLLECTION_ROUTES: Record<string, CollectionRouteConfig> = {
             { column: "organization_id", operator: "eq" },
         ],
     },
+    "sow-deliverables": {
+        entity: "sow_deliverable",
+        filters: [{ column: "sow_id", operator: "eq" }],
+    },
+    sows: {
+        entity: "sow",
+        filters: [
+            { column: "status", operator: "eq" },
+            { column: "project_id", operator: "eq" },
+            { column: "organization_id", operator: "eq" },
+        ],
+    },
     "space-bookings": { entity: "space_booking", filters: [] },
     "stakeholder-projects": {
         entity: "stakeholder_project",
@@ -1034,6 +1061,10 @@ export const COLLECTION_ROUTES: Record<string, CollectionRouteConfig> = {
     },
     "vip-service-requests": { entity: "vip_service_request", filters: [] },
     warehouses: { entity: "warehouse", filters: [{ column: "organization_id", operator: "eq" }] },
+    "warehouse-locations": {
+        entity: "warehouse_location",
+        filters: [{ column: "warehouse_id", operator: "eq" }],
+    },
     "work-orders": {
         entity: "work_order",
         filters: [
@@ -1116,6 +1147,7 @@ export const ITEM_ROUTES: Record<string, ItemRouteConfig> = {
         immutableColumns: ["organization_id"],
     },
     consumables: { entity: "consumable", immutableColumns: ["organization_id"] },
+    conversations: { entity: "conversation", immutableColumns: ["organization_id"] },
     contacts: { entity: "contact", immutableColumns: ["organization_id"] },
     "contract-amendments": { entity: "contract_amendment", immutableColumns: ["organization_id"] },
     "contract-obligations": {
@@ -1134,6 +1166,10 @@ export const ITEM_ROUTES: Record<string, ItemRouteConfig> = {
     dashboards: { entity: "dashboard", immutableColumns: ["organization_id"] },
     "data-export-requests": {
         entity: "data_export_request",
+        immutableColumns: ["organization_id"],
+    },
+    "data-retention-policies": {
+        entity: "data_retention_policy",
         immutableColumns: ["organization_id"],
     },
     deals: { entity: "deal", immutableColumns: ["organization_id"] },
@@ -1171,6 +1207,7 @@ export const ITEM_ROUTES: Record<string, ItemRouteConfig> = {
     inventory: { entity: "catalog_item", immutableColumns: ["organization_id"] },
     "inventory-audits": { entity: "inventory_audit", immutableColumns: ["organization_id"] },
     "invoice-templates": { entity: "invoice_template", immutableColumns: ["organization_id"] },
+    "invoice-line-items": { entity: "invoice_line_item", immutableColumns: ["organization_id"] },
     invoices: { entity: "invoice", immutableColumns: ["organization_id", "invoice_number"] },
     "ip-rights": { entity: "ip_right", immutableColumns: ["organization_id"] },
     "job-cost-entries": { entity: "job_cost_entry", immutableColumns: ["organization_id"] },
@@ -1184,6 +1221,7 @@ export const ITEM_ROUTES: Record<string, ItemRouteConfig> = {
     },
     "lead-activities": { entity: "lead_activity", immutableColumns: ["organization_id"] },
     leads: { entity: "lead", immutableColumns: ["organization_id"] },
+    "lead-sources": { entity: "lead_source", immutableColumns: ["organization_id"] },
     "legal-holds": { entity: "legal_hold", immutableColumns: ["organization_id"] },
     "live-crew-assignments": {
         entity: "live_crew_assignment",
@@ -1193,6 +1231,7 @@ export const ITEM_ROUTES: Record<string, ItemRouteConfig> = {
         entity: "live_event_instance",
         immutableColumns: ["organization_id"],
     },
+    "live-events": { entity: "live_event", immutableColumns: ["organization_id"] },
     locations: { entity: "location", immutableColumns: ["organization_id"] },
     "login-audit-log": { entity: "login_audit_log", immutableColumns: ["organization_id"] },
     "lost-reasons": { entity: "lost_reason", immutableColumns: ["organization_id"] },
@@ -1201,6 +1240,7 @@ export const ITEM_ROUTES: Record<string, ItemRouteConfig> = {
         entity: "maintenance_schedule",
         immutableColumns: ["organization_id"],
     },
+    messages: { entity: "message", immutableColumns: ["organization_id"] },
     milestones: { entity: "milestone", immutableColumns: ["organization_id"] },
     "notification-preferences": {
         entity: "notification_preference",
@@ -1281,6 +1321,8 @@ export const ITEM_ROUTES: Record<string, ItemRouteConfig> = {
     "sla-definitions": { entity: "sla_definition", immutableColumns: ["organization_id"] },
     "sla-tracking": { entity: "sla_tracking", immutableColumns: ["organization_id"] },
     sops: { entity: "sop", immutableColumns: ["organization_id"] },
+    "sow-deliverables": { entity: "sow_deliverable", immutableColumns: ["organization_id"] },
+    sows: { entity: "sow", immutableColumns: ["organization_id"] },
     "stakeholder-projects": {
         entity: "stakeholder_project",
         immutableColumns: ["organization_id"],
@@ -1321,6 +1363,7 @@ export const ITEM_ROUTES: Record<string, ItemRouteConfig> = {
     vendors: { entity: "vendor", immutableColumns: ["organization_id"] },
     "vip-guests": { entity: "vip_guest", immutableColumns: ["organization_id"] },
     warehouses: { entity: "warehouse", immutableColumns: ["organization_id"] },
+    "warehouse-locations": { entity: "warehouse_location", immutableColumns: ["organization_id"] },
     "work-orders": { entity: "work_order", immutableColumns: ["organization_id"] },
     "worker-offboarding-runs": {
         entity: "worker_offboarding_run",

@@ -49,7 +49,7 @@ export function MobileTabBar({ className }: { className?: string }) {
             aria-label="Mobile navigation"
             className={cn(
                 "fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-md",
-                "pb-[env(safe-area-inset-bottom)]",
+                "safe-bottom",
                 "lg:hidden",
                 className
             )}

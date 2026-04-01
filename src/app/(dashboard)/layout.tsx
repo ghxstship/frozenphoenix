@@ -75,10 +75,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* Skip Links for keyboard navigation (WCAG 2.4.1) */}
             <SkipLinks />
 
-            <div
-                className="flex min-h-screen supports-[padding:env(safe-area-inset-top)]:pt-[env(safe-area-inset-top)]"
-                style={shellStyles}
-            >
+            <div className="flex min-h-screen safe-top" style={shellStyles}>
                 {/* Navigation landmark */}
                 <Sidebar />
 

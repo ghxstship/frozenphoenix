@@ -419,7 +419,7 @@ export function generateCsvTemplate(
         importEnabled: override?.importEnabled ?? true,
         exportEnabled: override?.exportEnabled ?? true,
         fields,
-        selectQuery: override?.selectQuery ?? config.selectList,
+        selectQuery: override?.selectQuery,
         defaultSort: override?.defaultSort ?? { column: "created_at", ascending: false },
     };
 }

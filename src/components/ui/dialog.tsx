@@ -78,7 +78,7 @@ const DialogContent = React.forwardRef<
                 "bg-[var(--glass-surface-bg)] backdrop-blur-xl backdrop-saturate-150",
                 "border border-[var(--glass-surface-border)]",
                 // Mobile: rounded top, full-width bottom-sheet
-                "rounded-t-2xl p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]",
+                "rounded-t-2xl p-5 safe-bottom-sheet",
                 // Desktop: centered card
                 "sm:rounded-xl sm:p-6 sm:pb-6",
                 "glass-noise glass-edge-glow",

@@ -850,6 +850,12 @@ body {
     .safe-bottom {
         padding-bottom: env(safe-area-inset-bottom);
     }
+    .safe-top {
+        padding-top: env(safe-area-inset-top);
+    }
+    .safe-bottom-sheet {
+        padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    }
 }
 
 /* Touch-friendly tap targets */

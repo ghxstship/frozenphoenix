@@ -56,11 +56,15 @@ export const POST = withApiHandler(
                 return ApiErrors.badRequest("No columns selected for export");
             }
 
+            // CSV export uses flat column selects — never the join-based selectQuery
+            // from entity config (those return nested objects the CSV serializer can't handle).
+            // Only use selectQuery if explicitly set in csv-template-overrides.ts.
             const selectColumns = exportFields.map((f) => f.dbColumn).join(", ");
+            const selectStr = template.selectQuery ?? selectColumns;
             const effectiveLimit = preview ? 5 : limit;
 
             let query = serverFromTable(supabase, template.dbTable)
-                .select(template.selectQuery ?? selectColumns)
+                .select(selectStr, preview ? { count: "exact", head: false } : undefined)
                 .limit(effectiveLimit);
 
             // Apply default sort
@@ -78,16 +82,7 @@ export const POST = withApiHandler(
                 }
             }
 
-            const {
-                data: rows,
-                error,
-                count,
-            } = preview
-                ? await query.select(template.selectQuery ?? selectColumns, {
-                      count: "exact",
-                      head: false,
-                  })
-                : await query;
+            const { data: rows, error, count } = await query;
 
             if (error) {
                 log.error("[POST /api/csv/export]", { entity, error });

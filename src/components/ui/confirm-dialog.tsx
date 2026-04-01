@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useEscapeKey, useFocusReturn, useFocusTrap } from "@/hooks/use-accessibility";
 import { AnimatePresence, motion, MOTION_TOKENS } from "@/lib/motion";
 import { SPRING_PRESETS } from "@/config/design-tokens";
@@ -59,26 +60,30 @@ export function ConfirmDialogProvider({ children }: { children: React.ReactNode 
     return (
         <ConfirmContext.Provider value={{ confirm }}>
             {children}
-            <AnimatePresence>
-                {state.open && (
-                    <div className="fixed inset-0 z-[var(--z-confirm)] flex flex-col justify-end sm:flex-row sm:items-center sm:justify-center">
-                        <motion.div
-                            className="absolute inset-0 glass-overlay backdrop-blur-sm"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={MOTION_TOKENS.preset.overlay.transition}
-                            onClick={handleCancel}
-                            aria-hidden="true"
-                        />
-                        <ConfirmDialogContent
-                            options={state.options}
-                            onConfirm={handleConfirm}
-                            onCancel={handleCancel}
-                        />
-                    </div>
+            {typeof document !== "undefined" &&
+                createPortal(
+                    <AnimatePresence>
+                        {state.open && (
+                            <div className="fixed inset-0 z-[var(--z-confirm)] flex flex-col justify-end sm:flex-row sm:items-center sm:justify-center">
+                                <motion.div
+                                    className="absolute inset-0 glass-overlay backdrop-blur-sm"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={MOTION_TOKENS.preset.overlay.transition}
+                                    onClick={handleCancel}
+                                    aria-hidden="true"
+                                />
+                                <ConfirmDialogContent
+                                    options={state.options}
+                                    onConfirm={handleConfirm}
+                                    onCancel={handleCancel}
+                                />
+                            </div>
+                        )}
+                    </AnimatePresence>,
+                    document.body
                 )}
-            </AnimatePresence>
         </ConfirmContext.Provider>
     );
 }
@@ -107,7 +112,7 @@ function ConfirmDialogContent({
     return (
         <motion.div
             ref={trapRef as React.RefObject<HTMLDivElement>}
-            className="relative bg-[var(--glass-surface-bg)] backdrop-blur-xl backdrop-saturate-150 border border-[var(--glass-surface-border)] rounded-t-2xl sm:rounded-xl p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:p-6 sm:pb-6 max-w-sm w-full sm:mx-4 glass-noise glass-edge-glow overscroll-contain"
+            className="relative bg-[var(--glass-surface-bg)] backdrop-blur-xl backdrop-saturate-150 border border-[var(--glass-surface-border)] rounded-t-2xl sm:rounded-xl p-5 safe-bottom-sheet sm:p-6 sm:pb-6 max-w-sm w-full sm:mx-4 glass-noise glass-edge-glow overscroll-contain"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 40 }}

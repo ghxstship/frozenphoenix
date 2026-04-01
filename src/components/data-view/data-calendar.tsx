@@ -21,7 +21,9 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useBreakpoint } from "@/hooks/use-media-query";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { EmptyCalendarIllustration } from "./empty-state-illustrations";
 
 // ─── Types ───
 
@@ -302,9 +304,13 @@ function MobileAgendaView({
 
     if (monthItems.length === 0) {
         return (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-                No events this month
-            </div>
+            <EmptyState
+                icon={CalendarDays}
+                title="No events this month"
+                description="Navigate to other months or add events to see them here."
+                illustration={<EmptyCalendarIllustration />}
+                compact
+            />
         );
     }
 

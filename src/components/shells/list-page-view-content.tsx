@@ -20,10 +20,12 @@ import { type ViewMode } from "@/components/ui/view-switcher";
 import { AlertBanner } from "@/components/ui/alert-banner";
 import { getChartColor } from "@/components/data-view/chart-colors";
 import { FieldRenderer } from "@/components/data-view/field-renderers";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { EmptyTableIllustration } from "@/components/data-view/empty-state-illustrations";
 import { useBreakpoint } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Table } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -308,9 +310,13 @@ function MobileListCards<T extends EntityRecord>({
         return (
             <>
                 {emptyState ?? (
-                    <p className="py-10 text-center text-sm text-muted-foreground">
-                        No data available
-                    </p>
+                    <EmptyState
+                        icon={Table}
+                        title="No data available"
+                        description="Items will appear here once added."
+                        illustration={<EmptyTableIllustration />}
+                        compact
+                    />
                 )}
             </>
         );

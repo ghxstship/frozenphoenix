@@ -9,6 +9,8 @@ export interface EmptyStateProps {
     icon?: LucideIcon | undefined;
     title: string;
     description?: string | undefined;
+    /** View-specific SVG illustration rendered above the icon/title */
+    illustration?: React.ReactNode | undefined;
     action?:
         | {
               label: string;
@@ -29,6 +31,7 @@ export function EmptyState({
     icon: Icon = Inbox,
     title,
     description,
+    illustration,
     action,
     secondaryAction,
     compact = false,
@@ -43,6 +46,10 @@ export function EmptyState({
             )}
             role="status"
         >
+            {/* View-specific illustration */}
+            {illustration && (
+                <div className={cn("mb-4", compact ? "mb-3" : "mb-5")}>{illustration}</div>
+            )}
             <div
                 className={cn(
                     "rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center mb-4 ring-1 ring-border/50",

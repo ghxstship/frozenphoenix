@@ -138,7 +138,7 @@ export function EntityLookupSelect({
                     className
                 )}
             >
-                <span className="truncate">Failed to load options</span>
+                <span className="truncate">{error}</span>
                 <button
                     type="button"
                     onClick={handleRetry}

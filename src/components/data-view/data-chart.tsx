@@ -12,6 +12,9 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useReducedMotion } from "@/hooks/use-media-query";
+import { BarChart3 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { EmptyChartIllustration } from "./empty-state-illustrations";
 
 // ─── Types ───
 
@@ -255,9 +258,12 @@ function PieChart({
 export function DataChart({ segments, type, className, height = 240 }: DataChartProps) {
     if (segments.length === 0) {
         return (
-            <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
-                No data to chart
-            </div>
+            <EmptyState
+                icon={BarChart3}
+                title="No data to chart"
+                description="Add records to see them visualized in this chart view."
+                illustration={<EmptyChartIllustration />}
+            />
         );
     }
 

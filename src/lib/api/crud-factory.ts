@@ -392,6 +392,18 @@ function buildList(c: ResolvedConfig) {
                 if (dataResult.error.message?.includes(c.orgColumn)) {
                     return await listWithoutOrgScope(request, c, log, requestId);
                 }
+                // If deleted_at column doesn't exist, retry without soft-delete filter
+                if (c.softDelete && dataResult.error.message?.includes("deleted_at")) {
+                    log.warn(
+                        `${c.logPrefix} table lacks deleted_at — retrying without soft-delete filter`
+                    );
+                    return await listWithoutSoftDelete(
+                        request,
+                        { ...c, softDelete: false },
+                        log,
+                        requestId
+                    );
+                }
                 log.error(`${c.logPrefix} LIST failed`, {
                     error: dataResult.error.message,
                     code: dataResult.error.code,
@@ -468,7 +480,92 @@ async function listWithoutOrgScope(
     const [dataResult, countResult] = await Promise.all([query, countQuery]);
 
     if (dataResult.error) {
+        // If deleted_at column doesn't exist, retry without soft-delete filter
+        if (c.softDelete && dataResult.error.message?.includes("deleted_at")) {
+            log.warn(
+                `${c.logPrefix} table lacks deleted_at (no-org) — retrying without soft-delete filter`
+            );
+            return await listWithoutSoftDelete(
+                request,
+                { ...c, softDelete: false },
+                log,
+                requestId
+            );
+        }
         log.error(`${c.logPrefix} LIST failed (no-org)`, { error: dataResult.error.message });
+        return ApiErrors.internalError(`Failed to fetch ${c.displayName}`);
+    }
+
+    const total = countResult.count ?? 0;
+    const response = NextResponse.json({
+        data: dataResult.data,
+        pagination: {
+            page,
+            per_page: perPage,
+            total,
+            total_pages: total ? Math.ceil(total / perPage) : 0,
+        },
+    });
+    response.headers.set("X-Request-Id", requestId);
+    response.headers.set("Cache-Control", "private, max-age=0, stale-while-revalidate=60");
+    return response;
+}
+
+// Fallback LIST without soft-delete filter (for tables without deleted_at column)
+async function listWithoutSoftDelete(
+    request: NextRequest,
+    c: ResolvedConfig,
+    log: ReturnType<typeof logger.child>,
+    requestId: string
+): Promise<NextResponse> {
+    const authResult = await resolveAuth(request);
+    if (!authResult.ok) return authResult.response;
+    const { supabase, orgId } = authResult.auth;
+
+    const url = new URL(request.url);
+    const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
+    const perPage = Math.min(
+        Math.max(1, parseInt(url.searchParams.get("per_page") ?? String(c.defaultPerPage), 10)),
+        c.maxPerPage
+    );
+    const sortBy = url.searchParams.get("sort_by") ?? c.defaultSort.column;
+    const sortOrder =
+        url.searchParams.get("sort_order") ?? (c.defaultSort.ascending ? "asc" : "desc");
+    const search = url.searchParams.get("search");
+
+    let query = serverFromTable(supabase, c.table).select(c.selectList);
+    if (orgId) query = query.eq(c.orgColumn, orgId);
+    // softDelete intentionally omitted — this IS the retry without it
+    query = applyFilters(query, url, c.filters);
+    if (search && c.searchColumns.length > 0) {
+        query = query.or(c.searchColumns.map((col) => `${col}.ilike.%${search}%`).join(","));
+    }
+    const from = (page - 1) * perPage;
+    query = query.order(sortBy, { ascending: sortOrder === "asc" }).range(from, from + perPage - 1);
+
+    let countQuery = serverFromTable(supabase, c.table).select("id", {
+        count: "exact",
+        head: true,
+    });
+    if (orgId) countQuery = countQuery.eq(c.orgColumn, orgId);
+    // softDelete intentionally omitted
+    countQuery = applyFilters(countQuery, url, c.filters);
+    if (search && c.searchColumns.length > 0) {
+        countQuery = countQuery.or(
+            c.searchColumns.map((col) => `${col}.ilike.%${search}%`).join(",")
+        );
+    }
+
+    const [dataResult, countResult] = await Promise.all([query, countQuery]);
+
+    if (dataResult.error) {
+        // If org column also doesn't exist, retry without both
+        if (dataResult.error.message?.includes(c.orgColumn)) {
+            return await listWithoutOrgScope(request, c, log, requestId);
+        }
+        log.error(`${c.logPrefix} LIST failed (no-soft-delete)`, {
+            error: dataResult.error.message,
+        });
         return ApiErrors.internalError(`Failed to fetch ${c.displayName}`);
     }
 

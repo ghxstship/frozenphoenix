@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ImageOff } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { EmptyGalleryIllustration } from "./empty-state-illustrations";
 
 // ─── Types ───
 
@@ -52,9 +54,12 @@ export function DataGallery({
 }: DataGalleryProps) {
     if (data.length === 0) {
         return (
-            <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
-                No items with images to display
-            </div>
+            <EmptyState
+                icon={ImageOff}
+                title="No images to display"
+                description="Add items with images to see them in the gallery view."
+                illustration={<EmptyGalleryIllustration />}
+            />
         );
     }
 

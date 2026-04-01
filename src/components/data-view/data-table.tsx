@@ -24,6 +24,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip } from "@/components/ui/tooltip";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { EmptyTableIllustration } from "./empty-state-illustrations";
 
 // Performance: Virtualize tbody when row count exceeds this threshold.
 // Below this, the DOM cost is negligible and virtualization adds overhead.
@@ -632,14 +634,29 @@ export function DataTable<T extends object>({
                                                 "var(--density-table-py) var(--density-table-px)",
                                         }}
                                     >
-                                        <div className="flex flex-col items-center justify-center py-10 gap-1">
-                                            <p className="text-sm font-medium text-muted-foreground">
-                                                {emptyState ??
-                                                    (search
-                                                        ? "No results found"
-                                                        : "No data available")}
-                                            </p>
-                                        </div>
+                                        {typeof emptyState === "string" || emptyState == null ? (
+                                            <EmptyState
+                                                icon={Search}
+                                                title={
+                                                    typeof emptyState === "string"
+                                                        ? emptyState
+                                                        : search
+                                                          ? "No results found"
+                                                          : "No data available"
+                                                }
+                                                description={
+                                                    search
+                                                        ? "Try adjusting your search terms."
+                                                        : "Items will appear here once added."
+                                                }
+                                                illustration={<EmptyTableIllustration />}
+                                                compact
+                                            />
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center py-10 gap-1">
+                                                {emptyState}
+                                            </div>
+                                        )}
                                     </td>
                                 </tr>
                             ) : groupBy ? (

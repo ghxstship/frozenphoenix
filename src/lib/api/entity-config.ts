@@ -142,6 +142,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectLookup: "id, name, status",
         searchColumns: ["name", "description"],
         icon: "FolderKanban",
+        softDelete: false,
     }),
 
     task: defineEntity({
@@ -159,6 +160,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["title", "description"],
         icon: "CheckSquare",
         relatedKeys: [["project"]],
+        softDelete: false,
     }),
 
     deal: defineEntity({
@@ -173,8 +175,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
             "id, title, company, contact_name, stage, value, probability, expected_close_date, assigned_to, created_at",
         selectDetail:
             "id, title, company, contact_name, contact_email, stage, value, probability, expected_close_date, assigned_to, source, notes, lost_reason, closed_at, created_at, updated_at, organization_id",
+        selectLookup: "id, title, stage",
         searchColumns: ["title", "company", "contact_name"],
         icon: "Handshake",
+        softDelete: false,
     }),
 
     contract: defineEntity({
@@ -187,8 +191,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         stateMachine: CONTRACT_MACHINE,
         selectList: "*, vendors:vendor_id(name), projects:project_id(name)",
         selectDetail: "*, vendors:vendor_id(name), projects:project_id(name)",
+        selectLookup: "id, title, number, status",
         searchColumns: ["title", "contract_number"],
         icon: "FileSignature",
+        softDelete: false,
     }),
 
     invoice: defineEntity({
@@ -201,8 +207,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         stateMachine: INVOICE_MACHINE,
         selectList: "*, vendors:vendor_id(name)",
         selectDetail: "*, vendors:vendor_id(name), purchase_orders(total_amount)",
+        selectLookup: "id, amount, status, invoice_date",
         searchColumns: ["invoice_number"],
         icon: "Receipt",
+        softDelete: false,
     }),
 
     vendor: defineEntity({
@@ -233,8 +241,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
             "id, name, barcode, category, status, location, condition, serial_number, assigned_to, created_at",
         selectDetail:
             "id, name, barcode, category, status, location, condition, serial_number, assigned_to, purchase_date, purchase_price, warranty_expiry, manufacturer, model, notes, created_at, updated_at, organization_id",
+        selectLookup: "id, name, barcode",
         searchColumns: ["name", "barcode", "category"],
         icon: "Package",
+        softDelete: false,
     }),
 
     crew_member: defineEntity({
@@ -266,6 +276,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
             "id, title, account_name, stage, value, probability, expected_close_date, status, owner_id, source, description, created_at, updated_at, organization_id",
         searchColumns: ["title", "account_name"],
         icon: "Target",
+        softDelete: false,
     }),
 
     sow: defineEntity({
@@ -278,8 +289,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         stateMachine: SOW_MACHINE,
         selectList: "*, projects:project_id(name)",
         selectDetail: "*, projects:project_id(name), deals:deal_id(title)",
+        selectLookup: "id, title, number, status",
         searchColumns: ["title"],
         icon: "ClipboardList",
+        softDelete: false,
     }),
 
     expense: defineEntity({
@@ -295,6 +308,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
             "*, projects:project_id(name), user_profiles:submitted_by(display_name, avatar_url), vendors:vendor_id(name)",
         searchColumns: ["description", "category"],
         icon: "CreditCard",
+        softDelete: false,
     }),
 
     work_order: defineEntity({
@@ -307,8 +321,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         stateMachine: WORK_ORDER_MACHINE,
         selectList: "*, vendors:vendor_id(name), projects:project_id(name)",
         selectDetail: "*, vendors:vendor_id(name), projects:project_id(name)",
+        selectLookup: "id, title, number, status",
         searchColumns: ["title", "description"],
         icon: "Wrench",
+        softDelete: false,
     }),
 
     shipment: defineEntity({
@@ -322,8 +338,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectList: "*, origin:origin_location_id(name), destination:destination_location_id(name)",
         selectDetail:
             "*, origin:origin_location_id(name), destination:destination_location_id(name), projects:project_id(name), shipment_items(*)",
+        selectLookup: "id, number, tracking_number, status",
         searchColumns: ["tracking_number"],
         icon: "Truck",
+        softDelete: false,
     }),
 
     change_order: defineEntity({
@@ -338,6 +356,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects:project_id(name), contracts:contract_id(title)",
         searchColumns: ["title", "description"],
         icon: "GitBranch",
+        softDelete: false,
     }),
 
     service_request: defineEntity({
@@ -351,8 +370,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectList: "*, projects:project_id(name), assignee:assigned_to(name)",
         selectDetail:
             "*, projects:project_id(name), assignee:assigned_to(name, avatar_url), locations:location_id(name)",
+        selectLookup: "id, title, status",
         searchColumns: ["title", "description"],
         icon: "HeadsetIcon",
+        softDelete: false,
     }),
 
     purchase_order: defineEntity({
@@ -365,8 +386,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         stateMachine: PURCHASE_ORDER_MACHINE,
         selectList: "*, vendors:vendor_id(name)",
         selectDetail: "*, vendors:vendor_id(name), purchase_order_items(*)",
+        selectLookup: "id, total_amount, status, issued_date",
         searchColumns: ["po_number"],
         icon: "ShoppingCart",
+        softDelete: false,
     }),
 
     milestone: defineEntity({
@@ -381,6 +404,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects:project_id(name)",
         searchColumns: ["title"],
         icon: "Flag",
+        softDelete: false,
     }),
 
     crew_shift: defineEntity({
@@ -396,6 +420,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
             "*, crew_members:crew_member_id(name, role), projects:project_id(name), events:event_id(name)",
         searchColumns: ["department"],
         icon: "Clock",
+        softDelete: false,
     }),
 
     time_entry: defineEntity({
@@ -410,8 +435,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
             "*, projects:project_id(name), tasks:task_id(title), crew_members:crew_member_id(name)",
         selectDetail:
             "*, projects:project_id(name), tasks:task_id(title), crew_members:crew_member_id(name)",
+        selectLookup: "id, date, hours_worked, status",
         searchColumns: ["description"],
         icon: "Timer",
+        softDelete: false,
     }),
 
     live_event: defineEntity({
@@ -424,6 +451,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         stateMachine: LIVE_EVENT_MACHINE,
         searchColumns: ["name", "description"],
         icon: "Radio",
+        softDelete: false,
     }),
 
     ros_cue: defineEntity({
@@ -438,6 +466,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, events:event_id(name)",
         searchColumns: ["cue_number", "description", "department"],
         icon: "Zap",
+        softDelete: false,
     }),
 
     readiness_gate: defineEntity({
@@ -452,6 +481,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, events:event_id(name), user_profiles:responsible_id(display_name)",
         searchColumns: ["gate_name", "department"],
         icon: "ShieldCheck",
+        softDelete: false,
     }),
 
     document: defineEntity({
@@ -464,8 +494,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         stateMachine: DOCUMENT_MACHINE,
         selectList: "*, projects:project_id(name)",
         selectDetail: "*, projects:project_id(name)",
+        selectLookup: "id, title, document_type",
         searchColumns: ["title"],
         icon: "FileText",
+        softDelete: false,
     }),
 
     incident: defineEntity({
@@ -479,8 +511,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectList: "*, projects:project_id(name), events:event_id(name)",
         selectDetail:
             "*, projects:project_id(name), events:event_id(name), locations:location_id(name), reporter:reported_by(name), assignee:assigned_to(name), incident_witnesses(*)",
+        selectLookup: "id, title, number, status",
         searchColumns: ["title", "description"],
         icon: "AlertTriangle",
+        softDelete: false,
     }),
 
     estimate: defineEntity({
@@ -495,6 +529,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects:project_id(name), deals:deal_id(title), estimate_items(*)",
         searchColumns: ["title", "client_name"],
         icon: "Calculator",
+        softDelete: false,
     }),
 
     rental_agreement: defineEntity({
@@ -509,6 +544,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, vendors:vendor_id(name), projects:project_id(name)",
         searchColumns: ["title"],
         icon: "KeyRound",
+        softDelete: false,
     }),
 
     rights: defineEntity({
@@ -523,6 +559,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects:project_id(name)",
         searchColumns: ["title", "licensor"],
         icon: "Scale",
+        softDelete: false,
     }),
 
     team: defineEntity({
@@ -574,6 +611,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
             "*, projects:project_id(name), locations:location_id(name), events:event_id(name)",
         searchColumns: ["name", "description"],
         icon: "Zap",
+        softDelete: false,
     }),
 
     approval: defineEntity({
@@ -586,8 +624,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectList: "*, projects:project_id(name)",
         selectDetail:
             "*, projects:project_id(name), user_profiles:approver_id(display_name, avatar_url)",
+        selectLookup: "id, milestone_name, status",
         searchColumns: ["milestone_name"],
         icon: "ThumbsUp",
+        softDelete: false,
     }),
 
     budget: defineEntity({
@@ -599,8 +639,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "budgets",
         selectList: "*, projects:project_id(name)",
         selectDetail: "*, projects:project_id(name)",
+        selectLookup: "id, version, status",
         searchColumns: ["name"],
         icon: "PiggyBank",
+        softDelete: false,
     }),
 
     lead: defineEntity({
@@ -615,8 +657,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
             "id, first_name, last_name, email, company_name, status, source, score, created_at",
         selectDetail:
             "id, first_name, last_name, email, phone, company_name, status, source, score, job_title, notes, converted_at, created_at, updated_at, organization_id",
+        selectLookup: "id, first_name, last_name, email",
         searchColumns: ["first_name", "last_name", "email", "company_name"],
         icon: "UserPlus",
+        softDelete: false,
     }),
 
     location: defineEntity({
@@ -632,6 +676,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
             "id, name, address_street1, address_street2, city, state, zip, country, status, type, capacity, latitude, longitude, notes, created_at, updated_at, organization_id",
         searchColumns: ["name", "address_street1", "city"],
         icon: "MapPin",
+        softDelete: false,
     }),
 
     company: defineEntity({
@@ -658,6 +703,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects:project_id(name)",
         searchColumns: ["name", "description"],
         icon: "Megaphone",
+        softDelete: false,
     }),
 
     call_sheet: defineEntity({
@@ -671,6 +717,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, events:event_id(name), projects:project_id(name)",
         searchColumns: ["title"],
         icon: "Phone",
+        softDelete: false,
     }),
 
     certification: defineEntity({
@@ -700,6 +747,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectLookup: "id, title, status",
         searchColumns: ["title"],
         icon: "FileText",
+        softDelete: false,
     }),
 
     purchase_requisition: defineEntity({
@@ -713,6 +761,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects:project_id(name), user_profiles:requested_by(display_name)",
         searchColumns: ["title", "description"],
         icon: "FileInput",
+        softDelete: false,
     }),
 
     recurring_invoice: defineEntity({
@@ -729,6 +778,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectLookup: "id, description, status",
         searchColumns: ["description"],
         icon: "Repeat",
+        softDelete: false,
     }),
 
     brand_guideline: defineEntity({
@@ -750,6 +800,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         table: "brand_kits",
         resource: "brand",
         slug: "brand-kits",
+        selectLookup: "id, client_name",
         searchColumns: ["name"],
         icon: "SwatchBook",
         softDelete: false,
@@ -764,8 +815,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "briefs",
         selectList: "*, projects:project_id(name)",
         selectDetail: "*, projects:project_id(name), campaigns:campaign_id(name)",
+        selectLookup: "id, title, status",
         searchColumns: ["title", "description"],
         icon: "PenTool",
+        softDelete: false,
     }),
 
     case_study: defineEntity({
@@ -794,6 +847,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects:project_id(name), companies:company_id(name)",
         searchColumns: ["number", "description"],
         icon: "Receipt",
+        softDelete: false,
     }),
 
     deck: defineEntity({
@@ -807,6 +861,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects:project_id(name), deck_slides(*)",
         searchColumns: ["title"],
         icon: "Presentation",
+        softDelete: false,
     }),
 
     digital_asset: defineEntity({
@@ -821,6 +876,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
             "id, name, description, file_type, file_size, file_url, status, category, tags, metadata, created_at, updated_at, organization_id",
         searchColumns: ["name", "description"],
         icon: "Image",
+        softDelete: false,
     }),
 
     insurance_policy: defineEntity({
@@ -834,9 +890,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
             "id, policy_number, provider, type, status, coverage_amount, expiry_date, created_at",
         selectDetail:
             "id, policy_number, provider, type, status, coverage_amount, premium, expiry_date, start_date, notes, created_at, updated_at, organization_id",
-        selectLookup: "id, policy_number, provider, status",
+        selectLookup: "id, policy_number, carrier, status",
         searchColumns: ["policy_number", "provider"],
         icon: "Shield",
+        softDelete: false,
     }),
 
     knowledge_base_article: defineEntity({
@@ -852,6 +909,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectLookup: "id, title, status",
         searchColumns: ["title", "content"],
         icon: "BookOpen",
+        softDelete: false,
     }),
 
     payment: defineEntity({
@@ -869,6 +927,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectLookup: "id, reference_number, status",
         searchColumns: ["reference_number"],
         icon: "Wallet",
+        softDelete: false,
     }),
 
     rate_card: defineEntity({
@@ -909,6 +968,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, events:event_id(name), locations:location_id(name)",
         searchColumns: ["title"],
         icon: "Cpu",
+        softDelete: false,
     }),
 
     vendor_review: defineEntity({
@@ -949,6 +1009,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects:project_id(name), locations:location_id(name)",
         searchColumns: ["permit_number", "type"],
         icon: "FileCheck",
+        softDelete: false,
     }),
 
     credit_note: defineEntity({
@@ -963,6 +1024,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectLookup: "id, number, status",
         searchColumns: ["number", "reason"],
         icon: "ReceiptText",
+        softDelete: false,
     }),
 
     ip_right: defineEntity({
@@ -976,6 +1038,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects:project_id(name)",
         searchColumns: ["title", "description"],
         icon: "Scale",
+        softDelete: false,
     }),
 
     goods_receipt: defineEntity({
@@ -990,6 +1053,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectLookup: "id, receipt_number, status",
         searchColumns: ["receipt_number"],
         icon: "PackageCheck",
+        softDelete: false,
     }),
 
     budget_approval: defineEntity({
@@ -1003,6 +1067,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, budgets:budget_id(name), user_profiles:approver_id(display_name)",
         searchColumns: ["comments"],
         icon: "BadgeCheck",
+        softDelete: false,
     }),
 
     payment_approval: defineEntity({
@@ -1014,6 +1079,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "payment-approvals",
         searchColumns: ["comments"],
         icon: "BadgeDollarSign",
+        softDelete: false,
     }),
 
     engineering_approval: defineEntity({
@@ -1027,6 +1093,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects:project_id(name), user_profiles:approver_id(display_name)",
         searchColumns: ["title", "description"],
         icon: "HardHat",
+        softDelete: false,
     }),
 
     gl_account: defineEntity({
@@ -1053,6 +1120,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectLookup: "id, description",
         searchColumns: ["description"],
         icon: "AlertCircle",
+        softDelete: false,
     }),
 
     dispatch_entry: defineEntity({
@@ -1067,6 +1135,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
             "*, crew_members:crew_member_id(name), projects:project_id(name), locations:location_id(name)",
         searchColumns: ["notes"],
         icon: "Send",
+        softDelete: false,
     }),
 
     sop: defineEntity({
@@ -1090,6 +1159,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "compliance-checklists",
         searchColumns: ["title"],
         icon: "ClipboardCheck",
+        softDelete: false,
     }),
 
     vehicle: defineEntity({
@@ -1113,6 +1183,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "templates",
         searchColumns: ["title", "description"],
         icon: "LayoutTemplate",
+        softDelete: false,
     }),
 
     notification: defineEntity({
@@ -1167,6 +1238,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects(name)",
         searchColumns: ["title"],
         icon: "Calendar",
+        softDelete: false,
     }),
 
     shift: defineEntity({
@@ -1180,6 +1252,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, crew_members(name, role), projects(name)",
         searchColumns: ["notes"],
         icon: "Clock",
+        softDelete: false,
     }),
 
     project_template: defineEntity({
@@ -1191,6 +1264,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "project-templates",
         searchColumns: ["name", "description"],
         icon: "Copy",
+        softDelete: false,
     }),
 
     integration: defineEntity({
@@ -1214,6 +1288,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "budget-line-items",
         searchColumns: ["category", "description"],
         icon: "ListOrdered",
+        softDelete: false,
     }),
 
     production_task: defineEntity({
@@ -1227,6 +1302,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, user_profiles(display_name), vendors(name), locations(name)",
         searchColumns: ["title", "description"],
         icon: "ListTodo",
+        softDelete: false,
     }),
 
     production_milestone: defineEntity({
@@ -1240,6 +1316,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, user_profiles(display_name), approvals(*)",
         searchColumns: ["title"],
         icon: "Flag",
+        softDelete: false,
     }),
 
     crew_availability: defineEntity({
@@ -1281,6 +1358,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, user_profiles(display_name)",
         searchColumns: ["title", "number"],
         icon: "BookOpen",
+        softDelete: false,
     }),
 
     production_checklist: defineEntity({
@@ -1294,6 +1372,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, user_profiles(display_name), projects(name), events(name)",
         searchColumns: ["title"],
         icon: "ClipboardCheck",
+        softDelete: false,
     }),
 
     rfq: defineEntity({
@@ -1307,6 +1386,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, user_profiles(display_name)",
         searchColumns: ["title"],
         icon: "FileQuestion",
+        softDelete: false,
     }),
 
     stakeholder: defineEntity({
@@ -1320,7 +1400,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, stakeholder_projects(project_id)",
         searchColumns: ["name", "email", "company"],
         icon: "UserCheck",
-        softDelete: true,
+        softDelete: false,
         trackAuthor: true,
     }),
 
@@ -1335,7 +1415,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, user_profiles(display_name)",
         searchColumns: ["title", "description"],
         icon: "FileArchive",
-        softDelete: true,
+        softDelete: false,
         trackAuthor: true,
     }),
 
@@ -1352,6 +1432,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, user_profiles(display_name)",
         searchColumns: ["action"],
         icon: "ShieldCheck",
+        softDelete: false,
     }),
 
     approval_step: defineEntity({
@@ -1365,6 +1446,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, user_profiles(display_name)",
         searchColumns: ["name"],
         icon: "CheckCircle",
+        softDelete: false,
     }),
 
     automation: defineEntity({
@@ -1376,7 +1458,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "automations",
         searchColumns: ["name", "description"],
         icon: "Zap",
-        softDelete: true,
+        softDelete: false,
         trackAuthor: true,
     }),
 
@@ -1389,6 +1471,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "brand-guideline-sections",
         searchColumns: ["title"],
         icon: "Palette",
+        softDelete: false,
     }),
 
     brief_template: defineEntity({
@@ -1400,6 +1483,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "brief-templates",
         searchColumns: ["name"],
         icon: "FileText",
+        softDelete: false,
     }),
 
     campaign_asset: defineEntity({
@@ -1412,6 +1496,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["name"],
         icon: "Image",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     campaign_channel: defineEntity({
@@ -1423,6 +1508,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "campaign-channels",
         searchColumns: ["name"],
         icon: "Radio",
+        softDelete: false,
     }),
 
     campaign_kpi: defineEntity({
@@ -1434,6 +1520,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "campaign-kpis",
         searchColumns: ["name"],
         icon: "BarChart3",
+        softDelete: false,
     }),
 
     checklist_template: defineEntity({
@@ -1445,6 +1532,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "checklist-templates",
         searchColumns: ["name"],
         icon: "ListChecks",
+        softDelete: false,
     }),
 
     checklist: defineEntity({
@@ -1457,6 +1545,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["title"],
         icon: "CheckSquare",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     clause_library_entry: defineEntity({
@@ -1468,6 +1557,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "clause-library",
         searchColumns: ["title", "content"],
         icon: "BookOpen",
+        softDelete: false,
     }),
 
     compliance_requirement: defineEntity({
@@ -1477,8 +1567,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         table: "compliance_checklists",
         resource: "compliance",
         slug: "compliance-requirements",
+        selectLookup: "id, title, status",
         searchColumns: ["name"],
         icon: "ShieldCheck",
+        softDelete: false,
     }),
 
     consumable: defineEntity({
@@ -1492,7 +1584,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects(name)",
         searchColumns: ["name", "sku"],
         icon: "Package",
-        softDelete: true,
+        softDelete: false,
     }),
 
     contract_obligation: defineEntity({
@@ -1504,6 +1596,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "contract-obligations",
         searchColumns: ["description"],
         icon: "FileWarning",
+        softDelete: false,
     }),
 
     department: defineEntity({
@@ -1544,6 +1637,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["title"],
         icon: "Eye",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     dashboard_widget: defineEntity({
@@ -1557,6 +1651,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, dashboards(name)",
         searchColumns: ["title"],
         icon: "LayoutDashboard",
+        softDelete: false,
     }),
 
     data_export_request: defineEntity({
@@ -1569,6 +1664,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["export_format"],
         icon: "Download",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     domain_event: defineEntity({
@@ -1580,6 +1676,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "domain-events",
         searchColumns: ["event_type"],
         icon: "Activity",
+        softDelete: false,
     }),
 
     e_signature: defineEntity({
@@ -1592,6 +1689,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["signer_name"],
         icon: "PenTool",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     expense_report: defineEntity({
@@ -1615,9 +1713,11 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "goals",
         selectList: "*, user_profiles(display_name)",
         selectDetail: "*, user_profiles(display_name)",
+        selectLookup: "id, title, goal_type",
         searchColumns: ["title"],
         icon: "Target",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     insurance_requirement: defineEntity({
@@ -1629,6 +1729,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "insurance-requirements",
         searchColumns: ["requirement_name"],
         icon: "Shield",
+        softDelete: false,
     }),
 
     invitation: defineEntity({
@@ -1642,6 +1743,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, user_profiles(display_name)",
         searchColumns: ["email"],
         icon: "Mail",
+        softDelete: false,
     }),
 
     job_cost_entry: defineEntity({
@@ -1654,6 +1756,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["description"],
         icon: "DollarSign",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     live_crew_assignment: defineEntity({
@@ -1667,6 +1770,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, user_profiles(display_name)",
         searchColumns: ["role"],
         icon: "Users",
+        softDelete: false,
     }),
 
     login_audit_log: defineEntity({
@@ -1678,6 +1782,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "login-audit-log",
         searchColumns: ["email"],
         icon: "LogIn",
+        softDelete: false,
     }),
 
     payroll_batch: defineEntity({
@@ -1692,6 +1797,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["batch_name"],
         icon: "Banknote",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     production_budget_line: defineEntity({
@@ -1703,6 +1809,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "production-budget-lines",
         searchColumns: ["description"],
         icon: "DollarSign",
+        softDelete: false,
     }),
 
     production_expense: defineEntity({
@@ -1719,6 +1826,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["description", "vendor_name"],
         icon: "Receipt",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     production_time_entry: defineEntity({
@@ -1733,6 +1841,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["description"],
         icon: "Clock",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     profile: defineEntity({
@@ -1742,6 +1851,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         table: "user_profiles",
         resource: "users",
         slug: "profiles",
+        selectLookup: "id, display_name, email",
         searchColumns: ["display_name", "email"],
         icon: "User",
     }),
@@ -1755,6 +1865,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "resilience-targets",
         searchColumns: ["service_name"],
         icon: "Shield",
+        softDelete: false,
     }),
 
     resource_booking: defineEntity({
@@ -1769,6 +1880,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["notes"],
         icon: "CalendarDays",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     transfer_order: defineEntity({
@@ -1782,6 +1894,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         icon: "ArrowRightLeft",
         statusColumn: "status",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     tag: defineEntity({
@@ -1794,6 +1907,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["name", "description"],
         icon: "Tag",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     financial_period: defineEntity({
@@ -1807,6 +1921,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         icon: "CalendarRange",
         statusColumn: "status",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     revenue_schedule: defineEntity({
@@ -1820,6 +1935,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects(name)",
         searchColumns: ["description"],
         icon: "TrendingUp",
+        softDelete: false,
     }),
 
     risk_assessment: defineEntity({
@@ -1832,6 +1948,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["title", "description"],
         icon: "AlertTriangle",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     role_change_log: defineEntity({
@@ -1845,6 +1962,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, user_profiles(display_name)",
         searchColumns: ["new_role"],
         icon: "UserCog",
+        softDelete: false,
     }),
 
     service_health_check: defineEntity({
@@ -1856,6 +1974,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "service-health-checks",
         searchColumns: ["service_name"],
         icon: "HeartPulse",
+        softDelete: false,
     }),
 
     sla_definition: defineEntity({
@@ -1867,6 +1986,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "sla-definitions",
         searchColumns: ["name"],
         icon: "Timer",
+        softDelete: false,
     }),
 
     sla_tracking: defineEntity({
@@ -1880,6 +2000,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, sla_definitions(name, target_hours)",
         searchColumns: [],
         icon: "Timer",
+        softDelete: false,
     }),
 
     temporary_access_grant: defineEntity({
@@ -1893,6 +2014,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, user_profiles(display_name)",
         searchColumns: ["reason"],
         icon: "KeyRound",
+        softDelete: false,
     }),
 
     timesheet: defineEntity({
@@ -1917,6 +2039,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["document_name"],
         icon: "FileCheck",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     worker_offboarding_run: defineEntity({
@@ -1930,6 +2053,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, user_profiles(display_name)",
         searchColumns: [],
         icon: "UserMinus",
+        softDelete: false,
     }),
 
     worker_onboarding_run: defineEntity({
@@ -1943,6 +2067,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, user_profiles(display_name)",
         searchColumns: [],
         icon: "UserPlus",
+        softDelete: false,
     }),
 
     worker_profile: defineEntity({
@@ -1952,8 +2077,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         table: "worker_profiles",
         resource: "hr",
         slug: "worker-profiles",
+        selectLookup: "id, first_name, last_name, preferred_name, email",
         searchColumns: ["job_title"],
         icon: "UserCircle",
+        softDelete: false,
     }),
 
     worker_review: defineEntity({
@@ -1968,6 +2095,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["summary"],
         icon: "Star",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     workflow: defineEntity({
@@ -1979,7 +2107,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "workflows",
         searchColumns: ["name", "description"],
         icon: "Workflow",
-        softDelete: true,
+        softDelete: false,
         trackAuthor: true,
     }),
 
@@ -1995,6 +2123,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["description"],
         icon: "Wrench",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     project_assignment: defineEntity({
@@ -2009,6 +2138,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["role"],
         icon: "UserPlus",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     schedule_entry: defineEntity({
@@ -2023,6 +2153,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["title", "description"],
         icon: "CalendarDays",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     report_definition: defineEntity({
@@ -2037,6 +2168,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["name", "description"],
         icon: "BarChart",
         trackAuthor: true,
+        softDelete: false,
     }),
 
     invoice_template: defineEntity({
@@ -2048,6 +2180,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "invoice-templates",
         searchColumns: ["name"],
         icon: "ReceiptText",
+        softDelete: false,
     }),
 
     lost_reason: defineEntity({
@@ -2123,8 +2256,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         table: "contacts",
         resource: "contacts",
         slug: "contacts",
+        selectLookup: "id, full_name, first_name, last_name, email",
         searchColumns: ["first_name", "last_name", "email", "company"],
         icon: "Contact",
+        softDelete: false,
     }),
 
     // ─── Planning ───────────────────────────────────────────────
@@ -2138,6 +2273,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "scenarios",
         searchColumns: ["name", "description"],
         icon: "GitBranch",
+        softDelete: false,
     }),
 
     // ─── Production ─────────────────────────────────────────────
@@ -2151,8 +2287,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "work-packages",
         selectList: "*, projects:project_id(name)",
         selectDetail: "*, projects:project_id(name)",
+        selectLookup: "id, title, code, status",
         searchColumns: ["name", "description"],
         icon: "Boxes",
+        softDelete: false,
     }),
 
     bom: defineEntity({
@@ -2166,6 +2304,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, projects:project_id(name)",
         searchColumns: ["name"],
         icon: "ClipboardList",
+        softDelete: false,
     }),
 
     production_run: defineEntity({
@@ -2177,6 +2316,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "production-runs",
         searchColumns: ["name"],
         icon: "Factory",
+        softDelete: false,
     }),
 
     production_vertical: defineEntity({
@@ -2200,6 +2340,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "technical-specs",
         searchColumns: ["title"],
         icon: "FileCode",
+        softDelete: false,
     }),
 
     // ─── Advancing ──────────────────────────────────────────────
@@ -2260,6 +2401,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "activities",
         searchColumns: ["name", "description"],
         icon: "Activity",
+        softDelete: false,
     }),
 
     // ─── Quality ────────────────────────────────────────────────
@@ -2273,6 +2415,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "qc-gates",
         searchColumns: ["name"],
         icon: "ShieldCheck",
+        softDelete: false,
     }),
 
     quality_check: defineEntity({
@@ -2284,6 +2427,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "quality-checks",
         searchColumns: ["name"],
         icon: "CheckCircle2",
+        softDelete: false,
     }),
 
     quality_check_template: defineEntity({
@@ -2295,6 +2439,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "quality-check-templates",
         searchColumns: ["name"],
         icon: "FileCheck2",
+        softDelete: false,
     }),
 
     // ─── Assets & Logistics ─────────────────────────────────────
@@ -2308,6 +2453,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "kits",
         searchColumns: ["name", "description"],
         icon: "Package2",
+        softDelete: false,
     }),
 
     load_plan: defineEntity({
@@ -2319,6 +2465,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "load-plans",
         searchColumns: ["name"],
         icon: "Truck",
+        softDelete: false,
     }),
 
     inventory_audit: defineEntity({
@@ -2330,6 +2477,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "inventory-audits",
         searchColumns: ["name"],
         icon: "ClipboardCheck",
+        softDelete: false,
     }),
 
     asset_version: defineEntity({
@@ -2367,6 +2515,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "space-bookings",
         searchColumns: ["name"],
         icon: "MapPin",
+        softDelete: false,
     }),
 
     scan_event: defineEntity({
@@ -2391,6 +2540,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "foh-zones",
         searchColumns: ["name"],
         icon: "LayoutGrid",
+        softDelete: false,
     }),
 
     foh_zone_reading: defineEntity({
@@ -2415,6 +2565,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "live-event-instances",
         searchColumns: ["name"],
         icon: "Radio",
+        softDelete: false,
     }),
 
     live_financial_snapshot: defineEntity({
@@ -2439,6 +2590,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "post-event-reports",
         searchColumns: ["title"],
         icon: "FileBarChart",
+        softDelete: false,
     }),
 
     vip_guest: defineEntity({
@@ -2450,6 +2602,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "vip-guests",
         searchColumns: ["name", "email"],
         icon: "Crown",
+        softDelete: false,
     }),
 
     vip_service_request: defineEntity({
@@ -2461,6 +2614,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "vip-service-requests",
         searchColumns: ["description"],
         icon: "Star",
+        softDelete: false,
     }),
 
     guest_incident: defineEntity({
@@ -2472,6 +2626,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "guest-incidents",
         searchColumns: ["description"],
         icon: "AlertTriangle",
+        softDelete: false,
     }),
 
     strike_sequence: defineEntity({
@@ -2483,6 +2638,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "strike-sequences",
         searchColumns: ["name"],
         icon: "ListChecks",
+        softDelete: false,
     }),
 
     // ─── Messaging ──────────────────────────────────────────────
@@ -2508,6 +2664,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "conversations",
         searchColumns: ["subject"],
         icon: "MessagesSquare",
+        softDelete: false,
     }),
 
     // ─── Credentialing ──────────────────────────────────────────
@@ -2533,6 +2690,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "credential-assignments",
         searchColumns: [],
         icon: "UserCheck",
+        softDelete: false,
     }),
 
     credential_inventory_pool: defineEntity({
@@ -2542,8 +2700,10 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         table: "credential_inventory_pools",
         resource: "credentials",
         slug: "credential-inventory-pools",
+        selectLookup: "id, total_quantity, valid_from, valid_until",
         searchColumns: ["name"],
         icon: "Warehouse",
+        softDelete: false,
     }),
 
     // ─── External Sync ──────────────────────────────────────────
@@ -2557,6 +2717,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "provider-connections",
         searchColumns: ["provider_name"],
         icon: "Plug",
+        softDelete: false,
     }),
 
     sync_event: defineEntity({
@@ -2583,6 +2744,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "reviews",
         searchColumns: ["title"],
         icon: "ClipboardPen",
+        softDelete: false,
     }),
 
     review_cycle: defineEntity({
@@ -2594,6 +2756,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "review-cycles",
         searchColumns: ["name"],
         icon: "RotateCcw",
+        softDelete: false,
     }),
 
     time_off_request: defineEntity({
@@ -2605,6 +2768,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "time-off-requests",
         searchColumns: ["reason"],
         icon: "CalendarOff",
+        softDelete: false,
     }),
 
     worker_classification: defineEntity({
@@ -2628,6 +2792,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "worker-compliance-docs",
         searchColumns: ["document_name"],
         icon: "FileWarning",
+        softDelete: false,
     }),
 
     // ─── Brand ──────────────────────────────────────────────────
@@ -2641,6 +2806,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "brands",
         searchColumns: ["name"],
         icon: "Palette",
+        softDelete: false,
     }),
 
     // ─── System & Automation ────────────────────────────────────
@@ -2678,6 +2844,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "dashboards",
         searchColumns: ["name"],
         icon: "LayoutDashboard",
+        softDelete: false,
     }),
 
     automation_rule: defineEntity({
@@ -2689,6 +2856,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "automation-rules",
         searchColumns: ["name"],
         icon: "Workflow",
+        softDelete: false,
     }),
 
     automation_execution: defineEntity({
@@ -2732,6 +2900,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectLookup: "id, title, status",
         searchColumns: ["title", "description"],
         icon: "FilePen",
+        softDelete: false,
     }),
 
     legal_hold: defineEntity({
@@ -2743,6 +2912,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "legal-holds",
         searchColumns: ["name", "description"],
         icon: "Scale",
+        softDelete: false,
     }),
 
     // ─── Documents ──────────────────────────────────────────────
@@ -2770,6 +2940,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "survey-templates",
         searchColumns: ["title"],
         icon: "FileQuestion",
+        softDelete: false,
     }),
 
     survey_response: defineEntity({
@@ -2809,6 +2980,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "testimonials",
         searchColumns: ["author_name", "content"],
         icon: "Quote",
+        softDelete: false,
     }),
 
     // ─── Vendors ────────────────────────────────────────────────
@@ -2838,6 +3010,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "certifications",
         searchColumns: ["name"],
         icon: "Award",
+        softDelete: false,
     }),
 
     // ─── CRM / Revenue ──────────────────────────────────────────
@@ -2869,6 +3042,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["name", "description"],
         icon: "GitBranch",
         statusColumn: "status",
+        softDelete: false,
     }),
 
     // ─── Catalog ─────────────────────────────────────────────────
@@ -2907,6 +3081,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "channel-templates",
         searchColumns: ["name", "event_type"],
         icon: "Radio",
+        softDelete: false,
     }),
 
     comm_channel: defineEntity({
@@ -2984,6 +3159,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "compliance-templates",
         searchColumns: ["name", "description"],
         icon: "FileCheck",
+        softDelete: false,
     }),
 
     engagement_term: defineEntity({
@@ -2999,6 +3175,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["role", "billing_code"],
         icon: "Handshake",
         statusColumn: "status",
+        softDelete: false,
     }),
 
     time_tracking_policy: defineEntity({
@@ -3073,6 +3250,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         selectDetail: "*, assets:asset_id(name, category)",
         searchColumns: ["name", "description"],
         icon: "Wrench",
+        softDelete: false,
     }),
 
     // ─── Knowledge Base ──────────────────────────────────────────
@@ -3089,6 +3267,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         searchColumns: ["title", "body"],
         icon: "BookOpen",
         statusColumn: "status",
+        softDelete: false,
     }),
 
     // ─── Finance ─────────────────────────────────────────────────
@@ -3134,6 +3313,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "sla-policies",
         searchColumns: ["name", "description"],
         icon: "Timer",
+        softDelete: false,
     }),
 
     // ─── Pricing / Upsell ────────────────────────────────────────
@@ -3636,6 +3816,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         displayNamePlural: "Data Retention Policies",
         table: "data_retention_policies",
         resource: "settings",
+        selectLookup: "id, entity_type, retention_days",
         searchColumns: ["name"],
         icon: "Database",
         softDelete: false,
@@ -4509,6 +4690,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         displayNamePlural: "Warehouse Locations",
         table: "warehouse_locations",
         resource: "logistics",
+        selectLookup: "id, label, aisle, rack",
         searchColumns: ["name", "code"],
         icon: "MapPin",
         softDelete: false,
@@ -4901,6 +5083,7 @@ export const ENTITY_CONFIGS: Record<string, EntityConfig> = {
         slug: "surveys",
         searchColumns: ["name", "description"],
         icon: "ClipboardList",
+        softDelete: false,
     }),
 
     user_management: defineEntity({

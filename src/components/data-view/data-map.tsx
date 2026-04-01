@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { EmptyMapIllustration } from "./empty-state-illustrations";
 
 // ─── Types ───
 
@@ -73,9 +75,12 @@ const DEFAULT_MARKER_COLORS = [
 export function DataMap({ data, className, height = 400, actions, onItemClick }: DataMapProps) {
     if (data.length === 0) {
         return (
-            <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
-                No items with location data to display
-            </div>
+            <EmptyState
+                icon={MapPin}
+                title="No locations to display"
+                description="Add items with location data to see them plotted on the map."
+                illustration={<EmptyMapIllustration />}
+            />
         );
     }
 

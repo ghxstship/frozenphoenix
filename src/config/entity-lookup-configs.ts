@@ -24,7 +24,7 @@ export const FK_LOOKUP_CONFIGS: Record<string, EntityLookupConfig> = {
     },
     automation_id: { apiPath: "/api/entities/automations", labelField: "name" },
     brief_id: { apiPath: "/api/entities/briefs", labelField: "title" },
-    budget_id: { apiPath: "/api/entities/budgets", labelField: "name" },
+    budget_id: { apiPath: "/api/entities/budgets", labelField: "version" },
     checklist_template_id: { apiPath: "/api/entities/checklist-templates", labelField: "name" },
     company_id: { apiPath: "/api/entities/companies", labelField: "name" },
     contact_id: {
@@ -32,7 +32,7 @@ export const FK_LOOKUP_CONFIGS: Record<string, EntityLookupConfig> = {
         labelField: "full_name",
         secondaryField: "email",
     },
-    contract_id: { apiPath: "/api/entities/contracts", labelField: "name" },
+    contract_id: { apiPath: "/api/entities/contracts", labelField: "title" },
     credential_id: { apiPath: "/api/entities/credential-types", labelField: "name" },
     credential_type_id: { apiPath: "/api/entities/credential-types", labelField: "name" },
     crew_member_id: { apiPath: "/api/entities/crew", labelField: "name" },
@@ -67,7 +67,11 @@ export const FK_LOOKUP_CONFIGS: Record<string, EntityLookupConfig> = {
         secondaryField: "email",
     },
     project_id: { apiPath: "/api/entities/projects", labelField: "name" },
-    purchase_order_id: { apiPath: "/api/entities/purchase-orders", labelField: "number" },
+    purchase_order_id: {
+        apiPath: "/api/entities/purchase-orders",
+        labelField: "total_amount",
+        secondaryField: "status",
+    },
     resource_id: { apiPath: "/api/entities/assets", labelField: "name" },
     reviewer_id: {
         apiPath: "/api/entities/user-profiles",
@@ -104,6 +108,10 @@ export const FK_LOOKUP_CONFIGS: Record<string, EntityLookupConfig> = {
     vendor_id: { apiPath: "/api/entities/vendors", labelField: "name" },
     venue_id: { apiPath: "/api/entities/locations", labelField: "name" },
     work_order_id: { apiPath: "/api/entities/work-orders", labelField: "title" },
-    worker_profile_id: { apiPath: "/api/entities/worker-profiles", labelField: "name" },
+    worker_profile_id: {
+        apiPath: "/api/entities/worker-profiles",
+        labelField: "preferred_name",
+        secondaryField: "email",
+    },
     zone_id: { apiPath: "/api/entities/locations", labelField: "name" },
 };

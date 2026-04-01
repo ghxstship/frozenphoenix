@@ -26,6 +26,9 @@ import { Badge } from "@/components/ui/badge";
 import { TruncatedText } from "@/components/ui/truncated-text";
 import { type FieldConfig, FieldRenderer, type FieldType } from "./field-renderers";
 import type { BadgeVariant } from "@/config/ui-variants";
+import { Columns3 } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { EmptyBoardIllustration } from "./empty-state-illustrations";
 
 // ─── Column Definition ───
 export interface BoardColumn<T> {
@@ -377,8 +380,19 @@ export function DataBoard<T extends object>({
     // ─── Drag Overlay ───
     const activeItem = activeId ? dataMap.get(activeId) : null;
 
-    if (data.length === 0 && emptyState) {
-        return <>{emptyState}</>;
+    if (data.length === 0) {
+        return (
+            <>
+                {emptyState ?? (
+                    <EmptyState
+                        icon={Columns3}
+                        title="No items on this board"
+                        description="Add items to see them organized into columns by status."
+                        illustration={<EmptyBoardIllustration />}
+                    />
+                )}
+            </>
+        );
     }
 
     const mobileColumn = columns[mobileColumnIdx];

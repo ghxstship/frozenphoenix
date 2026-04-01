@@ -15,7 +15,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { useBreakpoint } from "@/hooks/use-media-query";
-import { AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { EmptyWorkloadIllustration } from "./empty-state-illustrations";
 
 // ─── Types ───
 
@@ -113,9 +115,12 @@ export function DataWorkload({
 
     if (data.length === 0) {
         return (
-            <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
-                No workload data to display
-            </div>
+            <EmptyState
+                icon={Users}
+                title="No workload data"
+                description="Add resource allocations to see capacity utilization across your team."
+                illustration={<EmptyWorkloadIllustration />}
+            />
         );
     }
 

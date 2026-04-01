@@ -12,6 +12,9 @@ import { TruncatedText } from "@/components/ui/truncated-text";
 import { AnimatedList, AnimatedListItem } from "@/components/ui/animated-list";
 import { type FieldConfig, FieldRenderer, type FieldType } from "./field-renderers";
 import { ProgressField } from "./field-renderers";
+import { LayoutGrid } from "lucide-react";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { EmptyCardsIllustration } from "./empty-state-illustrations";
 
 // ─── Card Field Definition ───
 export interface CardFieldDef<T> {
@@ -118,9 +121,16 @@ export function DataCards<T extends Record<string, unknown>>({
 
     if (data.length === 0) {
         return (
-            <div className="flex items-center justify-center py-12 text-muted-foreground motion-safe:animate-fade-in">
-                {emptyState ?? "No data available"}
-            </div>
+            <>
+                {emptyState ?? (
+                    <EmptyState
+                        icon={LayoutGrid}
+                        title="No cards to display"
+                        description="Add items to see them appear as cards in this view."
+                        illustration={<EmptyCardsIllustration />}
+                    />
+                )}
+            </>
         );
     }
 

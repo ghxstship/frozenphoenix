@@ -33,7 +33,7 @@ export async function GET(
     const handlers = createCollectionRoute({
         ...config,
         filters: routeConfig.filters,
-        ...(isLookup ? { selectList: config.selectLookup } : {}),
+        ...(isLookup ? { selectList: config.selectLookup, maxPerPage: 500 } : {}),
     });
 
     return handlers.GET(request);

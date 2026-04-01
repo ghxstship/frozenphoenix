@@ -14,8 +14,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip } from "@/components/ui/tooltip";
 import { TruncatedText } from "@/components/ui/truncated-text";
 import { useBreakpoint } from "@/hooks/use-media-query";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, GanttChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/layouts/empty-state";
+import { EmptyTimelineIllustration } from "./empty-state-illustrations";
 
 // ─── Types ───
 
@@ -94,9 +96,12 @@ export function DataTimeline({ data, className, actions, onItemClick }: DataTime
 
     if (data.length === 0) {
         return (
-            <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
-                No items with date ranges to display
-            </div>
+            <EmptyState
+                icon={GanttChart}
+                title="No timeline items"
+                description="Add items with date ranges to visualize them on the timeline."
+                illustration={<EmptyTimelineIllustration />}
+            />
         );
     }
 

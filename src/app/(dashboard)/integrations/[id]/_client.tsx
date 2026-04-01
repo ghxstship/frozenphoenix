@@ -6,6 +6,9 @@ import { EmptyState } from "@/components/layouts/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { DetailPageShell } from "@/components/shells";
 import { formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
@@ -404,10 +407,10 @@ export function IntegrationDetailPageClient({
                             <CardContent>
                                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                                     <div className="flex-1">
-                                        <label className="text-xs font-medium text-muted-foreground">
+                                        <Label className="text-xs font-medium text-muted-foreground">
                                             Entity Type
-                                        </label>
-                                        <input
+                                        </Label>
+                                        <Input
                                             type="text"
                                             value={newPolicyEntity}
                                             onChange={(e) => setNewPolicyEntity(e.target.value)}
@@ -416,10 +419,10 @@ export function IntegrationDetailPageClient({
                                         />
                                     </div>
                                     <div className="flex-1">
-                                        <label className="text-xs font-medium text-muted-foreground">
+                                        <Label className="text-xs font-medium text-muted-foreground">
                                             Field Name
-                                        </label>
-                                        <input
+                                        </Label>
+                                        <Input
                                             type="text"
                                             value={newPolicyField}
                                             onChange={(e) => setNewPolicyField(e.target.value)}
@@ -428,10 +431,10 @@ export function IntegrationDetailPageClient({
                                         />
                                     </div>
                                     <div className="flex-1">
-                                        <label className="text-xs font-medium text-muted-foreground">
+                                        <Label className="text-xs font-medium text-muted-foreground">
                                             Strategy
-                                        </label>
-                                        <select
+                                        </Label>
+                                        <NativeSelect
                                             value={newPolicyStrategy}
                                             onChange={(e) => setNewPolicyStrategy(e.target.value)}
                                             className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
@@ -440,7 +443,7 @@ export function IntegrationDetailPageClient({
                                             <option value="provider_wins">Provider Wins</option>
                                             <option value="compvss_wins">Platform Wins</option>
                                             <option value="manual">Manual Resolution</option>
-                                        </select>
+                                        </NativeSelect>
                                     </div>
                                     <Button
                                         size="sm"
@@ -474,7 +477,7 @@ export function IntegrationDetailPageClient({
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <select
+                                                    <NativeSelect
                                                         value={p.strategy as string}
                                                         onChange={(e) => {
                                                             updatePolicy.mutate({
@@ -496,7 +499,7 @@ export function IntegrationDetailPageClient({
                                                         <option value="manual_review">
                                                             Manual Review
                                                         </option>
-                                                    </select>
+                                                    </NativeSelect>
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -519,27 +522,27 @@ export function IntegrationDetailPageClient({
                         <CardContent className="density-gap-section">
                             <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                                 <div>
-                                    <label className="text-xs font-medium text-muted-foreground">
+                                    <Label className="text-xs font-medium text-muted-foreground">
                                         Display Name
-                                    </label>
+                                    </Label>
                                     <p className="text-sm mt-1">{displayName}</p>
                                 </div>
                                 <div>
-                                    <label className="text-xs font-medium text-muted-foreground">
+                                    <Label className="text-xs font-medium text-muted-foreground">
                                         Provider Type
-                                    </label>
+                                    </Label>
                                     <p className="text-sm mt-1">{providerType}</p>
                                 </div>
                                 <div>
-                                    <label className="text-xs font-medium text-muted-foreground">
+                                    <Label className="text-xs font-medium text-muted-foreground">
                                         Sync Direction
-                                    </label>
+                                    </Label>
                                     <p className="text-sm mt-1">{conn.sync_direction as string}</p>
                                 </div>
                                 <div>
-                                    <label className="text-xs font-medium text-muted-foreground">
+                                    <Label className="text-xs font-medium text-muted-foreground">
                                         Webhook URL
-                                    </label>
+                                    </Label>
                                     <p className="text-sm mt-1 font-mono text-xs break-all">
                                         {(conn.webhook_url as string) || "Not configured"}
                                     </p>

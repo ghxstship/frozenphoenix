@@ -3,6 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 
 export interface MentionUser {
     id: string;
@@ -74,12 +75,13 @@ export function MentionAutocomplete({
             aria-label="Mention suggestions"
         >
             {filtered.map((user, index) => (
-                <button
+                <Button
                     key={user.id}
+                    variant="ghost"
                     role="option"
                     aria-selected={index === selectedIndex}
                     className={cn(
-                        "w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-secondary transition-colors",
+                        "w-full gap-2 px-3 py-2 h-auto justify-start rounded-none",
                         index === selectedIndex && "bg-secondary"
                     )}
                     onClick={() => onSelect(user)}
@@ -87,7 +89,7 @@ export function MentionAutocomplete({
                 >
                     <Avatar name={user.name} size="sm" />
                     <span className="truncate font-medium">{user.name}</span>
-                </button>
+                </Button>
             ))}
         </div>
     );

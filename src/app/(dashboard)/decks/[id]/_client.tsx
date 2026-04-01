@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     BarChart3,
@@ -145,9 +147,9 @@ export function DeckDetailClient({
                 </CardHeader>
                 <CardContent className="space-y-3">
                     <div>
-                        <label className="text-xs text-muted-foreground mb-1 block">
+                        <Label className="text-xs text-muted-foreground mb-1 block">
                             Deck Title
-                        </label>
+                        </Label>
                         <Input value={deckTitle} onChange={(e) => setDeckTitle(e.target.value)} />
                     </div>
                     <div className="flex items-center gap-2">
@@ -163,33 +165,33 @@ export function DeckDetailClient({
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div>
-                            <label className="text-xs text-muted-foreground mb-1 block">Type</label>
+                            <Label className="text-xs text-muted-foreground mb-1 block">Type</Label>
                             <Badge variant="ghost">
                                 {SLIDE_TYPES.find((t) => t.type === current.type)?.label}
                             </Badge>
                         </div>
                         <div>
-                            <label className="text-xs text-muted-foreground mb-1 block">
+                            <Label className="text-xs text-muted-foreground mb-1 block">
                                 Title
-                            </label>
+                            </Label>
                             <Input
                                 value={current.title}
                                 onChange={(e) => updateSlide("title", e.target.value)}
                             />
                         </div>
                         <div>
-                            <label className="text-xs text-muted-foreground mb-1 block">Body</label>
-                            <textarea
+                            <Label className="text-xs text-muted-foreground mb-1 block">Body</Label>
+                            <Textarea
                                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[100px]"
                                 value={current.body}
                                 onChange={(e) => updateSlide("body", e.target.value)}
                             />
                         </div>
                         <div>
-                            <label className="text-xs text-muted-foreground mb-1 block">
+                            <Label className="text-xs text-muted-foreground mb-1 block">
                                 Speaker Notes
-                            </label>
-                            <textarea
+                            </Label>
+                            <Textarea
                                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[60px]"
                                 value={current.notes}
                                 onChange={(e) => updateSlide("notes", e.target.value)}

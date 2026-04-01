@@ -166,30 +166,30 @@ export function CatalogPageClient() {
                         aria-label="Category breadcrumb"
                         className="flex items-center gap-1 text-sm"
                     >
-                        <button
-                            type="button"
+                        <Button
+                            variant="link"
                             onClick={() => setSelectedCategory(null)}
-                            className="text-muted-foreground hover:text-foreground transition-colors"
+                            className="text-muted-foreground hover:text-foreground h-auto p-0"
                         >
                             All
-                        </button>
+                        </Button>
                         {breadcrumb.map((crumb) => (
                             <React.Fragment key={crumb.id}>
                                 <ChevronRight
                                     className="h-3.5 w-3.5 text-muted-foreground/50"
                                     aria-hidden="true"
                                 />
-                                <button
-                                    type="button"
+                                <Button
+                                    variant="link"
                                     onClick={() => setSelectedCategory(crumb.id)}
                                     className={
                                         crumb.id === selectedCategory
-                                            ? "font-medium text-foreground"
-                                            : "text-muted-foreground hover:text-foreground transition-colors"
+                                            ? "font-medium text-foreground h-auto p-0"
+                                            : "text-muted-foreground hover:text-foreground h-auto p-0"
                                     }
                                 >
                                     {crumb.name}
-                                </button>
+                                </Button>
                             </React.Fragment>
                         ))}
                     </nav>

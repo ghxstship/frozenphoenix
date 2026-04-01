@@ -51,13 +51,15 @@ export function CatalogItemDetail({
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Close button */}
-                <button
+                <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={onClose}
-                    className="absolute right-3 top-3 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+                    className="absolute right-3 top-3 h-7 w-7"
                     aria-label="Close detail"
                 >
                     <X className="h-4 w-4" />
-                </button>
+                </Button>
 
                 {isLoading || !rec ? (
                     <div className="flex items-center justify-center py-16">

@@ -3,6 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { useWorkspaceContext } from "@/hooks/use-workspace-context";
 import { useProjectsForSwitcher } from "@/lib/supabase/hooks-switcher";
@@ -57,10 +58,14 @@ export function ProjectSwitcher({
     };
 
     const trigger = (
-        <button className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1 px-1 h-auto text-muted-foreground hover:text-foreground"
+        >
             <span className="truncate max-w-[160px]">{displayName}</span>
             <ChevronDown className="h-3 w-3 shrink-0" />
-        </button>
+        </Button>
     );
 
     return (

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { SearchInput } from "@/components/ui/search-input";
+import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { formatRelativeTime } from "@/lib/formatters/locale";
 import { Hash, MessageSquare, Search, Users } from "lucide-react";
@@ -137,9 +138,10 @@ export function MessageSearch({ onSelectResult, className }: MessageSearchProps)
                 ) : (
                     <div className="divide-y divide-border">
                         {results.map((result) => (
-                            <button
+                            <Button
                                 key={result.id}
-                                className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-muted/40 transition-colors"
+                                variant="ghost"
+                                className="w-full flex items-start gap-3 px-4 py-3 h-auto text-left justify-start rounded-none"
                                 onClick={() => onSelectResult?.(result)}
                             >
                                 <Avatar
@@ -165,7 +167,7 @@ export function MessageSearch({ onSelectResult, className }: MessageSearchProps)
                                         {formatRelativeTime(result.created_at)}
                                     </p>
                                 </div>
-                            </button>
+                            </Button>
                         ))}
                     </div>
                 )}

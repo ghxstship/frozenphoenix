@@ -16,6 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { CheckCircle2, Download, Layers, Loader2, Package, Trash2, XCircle } from "lucide-react";
 import { ScanFeedback, ScanInput } from "@/components/scanning";
 import { ListPageShell } from "@/components/shells";
@@ -177,9 +178,9 @@ export function BatchAssetScannerPageClient() {
                             <Card>
                                 <CardContent className="pt-6 density-gap-section">
                                     <div className="w-full max-w-md mx-auto">
-                                        <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2 block">
+                                        <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2 block">
                                             {S.scanType}
-                                        </label>
+                                        </Label>
                                         <Select
                                             value={scanAction}
                                             onValueChange={(v) =>

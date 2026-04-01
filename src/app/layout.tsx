@@ -34,8 +34,71 @@ export default function RootLayout({
             suppressHydrationWarning
         >
             <head>
+                <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1, viewport-fit=cover"
+                />
                 <link rel="manifest" href="/manifest.json" />
                 <meta name="theme-color" content="#6366f1" />
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+                <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+                {/* iOS PWA splash screens — device-specific launch images */}
+                <link
+                    rel="apple-touch-startup-image"
+                    href="/splash/iphone-se.png"
+                    media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"
+                />
+                <link
+                    rel="apple-touch-startup-image"
+                    href="/splash/iphone-x.png"
+                    media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)"
+                />
+                <link
+                    rel="apple-touch-startup-image"
+                    href="/splash/iphone-xr.png"
+                    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)"
+                />
+                <link
+                    rel="apple-touch-startup-image"
+                    href="/splash/iphone-xs-max.png"
+                    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)"
+                />
+                <link
+                    rel="apple-touch-startup-image"
+                    href="/splash/iphone-12.png"
+                    media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)"
+                />
+                <link
+                    rel="apple-touch-startup-image"
+                    href="/splash/iphone-12-max.png"
+                    media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)"
+                />
+                <link
+                    rel="apple-touch-startup-image"
+                    href="/splash/iphone-14-pro.png"
+                    media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)"
+                />
+                <link
+                    rel="apple-touch-startup-image"
+                    href="/splash/iphone-14-max.png"
+                    media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)"
+                />
+                <link
+                    rel="apple-touch-startup-image"
+                    href="/splash/ipad.png"
+                    media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2)"
+                />
+                <link
+                    rel="apple-touch-startup-image"
+                    href="/splash/ipad-pro-11.png"
+                    media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)"
+                />
+                <link
+                    rel="apple-touch-startup-image"
+                    href="/splash/ipad-pro-13.png"
+                    media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)"
+                />
                 {/* Performance: Preconnect to Supabase to eliminate DNS+TLS latency (~100-300ms)
                     on the first API request. Falls back gracefully if env var is missing. */}
                 {process.env.NEXT_PUBLIC_SUPABASE_URL && (

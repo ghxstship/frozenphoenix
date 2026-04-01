@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { AuthLayout } from "@/components/auth";
 import { mapAuthError } from "@/features/auth/utils/auth-utils";
 import { csrfHeaders } from "@/lib/security/csrf";
@@ -132,12 +133,12 @@ function MfaVerifyForm() {
                 </div>
 
                 <div className="space-y-2">
-                    <label
+                    <Label
                         htmlFor="mfa-verify-code"
                         className="text-sm font-medium leading-none text-center block"
                     >
                         Verification Code
-                    </label>
+                    </Label>
                     <Input
                         ref={codeInputRef}
                         id="mfa-verify-code"

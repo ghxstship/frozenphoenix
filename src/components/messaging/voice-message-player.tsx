@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Pause, Play } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useMessagingStrings } from "@/hooks/use-messaging-strings";
@@ -85,15 +86,11 @@ export function VoiceMessagePlayer({ src, durationSeconds, className }: VoiceMes
             aria-label={ms("a11y_voice_player")}
         >
             <Tooltip content={isPlaying ? ms("voice_pause") : ms("voice_play")} side="top">
-                <button
+                <Button
+                    size="icon"
                     onClick={toggle}
                     disabled={!src}
-                    className={cn(
-                        "h-7 w-7 shrink-0 rounded-full flex items-center justify-center transition-colors",
-                        src
-                            ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                            : "bg-muted text-muted-foreground cursor-not-allowed"
-                    )}
+                    className="h-7 w-7 shrink-0 rounded-full"
                     aria-label={isPlaying ? ms("voice_pause") : ms("voice_play")}
                 >
                     {isPlaying ? (
@@ -101,7 +98,7 @@ export function VoiceMessagePlayer({ src, durationSeconds, className }: VoiceMes
                     ) : (
                         <Play className="h-3 w-3 fill-current ml-0.5" />
                     )}
-                </button>
+                </Button>
             </Tooltip>
 
             <div className="flex-1 min-w-0">

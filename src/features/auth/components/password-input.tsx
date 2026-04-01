@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Lock } from "lucide-react";
 
 // ─── Password Strength Calculation ─────────────────────────────
@@ -163,31 +165,25 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
                             aria-hidden="true"
                         />
                     )}
-                    <input
+                    <Input
                         ref={ref}
                         type={visible ? "text" : "password"}
                         id={id}
-                        className={cn(
-                            "flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors",
-                            "placeholder:text-muted-foreground",
-                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                            "disabled:cursor-not-allowed disabled:opacity-50",
-                            showIcon && "pl-10",
-                            "pr-10",
-                            error && "border-destructive focus-visible:ring-destructive",
-                            className
-                        )}
+                        className={cn(showIcon && "pl-10", "pr-10", className)}
                         value={value}
+                        error={!!error}
                         aria-invalid={!!error}
                         aria-describedby={describedBy}
                         aria-required={ariaRequired ?? required}
                         required={required}
                         {...props}
                     />
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => setVisible((v) => !v)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
                         aria-label={visible ? "Hide password" : "Show password"}
                         tabIndex={-1}
                     >
@@ -196,7 +192,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
                         ) : (
                             <Eye className="h-4 w-4" aria-hidden="true" />
                         )}
-                    </button>
+                    </Button>
                 </div>
                 {error && id && (
                     <p id={`${id}-error`} className="text-xs text-destructive" role="alert">

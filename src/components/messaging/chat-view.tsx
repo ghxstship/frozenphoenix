@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download, Hash, Lock, Megaphone, Users } from "lucide-react";
 import {
     DropdownMenu,
@@ -121,13 +122,15 @@ export function ChatView({
             {/* Chat header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0">
                 <Tooltip content="Back to conversations" side="bottom">
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={onBack}
-                        className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors lg:hidden"
+                        className="h-7 w-7 lg:hidden"
                         aria-label="Back to conversations"
                     >
                         <ArrowLeft className="h-4 w-4" />
-                    </button>
+                    </Button>
                 </Tooltip>
 
                 {conversation.type === "channel" ? (
@@ -164,28 +167,27 @@ export function ChatView({
 
                 <div className="flex items-center gap-1">
                     <Tooltip content={ms("members_title")} side="bottom">
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => setShowMembers((v) => !v)}
-                            className={cn(
-                                "h-7 w-7 rounded-lg flex items-center justify-center transition-colors",
-                                showMembers
-                                    ? "bg-primary/10 text-primary"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                            )}
+                            className={cn("h-7 w-7", showMembers && "bg-primary/10 text-primary")}
                             aria-label={ms("members_title")}
                             aria-pressed={showMembers}
                         >
                             <Users className="h-4 w-4" />
-                        </button>
+                        </Button>
                     </Tooltip>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <button
-                                className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
                                 aria-label={ms("export_title")}
                             >
                                 <Download className="h-4 w-4" />
-                            </button>
+                            </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="min-w-[140px]">
                             <DropdownMenuItem

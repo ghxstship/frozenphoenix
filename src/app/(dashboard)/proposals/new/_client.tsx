@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { SearchInput } from "@/components/ui/search-input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/native-select";
 import { WizardShell } from "@/components/shells/wizard-shell";
 import type { WizardConfig } from "@/types/wizard-config";
 import { useCreateProposal } from "@/lib/supabase";
@@ -266,9 +269,9 @@ export function NewProposalPageClient() {
     const step1Content = (
         <div className="density-gap-section">
             <div className="space-y-2">
-                <label htmlFor="proposal-title" className="text-sm font-medium">
+                <Label htmlFor="proposal-title" className="text-sm font-medium">
                     Proposal Title
-                </label>
+                </Label>
                 <Input
                     id="proposal-title"
                     value={title}
@@ -279,10 +282,10 @@ export function NewProposalPageClient() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                 <div className="space-y-2">
-                    <label htmlFor="company-select" className="text-sm font-medium">
+                    <Label htmlFor="company-select" className="text-sm font-medium">
                         Company
-                    </label>
-                    <select
+                    </Label>
+                    <NativeSelect
                         id="company-select"
                         value={selectedCompany}
                         onChange={(e) => {
@@ -298,14 +301,14 @@ export function NewProposalPageClient() {
                                 {c.name}
                             </option>
                         ))}
-                    </select>
+                    </NativeSelect>
                 </div>
 
                 <div className="space-y-2">
-                    <label htmlFor="contact-select" className="text-sm font-medium">
+                    <Label htmlFor="contact-select" className="text-sm font-medium">
                         Primary Contact
-                    </label>
-                    <select
+                    </Label>
+                    <NativeSelect
                         id="contact-select"
                         value={selectedContact}
                         onChange={(e) => setSelectedContact(e.target.value)}
@@ -318,16 +321,16 @@ export function NewProposalPageClient() {
                                 {c.name}
                             </option>
                         ))}
-                    </select>
+                    </NativeSelect>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 density-gap-card">
                 <div className="space-y-2">
-                    <label htmlFor="deal-select" className="text-sm font-medium">
+                    <Label htmlFor="deal-select" className="text-sm font-medium">
                         Link to Deal (optional)
-                    </label>
-                    <select
+                    </Label>
+                    <NativeSelect
                         id="deal-select"
                         value={selectedDeal}
                         onChange={(e) => setSelectedDeal(e.target.value)}
@@ -339,13 +342,13 @@ export function NewProposalPageClient() {
                                 {d.title} ({formatCurrency(d.value)})
                             </option>
                         ))}
-                    </select>
+                    </NativeSelect>
                 </div>
 
                 <div className="space-y-2">
-                    <label htmlFor="valid-until" className="text-sm font-medium">
+                    <Label htmlFor="valid-until" className="text-sm font-medium">
                         Valid Until
-                    </label>
+                    </Label>
                     <Input
                         id="valid-until"
                         type="date"
@@ -355,10 +358,10 @@ export function NewProposalPageClient() {
                 </div>
 
                 <div className="space-y-2">
-                    <label htmlFor="currency-select" className="text-sm font-medium">
+                    <Label htmlFor="currency-select" className="text-sm font-medium">
                         Currency
-                    </label>
-                    <select
+                    </Label>
+                    <NativeSelect
                         id="currency-select"
                         value={currency}
                         onChange={(e) => setCurrency(e.target.value)}
@@ -369,7 +372,7 @@ export function NewProposalPageClient() {
                         <option value="GBP">GBP</option>
                         <option value="CAD">CAD</option>
                         <option value="AUD">AUD</option>
-                    </select>
+                    </NativeSelect>
                 </div>
             </div>
         </div>
@@ -600,10 +603,10 @@ export function NewProposalPageClient() {
                 </CardHeader>
                 <CardContent className="density-gap-section">
                     <div className="space-y-2">
-                        <label htmlFor="exec-summary" className="text-sm font-medium">
+                        <Label htmlFor="exec-summary" className="text-sm font-medium">
                             Executive Summary
-                        </label>
-                        <textarea
+                        </Label>
+                        <Textarea
                             id="exec-summary"
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
@@ -613,10 +616,10 @@ export function NewProposalPageClient() {
                         />
                     </div>
                     <div className="space-y-2">
-                        <label htmlFor="terms-input" className="text-sm font-medium">
+                        <Label htmlFor="terms-input" className="text-sm font-medium">
                             Terms & Conditions
-                        </label>
-                        <textarea
+                        </Label>
+                        <Textarea
                             id="terms-input"
                             value={terms}
                             onChange={(e) => setTerms(e.target.value)}

@@ -19,6 +19,8 @@ import {
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { getActiveBrand } from "@/config/brands";
 import { OverlineText } from "@/components/ui/overline-text";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import type { DetailPageConfig } from "@/types/detail-page-config";
@@ -402,17 +404,17 @@ export function ProposalDetailPageClient({
                 <CardContent className="density-gap-section">
                     <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Title</label>
+                            <Label className="text-sm font-medium">Title</Label>
                             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Client Contact</label>
+                            <Label className="text-sm font-medium">Client Contact</Label>
                             <Input value={contactName} disabled />
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Notes / Executive Summary</label>
-                        <textarea
+                        <Label className="text-sm font-medium">Notes / Executive Summary</Label>
+                        <Textarea
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
                             rows={3}
@@ -562,7 +564,7 @@ export function ProposalDetailPageClient({
                         <CardTitle className="text-base">Terms & Conditions</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <textarea
+                        <Textarea
                             value={terms}
                             onChange={(e) => setTerms(e.target.value)}
                             rows={4}
@@ -919,12 +921,12 @@ export function ProposalDetailPageClient({
                         </p>
                         <div className="space-y-3">
                             <div>
-                                <label
+                                <Label
                                     htmlFor="esign-name"
                                     className="text-sm font-medium mb-1 block"
                                 >
                                     Signer Name
-                                </label>
+                                </Label>
                                 <Input
                                     id="esign-name"
                                     value={signerName}
@@ -933,12 +935,12 @@ export function ProposalDetailPageClient({
                                 />
                             </div>
                             <div>
-                                <label
+                                <Label
                                     htmlFor="esign-email"
                                     className="text-sm font-medium mb-1 block"
                                 >
                                     Signer Email
-                                </label>
+                                </Label>
                                 <Input
                                     id="esign-email"
                                     type="email"
@@ -949,20 +951,20 @@ export function ProposalDetailPageClient({
                             </div>
                         </div>
                         <div className="flex items-start gap-3 p-3 rounded-lg border">
-                            <input
+                            <Input
                                 type="checkbox"
                                 id="esign-agree"
                                 checked={signatureAgreed}
                                 onChange={(e) => setSignatureAgreed(e.target.checked)}
                                 className="mt-1 rounded"
                             />
-                            <label
+                            <Label
                                 htmlFor="esign-agree"
                                 className="text-xs text-muted-foreground leading-relaxed"
                             >
                                 I confirm this proposal is final and ready for client signature. The
                                 signer will receive a legally binding e-signature request via email.
-                            </label>
+                            </Label>
                         </div>
                     </div>
                     <DialogFooter>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 import { Bell, BellOff, Check, CheckCheck, ExternalLink, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -200,12 +201,14 @@ export function NotificationBell() {
                                         </p>
                                         <p className="text-xs mt-1">No unread notifications</p>
                                         {allNotifications.length > 0 && (
-                                            <button
-                                                className="text-xs text-primary hover:underline mt-3"
+                                            <Button
+                                                variant="link"
+                                                size="sm"
+                                                className="text-xs p-0 h-auto mt-3"
                                                 onClick={() => setFilter("all")}
                                             >
                                                 View past notifications
-                                            </button>
+                                            </Button>
                                         )}
                                     </>
                                 ) : (
@@ -218,15 +221,17 @@ export function NotificationBell() {
                         ) : (
                             <div className="divide-y">
                                 {notifications.map((notif) => (
-                                    <button
+                                    <Button
                                         key={notif.id}
-                                        className={`w-full text-left px-4 py-3 hover:bg-accent/50 transition-colors flex items-start gap-3 ${
+                                        variant="ghost"
+                                        className={cn(
+                                            "w-full text-left px-4 py-3 h-auto justify-start items-start gap-3 rounded-none",
                                             !notif.read
                                                 ? "bg-accent/20"
                                                 : filter === "all"
                                                   ? "opacity-60"
                                                   : ""
-                                        }`}
+                                        )}
                                         onClick={() => handleClick(notif)}
                                     >
                                         <div
@@ -263,8 +268,10 @@ export function NotificationBell() {
                                         <div className="shrink-0 flex gap-1 mt-1">
                                             {!notif.read && (
                                                 <Tooltip content="Mark as read" side="left">
-                                                    <button
-                                                        className="p-1 rounded hover:bg-accent"
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-6 w-6"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleMarkRead(notif.id);
@@ -272,14 +279,14 @@ export function NotificationBell() {
                                                         aria-label="Mark as read"
                                                     >
                                                         <Check className="h-3.5 w-3.5 text-muted-foreground" />
-                                                    </button>
+                                                    </Button>
                                                 </Tooltip>
                                             )}
                                             {notif.action_url && (
                                                 <ExternalLink className="h-3.5 w-3.5 text-muted-foreground mt-1" />
                                             )}
                                         </div>
-                                    </button>
+                                    </Button>
                                 ))}
                             </div>
                         )}

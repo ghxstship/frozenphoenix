@@ -14,6 +14,14 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { getStatusLabel } from "@/config/ui-variants";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import {
     BarChart3,
     CheckSquare,
     DollarSign,
@@ -437,27 +445,30 @@ export function ReportsPageClient() {
                                 </div>
                             </CardHeader>
                             <CardContent className="p-0 overflow-x-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b bg-muted/50">
+                                <Table className="w-full text-sm">
+                                    <TableHeader>
+                                        <TableRow className="border-b bg-muted/50">
                                             {headers.map((h) => (
-                                                <th
+                                                <TableHead
                                                     key={h.key}
                                                     className="text-left p-3 font-medium"
                                                 >
                                                     {h.label}
-                                                </th>
+                                                </TableHead>
                                             ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
                                         {rows.slice(0, 25).map((row, i) => (
-                                            <tr
+                                            <TableRow
                                                 key={i}
                                                 className="border-b hover:bg-secondary/30 transition-colors"
                                             >
                                                 {headers.map((h) => (
-                                                    <td key={h.key} className="p-3 tabular-nums">
+                                                    <TableCell
+                                                        key={h.key}
+                                                        className="p-3 tabular-nums"
+                                                    >
                                                         {typeof row[h.key] === "number"
                                                             ? h.key.includes("pct") ||
                                                               h.key.includes("probability")
@@ -473,12 +484,12 @@ export function ReportsPageClient() {
                                                                     )
                                                                   : String(row[h.key])
                                                             : String(row[h.key] ?? "")}
-                                                    </td>
+                                                    </TableCell>
                                                 ))}
-                                            </tr>
+                                            </TableRow>
                                         ))}
-                                    </tbody>
-                                </table>
+                                    </TableBody>
+                                </Table>
                                 {rows.length > 25 && (
                                     <p className="text-xs text-muted-foreground text-center py-3">
                                         Showing 25 of {rows.length} rows. Export for full data.

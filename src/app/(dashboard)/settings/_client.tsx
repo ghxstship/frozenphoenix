@@ -40,6 +40,8 @@ import { useUpdateProfile } from "@/lib/supabase/auth-actions";
 import { useUpdateOrganization } from "@/lib/supabase/hooks-admin";
 import Image from "next/image";
 import { AvatarCropDialog } from "@/components/ui/avatar-crop-dialog";
+import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 import { ROLE_LABELS } from "@/config/rbac";
 import { SettingsCategorySection } from "./_components/settings-category-section";
 import { AppearanceTab } from "./_tabs/appearance-tab";
@@ -379,7 +381,7 @@ export function SettingsPageClient() {
                             )}
                         </div>
                         <div>
-                            <input
+                            <Input
                                 ref={fileInputRef}
                                 type="file"
                                 accept="image/jpeg,image/png,image/webp,image/gif"
@@ -420,9 +422,9 @@ export function SettingsPageClient() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                         <div className="space-y-2">
-                            <label htmlFor="profile-name" className="text-sm font-medium">
+                            <Label htmlFor="profile-name" className="text-sm font-medium">
                                 Display Name
-                            </label>
+                            </Label>
                             <Input
                                 id="profile-name"
                                 value={profileName}
@@ -430,15 +432,15 @@ export function SettingsPageClient() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="profile-email" className="text-sm font-medium">
+                            <Label htmlFor="profile-email" className="text-sm font-medium">
                                 Email
-                            </label>
+                            </Label>
                             <Input id="profile-email" value={profileEmail} type="email" disabled />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="profile-role" className="text-sm font-medium">
+                            <Label htmlFor="profile-role" className="text-sm font-medium">
                                 Role
-                            </label>
+                            </Label>
                             <Input
                                 id="profile-role"
                                 value={ROLE_LABELS[userRole] ?? userRole}
@@ -446,9 +448,9 @@ export function SettingsPageClient() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="profile-org" className="text-sm font-medium">
+                            <Label htmlFor="profile-org" className="text-sm font-medium">
                                 Organization
-                            </label>
+                            </Label>
                             <Input
                                 id="profile-org"
                                 value={activeOrg?.organizations?.name ?? "—"}
@@ -473,9 +475,9 @@ export function SettingsPageClient() {
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-3 density-gap-card">
                         <div className="space-y-2">
-                            <label htmlFor="legal-first" className="text-sm font-medium">
+                            <Label htmlFor="legal-first" className="text-sm font-medium">
                                 Legal First Name
-                            </label>
+                            </Label>
                             <Input
                                 id="legal-first"
                                 value={legalFirstName}
@@ -483,9 +485,9 @@ export function SettingsPageClient() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="legal-middle" className="text-sm font-medium">
+                            <Label htmlFor="legal-middle" className="text-sm font-medium">
                                 Legal Middle Name
-                            </label>
+                            </Label>
                             <Input
                                 id="legal-middle"
                                 value={legalMiddleName}
@@ -493,9 +495,9 @@ export function SettingsPageClient() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="legal-last" className="text-sm font-medium">
+                            <Label htmlFor="legal-last" className="text-sm font-medium">
                                 Legal Last Name
-                            </label>
+                            </Label>
                             <Input
                                 id="legal-last"
                                 value={legalLastName}
@@ -505,9 +507,9 @@ export function SettingsPageClient() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card mt-4">
                         <div className="space-y-2">
-                            <label htmlFor="preferred-name" className="text-sm font-medium">
+                            <Label htmlFor="preferred-name" className="text-sm font-medium">
                                 Preferred Name
-                            </label>
+                            </Label>
                             <Input
                                 id="preferred-name"
                                 value={preferredName}
@@ -516,9 +518,9 @@ export function SettingsPageClient() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="pronouns" className="text-sm font-medium">
+                            <Label htmlFor="pronouns" className="text-sm font-medium">
                                 Pronouns
-                            </label>
+                            </Label>
                             <Input
                                 id="pronouns"
                                 value={pronouns}
@@ -541,9 +543,9 @@ export function SettingsPageClient() {
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                         <div className="space-y-2">
-                            <label htmlFor="profile-phone" className="text-sm font-medium">
+                            <Label htmlFor="profile-phone" className="text-sm font-medium">
                                 Phone
-                            </label>
+                            </Label>
                             <Input
                                 id="profile-phone"
                                 type="tel"
@@ -553,9 +555,9 @@ export function SettingsPageClient() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="profile-email-ro" className="text-sm font-medium">
+                            <Label htmlFor="profile-email-ro" className="text-sm font-medium">
                                 Email
-                            </label>
+                            </Label>
                             <Input id="profile-email-ro" value={profileEmail} disabled />
                         </div>
                     </div>
@@ -573,9 +575,9 @@ export function SettingsPageClient() {
                 <CardContent>
                     <div className="grid grid-cols-1 density-gap-card">
                         <div className="space-y-2">
-                            <label htmlFor="mail-street1" className="text-sm font-medium">
+                            <Label htmlFor="mail-street1" className="text-sm font-medium">
                                 Street Address
-                            </label>
+                            </Label>
                             <Input
                                 id="mail-street1"
                                 value={mailStreet1}
@@ -583,9 +585,9 @@ export function SettingsPageClient() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="mail-street2" className="text-sm font-medium">
+                            <Label htmlFor="mail-street2" className="text-sm font-medium">
                                 Apt / Suite / Unit
-                            </label>
+                            </Label>
                             <Input
                                 id="mail-street2"
                                 value={mailStreet2}
@@ -594,9 +596,9 @@ export function SettingsPageClient() {
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 density-gap-card">
                             <div className="space-y-2">
-                                <label htmlFor="mail-city" className="text-sm font-medium">
+                                <Label htmlFor="mail-city" className="text-sm font-medium">
                                     City
-                                </label>
+                                </Label>
                                 <Input
                                     id="mail-city"
                                     value={mailCity}
@@ -604,9 +606,9 @@ export function SettingsPageClient() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label htmlFor="mail-state" className="text-sm font-medium">
+                                <Label htmlFor="mail-state" className="text-sm font-medium">
                                     State / Province
-                                </label>
+                                </Label>
                                 <Input
                                     id="mail-state"
                                     value={mailState}
@@ -614,9 +616,9 @@ export function SettingsPageClient() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label htmlFor="mail-postal" className="text-sm font-medium">
+                                <Label htmlFor="mail-postal" className="text-sm font-medium">
                                     Postal Code
-                                </label>
+                                </Label>
                                 <Input
                                     id="mail-postal"
                                     value={mailPostal}
@@ -624,9 +626,9 @@ export function SettingsPageClient() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label htmlFor="mail-country" className="text-sm font-medium">
+                                <Label htmlFor="mail-country" className="text-sm font-medium">
                                     Country
-                                </label>
+                                </Label>
                                 <Input
                                     id="mail-country"
                                     value={mailCountry}
@@ -647,21 +649,21 @@ export function SettingsPageClient() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="density-gap-section">
-                    <label className="flex items-center gap-2 text-sm">
-                        <input
+                    <Label className="flex items-center gap-2 text-sm">
+                        <Input
                             type="checkbox"
                             checked={billingSameAsMailing}
                             onChange={(e) => setBillingSameAsMailing(e.target.checked)}
                             className="rounded border-input"
                         />
                         Same as mailing address
-                    </label>
+                    </Label>
                     {!billingSameAsMailing && (
                         <div className="grid grid-cols-1 density-gap-card">
                             <div className="space-y-2">
-                                <label htmlFor="bill-street1" className="text-sm font-medium">
+                                <Label htmlFor="bill-street1" className="text-sm font-medium">
                                     Street Address
-                                </label>
+                                </Label>
                                 <Input
                                     id="bill-street1"
                                     value={billStreet1}
@@ -669,9 +671,9 @@ export function SettingsPageClient() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label htmlFor="bill-street2" className="text-sm font-medium">
+                                <Label htmlFor="bill-street2" className="text-sm font-medium">
                                     Apt / Suite / Unit
-                                </label>
+                                </Label>
                                 <Input
                                     id="bill-street2"
                                     value={billStreet2}
@@ -680,9 +682,9 @@ export function SettingsPageClient() {
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-4 density-gap-card">
                                 <div className="space-y-2">
-                                    <label htmlFor="bill-city" className="text-sm font-medium">
+                                    <Label htmlFor="bill-city" className="text-sm font-medium">
                                         City
-                                    </label>
+                                    </Label>
                                     <Input
                                         id="bill-city"
                                         value={billCity}
@@ -690,9 +692,9 @@ export function SettingsPageClient() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label htmlFor="bill-state" className="text-sm font-medium">
+                                    <Label htmlFor="bill-state" className="text-sm font-medium">
                                         State / Province
-                                    </label>
+                                    </Label>
                                     <Input
                                         id="bill-state"
                                         value={billState}
@@ -700,9 +702,9 @@ export function SettingsPageClient() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label htmlFor="bill-postal" className="text-sm font-medium">
+                                    <Label htmlFor="bill-postal" className="text-sm font-medium">
                                         Postal Code
-                                    </label>
+                                    </Label>
                                     <Input
                                         id="bill-postal"
                                         value={billPostal}
@@ -710,9 +712,9 @@ export function SettingsPageClient() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label htmlFor="bill-country" className="text-sm font-medium">
+                                    <Label htmlFor="bill-country" className="text-sm font-medium">
                                         Country
-                                    </label>
+                                    </Label>
                                     <Input
                                         id="bill-country"
                                         value={billCountry}
@@ -740,9 +742,9 @@ export function SettingsPageClient() {
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                         <div className="space-y-2">
-                            <label htmlFor="ec-name" className="text-sm font-medium">
+                            <Label htmlFor="ec-name" className="text-sm font-medium">
                                 Full Name
-                            </label>
+                            </Label>
                             <Input
                                 id="ec-name"
                                 value={ecName}
@@ -750,9 +752,9 @@ export function SettingsPageClient() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="ec-relationship" className="text-sm font-medium">
+                            <Label htmlFor="ec-relationship" className="text-sm font-medium">
                                 Relationship
-                            </label>
+                            </Label>
                             <Input
                                 id="ec-relationship"
                                 value={ecRelationship}
@@ -761,9 +763,9 @@ export function SettingsPageClient() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="ec-phone" className="text-sm font-medium">
+                            <Label htmlFor="ec-phone" className="text-sm font-medium">
                                 Phone
-                            </label>
+                            </Label>
                             <Input
                                 id="ec-phone"
                                 type="tel"
@@ -772,9 +774,9 @@ export function SettingsPageClient() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="ec-email" className="text-sm font-medium">
+                            <Label htmlFor="ec-email" className="text-sm font-medium">
                                 Email
-                            </label>
+                            </Label>
                             <Input
                                 id="ec-email"
                                 type="email"
@@ -799,9 +801,9 @@ export function SettingsPageClient() {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-2">
-                        <label htmlFor="dietary" className="text-sm font-medium">
+                        <Label htmlFor="dietary" className="text-sm font-medium">
                             Dietary Needs &amp; Allergies
-                        </label>
+                        </Label>
                         <Input
                             id="dietary"
                             value={dietaryRestrictions}
@@ -826,9 +828,9 @@ export function SettingsPageClient() {
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                         <div className="space-y-2">
-                            <label htmlFor="tp-seat" className="text-sm font-medium">
+                            <Label htmlFor="tp-seat" className="text-sm font-medium">
                                 Seat Preference
-                            </label>
+                            </Label>
                             <Input
                                 id="tp-seat"
                                 value={tpSeatPref}
@@ -837,9 +839,9 @@ export function SettingsPageClient() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="tp-meal" className="text-sm font-medium">
+                            <Label htmlFor="tp-meal" className="text-sm font-medium">
                                 Meal Preference
-                            </label>
+                            </Label>
                             <Input
                                 id="tp-meal"
                                 value={tpMealPref}
@@ -848,9 +850,9 @@ export function SettingsPageClient() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="tp-airline" className="text-sm font-medium">
+                            <Label htmlFor="tp-airline" className="text-sm font-medium">
                                 Airline Loyalty Program
-                            </label>
+                            </Label>
                             <Input
                                 id="tp-airline"
                                 value={tpAirlineLoyalty}
@@ -859,9 +861,9 @@ export function SettingsPageClient() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="tp-hotel" className="text-sm font-medium">
+                            <Label htmlFor="tp-hotel" className="text-sm font-medium">
                                 Hotel Loyalty Program
-                            </label>
+                            </Label>
                             <Input
                                 id="tp-hotel"
                                 value={tpHotelLoyalty}
@@ -871,9 +873,9 @@ export function SettingsPageClient() {
                         </div>
                     </div>
                     <div className="space-y-2 mt-4">
-                        <label htmlFor="tp-notes" className="text-sm font-medium">
+                        <Label htmlFor="tp-notes" className="text-sm font-medium">
                             Additional Notes
-                        </label>
+                        </Label>
                         <Input
                             id="tp-notes"
                             value={tpNotes}
@@ -930,9 +932,9 @@ export function SettingsPageClient() {
                 <CardContent className="density-gap-section">
                     <div className="grid grid-cols-1 md:grid-cols-2 density-gap-card">
                         <div className="space-y-2">
-                            <label htmlFor="org-name" className="text-sm font-medium">
+                            <Label htmlFor="org-name" className="text-sm font-medium">
                                 Organization Name
-                            </label>
+                            </Label>
                             <div className="flex gap-2">
                                 <Input
                                     id="org-name"
@@ -967,9 +969,9 @@ export function SettingsPageClient() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="org-role" className="text-sm font-medium">
+                            <Label htmlFor="org-role" className="text-sm font-medium">
                                 Your Role
-                            </label>
+                            </Label>
                             <Input
                                 id="org-role"
                                 value={ROLE_LABELS[userRole] ?? userRole}
@@ -1217,10 +1219,10 @@ function TransferOwnershipCard() {
                 ) : (
                     <>
                         <div className="space-y-2">
-                            <label htmlFor="transfer-target" className="text-sm font-medium">
+                            <Label htmlFor="transfer-target" className="text-sm font-medium">
                                 New Owner
-                            </label>
-                            <select
+                            </Label>
+                            <NativeSelect
                                 id="transfer-target"
                                 value={targetUserId}
                                 onChange={(e) => setTargetUserId(e.target.value)}
@@ -1233,17 +1235,17 @@ function TransferOwnershipCard() {
                                         {m.user_id.slice(0, 8)}… ({ROLE_LABELS[m.role] ?? m.role})
                                     </option>
                                 ))}
-                            </select>
+                            </NativeSelect>
                         </div>
 
                         <div className="space-y-2">
-                            <label htmlFor="transfer-confirm" className="text-sm font-medium">
+                            <Label htmlFor="transfer-confirm" className="text-sm font-medium">
                                 Type{" "}
                                 <code className="text-xs bg-secondary px-1 py-0.5 rounded">
                                     transfer {orgName}
                                 </code>{" "}
                                 to confirm
-                            </label>
+                            </Label>
                             <Input
                                 id="transfer-confirm"
                                 value={confirmText}
@@ -1423,9 +1425,9 @@ function UsernameCard() {
                         )}
 
                         <div className="space-y-2">
-                            <label htmlFor="settings-username" className="text-sm font-medium">
+                            <Label htmlFor="settings-username" className="text-sm font-medium">
                                 {username ? "New Username" : "Choose a Username"}
-                            </label>
+                            </Label>
                             <div className="relative">
                                 <AtSign
                                     className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
@@ -1463,13 +1465,15 @@ function UsernameCard() {
                         {suggestions.length > 0 && (
                             <div className="flex flex-wrap gap-2">
                                 {suggestions.map((s) => (
-                                    <button
+                                    <Button
                                         key={s}
+                                        variant="outline"
+                                        size="sm"
                                         onClick={() => handleInputChange(s)}
-                                        className="px-2 py-1 text-xs rounded-md border border-border hover:bg-accent/10 transition-colors"
+                                        className="text-xs"
                                     >
                                         @{s}
-                                    </button>
+                                    </Button>
                                 ))}
                             </div>
                         )}

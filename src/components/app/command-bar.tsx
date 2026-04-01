@@ -8,6 +8,7 @@ import { SPRING_PRESETS } from "@/config/design-tokens";
 import { navigationConfig } from "@/config/navigation";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, Clock, Command, MessageSquare, Search, Sparkles, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
 
 interface CommandBarProps {
@@ -310,13 +311,15 @@ export function CommandBar({ className }: CommandBarProps) {
                             <kbd className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                                 esc
                             </kbd>
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => setOpen(false)}
-                                className="text-muted-foreground hover:text-foreground sm:hidden"
+                                className="h-8 w-8 sm:hidden"
                                 aria-label="Close command bar"
                             >
                                 <X className="h-4 w-4" />
-                            </button>
+                            </Button>
                         </div>
 
                         {/* Results — grouped by section */}
@@ -349,17 +352,18 @@ export function CommandBar({ className }: CommandBarProps) {
                                         {group.items.map(({ cmd, flatIndex }) => {
                                             const Icon = cmd.icon;
                                             return (
-                                                <button
+                                                <Button
                                                     key={cmd.id}
                                                     id={cmd.id}
                                                     data-selected={flatIndex === selectedIndex}
+                                                    variant="ghost"
                                                     onClick={() => handleSelect(cmd)}
                                                     onMouseEnter={() => setSelectedIndex(flatIndex)}
                                                     className={cn(
-                                                        "w-full flex items-center gap-3 px-4 py-2 text-left text-sm transition-colors",
+                                                        "w-full gap-3 px-4 py-2 h-auto justify-start rounded-none",
                                                         flatIndex === selectedIndex
                                                             ? "bg-accent text-accent-foreground"
-                                                            : "text-foreground hover:bg-accent/50"
+                                                            : "text-foreground"
                                                     )}
                                                     role="option"
                                                     aria-selected={flatIndex === selectedIndex}
@@ -378,7 +382,7 @@ export function CommandBar({ className }: CommandBarProps) {
                                                     {flatIndex === selectedIndex && (
                                                         <ArrowRight className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                                                     )}
-                                                </button>
+                                                </Button>
                                             );
                                         })}
                                     </div>

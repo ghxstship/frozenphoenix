@@ -72,6 +72,15 @@ function renderField(
                 <Input
                     {...commonProps}
                     type={field.type}
+                    inputMode={
+                        field.type === "email"
+                            ? "email"
+                            : field.type === "tel"
+                              ? "tel"
+                              : field.type === "url"
+                                ? "url"
+                                : undefined
+                    }
                     value={String(value ?? "")}
                     onChange={(e) => onChange(field.id, e.target.value)}
                     placeholder={field.placeholder}
@@ -84,6 +93,7 @@ function renderField(
                 <Input
                     {...commonProps}
                     type="number"
+                    inputMode="decimal"
                     value={String(value ?? "")}
                     onChange={(e) =>
                         onChange(field.id, e.target.value ? Number(e.target.value) : "")

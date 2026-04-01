@@ -229,15 +229,17 @@ export function FulfillmentPageClient() {
                                     <p className="text-xs text-muted-foreground mb-3">
                                         {Number(advance.total_items ?? 0)} items &middot; Created{" "}
                                         {new Date(String(advance.created_at)).toLocaleDateString()}
-                                        <button
-                                            className="ml-2 text-primary hover:underline"
+                                        <Button
+                                            variant="link"
+                                            size="sm"
+                                            className="ml-2 h-auto p-0"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 router.push(`/advancing/${id}`);
                                             }}
                                         >
                                             View Detail
-                                        </button>
+                                        </Button>
                                     </p>
                                     {isExpanded && <AdvanceItemsPanel advanceId={id} />}
                                 </CardContent>

@@ -4,6 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { MessageSquare, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Toggle } from "@/components/ui/toggle";
 import { useMessagingStrings } from "@/hooks/use-messaging-strings";
 
 interface SMSFallbackToggleProps {
@@ -55,26 +56,13 @@ export function SMSFallbackToggle({
                         {ms("sms_fallback_enabled")}
                     </Badge>
                 )}
-                <button
-                    role="switch"
-                    aria-checked={enabled}
+                <Toggle
+                    checked={enabled}
+                    onCheckedChange={() => onToggle(!enabled)}
                     aria-label={ms("sms_fallback_label")}
                     disabled={isPending}
-                    onClick={() => onToggle(!enabled)}
-                    className={cn(
-                        "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-                        "disabled:cursor-not-allowed disabled:opacity-50",
-                        enabled ? "bg-primary" : "bg-input"
-                    )}
-                >
-                    <span
-                        className={cn(
-                            "pointer-events-none block h-3.5 w-3.5 rounded-full bg-background shadow-sm ring-0 transition-transform",
-                            enabled ? "translate-x-4" : "translate-x-0.5"
-                        )}
-                    />
-                </button>
+                    size="sm"
+                />
             </div>
         </div>
     );

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { ChevronRight, Folder, FolderOpen, LayoutGrid } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CATALOG_CATEGORY_TYPE_MAP } from "@/config/advancing-config";
 import type { CatalogCategoryType } from "@/types";
@@ -139,17 +140,15 @@ function TreeItem({ node, selectedId, onSelect, expandedIds, onToggle, level }: 
             aria-expanded={hasChildren ? isExpanded : undefined}
             aria-selected={isSelected}
         >
-            <button
-                type="button"
+            <Button
+                variant="ghost"
                 onClick={() => {
                     onSelect(node.id);
                     if (hasChildren && !isExpanded) onToggle(node.id);
                 }}
                 onKeyDown={handleKeyDown}
                 className={cn(
-                    "group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
-                    "hover:bg-accent hover:text-accent-foreground",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "group w-full justify-start gap-2 h-auto px-2 py-1.5",
                     isSelected && "bg-accent text-accent-foreground font-medium",
                     !isSelected && "text-muted-foreground"
                 )}
@@ -193,7 +192,7 @@ function TreeItem({ node, selectedId, onSelect, expandedIds, onToggle, level }: 
                         {totalItems}
                     </span>
                 )}
-            </button>
+            </Button>
 
             {hasChildren && isExpanded && (
                 <ul
@@ -271,13 +270,11 @@ export function CategoryTree({ categories, selectedId, onSelect, className }: Ca
 
     return (
         <nav className={cn("flex flex-col", className)} aria-label="Catalog categories">
-            <button
-                type="button"
+            <Button
+                variant="ghost"
                 onClick={() => onSelect(null)}
                 className={cn(
-                    "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors mb-1",
-                    "hover:bg-accent hover:text-accent-foreground",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "w-full justify-start gap-2 h-auto px-2 py-1.5 mb-1",
                     selectedId === null && "bg-accent text-accent-foreground font-medium",
                     selectedId !== null && "text-muted-foreground"
                 )}
@@ -295,7 +292,7 @@ export function CategoryTree({ categories, selectedId, onSelect, className }: Ca
                 >
                     {totalItems}
                 </span>
-            </button>
+            </Button>
 
             <div className="h-px bg-border my-1" role="separator" />
 

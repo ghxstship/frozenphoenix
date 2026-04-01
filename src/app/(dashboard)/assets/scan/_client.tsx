@@ -16,6 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { BadgeCheck, CheckCircle2, MapPin, Package, QrCode, XCircle } from "lucide-react";
 import { ScanFeedback, ScanInput } from "@/components/scanning";
 import { ListPageShell } from "@/components/shells";
@@ -130,9 +131,9 @@ export function AssetScannerPageClient() {
                                     <div className="flex flex-col items-center density-gap-page">
                                         {/* Scan type selector */}
                                         <div className="w-full max-w-md">
-                                            <label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2 block">
+                                            <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2 block">
                                                 {S.scanType}
-                                            </label>
+                                            </Label>
                                             <Select
                                                 value={scanAction}
                                                 onValueChange={(v) =>

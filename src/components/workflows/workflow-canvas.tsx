@@ -288,9 +288,10 @@ export function WorkflowCanvas({
                                     </Badge>
                                 </div>
                                 <div className="flex flex-col gap-1 shrink-0">
-                                    <button
-                                        type="button"
-                                        className="p-0.5 rounded hover:bg-destructive/20"
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-5 w-5 p-0 hover:bg-destructive/20"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             deleteNode(node.id);
@@ -298,10 +299,11 @@ export function WorkflowCanvas({
                                         aria-label="Delete node"
                                     >
                                         <Trash2 className="h-3 w-3 text-destructive" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="p-0.5 rounded hover:bg-primary/20"
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-5 w-5 p-0 hover:bg-primary/20"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             if (connecting) {
@@ -322,7 +324,7 @@ export function WorkflowCanvas({
                                                     : "text-muted-foreground"
                                             )}
                                         />
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </div>

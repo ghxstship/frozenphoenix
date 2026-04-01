@@ -2,6 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 
 export interface SplitLayoutProps {
@@ -44,14 +45,16 @@ export function SplitLayout({
                     aria-label="Detail panel"
                 >
                     {onBack && (
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={onBack}
-                            className="lg:hidden flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors px-4 pt-3 pb-1"
+                            className="lg:hidden gap-1 px-4 pt-3 pb-1 h-auto text-muted-foreground"
                             aria-label="Back to list"
                         >
                             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
                             Back
-                        </button>
+                        </Button>
                     )}
                     <div className="p-4 lg:pl-4">{detail}</div>
                 </div>

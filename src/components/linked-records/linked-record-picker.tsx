@@ -39,15 +39,10 @@ function EntityTypeSelector({
 
     return (
         <div className="relative">
-            <button
-                type="button"
+            <Button
+                variant="outline"
                 onClick={() => setOpen(!open)}
-                className={cn(
-                    "flex items-center justify-between w-full px-3 py-2 text-sm",
-                    "border border-border rounded-md bg-background",
-                    "hover:bg-secondary/50 transition-colors",
-                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                )}
+                className="flex items-center justify-between w-full h-auto px-3 py-2"
             >
                 {value ? (
                     <span className="flex items-center gap-2">
@@ -69,7 +64,7 @@ function EntityTypeSelector({
                         open && "rotate-180"
                     )}
                 />
-            </button>
+            </Button>
 
             {open && (
                 <div className="absolute z-50 mt-1 w-full max-h-64 overflow-auto rounded-md border border-border bg-popover shadow-lg">
@@ -78,16 +73,15 @@ function EntityTypeSelector({
                         if (!config) return null;
                         const Icon = config.icon;
                         return (
-                            <button
+                            <Button
                                 key={type}
-                                type="button"
+                                variant="ghost"
                                 onClick={() => {
                                     onChange(type);
                                     setOpen(false);
                                 }}
                                 className={cn(
-                                    "flex items-center gap-2 w-full px-3 py-2 text-sm",
-                                    "hover:bg-secondary/50 transition-colors text-left",
+                                    "w-full justify-start gap-2 h-auto px-3 py-2",
                                     value === type && "bg-secondary/30"
                                 )}
                             >
@@ -96,7 +90,7 @@ function EntityTypeSelector({
                                 {value === type && (
                                     <Check className="h-3.5 w-3.5 text-primary ml-auto shrink-0" />
                                 )}
-                            </button>
+                            </Button>
                         );
                     })}
                 </div>
@@ -232,13 +226,11 @@ export function LinkedRecordPicker({
                                     const config = ENTITY_RELATIONSHIP_MAP[result.entityType];
                                     const Icon = config?.icon;
                                     return (
-                                        <button
+                                        <Button
                                             key={result.id}
-                                            type="button"
+                                            variant="ghost"
                                             onClick={() => handleSelect(result)}
-                                            className="flex items-center gap-2 w-full px-3 py-2 text-sm
-                                                hover:bg-secondary/50 transition-colors text-left
-                                                focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                                            className="w-full justify-start gap-2 h-auto px-3 py-2 rounded-none"
                                         >
                                             {Icon && (
                                                 <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -254,7 +246,7 @@ export function LinkedRecordPicker({
                                                     {result.status}
                                                 </Badge>
                                             )}
-                                        </button>
+                                        </Button>
                                     );
                                 })}
                             </div>

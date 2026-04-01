@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Globe, Loader2 } from "lucide-react";
 import {
     DropdownMenu,
@@ -52,12 +53,14 @@ export function TranslateButton({
                 <p className="text-xs text-foreground/80 italic bg-secondary/30 rounded px-2 py-1">
                     {translatedText}
                 </p>
-                <button
+                <Button
+                    variant="link"
+                    size="sm"
                     onClick={onShowOriginal}
-                    className="density-caption text-primary hover:underline"
+                    className="density-caption p-0 h-auto"
                 >
                     {ms("translate_show_original")}
-                </button>
+                </Button>
             </div>
         );
     }
@@ -77,16 +80,18 @@ export function TranslateButton({
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Tooltip content={ms("translate_button")} side="top">
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="sm"
                         className={cn(
-                            "inline-flex items-center gap-1 mt-1 density-caption text-muted-foreground hover:text-foreground transition-colors",
+                            "inline-flex items-center gap-1 mt-1 density-caption h-auto p-0 text-muted-foreground hover:text-foreground",
                             className
                         )}
                         aria-label={ms("translate_button")}
                     >
                         <Globe className="h-3 w-3" />
                         {ms("translate_button")}
-                    </button>
+                    </Button>
                 </Tooltip>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-36">

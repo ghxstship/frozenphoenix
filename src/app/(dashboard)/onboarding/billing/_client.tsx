@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { csrfHeaders } from "@/lib/security/csrf";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
     Bot,
     Brain,
@@ -251,25 +252,18 @@ function BillingForm({
                         <div className="space-y-8">
                             {/* Billing cycle toggle */}
                             <div className="flex items-center justify-center gap-3">
-                                <button
+                                <Button
+                                    variant={billingCycle === "monthly" ? "default" : "ghost"}
+                                    size="sm"
                                     onClick={() => setBillingCycle("monthly")}
-                                    className={cn(
-                                        "text-sm font-medium px-3 py-1.5 rounded-lg transition-colors",
-                                        billingCycle === "monthly"
-                                            ? "bg-primary text-primary-foreground"
-                                            : "text-muted-foreground hover:text-foreground"
-                                    )}
                                 >
                                     Monthly
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant={billingCycle === "annual" ? "default" : "ghost"}
+                                    size="sm"
                                     onClick={() => setBillingCycle("annual")}
-                                    className={cn(
-                                        "text-sm font-medium px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5",
-                                        billingCycle === "annual"
-                                            ? "bg-primary text-primary-foreground"
-                                            : "text-muted-foreground hover:text-foreground"
-                                    )}
+                                    className="flex items-center gap-1.5"
                                 >
                                     Annual
                                     {annualSavings > 0 && (
@@ -277,7 +271,7 @@ function BillingForm({
                                             Save {annualSavings}%
                                         </Badge>
                                     )}
-                                </button>
+                                </Button>
                             </div>
 
                             {/* Plan cards — 5 tiers */}
@@ -291,11 +285,12 @@ function BillingForm({
                                     const Icon = card.icon;
 
                                     return (
-                                        <button
+                                        <Button
                                             key={card.tier}
+                                            variant="ghost"
                                             onClick={() => setSelectedTier(card.tier)}
                                             className={cn(
-                                                "relative rounded-xl border p-5 text-left transition-all flex flex-col",
+                                                "relative rounded-xl border p-5 h-auto text-left flex flex-col",
                                                 isSelected
                                                     ? "border-primary ring-2 ring-primary/20 bg-primary/[0.02]"
                                                     : "border-border hover:border-primary/40 bg-card"
@@ -415,7 +410,7 @@ function BillingForm({
                                                     }
                                                 )}
                                             </div>
-                                        </button>
+                                        </Button>
                                     );
                                 })}
                             </div>

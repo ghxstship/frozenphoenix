@@ -13,6 +13,7 @@ import { ErrorBoundary } from "@/components/app/error-boundary";
 import { EmailCollectionBanner } from "@/components/auth";
 import { PageTransition } from "@/components/ui/page-transition";
 import { LoadingState } from "@/components/layouts/loading-state";
+import { OfflineBanner } from "@/components/layouts/offline-banner";
 import { useCopilotContext } from "@/hooks/use-copilot-context";
 import { useMessagingEnabled } from "@/hooks/use-messaging-enabled";
 
@@ -91,6 +92,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                     {/* Bluesky email collection prompt */}
                     <EmailCollectionBanner />
+
+                    {/* Offline network status banner */}
+                    <OfflineBanner />
 
                     {/* Main content landmark (WCAG 1.3.1) */}
                     <main

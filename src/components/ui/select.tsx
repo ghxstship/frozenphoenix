@@ -30,7 +30,15 @@ const SelectContext = React.createContext<SelectContextValue>({
     listboxId: "",
 });
 
-export function Select({ value, onValueChange, children }: { value: string; onValueChange: (v: string) => void; children: React.ReactNode }) {
+export function Select({
+    value,
+    onValueChange,
+    children,
+}: {
+    value: string;
+    onValueChange: (v: string) => void;
+    children: React.ReactNode;
+}) {
     const [open, setOpen] = React.useState(false);
     const [highlightedIndex, setHighlightedIndex] = React.useState(-1);
     const [optionValues, setOptionValues] = React.useState<string[]>([]);
@@ -64,83 +72,126 @@ export function Select({ value, onValueChange, children }: { value: string; onVa
     }, []);
 
     return (
-        <SelectContext.Provider value={{ value, onValueChange, open, setOpen, highlightedIndex, setHighlightedIndex, optionValues, registerOption, unregisterOption, listboxId }}>
-            <div className="relative inline-block" data-select ref={containerRef} onBlur={handleFocusOut}>
+        <SelectContext.Provider
+            value={{
+                value,
+                onValueChange,
+                open,
+                setOpen,
+                highlightedIndex,
+                setHighlightedIndex,
+                optionValues,
+                registerOption,
+                unregisterOption,
+                listboxId,
+            }}
+        >
+            <div
+                className="relative inline-block"
+                data-select
+                ref={containerRef}
+                onBlur={handleFocusOut}
+            >
                 {children}
             </div>
         </SelectContext.Provider>
     );
 }
 
-export function SelectTrigger({ children, className, id }: { children: React.ReactNode; className?: string; id?: string }) {
-    const { open, setOpen, highlightedIndex, setHighlightedIndex, optionValues, onValueChange, listboxId: ctxListboxId } = React.useContext(SelectContext);
+export function SelectTrigger({
+    children,
+    className,
+    id,
+}: {
+    children: React.ReactNode;
+    className?: string;
+    id?: string;
+}) {
+    const {
+        open,
+        setOpen,
+        highlightedIndex,
+        setHighlightedIndex,
+        optionValues,
+        onValueChange,
+        listboxId: ctxListboxId,
+    } = React.useContext(SelectContext);
     const resolvedListboxId = id ? `${id}-listbox` : ctxListboxId;
     const typeAheadRef = React.useRef("");
     const typeAheadTimerRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
 
-    const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
-        switch (e.key) {
-            case "ArrowDown":
-                e.preventDefault();
-                if (!open) {
-                    setOpen(true);
-                    setHighlightedIndex(0);
-                } else {
-                    setHighlightedIndex(Math.min(highlightedIndex + 1, optionValues.length - 1));
-                }
-                break;
-            case "ArrowUp":
-                e.preventDefault();
-                if (!open) {
-                    setOpen(true);
-                    setHighlightedIndex(optionValues.length - 1);
-                } else {
-                    setHighlightedIndex(Math.max(highlightedIndex - 1, 0));
-                }
-                break;
-            case "Home":
-                if (open) {
+    const handleKeyDown = React.useCallback(
+        (e: React.KeyboardEvent) => {
+            switch (e.key) {
+                case "ArrowDown":
                     e.preventDefault();
-                    setHighlightedIndex(0);
-                }
-                break;
-            case "End":
-                if (open) {
-                    e.preventDefault();
-                    setHighlightedIndex(optionValues.length - 1);
-                }
-                break;
-            case "Enter":
-            case " ":
-                e.preventDefault();
-                if (open && highlightedIndex >= 0 && optionValues[highlightedIndex]) {
-                    onValueChange(optionValues[highlightedIndex]);
-                    setOpen(false);
-                } else if (!open) {
-                    setOpen(true);
-                    setHighlightedIndex(0);
-                }
-                break;
-            case "Escape":
-                if (open) {
-                    e.preventDefault();
-                    setOpen(false);
-                }
-                break;
-            default:
-                if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
-                    typeAheadRef.current += e.key.toLowerCase();
-                    clearTimeout(typeAheadTimerRef.current);
-                    typeAheadTimerRef.current = setTimeout(() => { typeAheadRef.current = ""; }, 500);
-                    const match = optionValues.findIndex((v) => v.toLowerCase().startsWith(typeAheadRef.current));
-                    if (match >= 0) {
-                        if (!open) setOpen(true);
-                        setHighlightedIndex(match);
+                    if (!open) {
+                        setOpen(true);
+                        setHighlightedIndex(0);
+                    } else {
+                        setHighlightedIndex(
+                            Math.min(highlightedIndex + 1, optionValues.length - 1)
+                        );
                     }
-                }
-                break;
-        }
-    }, [open, setOpen, highlightedIndex, setHighlightedIndex, optionValues, onValueChange]);
+                    break;
+                case "ArrowUp":
+                    e.preventDefault();
+                    if (!open) {
+                        setOpen(true);
+                        setHighlightedIndex(optionValues.length - 1);
+                    } else {
+                        setHighlightedIndex(Math.max(highlightedIndex - 1, 0));
+                    }
+                    break;
+                case "Home":
+                    if (open) {
+                        e.preventDefault();
+                        setHighlightedIndex(0);
+                    }
+                    break;
+                case "End":
+                    if (open) {
+                        e.preventDefault();
+                        setHighlightedIndex(optionValues.length - 1);
+                    }
+                    break;
+                case "Enter":
+                case " ":
+                    e.preventDefault();
+                    if (open && highlightedIndex >= 0 && optionValues[highlightedIndex]) {
+                        onValueChange(optionValues[highlightedIndex]);
+                        setOpen(false);
+                    } else if (!open) {
+                        setOpen(true);
+                        setHighlightedIndex(0);
+                    }
+                    break;
+                case "Escape":
+                    if (open) {
+                        e.preventDefault();
+                        setOpen(false);
+                    }
+                    break;
+                default:
+                    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+                        typeAheadRef.current += e.key.toLowerCase();
+                        clearTimeout(typeAheadTimerRef.current);
+                        typeAheadTimerRef.current = setTimeout(() => {
+                            typeAheadRef.current = "";
+                        }, 500);
+                        const match = optionValues.findIndex((v) =>
+                            v.toLowerCase().startsWith(typeAheadRef.current)
+                        );
+                        if (match >= 0) {
+                            if (!open) setOpen(true);
+                            setHighlightedIndex(match);
+                        }
+                    }
+                    break;
+            }
+        },
+        [open, setOpen, highlightedIndex, setHighlightedIndex, optionValues, onValueChange]
+    );
 
     return (
         <button
@@ -149,12 +200,19 @@ export function SelectTrigger({ children, className, id }: { children: React.Rea
             aria-expanded={open}
             aria-haspopup="listbox"
             aria-controls={open ? resolvedListboxId : undefined}
-            aria-activedescendant={open && highlightedIndex >= 0 ? `${resolvedListboxId}-option-${highlightedIndex}` : undefined}
+            aria-activedescendant={
+                open && highlightedIndex >= 0
+                    ? `${resolvedListboxId}-option-${highlightedIndex}`
+                    : undefined
+            }
             className={cn(
-                "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+                "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-base sm:text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
                 className
             )}
-            onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+            onClick={(e) => {
+                e.stopPropagation();
+                setOpen(!open);
+            }}
             onKeyDown={handleKeyDown}
         >
             {children}
@@ -168,7 +226,13 @@ export function SelectValue({ placeholder }: { placeholder?: string }) {
     return <span className={cn(!value && "text-muted-foreground")}>{value || placeholder}</span>;
 }
 
-export function SelectContent({ children, className }: { children: React.ReactNode; className?: string }) {
+export function SelectContent({
+    children,
+    className,
+}: {
+    children: React.ReactNode;
+    className?: string;
+}) {
     const { open, listboxId } = React.useContext(SelectContext);
     if (!open) return null;
     return (
@@ -186,7 +250,17 @@ export function SelectContent({ children, className }: { children: React.ReactNo
 }
 
 export function SelectItem({ value, children }: { value: string; children: React.ReactNode }) {
-    const { value: selectedValue, onValueChange, setOpen, highlightedIndex, setHighlightedIndex, optionValues, registerOption, unregisterOption, listboxId } = React.useContext(SelectContext);
+    const {
+        value: selectedValue,
+        onValueChange,
+        setOpen,
+        highlightedIndex,
+        setHighlightedIndex,
+        optionValues,
+        registerOption,
+        unregisterOption,
+        listboxId,
+    } = React.useContext(SelectContext);
     const index = optionValues.indexOf(value);
     const isHighlighted = index >= 0 && index === highlightedIndex;
 
@@ -206,7 +280,10 @@ export function SelectItem({ value, children }: { value: string; children: React
                 selectedValue === value && "bg-accent text-accent-foreground",
                 isHighlighted && "bg-accent text-accent-foreground"
             )}
-            onClick={() => { onValueChange(value); setOpen(false); }}
+            onClick={() => {
+                onValueChange(value);
+                setOpen(false);
+            }}
             onMouseEnter={() => setHighlightedIndex(index)}
         >
             {children}

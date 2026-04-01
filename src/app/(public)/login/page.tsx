@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
     AuthFormField,
     AuthLayout,
@@ -239,9 +240,9 @@ function LoginForm() {
                 />
 
                 <div className="space-y-2">
-                    <label htmlFor="login-password" className="text-sm font-medium leading-none">
+                    <Label htmlFor="login-password" className="text-sm font-medium leading-none">
                         Password
-                    </label>
+                    </Label>
                     <PasswordInput
                         id="login-password"
                         placeholder="••••••••"
@@ -304,11 +305,12 @@ function LoginForm() {
                 </div>
             ) : (
                 <div className="text-center">
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={handleMagicLink}
                         disabled={isDisabled || magicLinkLoading}
-                        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+                        className="gap-1.5 text-sm text-muted-foreground"
                     >
                         {magicLinkLoading ? (
                             <Loader2
@@ -319,7 +321,7 @@ function LoginForm() {
                             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                         )}
                         Sign in with email link instead
-                    </button>
+                    </Button>
                 </div>
             )}
 

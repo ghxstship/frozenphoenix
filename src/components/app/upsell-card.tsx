@@ -34,18 +34,18 @@ export function UpsellCard({
 
     if (compact) {
         return (
-            <button
+            <Button
+                variant="outline"
+                size="sm"
                 onClick={() => router.push("/onboarding/billing")}
                 className={cn(
-                    "inline-flex items-center gap-1.5 rounded-md border border-dashed border-primary/30",
-                    "bg-primary/[0.03] px-2.5 py-1.5 text-xs text-muted-foreground",
-                    "transition-colors hover:border-primary/50 hover:bg-primary/[0.06]",
+                    "gap-1.5 border-dashed border-primary/30 bg-primary/[0.03] hover:border-primary/50 hover:bg-primary/[0.06]",
                     className
                 )}
             >
                 <Lock className="h-3 w-3 text-primary/60" aria-hidden="true" />
                 <span>{requiredTierName} plan</span>
-            </button>
+            </Button>
         );
     }
 

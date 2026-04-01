@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/auth";
 import { mapAuthError, validatePassword } from "@/features/auth/utils/auth-utils";
 import {
@@ -255,9 +256,9 @@ export function SecuritySettingsPageClient() {
                             )}
 
                             <div className="space-y-2">
-                                <label htmlFor="current-pw" className="text-sm font-medium">
+                                <Label htmlFor="current-pw" className="text-sm font-medium">
                                     Current Password
-                                </label>
+                                </Label>
                                 <PasswordInput
                                     id="current-pw"
                                     value={currentPassword}
@@ -268,9 +269,9 @@ export function SecuritySettingsPageClient() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label htmlFor="new-pw" className="text-sm font-medium">
+                                <Label htmlFor="new-pw" className="text-sm font-medium">
                                     New Password
-                                </label>
+                                </Label>
                                 <PasswordInput
                                     id="new-pw"
                                     value={newPassword}
@@ -282,9 +283,9 @@ export function SecuritySettingsPageClient() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label htmlFor="confirm-new-pw" className="text-sm font-medium">
+                                <Label htmlFor="confirm-new-pw" className="text-sm font-medium">
                                     Confirm New Password
-                                </label>
+                                </Label>
                                 <PasswordInput
                                     id="confirm-new-pw"
                                     value={confirmPassword}

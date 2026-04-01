@@ -4,6 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useAdvanceCart } from "@/hooks/use-advance-cart";
 import { useCreateAdvance } from "@/lib/supabase/hooks-advancing";
 import { useEvents } from "@/lib/supabase";
@@ -110,13 +111,9 @@ export function AdvanceCheckout({ onBack, onSuccess, className }: AdvanceCheckou
         <div className={cn("flex flex-col gap-6", className)}>
             {/* Header */}
             <div className="flex items-center gap-3">
-                <button
-                    onClick={onBack}
-                    className="rounded-md p-1.5 hover:bg-accent"
-                    aria-label="Back to catalog"
-                >
+                <Button variant="ghost" size="icon" onClick={onBack} aria-label="Back to catalog">
                     <ArrowLeft className="h-5 w-5" />
-                </button>
+                </Button>
                 <div>
                     <h2 className="text-xl font-semibold">Review & Submit</h2>
                     <p className="text-sm text-muted-foreground">
@@ -363,22 +360,14 @@ export function AdvanceCheckout({ onBack, onSuccess, className }: AdvanceCheckou
 
             {/* Actions */}
             <div className="flex items-center justify-end gap-3 border-t pt-4">
-                <button
-                    onClick={() => handleSubmit(true)}
-                    disabled={!canSubmit}
-                    className="inline-flex items-center gap-1.5 rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
-                >
+                <Button variant="outline" onClick={() => handleSubmit(true)} disabled={!canSubmit}>
                     <CheckCircle2 className="h-4 w-4" />
                     Save as Draft
-                </button>
-                <button
-                    onClick={() => handleSubmit(false)}
-                    disabled={!canSubmit}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
-                >
+                </Button>
+                <Button onClick={() => handleSubmit(false)} disabled={!canSubmit}>
                     <Send className="h-4 w-4" />
                     {isSubmitting ? COMMON_STRINGS.action_submitting : "Submit for Review"}
-                </button>
+                </Button>
             </div>
         </div>
     );

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
+import { Textarea } from "@/components/ui/textarea";
 import { SettingsPageShell } from "@/components/shells/settings-page-shell";
 import type { SettingsPageConfig } from "@/types/settings-page-config";
 import {
@@ -286,9 +287,11 @@ function ProvidersPanel() {
                                             onChange={(e) => setKeyInput(e.target.value)}
                                             className="pr-10"
                                         />
-                                        <button
+                                        <Button
                                             type="button"
-                                            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 h-auto w-auto p-1"
                                             onClick={() => setKeyVisible(!keyVisible)}
                                         >
                                             {keyVisible ? (
@@ -296,7 +299,7 @@ function ProvidersPanel() {
                                             ) : (
                                                 <Eye className="h-4 w-4" />
                                             )}
-                                        </button>
+                                        </Button>
                                     </div>
                                     <Button
                                         size="sm"
@@ -577,7 +580,7 @@ function SystemPromptsPanel() {
                     <CardContent>
                         {editing === prompt.id ? (
                             <div className="space-y-3">
-                                <textarea
+                                <Textarea
                                     className="w-full min-h-[200px] rounded-md border bg-background px-3 py-2 text-sm font-mono resize-y"
                                     value={editText}
                                     onChange={(e) => setEditText(e.target.value)}
@@ -835,7 +838,7 @@ function KnowledgeBasePanel() {
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Knowledge Base</h3>
                 <div className="flex gap-2">
-                    <input
+                    <Input
                         ref={fileInputRef}
                         type="file"
                         className="hidden"

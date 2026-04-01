@@ -240,26 +240,30 @@ export function CommentsSection({
                                                             role="menu"
                                                             aria-label="Comment actions"
                                                         >
-                                                            <button
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
                                                                 role="menuitem"
                                                                 onClick={() =>
                                                                     startEditing(comment)
                                                                 }
-                                                                className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded hover:bg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                                                className="w-full justify-start gap-2 text-xs h-auto py-1.5"
                                                             >
                                                                 <Pencil className="h-3 w-3" />
                                                                 Edit
-                                                            </button>
-                                                            <button
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
                                                                 role="menuitem"
                                                                 onClick={() =>
                                                                     handleDelete(comment.id)
                                                                 }
-                                                                className="w-full flex items-center gap-2 px-2 py-1.5 text-xs rounded text-destructive hover:bg-destructive/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                                                className="w-full justify-start gap-2 text-xs h-auto py-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
                                                             >
                                                                 <Trash2 className="h-3 w-3" />
                                                                 Delete
-                                                            </button>
+                                                            </Button>
                                                         </div>
                                                     )}
                                                 </div>

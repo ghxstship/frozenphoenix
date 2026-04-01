@@ -31,6 +31,7 @@ import {
     Type,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
+import { Label } from "@/components/ui/label";
 import { ListPageShell } from "@/components/shells";
 import type { ListPageConfig } from "@/types/list-page-config";
 import { useCustomFieldDefinitions, useUpdateCustomFieldDefinition } from "@/lib/supabase";
@@ -340,7 +341,7 @@ export function CustomFieldsPageClient() {
                         <DialogTitle>Edit Custom Field</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-3">
-                        <label className="text-sm font-medium">Field Name</label>
+                        <Label className="text-sm font-medium">Field Name</Label>
                         <Input
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}

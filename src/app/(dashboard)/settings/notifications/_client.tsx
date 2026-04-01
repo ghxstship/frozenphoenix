@@ -3,6 +3,8 @@
 import React, { useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Toggle } from "@/components/ui/toggle";
 import { SettingsPageShell } from "@/components/shells/settings-page-shell";
 import type { SettingsPageConfig } from "@/types/settings-page-config";
 import { useAuth } from "@/lib/supabase/auth-context";
@@ -14,31 +16,7 @@ import { useToast } from "@/components/ui/toast";
 import { Bell, Clock, Mail, MessageSquare, Moon, Smartphone, Zap } from "lucide-react";
 import { LoadingState } from "@/components/layouts/loading-state";
 
-// ─── Toggle Switch ───────────────────────────────────────────
-
-function ToggleSwitch({
-    enabled,
-    onToggle,
-    label,
-}: {
-    enabled: boolean;
-    onToggle: () => void;
-    label: string;
-}) {
-    return (
-        <button
-            onClick={onToggle}
-            className={`h-6 w-11 rounded-full transition-colors ${enabled ? "bg-primary" : "bg-muted"}`}
-            role="switch"
-            aria-checked={enabled}
-            aria-label={`Toggle ${label}`}
-        >
-            <div
-                className={`h-5 w-5 rounded-full bg-background shadow-sm transition-transform ${enabled ? "translate-x-5" : "translate-x-0.5"}`}
-            />
-        </button>
-    );
-}
+// ─── Toggle Switch (uses library Toggle) ─────────────────────
 
 // ─── Channel Row ─────────────────────────────────────────────
 
@@ -64,7 +42,12 @@ function ChannelRow({
                     <p className="text-xs text-muted-foreground">{description}</p>
                 </div>
             </div>
-            <ToggleSwitch enabled={enabled} onToggle={onToggle} label={label} />
+            <Toggle
+                checked={enabled}
+                onCheckedChange={onToggle}
+                aria-label={`Toggle ${label}`}
+                size="sm"
+            />
         </div>
     );
 }
@@ -209,7 +192,7 @@ export function NotificationSettingsPageClient() {
                     {getBool("quiet_hours_enabled") && (
                         <div className="grid grid-cols-1 density-gap-card pl-10 sm:grid-cols-3">
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium">Start</label>
+                                <Label>Start</Label>
                                 <Input
                                     type="time"
                                     value={getString("quiet_hours_start", "22:00")}
@@ -219,7 +202,7 @@ export function NotificationSettingsPageClient() {
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium">End</label>
+                                <Label>End</Label>
                                 <Input
                                     type="time"
                                     value={getString("quiet_hours_end", "08:00")}
@@ -229,7 +212,7 @@ export function NotificationSettingsPageClient() {
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium">Timezone</label>
+                                <Label>Timezone</Label>
                                 <Input
                                     value={getString(
                                         "quiet_hours_timezone",

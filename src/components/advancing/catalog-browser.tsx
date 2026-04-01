@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
 import { ChevronRight, Filter, Package, Search } from "lucide-react";
 import {
@@ -98,20 +99,19 @@ export function CatalogBrowser({ onAddItem, className }: CatalogBrowserProps) {
                         aria-label="Search catalog items"
                     />
                 </div>
-                <button
+                <Button
+                    variant={showFilters ? "outline" : "outline"}
                     onClick={() => setShowFilters(!showFilters)}
                     className={cn(
-                        "inline-flex h-10 items-center gap-1.5 rounded-md border px-3 text-sm transition-colors",
-                        showFilters
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-input hover:bg-accent"
+                        "h-10 gap-1.5",
+                        showFilters && "border-primary bg-primary/10 text-primary"
                     )}
                     aria-expanded={showFilters}
                     aria-label="Toggle filters"
                 >
                     <Filter className="h-4 w-4" />
                     Filters
-                </button>
+                </Button>
             </div>
 
             {/* Filters panel */}
@@ -138,25 +138,30 @@ export function CatalogBrowser({ onAddItem, className }: CatalogBrowserProps) {
             {/* Breadcrumb navigation */}
             {!isSearching && breadcrumb.length > 0 && (
                 <nav aria-label="Category breadcrumb" className="flex items-center gap-1 text-sm">
-                    <button
+                    <Button
+                        variant="link"
+                        size="sm"
                         onClick={() => handleBreadcrumbClick(-1)}
-                        className="text-primary hover:underline"
+                        className="h-auto p-0 text-primary"
                     >
                         All Categories
-                    </button>
+                    </Button>
                     {breadcrumb.map((crumb, index) => (
                         <React.Fragment key={crumb.id}>
                             <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                            <button
+                            <Button
+                                variant="link"
+                                size="sm"
                                 onClick={() => handleBreadcrumbClick(index)}
                                 className={cn(
+                                    "h-auto p-0",
                                     index === breadcrumb.length - 1
-                                        ? "font-medium text-foreground"
-                                        : "text-primary hover:underline"
+                                        ? "font-medium text-foreground no-underline"
+                                        : "text-primary"
                                 )}
                             >
                                 {crumb.name}
-                            </button>
+                            </Button>
                         </React.Fragment>
                     ))}
                 </nav>
@@ -166,12 +171,13 @@ export function CatalogBrowser({ onAddItem, className }: CatalogBrowserProps) {
             {!isSearching && filteredCategories.length > 0 && (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                     {filteredCategories.map((category) => (
-                        <button
+                        <Button
                             key={category.id as string}
+                            variant="outline"
                             onClick={() =>
                                 handleCategoryClick(category.id as string, category.name as string)
                             }
-                            className="group flex flex-col items-start gap-2 rounded-lg border bg-card p-4 text-left transition-colors hover:border-primary hover:bg-accent/50"
+                            className="group h-auto flex flex-col items-start gap-2 p-4 text-left hover:border-primary hover:bg-accent/50"
                         >
                             <div className="flex w-full items-center justify-between">
                                 <Package className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
@@ -189,7 +195,7 @@ export function CatalogBrowser({ onAddItem, className }: CatalogBrowserProps) {
                                         {category.item_count as number} items
                                     </span>
                                 )}
-                        </button>
+                        </Button>
                     ))}
                 </div>
             )}

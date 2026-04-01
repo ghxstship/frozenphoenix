@@ -3,6 +3,8 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Hash, Lock, Megaphone, Plus, Search, Users } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { ConversationListItem } from "@/types/messaging";
@@ -51,13 +53,15 @@ export function ConversationList({
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
                 <h2 className="text-sm font-semibold">{ms("panel_title")}</h2>
                 <Tooltip content={ms("conversations_new")} side="bottom">
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={onCompose}
-                        className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        className="h-7 w-7"
                         aria-label={ms("conversations_new")}
                     >
                         <Plus className="h-4 w-4" />
-                    </button>
+                    </Button>
                 </Tooltip>
             </div>
 
@@ -65,12 +69,12 @@ export function ConversationList({
             <div className="px-3 py-2 border-b border-border">
                 <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                    <input
+                    <Input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => onSearchChange(e.target.value)}
                         placeholder={ms("conversations_search")}
-                        className="w-full rounded-md border border-border bg-secondary/30 pl-8 pr-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
+                        className="w-full pl-8 h-8"
                         aria-label={ms("conversations_search")}
                     />
                 </div>
@@ -98,12 +102,14 @@ export function ConversationList({
                             {searchQuery ? ms("conversations_empty") : ms("conversations_empty")}
                         </p>
                         {!searchQuery && (
-                            <button
+                            <Button
+                                variant="link"
+                                size="sm"
                                 onClick={onCompose}
-                                className="mt-2 text-xs text-primary hover:underline"
+                                className="mt-2 text-xs p-0 h-auto"
                             >
                                 {ms("conversations_new")}
-                            </button>
+                            </Button>
                         )}
                     </div>
                 ) : (
@@ -163,13 +169,14 @@ function ConversationItem({ conversation, isActive, onSelect }: ConversationItem
     const timeLabel = lastMessage ? formatRelativeTime(lastMessage.created_at) : null;
 
     return (
-        <button
+        <Button
+            variant="ghost"
             onClick={() => onSelect(conversation.id)}
             className={cn(
-                "w-full flex items-start gap-2.5 px-3 py-2.5 text-left transition-colors",
+                "w-full flex items-start gap-2.5 px-3 py-2.5 h-auto text-left justify-start rounded-none",
                 isActive
                     ? "bg-primary/10 border-l-2 border-primary"
-                    : "hover:bg-secondary/50 border-l-2 border-transparent",
+                    : "border-l-2 border-transparent",
                 hasUnread && !isActive && "bg-secondary/20"
             )}
             role="option"
@@ -232,7 +239,7 @@ function ConversationItem({ conversation, isActive, onSelect }: ConversationItem
                     </span>
                 </div>
             )}
-        </button>
+        </Button>
     );
 }
 

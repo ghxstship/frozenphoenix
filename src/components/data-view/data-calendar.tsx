@@ -207,13 +207,13 @@ export function DataCalendar({ data, className, actions, onItemClick }: DataCale
                                             return (
                                                 <DropdownMenu key={item.id}>
                                                     <DropdownMenuTrigger asChild>
-                                                        <button
-                                                            type="button"
+                                                        <Button
+                                                            variant="ghost"
                                                             className={chipClass}
                                                             aria-label={item.title}
                                                         >
                                                             {item.title}
-                                                        </button>
+                                                        </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent
                                                         align="start"
@@ -234,14 +234,14 @@ export function DataCalendar({ data, className, actions, onItemClick }: DataCale
 
                                         return (
                                             <Tooltip key={item.id} content={item.title} side="top">
-                                                <button
-                                                    type="button"
+                                                <Button
+                                                    variant="ghost"
                                                     className={chipClass}
                                                     onClick={() => onItemClick?.(item)}
                                                     aria-label={item.title}
                                                 >
                                                     {item.title}
-                                                </button>
+                                                </Button>
                                             </Tooltip>
                                         );
                                     })}
@@ -317,10 +317,10 @@ function MobileAgendaView({
                     </p>
                     <div className="space-y-1.5">
                         {items.map((item, i) => (
-                            <button
+                            <Button
                                 key={item.id}
-                                type="button"
-                                className="w-full text-left rounded-lg border border-border p-3 hover:bg-muted/50 transition-colors flex items-center gap-3"
+                                variant="ghost"
+                                className="w-full text-left h-auto rounded-lg border border-border p-3 flex items-center gap-3 justify-start"
                                 onClick={() => onItemClick?.(item)}
                             >
                                 <div
@@ -352,7 +352,7 @@ function MobileAgendaView({
                                         minute: "2-digit",
                                     })}
                                 </Badge>
-                            </button>
+                            </Button>
                         ))}
                     </div>
                 </div>

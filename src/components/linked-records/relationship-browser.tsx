@@ -93,16 +93,17 @@ export function RelationshipBrowser({
 
                 {childGroups.length > 0 && (
                     <div className="space-y-2">
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => toggleGroup("children")}
-                            className="flex items-center gap-1 density-caption uppercase tracking-wider text-muted-foreground font-medium hover:text-foreground transition-colors w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                            className="w-full justify-start gap-1 h-auto p-0 density-caption uppercase tracking-wider text-muted-foreground font-medium hover:text-foreground"
                             aria-expanded={expandedGroups.has("children")}
                         >
                             <ChevronRight
                                 className={`h-3 w-3 transition-transform duration-200 ${expandedGroups.has("children") ? "rotate-90" : ""}`}
                             />
                             Child Records
-                        </button>
+                        </Button>
 
                         <div
                             className={`grid transition-all duration-200 ease-out ${expandedGroups.has("children") ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
@@ -123,16 +124,17 @@ export function RelationshipBrowser({
 
                 {relatedGroups.length > 0 && (
                     <div className="space-y-2">
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => toggleGroup("related")}
-                            className="flex items-center gap-1 density-caption uppercase tracking-wider text-muted-foreground font-medium hover:text-foreground transition-colors w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                            className="w-full justify-start gap-1 h-auto p-0 density-caption uppercase tracking-wider text-muted-foreground font-medium hover:text-foreground"
                             aria-expanded={expandedGroups.has("related")}
                         >
                             <ChevronRight
                                 className={`h-3 w-3 transition-transform duration-200 ${expandedGroups.has("related") ? "rotate-90" : ""}`}
                             />
                             Related Records
-                        </button>
+                        </Button>
 
                         <div
                             className={`grid transition-all duration-200 ease-out ${expandedGroups.has("related") ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}

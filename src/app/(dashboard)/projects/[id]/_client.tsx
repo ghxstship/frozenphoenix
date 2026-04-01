@@ -41,6 +41,7 @@ import {
 import { useCreateRecordComment, useRecordActivityLog, useRecordComments } from "@/lib/supabase";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import { Label } from "@/components/ui/label";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import {
     AlertTriangle,
@@ -997,7 +998,7 @@ export function ProjectDetailPageClient({
                         <DialogTitle>Add Task</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-3">
-                        <label className="text-sm font-medium">Task Title</label>
+                        <Label className="text-sm font-medium">Task Title</Label>
                         <Input
                             placeholder="Enter task title"
                             value={taskTitle}

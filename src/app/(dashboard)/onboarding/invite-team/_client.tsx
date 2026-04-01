@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/native-select";
 import {
     AlertCircle,
     ArrowRight,
@@ -89,22 +92,22 @@ function InviteTypeToggle({
                 const Icon = opt.icon;
                 const isActive = inviteType === opt.value;
                 return (
-                    <button
+                    <Button
                         key={opt.value}
-                        type="button"
+                        variant="ghost"
                         role="radio"
                         aria-checked={isActive}
                         tabIndex={isActive ? 0 : -1}
                         onClick={() => onChange(opt.value)}
-                        className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                        className={`flex-1 gap-2 rounded-md px-3 py-2 text-sm font-medium h-auto ${
                             isActive
-                                ? "bg-primary text-primary-foreground shadow-sm"
+                                ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
                                 : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
                         <Icon className="h-4 w-4" aria-hidden="true" />
                         {opt.label}
-                    </button>
+                    </Button>
                 );
             })}
         </div>
@@ -295,7 +298,7 @@ export function InviteTeamPageClient() {
                                             />
                                         </div>
                                         {inviteType === "org_invite" && (
-                                            <select
+                                            <NativeSelect
                                                 value={row.role}
                                                 onChange={(e) =>
                                                     updateRow(row.id, "role", e.target.value)
@@ -309,7 +312,7 @@ export function InviteTeamPageClient() {
                                                         {opt.label}
                                                     </option>
                                                 ))}
-                                            </select>
+                                            </NativeSelect>
                                         )}
                                         <Button
                                             type="button"
@@ -339,7 +342,7 @@ export function InviteTeamPageClient() {
                             </Button>
 
                             <div className="space-y-2">
-                                <label
+                                <Label
                                     htmlFor="invite-message"
                                     className="text-sm font-medium leading-none"
                                 >
@@ -347,8 +350,8 @@ export function InviteTeamPageClient() {
                                     <span className="text-muted-foreground font-normal">
                                         (optional)
                                     </span>
-                                </label>
-                                <textarea
+                                </Label>
+                                <Textarea
                                     id="invite-message"
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}

@@ -13,6 +13,9 @@
 
 import React, { useCallback, useState } from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { useEscapeKey, useFocusReturn, useFocusTrap } from "@/hooks/use-accessibility";
 
 export type ConsentCategory = "essential" | "analytics" | "functional";
@@ -103,76 +106,62 @@ export function CookieConsent() {
 
                 {showDetails && (
                     <div className="mb-4 space-y-3 rounded-lg bg-muted/50 p-4 text-sm">
-                        <label className="flex items-center gap-3">
-                            <input
-                                type="checkbox"
+                        <div className="flex items-center gap-3">
+                            <Checkbox
                                 checked
                                 disabled
-                                className="rounded"
                                 aria-label="Essential cookies (always active)"
                             />
-                            <span>
+                            <Label variant="muted">
                                 <strong className="text-foreground">Essential</strong>{" "}
                                 <span className="text-muted-foreground">
                                     — Authentication, security, CSRF (always active)
                                 </span>
-                            </span>
-                        </label>
-                        <label className="flex items-center gap-3">
-                            <input
-                                type="checkbox"
+                            </Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Checkbox
                                 checked={functional}
-                                onChange={(e) => setFunctional(e.target.checked)}
-                                className="rounded"
+                                onCheckedChange={(checked) => setFunctional(checked === true)}
                                 aria-label="Functional cookies"
                             />
-                            <span>
+                            <Label variant="muted">
                                 <strong className="text-foreground">Functional</strong>{" "}
                                 <span className="text-muted-foreground">
                                     — Preferences, locale, theme
                                 </span>
-                            </span>
-                        </label>
-                        <label className="flex items-center gap-3">
-                            <input
-                                type="checkbox"
+                            </Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Checkbox
                                 checked={analytics}
-                                onChange={(e) => setAnalytics(e.target.checked)}
-                                className="rounded"
+                                onCheckedChange={(checked) => setAnalytics(checked === true)}
                                 aria-label="Analytics cookies"
                             />
-                            <span>
+                            <Label variant="muted">
                                 <strong className="text-foreground">Analytics</strong>{" "}
                                 <span className="text-muted-foreground">
                                     — Usage data to improve the product
                                 </span>
-                            </span>
-                        </label>
+                            </Label>
+                        </div>
                     </div>
                 )}
 
                 <div className="flex flex-wrap items-center gap-3">
-                    <button
-                        onClick={() => saveConsent("all")}
-                        className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                    >
-                        Accept All
-                    </button>
-                    <button
+                    <Button onClick={() => saveConsent("all")}>Accept All</Button>
+                    <Button
+                        variant="outline"
                         onClick={() =>
                             showDetails ? saveConsent("custom") : saveConsent("essential")
                         }
-                        className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                     >
                         {showDetails ? "Save Preferences" : "Essential Only"}
-                    </button>
+                    </Button>
                     {!showDetails && (
-                        <button
-                            onClick={() => setShowDetails(true)}
-                            className="text-sm text-muted-foreground underline hover:text-foreground transition-colors"
-                        >
+                        <Button variant="link" onClick={() => setShowDetails(true)}>
                             Customize
-                        </button>
+                        </Button>
                     )}
                 </div>
             </div>

@@ -147,9 +147,9 @@ export function FormSection({
         <Card className={cn("transition-shadow hover:shadow-sm", className)}>
             <CardHeader className="pb-3">
                 {collapsible ? (
-                    <button
-                        type="button"
-                        className="flex items-center justify-between w-full text-left"
+                    <Button
+                        variant="ghost"
+                        className="flex items-center justify-between w-full text-left h-auto p-0"
                         onClick={() => setIsOpen((prev) => !prev)}
                         aria-expanded={isOpen}
                         aria-controls={contentId}
@@ -162,7 +162,7 @@ export function FormSection({
                             )}
                             aria-hidden="true"
                         />
-                    </button>
+                    </Button>
                 ) : (
                     <CardTitle className="text-lg">{title}</CardTitle>
                 )}

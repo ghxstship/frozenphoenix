@@ -7,6 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { NativeSelect } from "@/components/ui/native-select";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { getStatusLabel } from "@/config/ui-variants";
 import {
     AlertTriangle,
@@ -142,22 +151,36 @@ export function VendorCompliancePageClient() {
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b border-border bg-muted/50">
-                                    <th className="text-left p-3 font-medium">Vendor</th>
-                                    <th className="text-left p-3 font-medium">Document</th>
-                                    <th className="text-left p-3 font-medium">Type</th>
-                                    <th className="text-left p-3 font-medium">Status</th>
-                                    <th className="text-left p-3 font-medium">Expiry</th>
-                                    <th className="text-left p-3 font-medium">Coverage</th>
-                                    <th className="text-left p-3 font-medium">Submitted</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                        <Table className="w-full text-sm">
+                            <TableHeader>
+                                <TableRow className="border-b border-border bg-muted/50">
+                                    <TableHead className="text-left p-3 font-medium">
+                                        Vendor
+                                    </TableHead>
+                                    <TableHead className="text-left p-3 font-medium">
+                                        Document
+                                    </TableHead>
+                                    <TableHead className="text-left p-3 font-medium">
+                                        Type
+                                    </TableHead>
+                                    <TableHead className="text-left p-3 font-medium">
+                                        Status
+                                    </TableHead>
+                                    <TableHead className="text-left p-3 font-medium">
+                                        Expiry
+                                    </TableHead>
+                                    <TableHead className="text-left p-3 font-medium">
+                                        Coverage
+                                    </TableHead>
+                                    <TableHead className="text-left p-3 font-medium">
+                                        Submitted
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
                                 {filtered.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={7} className="p-0">
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="p-0">
                                             <EmptyState
                                                 icon={FileText}
                                                 title="No compliance documents found"
@@ -168,30 +191,30 @@ export function VendorCompliancePageClient() {
                                                 }
                                                 compact
                                             />
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 ) : (
                                     filtered.map((doc) => {
                                         const days = daysUntilExpiry(doc.expiryDate);
                                         return (
-                                            <tr
+                                            <TableRow
                                                 key={doc.id}
                                                 className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
                                             >
-                                                <td className="p-3 font-medium">
+                                                <TableCell className="p-3 font-medium">
                                                     {vendorNames[doc.vendorId] || doc.vendorId}
-                                                </td>
-                                                <td className="p-3">{doc.docName}</td>
-                                                <td className="p-3 text-xs text-muted-foreground">
+                                                </TableCell>
+                                                <TableCell className="p-3">{doc.docName}</TableCell>
+                                                <TableCell className="p-3 text-xs text-muted-foreground">
                                                     {DOC_TYPE_LABELS[doc.docType] || doc.docType}
-                                                </td>
-                                                <td className="p-3">
+                                                </TableCell>
+                                                <TableCell className="p-3">
                                                     <StatusBadge
                                                         status={doc.status}
                                                         className="density-caption"
                                                     />
-                                                </td>
-                                                <td className="p-3">
+                                                </TableCell>
+                                                <TableCell className="p-3">
                                                     {doc.expiryDate ? (
                                                         <div className="text-xs">
                                                             <span>
@@ -217,8 +240,8 @@ export function VendorCompliancePageClient() {
                                                             N/A
                                                         </span>
                                                     )}
-                                                </td>
-                                                <td className="p-3 text-xs">
+                                                </TableCell>
+                                                <TableCell className="p-3 text-xs">
                                                     {doc.coverageAmount
                                                         ? `$${doc.coverageAmount.toLocaleString()}`
                                                         : "—"}
@@ -227,16 +250,16 @@ export function VendorCompliancePageClient() {
                                                             ({doc.carrierName})
                                                         </span>
                                                     )}
-                                                </td>
-                                                <td className="p-3 text-xs text-muted-foreground">
+                                                </TableCell>
+                                                <TableCell className="p-3 text-xs text-muted-foreground">
                                                     {new Date(doc.submittedAt).toLocaleDateString()}
-                                                </td>
-                                            </tr>
+                                                </TableCell>
+                                            </TableRow>
                                         );
                                     })
                                 )}
-                            </tbody>
-                        </table>
+                            </TableBody>
+                        </Table>
                     </div>
                 </CardContent>
             </Card>
@@ -328,7 +351,7 @@ export function VendorCompliancePageClient() {
             placeholder: "Search vendors or documents...",
         },
         toolbarActions: (
-            <select
+            <NativeSelect
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="h-9 rounded-md border border-input bg-background px-3 text-sm"
@@ -339,7 +362,7 @@ export function VendorCompliancePageClient() {
                         {getStatusLabel(s)}
                     </option>
                 ))}
-            </select>
+            </NativeSelect>
         ),
         contentSlot,
     };

@@ -11,6 +11,7 @@ import { ArrowDown, Check, Lock, Unlock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Toggle } from "@/components/ui/toggle";
 import type { ResolvedSetting, SettingCategory } from "@/types/settings";
 
 interface SettingRowProps {
@@ -43,29 +44,17 @@ export function SettingRow({ setting, onSave }: SettingRowProps) {
         switch (definition.value_type) {
             case "boolean":
                 return (
-                    <button
-                        onClick={() => {
+                    <Toggle
+                        checked={parseBool(localValue)}
+                        onCheckedChange={(checked) => {
                             if (!can_edit) return;
-                            const newVal = !parseBool(localValue);
-                            setLocalValue(newVal);
-                            if (!editing) {
-                                setEditing(true);
-                            }
+                            setLocalValue(checked);
+                            if (!editing) setEditing(true);
                         }}
                         disabled={!can_edit}
-                        className={`h-6 w-11 rounded-full transition-colors ${
-                            parseBool(localValue) ? "bg-primary" : "bg-muted"
-                        } ${!can_edit ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                         aria-label={`Toggle ${definition.label}`}
-                        role="switch"
-                        aria-checked={parseBool(localValue)}
-                    >
-                        <div
-                            className={`h-5 w-5 rounded-full bg-background shadow-sm transition-transform ${
-                                parseBool(localValue) ? "translate-x-5" : "translate-x-0.5"
-                            }`}
-                        />
-                    </button>
+                        size="sm"
+                    />
                 );
 
             case "integer":
@@ -235,22 +224,13 @@ export function FlagToggle({ enabled, label, description, onToggle, disabled }: 
                 <p className="text-sm font-medium">{label}</p>
                 {description && <p className="text-xs text-muted-foreground">{description}</p>}
             </div>
-            <button
-                onClick={() => !disabled && onToggle(!enabled)}
+            <Toggle
+                checked={enabled}
+                onCheckedChange={() => !disabled && onToggle(!enabled)}
                 disabled={disabled}
-                className={`h-6 w-11 rounded-full transition-colors ${
-                    enabled ? "bg-primary" : "bg-muted"
-                } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-                role="switch"
-                aria-checked={enabled}
                 aria-label={`Toggle ${label}`}
-            >
-                <div
-                    className={`h-5 w-5 rounded-full bg-background shadow-sm transition-transform ${
-                        enabled ? "translate-x-5" : "translate-x-0.5"
-                    }`}
-                />
-            </button>
+                size="sm"
+            />
         </div>
     );
 }

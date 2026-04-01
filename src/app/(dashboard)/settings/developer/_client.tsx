@@ -5,6 +5,8 @@ import { csrfHeaders } from "@/lib/security/csrf";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { formatDate } from "@/lib/utils";
 import { BookOpen, Copy, Eye, EyeOff, Key, Plus, Trash2, Webhook } from "lucide-react";
@@ -93,10 +95,10 @@ export function DeveloperPortalPageClient() {
                 <CardContent>
                     <div className="flex gap-3 items-end">
                         <div className="flex-1">
-                            <label className="text-xs font-medium text-muted-foreground">
+                            <Label className="text-xs font-medium text-muted-foreground">
                                 Key Name
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 type="text"
                                 value={newKeyName}
                                 onChange={(e) => setNewKeyName(e.target.value)}

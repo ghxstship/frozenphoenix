@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/supabase/auth-context";
 import { updateEmail } from "@/lib/supabase/auth-actions";
 import { csrfHeaders } from "@/lib/security/csrf";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AlertTriangle, CheckCircle2, Loader2, Mail, X } from "lucide-react";
 
 /**
@@ -111,14 +112,14 @@ export function EmailCollectionBanner() {
                         className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground"
                         aria-hidden="true"
                     />
-                    <input
+                    <Input
                         type="email"
                         placeholder="you@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={loading}
                         required
-                        className="h-8 w-full sm:w-56 rounded-md border border-input bg-background pl-8 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
+                        className="h-8 w-full sm:w-56 pl-8"
                         aria-label="Email address"
                     />
                 </div>
@@ -134,14 +135,16 @@ export function EmailCollectionBanner() {
                     )}
                 </Button>
 
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
                     onClick={() => setDismissed(true)}
-                    className="p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                    className="h-7 w-7"
                     aria-label="Dismiss email collection banner"
                 >
                     <X className="h-4 w-4" />
-                </button>
+                </Button>
             </form>
 
             {error && (

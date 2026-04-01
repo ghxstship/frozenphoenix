@@ -92,9 +92,10 @@ export function ChannelBrowser({ onJoinChannel, onSelectChannel, className }: Ch
                 ) : (
                     <div className="divide-y divide-border">
                         {filtered.map((channel: ConversationListItem) => (
-                            <button
+                            <Button
                                 key={channel.id}
-                                className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-muted/40 transition-colors"
+                                variant="ghost"
+                                className="w-full flex items-start gap-3 px-4 py-3 h-auto text-left justify-start rounded-none"
                                 onClick={() => onSelectChannel?.(channel.id)}
                             >
                                 <div className="mt-0.5">
@@ -141,7 +142,7 @@ export function ChannelBrowser({ onJoinChannel, onSelectChannel, className }: Ch
                                 >
                                     Join
                                 </Button>
-                            </button>
+                            </Button>
                         ))}
                     </div>
                 )}

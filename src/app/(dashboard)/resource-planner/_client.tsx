@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { NativeSelect } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
 import { formatDate as formatDisplayDate } from "@/lib/formatters/locale";
 import {
@@ -460,7 +461,7 @@ export function ResourcePlannerPageClient() {
                                                         )}
                                                     </div>
                                                 </div>
-                                                <select
+                                                <NativeSelect
                                                     className="h-8 rounded-lg border border-input bg-background px-2 text-xs"
                                                     defaultValue=""
                                                     onChange={(e) => {
@@ -480,7 +481,7 @@ export function ResourcePlannerPageClient() {
                                                             {c.name}
                                                         </option>
                                                     ))}
-                                                </select>
+                                                </NativeSelect>
                                             </div>
                                         ))}
                                     </div>

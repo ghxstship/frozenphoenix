@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { AlertTriangle, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CATALOG_ITEM_STATUS_MAP, formatAdvanceCost } from "@/config/advancing-config";
@@ -87,20 +88,15 @@ export function CatalogItemCard({ item, onAddToCart, className }: CatalogItemCar
 
                 <div className="mt-auto flex items-center justify-between pt-2">
                     <span className="text-sm font-semibold">{formatAdvanceCost(unitCost)}</span>
-                    <button
+                    <Button
+                        size="sm"
                         onClick={onAddToCart}
                         disabled={!isAvailable}
-                        className={cn(
-                            "inline-flex h-8 items-center gap-1 rounded-md px-3 text-xs font-medium transition-colors",
-                            isAvailable
-                                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                : "cursor-not-allowed bg-muted text-muted-foreground"
-                        )}
                         aria-label={`Add ${name} to advance`}
                     >
                         <Plus className="h-3.5 w-3.5" />
                         Add
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

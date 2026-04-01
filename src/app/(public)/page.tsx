@@ -14,6 +14,7 @@ import { usePublicCaseStudies } from "@/lib/supabase";
 import { getActiveBrand } from "@/config/brands";
 import { StaggerItem } from "@/components/ui/stagger-container";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
+import { NativeSelect } from "@/components/ui/native-select";
 import {
     BarChart3,
     CheckCircle2,
@@ -204,7 +205,7 @@ export default function LandingPage() {
                                     aria-required="true"
                                     aria-label="Email address"
                                 />
-                                <select
+                                <NativeSelect
                                     className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm text-muted-foreground"
                                     value={formData.projectType}
                                     onChange={(e) =>
@@ -223,8 +224,8 @@ export default function LandingPage() {
                                     <option value="trade_show_expo">Trade Show / Expo</option>
                                     <option value="pop_up_retail">Pop-Up Retail</option>
                                     <option value="festival_production">Festival Production</option>
-                                </select>
-                                <select
+                                </NativeSelect>
+                                <NativeSelect
                                     className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm text-muted-foreground"
                                     value={formData.budgetRange}
                                     onChange={(e) =>
@@ -240,7 +241,7 @@ export default function LandingPage() {
                                     <option value="500k_1m">$500K — $1M</option>
                                     <option value="1m_5m">$1M — $5M</option>
                                     <option value="over_5m">$5M+</option>
-                                </select>
+                                </NativeSelect>
                                 <Button
                                     className="w-full"
                                     size="lg"

@@ -11,6 +11,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ImageOff } from "lucide-react";
 
@@ -67,12 +68,12 @@ export function DataGallery({
             aria-label="Gallery view"
         >
             {data.map((item) => (
-                <button
+                <Button
                     key={item.id}
-                    type="button"
+                    variant="ghost"
                     role="listitem"
                     className={cn(
-                        "group/row relative overflow-hidden rounded-lg border bg-card text-left transition-all",
+                        "group/row relative overflow-hidden rounded-lg border bg-card text-left h-auto p-0 block w-full",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         onItemClick
                             ? "cursor-pointer hover:shadow-lg hover:border-primary/30"
@@ -137,7 +138,7 @@ export function DataGallery({
                             )}
                         </div>
                     </div>
-                </button>
+                </Button>
             ))}
         </div>
     );

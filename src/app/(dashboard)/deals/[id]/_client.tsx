@@ -30,6 +30,8 @@ import { DEAL_STAGE_MAP } from "@/config/domain-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
     Calendar,
     Clock,
@@ -525,7 +527,7 @@ export function DealDetailClient({
                             This will create a new project from this deal and mark the deal as won.
                         </p>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Project Name</label>
+                            <Label className="text-sm font-medium">Project Name</Label>
                             <Input
                                 value={convertProjectName}
                                 onChange={(e) => setConvertProjectName(e.target.value)}
@@ -533,11 +535,11 @@ export function DealDetailClient({
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 density-gap-card">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Client</label>
+                                <Label className="text-sm font-medium">Client</Label>
                                 <Input value={deal?.company ?? ""} disabled />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Budget</label>
+                                <Label className="text-sm font-medium">Budget</Label>
                                 <Input
                                     type="number"
                                     value={convertBudget}
@@ -569,7 +571,7 @@ export function DealDetailClient({
                     <DialogHeader>
                         <DialogTitle>Add Note</DialogTitle>
                     </DialogHeader>
-                    <textarea
+                    <Textarea
                         className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm min-h-[120px]"
                         placeholder="Enter your note..."
                         value={noteText}

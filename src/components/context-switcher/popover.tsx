@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useFocusTrap, useId } from "@/hooks/use-accessibility";
 import { Check, Loader2, Plus, Search, X } from "lucide-react";
 import { CONTEXT_SWITCHER_STRINGS } from "@/lib/i18n/context-switcher-strings";
@@ -211,16 +212,18 @@ export function ContextSwitcherPopover({
                             aria-label={searchPlaceholder}
                         />
                         {query && (
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => {
                                     setQuery("");
                                     searchRef.current?.focus();
                                 }}
-                                className="h-4 w-4 rounded-sm flex items-center justify-center text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                                className="h-4 w-4"
                                 aria-label={CONTEXT_SWITCHER_STRINGS.shared.close}
                             >
                                 <X className="h-3 w-3" />
-                            </button>
+                            </Button>
                         )}
                         <kbd className="density-caption text-muted-foreground/30 bg-muted px-1 py-0.5 rounded font-mono">
                             Esc

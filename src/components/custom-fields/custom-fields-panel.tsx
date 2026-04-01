@@ -3,7 +3,9 @@
 import React, { useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Settings2 } from "lucide-react";
 import type { CustomFieldDefinitionRow } from "@/lib/data-hooks/hook-types";
@@ -78,17 +80,20 @@ export function DynamicFieldRenderer({
 
         case "boolean":
             return (
-                <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                        type="checkbox"
+                <div className="flex items-center gap-2">
+                    <Checkbox
+                        id={`custom-bool-${definition.id}`}
                         checked={Boolean(value)}
-                        onChange={(e) => onChange(e.target.checked)}
+                        onCheckedChange={(checked) => onChange(checked === true)}
                         disabled={disabled}
-                        className="h-4 w-4 rounded border-border text-primary
-                            focus:ring-2 focus:ring-ring focus:ring-offset-2"
                     />
-                    <span className="text-sm text-muted-foreground">{value ? "Yes" : "No"}</span>
-                </label>
+                    <label
+                        htmlFor={`custom-bool-${definition.id}`}
+                        className="text-sm text-muted-foreground cursor-pointer"
+                    >
+                        {value ? "Yes" : "No"}
+                    </label>
+                </div>
             );
 
         case "select":
@@ -120,9 +125,10 @@ export function DynamicFieldRenderer({
                     {options.map((opt) => {
                         const isSelected = selectedValues.includes(opt.value);
                         return (
-                            <button
+                            <Button
                                 key={opt.value}
-                                type="button"
+                                variant={isSelected ? "default" : "outline"}
+                                size="sm"
                                 disabled={disabled}
                                 onClick={() => {
                                     const next = isSelected
@@ -130,18 +136,13 @@ export function DynamicFieldRenderer({
                                         : [...selectedValues, opt.value];
                                     onChange(next);
                                 }}
-                                className="focus:outline-none"
+                                className={cn(
+                                    "h-auto py-0.5 px-2",
+                                    isSelected && "bg-primary text-primary-foreground"
+                                )}
                             >
-                                <Badge
-                                    variant={isSelected ? "default" : "outline"}
-                                    className={cn(
-                                        "cursor-pointer transition-colors",
-                                        isSelected && "bg-primary text-primary-foreground"
-                                    )}
-                                >
-                                    {opt.label}
-                                </Badge>
-                            </button>
+                                {opt.label}
+                            </Button>
                         );
                     })}
                     {options.length === 0 && (

@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
+import { Label } from "@/components/ui/label";
 import { Save, Undo2 } from "lucide-react";
 
 export default function WorkflowBuilderPage() {
@@ -91,9 +92,9 @@ export default function WorkflowBuilderPage() {
                         {selectedNode ? (
                             <>
                                 <div>
-                                    <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                    <Label className="text-xs font-medium text-muted-foreground block mb-1">
                                         Label
-                                    </label>
+                                    </Label>
                                     <Input
                                         value={selectedNode.label}
                                         onChange={(e) => {
@@ -112,17 +113,17 @@ export default function WorkflowBuilderPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                    <Label className="text-xs font-medium text-muted-foreground block mb-1">
                                         Type
-                                    </label>
+                                    </Label>
                                     <Badge variant="secondary" className="capitalize">
                                         {selectedNode.type}
                                     </Badge>
                                 </div>
                                 <div>
-                                    <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                    <Label className="text-xs font-medium text-muted-foreground block mb-1">
                                         Configuration
-                                    </label>
+                                    </Label>
                                     <pre className="text-xs bg-muted/50 rounded p-2 overflow-x-auto">
                                         {JSON.stringify(selectedNode.config, null, 2)}
                                     </pre>

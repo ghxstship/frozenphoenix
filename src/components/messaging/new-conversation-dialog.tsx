@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { SearchInput } from "@/components/ui/search-input";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Hash, MessageSquare, Users, X } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useCreateConversation } from "@/lib/supabase/hooks-messaging";
@@ -137,15 +140,17 @@ export function NewConversationDialog({
                         { value: "group" as const, label: ms("new_group"), icon: Users },
                         { value: "channel" as const, label: ms("new_channel"), icon: Hash },
                     ].map(({ value, label, icon: Icon }) => (
-                        <button
+                        <Button
                             key={value}
+                            variant="ghost"
+                            size="sm"
                             role="tab"
                             aria-selected={tab === value}
                             className={cn(
-                                "flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors",
+                                "flex-1 gap-1.5 rounded-none",
                                 tab === value
                                     ? "border-b-2 border-primary text-primary"
-                                    : "text-muted-foreground hover:text-foreground"
+                                    : "text-muted-foreground"
                             )}
                             onClick={() => {
                                 setTab(value);
@@ -154,7 +159,7 @@ export function NewConversationDialog({
                         >
                             <Icon className="h-3.5 w-3.5" />
                             {label}
-                        </button>
+                        </Button>
                     ))}
                 </div>
 
@@ -162,14 +167,13 @@ export function NewConversationDialog({
                 <div className="p-4 space-y-3">
                     {/* Name field for group/channel */}
                     {(tab === "group" || tab === "channel") && (
-                        <input
+                        <Input
                             type="text"
                             placeholder={
                                 tab === "group" ? ms("new_group_name") : ms("new_channel_name")
                             }
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                             aria-label={
                                 tab === "group" ? ms("new_group_name") : ms("new_channel_name")
                             }
@@ -179,23 +183,23 @@ export function NewConversationDialog({
                     {/* Description for channel */}
                     {tab === "channel" && (
                         <>
-                            <input
+                            <Input
                                 type="text"
                                 placeholder={ms("new_channel_description")}
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                                 aria-label="Channel description"
                             />
-                            <label className="flex items-center gap-2 text-sm cursor-pointer">
-                                <input
-                                    type="checkbox"
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="public-channel"
                                     checked={isPublic}
-                                    onChange={(e) => setIsPublic(e.target.checked)}
-                                    className="rounded border-border"
+                                    onCheckedChange={(checked) => setIsPublic(checked === true)}
                                 />
-                                {ms("new_channel_public")}
-                            </label>
+                                <Label htmlFor="public-channel" className="text-sm cursor-pointer">
+                                    {ms("new_channel_public")}
+                                </Label>
+                            </div>
                         </>
                     )}
 
@@ -205,13 +209,15 @@ export function NewConversationDialog({
                             {selectedMemberDetails.map((m) => (
                                 <Badge key={m.id} variant="secondary" className="gap-1 pr-1">
                                     {m.name}
-                                    <button
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
                                         onClick={() => toggleUser(m.id)}
-                                        className="ml-0.5 rounded-full hover:bg-muted p-0.5"
+                                        className="ml-0.5 h-4 w-4 rounded-full"
                                         aria-label={`Remove ${m.name}`}
                                     >
                                         <X className="h-3 w-3" />
-                                    </button>
+                                    </Button>
                                 </Badge>
                             ))}
                         </div>
@@ -230,13 +236,12 @@ export function NewConversationDialog({
                                 {filteredMembers.map((member) => {
                                     const isSelected = selectedUsers.includes(member.id);
                                     return (
-                                        <button
+                                        <Button
                                             key={member.id}
+                                            variant="ghost"
                                             className={cn(
-                                                "w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm transition-colors",
-                                                isSelected
-                                                    ? "bg-primary/10 text-primary"
-                                                    : "hover:bg-secondary"
+                                                "w-full justify-start gap-2 h-auto py-1.5",
+                                                isSelected && "bg-primary/10 text-primary"
                                             )}
                                             onClick={() => toggleUser(member.id)}
                                         >
@@ -247,7 +252,7 @@ export function NewConversationDialog({
                                                     ✓
                                                 </span>
                                             )}
-                                        </button>
+                                        </Button>
                                     );
                                 })}
                                 {filteredMembers.length === 0 && (

@@ -6,6 +6,8 @@ import { useOrgSecuritySettings, useUpdateOrgSecuritySettings } from "@/lib/supa
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 import {
     AlertCircle,
     CheckCircle2,
@@ -231,7 +233,7 @@ function OrgSecurityForm({
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="density-gap-section">
-                            <label className="flex items-center justify-between cursor-pointer">
+                            <Label className="flex items-center justify-between cursor-pointer">
                                 <div className="space-y-0.5">
                                     <span className="text-sm font-medium">
                                         Require Multi-Factor Authentication
@@ -240,14 +242,14 @@ function OrgSecurityForm({
                                         All members must enable MFA to access the organization.
                                     </p>
                                 </div>
-                                <button
-                                    type="button"
+                                <Button
+                                    variant="ghost"
                                     role="switch"
                                     aria-checked={settings.require_mfa}
                                     onClick={() =>
                                         updateField("require_mfa", !settings.require_mfa)
                                     }
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full p-0 transition-colors ${
                                         settings.require_mfa ? "bg-primary" : "bg-muted"
                                     }`}
                                 >
@@ -256,10 +258,10 @@ function OrgSecurityForm({
                                             settings.require_mfa ? "translate-x-6" : "translate-x-1"
                                         }`}
                                     />
-                                </button>
-                            </label>
+                                </Button>
+                            </Label>
 
-                            <label className="flex items-center justify-between cursor-pointer">
+                            <Label className="flex items-center justify-between cursor-pointer">
                                 <div className="space-y-0.5">
                                     <span className="text-sm font-medium">Enforce SSO</span>
                                     <p className="text-xs text-muted-foreground">
@@ -267,14 +269,14 @@ function OrgSecurityForm({
                                         be disabled.
                                     </p>
                                 </div>
-                                <button
-                                    type="button"
+                                <Button
+                                    variant="ghost"
                                     role="switch"
                                     aria-checked={settings.enforce_sso}
                                     onClick={() =>
                                         updateField("enforce_sso", !settings.enforce_sso)
                                     }
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full p-0 transition-colors ${
                                         settings.enforce_sso ? "bg-primary" : "bg-muted"
                                     }`}
                                 >
@@ -283,8 +285,8 @@ function OrgSecurityForm({
                                             settings.enforce_sso ? "translate-x-6" : "translate-x-1"
                                         }`}
                                     />
-                                </button>
-                            </label>
+                                </Button>
+                            </Label>
                         </CardContent>
                     </Card>
 
@@ -298,9 +300,9 @@ function OrgSecurityForm({
                         </CardHeader>
                         <CardContent className="density-gap-section">
                             <div className="space-y-2">
-                                <label htmlFor="sso-domain" className="text-sm font-medium">
+                                <Label htmlFor="sso-domain" className="text-sm font-medium">
                                     SSO Domain
-                                </label>
+                                </Label>
                                 <Input
                                     id="sso-domain"
                                     type="text"
@@ -330,14 +332,15 @@ function OrgSecurityForm({
                                                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary"
                                             >
                                                 {domain}
-                                                <button
-                                                    type="button"
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-4 w-4 p-0 hover:text-destructive"
                                                     onClick={() => removeDomain(domain)}
-                                                    className="hover:text-destructive transition-colors"
                                                     aria-label={`Remove ${domain}`}
                                                 >
                                                     <X className="h-3 w-3" aria-hidden="true" />
-                                                </button>
+                                                </Button>
                                             </span>
                                         ))}
                                     </div>
@@ -381,12 +384,12 @@ function OrgSecurityForm({
                         <CardContent className="density-gap-section">
                             <div className="grid grid-cols-1 sm:grid-cols-2 density-gap-card">
                                 <div className="space-y-2">
-                                    <label
+                                    <Label
                                         htmlFor="session-timeout"
                                         className="text-sm font-medium"
                                     >
                                         Session Timeout (hours)
-                                    </label>
+                                    </Label>
                                     <Input
                                         id="session-timeout"
                                         type="number"
@@ -406,9 +409,9 @@ function OrgSecurityForm({
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label htmlFor="max-sessions" className="text-sm font-medium">
+                                    <Label htmlFor="max-sessions" className="text-sm font-medium">
                                         Max Sessions Per User
-                                    </label>
+                                    </Label>
                                     <Input
                                         id="max-sessions"
                                         type="number"
@@ -428,9 +431,9 @@ function OrgSecurityForm({
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label htmlFor="invite-expiry" className="text-sm font-medium">
+                                    <Label htmlFor="invite-expiry" className="text-sm font-medium">
                                         Invitation Expiry (days)
-                                    </label>
+                                    </Label>
                                     <Input
                                         id="invite-expiry"
                                         type="number"
@@ -462,15 +465,15 @@ function OrgSecurityForm({
                         </CardHeader>
                         <CardContent className="density-gap-section">
                             <div className="space-y-2">
-                                <label htmlFor="default-role" className="text-sm font-medium">
+                                <Label htmlFor="default-role" className="text-sm font-medium">
                                     Default Role for New Members
-                                </label>
+                                </Label>
                                 <div className="relative">
                                     <Mail
                                         className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
                                         aria-hidden="true"
                                     />
-                                    <select
+                                    <NativeSelect
                                         id="default-role"
                                         value={settings.default_role}
                                         onChange={(e) =>
@@ -483,7 +486,7 @@ function OrgSecurityForm({
                                                 {opt.label}
                                             </option>
                                         ))}
-                                    </select>
+                                    </NativeSelect>
                                 </div>
                                 <p className="text-xs text-muted-foreground">
                                     Role assigned to users who join via SSO domain matching.

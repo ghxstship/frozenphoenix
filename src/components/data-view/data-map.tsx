@@ -19,6 +19,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 
 // ─── Types ───
@@ -121,14 +122,14 @@ export function DataMap({ data, className, height = 400, actions, onItemClick }:
                         return (
                             <DropdownMenu key={item.id}>
                                 <DropdownMenuTrigger asChild>
-                                    <button
-                                        type="button"
+                                    <Button
+                                        variant="ghost"
                                         className={markerClass}
                                         style={markerStyle}
                                         aria-label={markerLabel}
                                     >
                                         <MapPin className="h-6 w-6 drop-shadow-md" />
-                                    </button>
+                                    </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="center" className="min-w-[180px]">
                                     <DropdownMenuLabel className="font-medium">
@@ -161,15 +162,15 @@ export function DataMap({ data, className, height = 400, actions, onItemClick }:
                             }
                             side="top"
                         >
-                            <button
-                                type="button"
+                            <Button
+                                variant="ghost"
                                 className={markerClass}
                                 style={markerStyle}
                                 onClick={() => onItemClick?.(item)}
                                 aria-label={markerLabel}
                             >
                                 <MapPin className="h-6 w-6 drop-shadow-md" />
-                            </button>
+                            </Button>
                         </Tooltip>
                     );
                 })}

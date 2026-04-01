@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Bot, ChevronDown } from "lucide-react";
 
 interface ModelBadgeProps {
@@ -15,16 +16,15 @@ export function ModelBadge({ modelName, providerName, onClick, className }: Mode
     const isClickable = !!onClick;
 
     return (
-        <button
+        <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onClick}
             disabled={!isClickable}
             className={cn(
-                "inline-flex items-center gap-1.5 rounded-md border border-border",
-                "px-2 py-1 density-caption text-muted-foreground",
-                isClickable && "hover:bg-secondary hover:text-foreground cursor-pointer",
-                !isClickable && "cursor-default",
-                "transition-colors",
+                "inline-flex items-center gap-1.5 density-caption h-auto py-1",
+                !isClickable && "cursor-default opacity-100",
                 className
             )}
             aria-label={`Current model: ${modelName}`}
@@ -37,6 +37,6 @@ export function ModelBadge({ modelName, providerName, onClick, className }: Mode
                 </span>
             )}
             {isClickable && <ChevronDown className="h-3 w-3 shrink-0" />}
-        </button>
+        </Button>
     );
 }

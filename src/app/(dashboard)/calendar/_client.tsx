@@ -397,28 +397,32 @@ export function CalendarPageClient() {
                         <CardContent>
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-2">
-                                    <button
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
                                         onClick={() => navigate(-1)}
                                         aria-label={
                                             view === "week" ? "Previous week" : "Previous month"
                                         }
-                                        className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
+                                        className="h-8 w-8"
                                     >
                                         <ChevronLeft className="h-4 w-4" />
-                                    </button>
+                                    </Button>
                                     <h2
                                         className="text-lg font-bold min-w-48 text-center"
                                         id="calendar-month-label"
                                     >
                                         {headerLabel}
                                     </h2>
-                                    <button
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
                                         onClick={() => navigate(1)}
                                         aria-label={view === "week" ? "Next week" : "Next month"}
-                                        className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
+                                        className="h-8 w-8"
                                     >
                                         <ChevronRight className="h-4 w-4" />
-                                    </button>
+                                    </Button>
                                 </div>
                                 <Button variant="ghost" size="sm" onClick={goToToday}>
                                     Today

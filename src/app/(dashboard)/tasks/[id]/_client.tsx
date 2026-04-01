@@ -124,12 +124,13 @@ export function TaskDetailPageClient({
                         <CardTitle className="text-sm">Project</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <button
+                        <Button
+                            variant="link"
+                            className="h-auto p-0 text-sm"
                             onClick={() => router.push(`/projects/${project.id}`)}
-                            className="text-sm text-primary hover:underline"
                         >
                             {project.name}
-                        </button>
+                        </Button>
                         <p className="text-xs text-muted-foreground mt-1">
                             {(project as Record<string, unknown>).client as string}
                         </p>

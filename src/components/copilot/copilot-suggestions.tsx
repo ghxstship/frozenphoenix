@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 
 interface CopilotSuggestionsProps {
@@ -25,18 +26,15 @@ export function CopilotSuggestions({ suggestions, onSelect, className }: Copilot
             </div>
             <div className="flex flex-wrap gap-2">
                 {suggestions.map((suggestion) => (
-                    <button
+                    <Button
                         key={suggestion}
+                        variant="outline"
+                        size="sm"
                         onClick={() => onSelect(suggestion)}
-                        className={cn(
-                            "inline-flex items-center rounded-lg border border-border",
-                            "px-3 py-1.5 text-xs text-muted-foreground",
-                            "hover:bg-secondary hover:text-foreground hover:border-primary/30",
-                            "transition-colors cursor-pointer text-left"
-                        )}
+                        className="text-left h-auto py-1.5"
                     >
                         {suggestion}
-                    </button>
+                    </Button>
                 ))}
             </div>
         </div>

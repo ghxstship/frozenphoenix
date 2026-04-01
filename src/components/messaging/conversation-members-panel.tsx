@@ -89,13 +89,15 @@ export function ConversationMembersPanel({
                     {ms("chat_members_count", { count: members.length })}
                 </h3>
                 <Tooltip content={ms("new_cancel")} side="bottom">
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={onClose}
-                        className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        className="h-7 w-7"
                         aria-label={ms("new_cancel")}
                     >
                         <X className="h-4 w-4" />
-                    </button>
+                    </Button>
                 </Tooltip>
             </div>
 
@@ -150,13 +152,15 @@ export function ConversationMembersPanel({
                                     member.user_id !== currentUserId &&
                                     conversationType !== "dm" && (
                                         <Tooltip content={ms("members_remove")} side="left">
-                                            <button
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
                                                 onClick={() => handleRemove(member.user_id)}
-                                                className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                                className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                                                 aria-label={`${ms("members_remove")} ${member.name}`}
                                             >
                                                 <UserMinus className="h-3.5 w-3.5" />
-                                            </button>
+                                            </Button>
                                         </Tooltip>
                                     )}
                             </div>
@@ -183,13 +187,14 @@ export function ConversationMembersPanel({
             {canManage && conversationType !== "dm" && (
                 <div className="border-t border-border shrink-0">
                     {!showAddForm ? (
-                        <button
+                        <Button
+                            variant="ghost"
+                            className="w-full justify-start gap-2 px-4 py-3 h-auto text-primary"
                             onClick={() => setShowAddForm(true)}
-                            className="w-full flex items-center gap-2 px-4 py-3 text-sm text-primary hover:bg-primary/5 transition-colors"
                         >
                             <UserPlus className="h-4 w-4" />
                             {ms("members_add")}
-                        </button>
+                        </Button>
                     ) : (
                         <div className="p-3 space-y-2">
                             <SearchInput
@@ -200,15 +205,16 @@ export function ConversationMembersPanel({
                             />
                             <div className="max-h-36 overflow-y-auto space-y-0.5">
                                 {addableMembers.map((member) => (
-                                    <button
+                                    <Button
                                         key={member.id}
-                                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm hover:bg-secondary transition-colors"
+                                        variant="ghost"
+                                        className="w-full justify-start gap-2 h-auto py-1.5"
                                         onClick={() => handleAdd(member.id)}
                                     >
                                         <Avatar name={member.name} size="sm" />
                                         <span className="truncate">{member.name}</span>
                                         <UserPlus className="h-3.5 w-3.5 text-primary ml-auto shrink-0" />
-                                    </button>
+                                    </Button>
                                 ))}
                                 {addableMembers.length === 0 && (
                                     <p className="text-xs text-muted-foreground text-center py-3">

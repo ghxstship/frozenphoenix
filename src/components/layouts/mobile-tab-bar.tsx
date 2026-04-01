@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useBreakpoint } from "@/hooks/use-media-query";
+import { Button } from "@/components/ui/button";
 import { CalendarDays, CheckSquare, Home, Mail, Menu } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -60,13 +61,13 @@ export function MobileTabBar({ className }: { className?: string }) {
 
                     if (tab.openDrawer) {
                         return (
-                            <button
+                            <Button
                                 key={tab.id}
-                                type="button"
+                                variant="ghost"
                                 onClick={() => setOpen(true)}
                                 className={cn(
-                                    "flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] rounded-lg transition-all",
-                                    "text-muted-foreground hover:text-foreground active:scale-95"
+                                    "flex flex-col items-center justify-center gap-0.5 min-w-[48px] min-h-[48px] h-auto",
+                                    "text-muted-foreground active:scale-95"
                                 )}
                                 aria-label={tab.label}
                             >
@@ -74,7 +75,7 @@ export function MobileTabBar({ className }: { className?: string }) {
                                 <span className="text-[11px] font-medium leading-none">
                                     {tab.label}
                                 </span>
-                            </button>
+                            </Button>
                         );
                     }
 

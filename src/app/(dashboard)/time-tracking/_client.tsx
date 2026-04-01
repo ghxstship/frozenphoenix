@@ -13,6 +13,14 @@ import { StatCard } from "@/components/ui/stat-card";
 import { MetricCard } from "@/components/ui/metric-card";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { ApprovalFlow } from "@/components/ui/approval-flow";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { useCreateAction } from "@/components/app/create-entity-dialog";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -684,14 +692,14 @@ export function TimeTrackingPageClient() {
 
                     <Card>
                         <CardContent className="p-0 overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b bg-muted/50">
-                                        <th className="text-left p-3 font-medium w-64">
+                            <Table className="w-full text-sm">
+                                <TableHeader>
+                                    <TableRow className="border-b bg-muted/50">
+                                        <TableHead className="text-left p-3 font-medium w-64">
                                             Project / Task
-                                        </th>
+                                        </TableHead>
                                         {weekDays.map((day, i) => (
-                                            <th
+                                            <TableHead
                                                 key={day}
                                                 className="text-center p-3 font-medium w-20"
                                             >
@@ -699,18 +707,20 @@ export function TimeTrackingPageClient() {
                                                 <div className="density-caption text-muted-foreground font-normal">
                                                     {getWeekDates(currentWeekStart)[i]}
                                                 </div>
-                                            </th>
+                                            </TableHead>
                                         ))}
-                                        <th className="text-center p-3 font-medium w-20">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                                        <TableHead className="text-center p-3 font-medium w-20">
+                                            Total
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
                                     {buildWeeklyRows(entries, currentWeekStart).map((row, i) => (
-                                        <tr
+                                        <TableRow
                                             key={i}
                                             className="border-b hover:bg-secondary/30 transition-colors"
                                         >
-                                            <td className="p-3">
+                                            <TableCell className="p-3">
                                                 <div className="flex items-center gap-2">
                                                     <div>
                                                         <p className="font-medium text-xs">
@@ -729,28 +739,30 @@ export function TimeTrackingPageClient() {
                                                         </Badge>
                                                     )}
                                                 </div>
-                                            </td>
+                                            </TableCell>
                                             {row.hours.map((h, j) => (
-                                                <td key={j} className="text-center p-3">
+                                                <TableCell key={j} className="text-center p-3">
                                                     <span
                                                         className={`text-xs tabular-nums ${h > 0 ? "font-medium" : "text-muted-foreground"}`}
                                                     >
                                                         {h > 0 ? h : "—"}
                                                     </span>
-                                                </td>
+                                                </TableCell>
                                             ))}
-                                            <td className="text-center p-3 font-bold text-xs tabular-nums">
+                                            <TableCell className="text-center p-3 font-bold text-xs tabular-nums">
                                                 {row.hours.reduce((a, b) => a + b, 0)}
-                                            </td>
-                                        </tr>
+                                            </TableCell>
+                                        </TableRow>
                                     ))}
                                     {(() => {
                                         const rows = buildWeeklyRows(entries, currentWeekStart);
                                         return (
-                                            <tr className="bg-muted/30 font-bold">
-                                                <td className="p-3 text-xs">Daily Total</td>
+                                            <TableRow className="bg-muted/30 font-bold">
+                                                <TableCell className="p-3 text-xs">
+                                                    Daily Total
+                                                </TableCell>
                                                 {weekDays.map((_, i) => (
-                                                    <td
+                                                    <TableCell
                                                         key={i}
                                                         className="text-center p-3 text-xs tabular-nums"
                                                     >
@@ -758,20 +770,20 @@ export function TimeTrackingPageClient() {
                                                             (s, r) => s + (r.hours[i] ?? 0),
                                                             0
                                                         )}
-                                                    </td>
+                                                    </TableCell>
                                                 ))}
-                                                <td className="text-center p-3 text-xs tabular-nums">
+                                                <TableCell className="text-center p-3 text-xs tabular-nums">
                                                     {rows.reduce(
                                                         (s, r) =>
                                                             s + r.hours.reduce((a, b) => a + b, 0),
                                                         0
                                                     )}
-                                                </td>
-                                            </tr>
+                                                </TableCell>
+                                            </TableRow>
                                         );
                                     })()}
-                                </tbody>
-                            </table>
+                                </TableBody>
+                            </Table>
                         </CardContent>
                     </Card>
                 </div>

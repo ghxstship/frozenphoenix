@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { AuthLayout, PasswordInput } from "@/components/auth";
 import { mapAuthError, validatePassword } from "@/features/auth/utils/auth-utils";
 import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
@@ -116,12 +117,12 @@ function ResetPasswordForm() {
                 )}
 
                 <div className="space-y-2">
-                    <label htmlFor="reset-password" className="text-sm font-medium leading-none">
+                    <Label htmlFor="reset-password" className="text-sm font-medium leading-none">
                         New Password{" "}
                         <span className="text-destructive ml-1" aria-hidden="true">
                             *
                         </span>
-                    </label>
+                    </Label>
                     <PasswordInput
                         ref={passwordRef}
                         id="reset-password"
@@ -136,12 +137,12 @@ function ResetPasswordForm() {
                 </div>
 
                 <div className="space-y-2">
-                    <label htmlFor="reset-confirm" className="text-sm font-medium leading-none">
+                    <Label htmlFor="reset-confirm" className="text-sm font-medium leading-none">
                         Confirm Password{" "}
                         <span className="text-destructive ml-1" aria-hidden="true">
                             *
                         </span>
-                    </label>
+                    </Label>
                     <PasswordInput
                         id="reset-confirm"
                         placeholder="••••••••"

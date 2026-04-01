@@ -5,6 +5,9 @@ import { csrfHeaders } from "@/lib/security/csrf";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { DetailPageShell } from "@/components/shells";
 import { useAutomations } from "@/lib/supabase";
 import { useAutomationLogs } from "@/lib/supabase";
@@ -317,20 +320,24 @@ export function AutomationDetailPageClient({
                             <CardContent className="density-gap-section">
                                 {/* Trigger */}
                                 <div>
-                                    <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                                    <Label className="text-xs font-medium text-muted-foreground mb-2 block">
                                         WHEN (Trigger)
-                                    </label>
+                                    </Label>
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                         {TRIGGER_OPTIONS.map((opt) => {
                                             const Icon = opt.icon;
                                             return (
-                                                <button
+                                                <Button
                                                     key={opt.value}
-                                                    type="button"
-                                                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-all ${
+                                                    variant={
+                                                        rule.trigger_type === opt.value
+                                                            ? "outline"
+                                                            : "ghost"
+                                                    }
+                                                    className={`h-auto gap-2 px-3 py-2 text-xs font-medium ${
                                                         rule.trigger_type === opt.value
                                                             ? "border-primary bg-primary/10 text-primary"
-                                                            : "border-border hover:border-primary/50"
+                                                            : ""
                                                     }`}
                                                     onClick={() =>
                                                         updateRule(rule.id, {
@@ -340,7 +347,7 @@ export function AutomationDetailPageClient({
                                                 >
                                                     <Icon className="h-3.5 w-3.5" />
                                                     {opt.label}
-                                                </button>
+                                                </Button>
                                             );
                                         })}
                                     </div>
@@ -353,9 +360,9 @@ export function AutomationDetailPageClient({
                                 {/* Conditions */}
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <label className="text-xs font-medium text-muted-foreground">
+                                        <Label className="text-xs font-medium text-muted-foreground">
                                             IF (Conditions) — optional
-                                        </label>
+                                        </Label>
                                         <Button
                                             variant="ghost"
                                             size="sm"
@@ -373,7 +380,7 @@ export function AutomationDetailPageClient({
                                         <div className="space-y-2">
                                             {rule.conditions.map((cond, ci) => (
                                                 <div key={ci} className="flex items-center gap-2">
-                                                    <input
+                                                    <Input
                                                         type="text"
                                                         value={cond.field}
                                                         onChange={(e) => {
@@ -389,7 +396,7 @@ export function AutomationDetailPageClient({
                                                         placeholder="Field name"
                                                         className="flex-1 rounded-md border bg-background px-3 py-1.5 text-xs"
                                                     />
-                                                    <select
+                                                    <NativeSelect
                                                         value={cond.operator}
                                                         onChange={(e) => {
                                                             const newConds = [...rule.conditions];
@@ -408,8 +415,8 @@ export function AutomationDetailPageClient({
                                                                 {op.label}
                                                             </option>
                                                         ))}
-                                                    </select>
-                                                    <input
+                                                    </NativeSelect>
+                                                    <Input
                                                         type="text"
                                                         value={cond.value}
                                                         onChange={(e) => {
@@ -444,20 +451,24 @@ export function AutomationDetailPageClient({
 
                                 {/* Action */}
                                 <div>
-                                    <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                                    <Label className="text-xs font-medium text-muted-foreground mb-2 block">
                                         THEN (Action)
-                                    </label>
+                                    </Label>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                         {ACTION_OPTIONS.map((opt) => {
                                             const Icon = opt.icon;
                                             return (
-                                                <button
+                                                <Button
                                                     key={opt.value}
-                                                    type="button"
-                                                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-all ${
+                                                    variant={
+                                                        rule.action_type === opt.value
+                                                            ? "outline"
+                                                            : "ghost"
+                                                    }
+                                                    className={`h-auto gap-2 px-3 py-2 text-xs font-medium ${
                                                         rule.action_type === opt.value
                                                             ? "border-primary bg-primary/10 text-primary"
-                                                            : "border-border hover:border-primary/50"
+                                                            : ""
                                                     }`}
                                                     onClick={() =>
                                                         updateRule(rule.id, {
@@ -467,7 +478,7 @@ export function AutomationDetailPageClient({
                                                 >
                                                     <Icon className="h-3.5 w-3.5" />
                                                     {opt.label}
-                                                </button>
+                                                </Button>
                                             );
                                         })}
                                     </div>
@@ -476,7 +487,7 @@ export function AutomationDetailPageClient({
                                     <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         {rule.action_type === "send_notification" && (
                                             <>
-                                                <input
+                                                <Input
                                                     type="text"
                                                     placeholder="Notification title"
                                                     value={rule.action_config.title ?? ""}
@@ -490,7 +501,7 @@ export function AutomationDetailPageClient({
                                                     }
                                                     className="rounded-md border bg-background px-3 py-1.5 text-xs"
                                                 />
-                                                <input
+                                                <Input
                                                     type="text"
                                                     placeholder="Notification body"
                                                     value={rule.action_config.body ?? ""}
@@ -508,7 +519,7 @@ export function AutomationDetailPageClient({
                                         )}
                                         {rule.action_type === "send_email" && (
                                             <>
-                                                <input
+                                                <Input
                                                     type="text"
                                                     placeholder="Subject"
                                                     value={rule.action_config.subject ?? ""}
@@ -522,7 +533,7 @@ export function AutomationDetailPageClient({
                                                     }
                                                     className="rounded-md border bg-background px-3 py-1.5 text-xs"
                                                 />
-                                                <input
+                                                <Input
                                                     type="text"
                                                     placeholder="Email body"
                                                     value={rule.action_config.body ?? ""}
@@ -540,7 +551,7 @@ export function AutomationDetailPageClient({
                                         )}
                                         {rule.action_type === "update_field" && (
                                             <>
-                                                <input
+                                                <Input
                                                     type="text"
                                                     placeholder="Field name"
                                                     value={rule.action_config.field ?? ""}
@@ -554,7 +565,7 @@ export function AutomationDetailPageClient({
                                                     }
                                                     className="rounded-md border bg-background px-3 py-1.5 text-xs"
                                                 />
-                                                <input
+                                                <Input
                                                     type="text"
                                                     placeholder="New value"
                                                     value={rule.action_config.value ?? ""}
@@ -572,7 +583,7 @@ export function AutomationDetailPageClient({
                                         )}
                                         {rule.action_type === "create_task" && (
                                             <>
-                                                <input
+                                                <Input
                                                     type="text"
                                                     placeholder="Task title"
                                                     value={rule.action_config.title ?? ""}
@@ -586,7 +597,7 @@ export function AutomationDetailPageClient({
                                                     }
                                                     className="rounded-md border bg-background px-3 py-1.5 text-xs"
                                                 />
-                                                <input
+                                                <Input
                                                     type="text"
                                                     placeholder="Description"
                                                     value={rule.action_config.description ?? ""}
@@ -603,7 +614,7 @@ export function AutomationDetailPageClient({
                                             </>
                                         )}
                                         {rule.action_type === "move_stage" && (
-                                            <input
+                                            <Input
                                                 type="text"
                                                 placeholder="Target stage/status"
                                                 value={rule.action_config.stage ?? ""}
@@ -619,7 +630,7 @@ export function AutomationDetailPageClient({
                                             />
                                         )}
                                         {rule.action_type === "webhook" && (
-                                            <input
+                                            <Input
                                                 type="text"
                                                 placeholder="Webhook URL"
                                                 value={rule.action_config.url ?? ""}
@@ -636,7 +647,7 @@ export function AutomationDetailPageClient({
                                         )}
                                         {rule.action_type === "slack_message" && (
                                             <>
-                                                <input
+                                                <Input
                                                     type="text"
                                                     placeholder="Channel (optional)"
                                                     value={rule.action_config.channel ?? ""}
@@ -650,7 +661,7 @@ export function AutomationDetailPageClient({
                                                     }
                                                     className="rounded-md border bg-background px-3 py-1.5 text-xs"
                                                 />
-                                                <input
+                                                <Input
                                                     type="text"
                                                     placeholder="Message text"
                                                     value={rule.action_config.text ?? ""}
@@ -667,7 +678,7 @@ export function AutomationDetailPageClient({
                                             </>
                                         )}
                                         {rule.action_type === "add_comment" && (
-                                            <input
+                                            <Input
                                                 type="text"
                                                 placeholder="Comment body"
                                                 value={rule.action_config.body ?? ""}

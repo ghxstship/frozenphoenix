@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { Label } from "@/components/ui/label";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
@@ -521,7 +522,7 @@ export function VendorDetailClient({
                     </DialogHeader>
                     <div className="space-y-3">
                         <div>
-                            <label className="text-sm font-medium">Description</label>
+                            <Label className="text-sm font-medium">Description</Label>
                             <Input
                                 placeholder="PO description"
                                 value={poDescription}
@@ -529,7 +530,7 @@ export function VendorDetailClient({
                             />
                         </div>
                         <div>
-                            <label className="text-sm font-medium">Amount</label>
+                            <Label className="text-sm font-medium">Amount</Label>
                             <Input
                                 type="number"
                                 placeholder="0.00"

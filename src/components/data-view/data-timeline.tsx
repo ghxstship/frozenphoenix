@@ -163,48 +163,50 @@ export function DataTimeline({ data, className, actions, onItemClick }: DataTime
                                 const progress = item.progress ?? 0;
                                 const durationDays = daysBetween(item.startDate, item.endDate);
                                 return (
-                                    <button
+                                    <Button
                                         key={item.id}
-                                        type="button"
-                                        className="w-full text-left rounded-lg border border-border p-3 hover:bg-muted/50 transition-colors space-y-2"
+                                        variant="ghost"
+                                        className="w-full text-left h-auto rounded-lg border border-border p-3 justify-start"
                                         onClick={() => onItemClick?.(item)}
                                     >
-                                        <div className="flex items-center justify-between gap-2">
-                                            <p className="text-sm font-medium truncate flex-1">
-                                                {item.label}
-                                            </p>
-                                            <Badge
-                                                variant="secondary"
-                                                className="density-caption shrink-0"
-                                            >
-                                                {durationDays}d
-                                            </Badge>
-                                        </div>
-                                        {item.sublabel && (
-                                            <p className="density-caption text-muted-foreground truncate">
-                                                {item.sublabel}
-                                            </p>
-                                        )}
-                                        <div className="flex items-center gap-2 density-caption text-muted-foreground">
-                                            <span>{formatShort(item.startDate)}</span>
-                                            <span>\u2013</span>
-                                            <span>{formatShort(item.endDate)}</span>
-                                        </div>
-                                        {progress > 0 && (
-                                            <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
-                                                <div
-                                                    className={cn(
-                                                        "h-full rounded-full",
-                                                        item.color ??
-                                                            DEFAULT_COLORS[
-                                                                idx % DEFAULT_COLORS.length
-                                                            ]
-                                                    )}
-                                                    style={{ width: `${progress}%` }}
-                                                />
+                                        <div className="w-full space-y-2">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <p className="text-sm font-medium truncate flex-1">
+                                                    {item.label}
+                                                </p>
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="density-caption shrink-0"
+                                                >
+                                                    {durationDays}d
+                                                </Badge>
                                             </div>
-                                        )}
-                                    </button>
+                                            {item.sublabel && (
+                                                <p className="density-caption text-muted-foreground truncate">
+                                                    {item.sublabel}
+                                                </p>
+                                            )}
+                                            <div className="flex items-center gap-2 density-caption text-muted-foreground">
+                                                <span>{formatShort(item.startDate)}</span>
+                                                <span>\u2013</span>
+                                                <span>{formatShort(item.endDate)}</span>
+                                            </div>
+                                            {progress > 0 && (
+                                                <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
+                                                    <div
+                                                        className={cn(
+                                                            "h-full rounded-full",
+                                                            item.color ??
+                                                                DEFAULT_COLORS[
+                                                                    idx % DEFAULT_COLORS.length
+                                                                ]
+                                                        )}
+                                                        style={{ width: `${progress}%` }}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </Button>
                                 );
                             })}
                         </React.Fragment>
@@ -319,10 +321,10 @@ export function DataTimeline({ data, className, actions, onItemClick }: DataTime
                                                 content={`${item.label}: ${formatShort(item.startDate)} \u2013 ${formatShort(item.endDate)}${progress > 0 ? `, ${progress}%` : ""}`}
                                                 side="top"
                                             >
-                                                <button
-                                                    type="button"
+                                                <Button
+                                                    variant="ghost"
                                                     className={cn(
-                                                        "absolute top-2 h-6 rounded-md border transition-all",
+                                                        "absolute top-2 h-6 rounded-md border p-0",
                                                         colorClass,
                                                         onItemClick &&
                                                             "cursor-pointer hover:shadow-md"
@@ -344,7 +346,7 @@ export function DataTimeline({ data, className, actions, onItemClick }: DataTime
                                                     <span className="relative z-10 density-caption font-medium px-1.5 truncate block leading-6">
                                                         {item.label}
                                                     </span>
-                                                </button>
+                                                </Button>
                                             </Tooltip>
 
                                             {/* Today marker */}

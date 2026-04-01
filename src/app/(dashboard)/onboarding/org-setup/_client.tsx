@@ -18,6 +18,9 @@ import {
 } from "lucide-react";
 import { WizardShell } from "@/components/shells/wizard-shell";
 import type { WizardConfig } from "@/types/wizard-config";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 
 const TIMEZONES = [
     "America/New_York",
@@ -227,7 +230,7 @@ export function OrgSetupPageClient() {
                                         const Icon = opt.icon;
                                         const isSelected = role === opt.value;
                                         return (
-                                            <label
+                                            <Label
                                                 key={opt.value}
                                                 className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
                                                     isSelected
@@ -235,7 +238,7 @@ export function OrgSetupPageClient() {
                                                         : "border-input hover:border-muted-foreground/30"
                                                 }`}
                                             >
-                                                <input
+                                                <Input
                                                     type="radio"
                                                     name="role"
                                                     value={opt.value}
@@ -263,7 +266,7 @@ export function OrgSetupPageClient() {
                                                         {opt.description}
                                                     </p>
                                                 </div>
-                                            </label>
+                                            </Label>
                                         );
                                     })}
                                 </div>
@@ -274,18 +277,18 @@ export function OrgSetupPageClient() {
                             </fieldset>
 
                             <div className="space-y-2">
-                                <label
+                                <Label
                                     htmlFor="org-industry"
                                     className="text-sm font-medium leading-none"
                                 >
                                     Industry
-                                </label>
+                                </Label>
                                 <div className="relative">
                                     <Globe
                                         className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
                                         aria-hidden="true"
                                     />
-                                    <select
+                                    <NativeSelect
                                         id="org-industry"
                                         value={industry}
                                         onChange={(e) => setIndustry(e.target.value)}
@@ -298,23 +301,23 @@ export function OrgSetupPageClient() {
                                                 {ind}
                                             </option>
                                         ))}
-                                    </select>
+                                    </NativeSelect>
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label
+                                <Label
                                     htmlFor="org-timezone"
                                     className="text-sm font-medium leading-none"
                                 >
                                     Default Timezone
-                                </label>
+                                </Label>
                                 <div className="relative">
                                     <Clock
                                         className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
                                         aria-hidden="true"
                                     />
-                                    <select
+                                    <NativeSelect
                                         id="org-timezone"
                                         value={timezone}
                                         onChange={(e) => setTimezone(e.target.value)}
@@ -326,7 +329,7 @@ export function OrgSetupPageClient() {
                                                 {tz.replace(/_/g, " ")}
                                             </option>
                                         ))}
-                                    </select>
+                                    </NativeSelect>
                                 </div>
                             </div>
                         </div>

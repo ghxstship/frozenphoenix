@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Loader2, Mic, Send, Square, Trash2 } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useMessagingStrings } from "@/hooks/use-messaging-strings";
@@ -133,18 +134,16 @@ export function VoiceMessageRecorder({
     if (state === "idle") {
         return (
             <Tooltip content={ms("voice_record")} side="top">
-                <button
+                <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={startRecording}
                     disabled={disabled}
-                    className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors",
-                        "disabled:opacity-50 disabled:cursor-not-allowed",
-                        className
-                    )}
+                    className={cn("h-8 w-8", className)}
                     aria-label={ms("voice_record")}
                 >
                     <Mic className="h-4 w-4" />
-                </button>
+                </Button>
             </Tooltip>
         );
     }
@@ -178,35 +177,40 @@ export function VoiceMessageRecorder({
 
             {state === "recording" && (
                 <Tooltip content={ms("voice_stop")} side="top">
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={stopRecording}
-                        className="h-7 w-7 rounded-md flex items-center justify-center bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                        className="h-7 w-7 bg-destructive/10 text-destructive hover:bg-destructive/20"
                         aria-label={ms("voice_stop")}
                     >
                         <Square className="h-3 w-3 fill-current" />
-                    </button>
+                    </Button>
                 </Tooltip>
             )}
 
             {state === "stopped" && (
                 <>
                     <Tooltip content={ms("voice_cancel")} side="top">
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={cancelRecording}
-                            className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                             aria-label={ms("voice_cancel")}
                         >
                             <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        </Button>
                     </Tooltip>
                     <Tooltip content={ms("voice_send")} side="top">
-                        <button
+                        <Button
+                            size="icon"
                             onClick={handleSend}
-                            className="h-7 w-7 rounded-md flex items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                            className="h-7 w-7"
                             aria-label={ms("voice_send")}
                         >
                             <Send className="h-3.5 w-3.5" />
-                        </button>
+                        </Button>
                     </Tooltip>
                 </>
             )}

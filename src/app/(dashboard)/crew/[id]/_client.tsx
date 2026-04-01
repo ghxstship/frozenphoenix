@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { Label } from "@/components/ui/label";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { CERTIFICATION_TYPE_MAP } from "@/config/domain-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -393,7 +394,7 @@ export function CrewDetailClient({
                         <DialogTitle>Assign to Project</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-3">
-                        <label className="text-sm font-medium">Project ID</label>
+                        <Label className="text-sm font-medium">Project ID</Label>
                         <Input
                             placeholder="Enter project ID"
                             value={assignProjectId}
@@ -417,7 +418,7 @@ export function CrewDetailClient({
                     </DialogHeader>
                     <div className="space-y-3">
                         <div>
-                            <label className="text-sm font-medium">Certification Name</label>
+                            <Label className="text-sm font-medium">Certification Name</Label>
                             <Input
                                 placeholder="e.g., OSHA 30-Hour"
                                 value={certName}
@@ -425,7 +426,7 @@ export function CrewDetailClient({
                             />
                         </div>
                         <div>
-                            <label className="text-sm font-medium">Expiry Date</label>
+                            <Label className="text-sm font-medium">Expiry Date</Label>
                             <Input
                                 type="date"
                                 value={certExpiry}

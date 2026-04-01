@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/form/textarea";
+import { Label } from "@/components/ui/label";
 import { RecordChatter } from "@/components/activity";
 import { LinkedRecordsPanel } from "@/components/linked-records";
 import type { ActivityItem, CommentItem } from "@/components/activity";
@@ -327,7 +328,7 @@ export function KBArticleDetailClient({
                     if (line.startsWith("- [ ] "))
                         return (
                             <div key={i} className="flex items-center gap-2 py-0.5">
-                                <input type="checkbox" disabled className="rounded" />
+                                <Input type="checkbox" disabled className="rounded" />
                                 <span className="text-sm">{line.replace("- [ ] ", "")}</span>
                             </div>
                         );
@@ -386,7 +387,7 @@ export function KBArticleDetailClient({
                         </CardHeader>
                         <CardContent className="density-gap-section">
                             <div>
-                                <label className="text-sm font-medium block mb-1.5">Title</label>
+                                <Label className="text-sm font-medium block mb-1.5">Title</Label>
                                 <Input
                                     value={isEditing ? editTitle : article.title}
                                     onChange={(e) => setEditTitle(e.target.value)}
@@ -396,7 +397,7 @@ export function KBArticleDetailClient({
                                 />
                             </div>
                             <div>
-                                <label className="text-sm font-medium block mb-1.5">Summary</label>
+                                <Label className="text-sm font-medium block mb-1.5">Summary</Label>
                                 <Input
                                     value={isEditing ? editSummary : article.body.substring(0, 200)}
                                     onChange={(e) => setEditSummary(e.target.value)}
@@ -406,9 +407,9 @@ export function KBArticleDetailClient({
                                 />
                             </div>
                             <div>
-                                <label className="text-sm font-medium block mb-1.5">
+                                <Label className="text-sm font-medium block mb-1.5">
                                     Tags (comma-separated)
-                                </label>
+                                </Label>
                                 <Input
                                     value={isEditing ? editTags : (article.tags ?? []).join(", ")}
                                     onChange={(e) => setEditTags(e.target.value)}
@@ -418,9 +419,9 @@ export function KBArticleDetailClient({
                                 />
                             </div>
                             <div>
-                                <label className="text-sm font-medium block mb-1.5">
+                                <Label className="text-sm font-medium block mb-1.5">
                                     Content (Markdown)
-                                </label>
+                                </Label>
                                 <Textarea
                                     value={isEditing ? editContent : article.body}
                                     onChange={(e) => setEditContent(e.target.value)}

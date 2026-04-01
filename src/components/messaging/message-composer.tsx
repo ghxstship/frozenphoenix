@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { AtSign, Paperclip, Send, X } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { MessagePriority } from "@/types/messaging";
@@ -94,35 +95,41 @@ export function MessageComposer({
                         <p className="truncate text-muted-foreground">{replyTo.body}</p>
                     </div>
                     <Tooltip content={ms("composer_cancel_reply")} side="top">
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={onCancelReply}
-                            className="shrink-0 h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                            className="shrink-0 h-6 w-6"
                             aria-label={ms("composer_cancel_reply")}
                         >
                             <X className="h-3.5 w-3.5" />
-                        </button>
+                        </Button>
                     </Tooltip>
                 </div>
             )}
             <div className="flex items-end gap-2 p-3">
                 <div className="flex gap-1">
                     <Tooltip content="Attach file" side="top">
-                        <button
-                            className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
                             aria-label="Attach file"
                             tabIndex={-1}
                         >
                             <Paperclip className="h-4 w-4" />
-                        </button>
+                        </Button>
                     </Tooltip>
                     <Tooltip content="Mention someone" side="top">
-                        <button
-                            className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
                             aria-label="Mention someone"
                             tabIndex={-1}
                         >
                             <AtSign className="h-4 w-4" />
-                        </button>
+                        </Button>
                     </Tooltip>
                     {extraActions}
                 </div>
@@ -143,19 +150,18 @@ export function MessageComposer({
                     aria-label="Message input"
                 />
                 <Tooltip content={ms("composer_send")} side="top">
-                    <button
+                    <Button
+                        size="icon"
                         onClick={handleSend}
                         disabled={disabled || !text.trim()}
                         className={cn(
-                            "h-9 w-9 shrink-0 rounded-lg flex items-center justify-center transition-colors",
-                            text.trim()
-                                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                : "bg-secondary text-muted-foreground cursor-not-allowed"
+                            "h-9 w-9 shrink-0 rounded-lg",
+                            !text.trim() && "bg-secondary text-muted-foreground"
                         )}
                         aria-label={ms("composer_send")}
                     >
                         <Send className="h-4 w-4" />
-                    </button>
+                    </Button>
                 </Tooltip>
             </div>
         </div>

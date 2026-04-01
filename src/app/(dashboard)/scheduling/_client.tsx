@@ -11,6 +11,15 @@ import { HeatmapGrid } from "@/components/ui/heatmap-grid";
 import { GanttChart, type GanttTask } from "@/components/ui/gantt-chart";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Avatar } from "@/components/ui/avatar";
+import { NativeSelect } from "@/components/ui/native-select";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { useCrewMembers, useProjects, useShifts } from "@/lib/supabase";
 import { useCrewUtilization } from "@/lib/supabase";
 import { useResourceBookings } from "@/lib/supabase";
@@ -263,7 +272,7 @@ export function SchedulingPageClient() {
             ],
             toolbarActions: (
                 <>
-                    <select
+                    <NativeSelect
                         value={selectedProject}
                         onChange={(e) => setSelectedProject(e.target.value)}
                         className="h-8 rounded-lg border border-input bg-background px-2 text-xs"
@@ -274,7 +283,7 @@ export function SchedulingPageClient() {
                                 {p.name}
                             </option>
                         ))}
-                    </select>
+                    </NativeSelect>
                     <SegmentedControl
                         value={activeView}
                         onValueChange={setActiveView}
@@ -410,41 +419,45 @@ export function SchedulingPageClient() {
                                 <div className="flex items-center justify-between">
                                     <CardTitle>Weekly Schedule</CardTitle>
                                     <div className="flex items-center gap-2">
-                                        <button
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
                                             onClick={() => navigateWeek(-1)}
-                                            className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
+                                            className="h-8 w-8"
                                             aria-label="Previous week"
                                         >
                                             <ChevronLeft className="h-4 w-4" />
-                                        </button>
+                                        </Button>
                                         <span className="text-sm font-medium min-w-40 text-center">
                                             {weekDays[0] ? formatDate(weekDays[0], "compact") : ""}{" "}
                                             — {weekDays[6] ? formatDate(weekDays[6], "medium") : ""}
                                         </span>
-                                        <button
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
                                             onClick={() => navigateWeek(1)}
-                                            className="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
+                                            className="h-8 w-8"
                                             aria-label="Next week"
                                         >
                                             <ChevronRight className="h-4 w-4" />
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                             </CardHeader>
                             <CardContent>
                                 <div className="overflow-x-auto">
-                                    <table className="w-full min-w-[800px]">
-                                        <thead>
-                                            <tr className="border-b border-border">
-                                                <th className="text-left p-3 text-xs font-semibold text-muted-foreground w-48">
+                                    <Table className="w-full min-w-[800px]">
+                                        <TableHeader>
+                                            <TableRow className="border-b border-border">
+                                                <TableHead className="text-left p-3 text-xs font-semibold text-muted-foreground w-48">
                                                     Crew Member
-                                                </th>
+                                                </TableHead>
                                                 {weekDays.map((day) => {
                                                     const isToday =
                                                         formatDateKey(day) ===
                                                         formatDateKey(new Date());
                                                     return (
-                                                        <th
+                                                        <TableHead
                                                             key={day.toISOString()}
                                                             className={`text-center p-3 text-xs font-semibold ${isToday ? "bg-primary/5 text-primary" : "text-muted-foreground"}`}
                                                         >
@@ -459,30 +472,30 @@ export function SchedulingPageClient() {
                                                             <div className="text-sm font-bold">
                                                                 {day.getDate()}
                                                             </div>
-                                                        </th>
+                                                        </TableHead>
                                                     );
                                                 })}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
                                             {filteredCrew.length === 0 ? (
-                                                <tr>
-                                                    <td colSpan={8} className="p-0">
+                                                <TableRow>
+                                                    <TableCell colSpan={8} className="p-0">
                                                         <EmptyState
                                                             icon={CalendarDays}
                                                             title="No crew members found"
                                                             description="No crew members match the current filters"
                                                             compact
                                                         />
-                                                    </td>
-                                                </tr>
+                                                    </TableCell>
+                                                </TableRow>
                                             ) : (
                                                 filteredCrew.map((crew) => (
-                                                    <tr
+                                                    <TableRow
                                                         key={crew.id}
                                                         className="border-b border-border/50 hover:bg-secondary/20"
                                                     >
-                                                        <td className="p-3">
+                                                        <TableCell className="p-3">
                                                             <div className="flex items-center gap-2">
                                                                 <Avatar
                                                                     name={crew.name}
@@ -497,7 +510,7 @@ export function SchedulingPageClient() {
                                                                     </p>
                                                                 </div>
                                                             </div>
-                                                        </td>
+                                                        </TableCell>
                                                         {weekDays.map((day) => {
                                                             const shifts = getShiftsForDateAndCrew(
                                                                 day,
@@ -507,7 +520,7 @@ export function SchedulingPageClient() {
                                                                 formatDateKey(day) ===
                                                                 formatDateKey(new Date());
                                                             return (
-                                                                <td
+                                                                <TableCell
                                                                     key={day.toISOString()}
                                                                     className={`p-1.5 ${isToday ? "bg-primary/5" : ""}`}
                                                                 >
@@ -555,14 +568,14 @@ export function SchedulingPageClient() {
                                                                             </span>
                                                                         </div>
                                                                     )}
-                                                                </td>
+                                                                </TableCell>
                                                             );
                                                         })}
-                                                    </tr>
+                                                    </TableRow>
                                                 ))
                                             )}
-                                        </tbody>
-                                    </table>
+                                        </TableBody>
+                                    </Table>
                                 </div>
                             </CardContent>
                         </Card>

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { MessageBubble } from "./message-bubble";
@@ -101,13 +102,15 @@ export function ThreadPanel({ parentMessage, className }: ThreadPanelProps) {
             {/* Thread header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0">
                 <Tooltip content={ms("thread_back")} side="bottom">
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => setActiveThread(null)}
-                        className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        className="h-7 w-7"
                         aria-label={ms("thread_back")}
                     >
                         <ArrowLeft className="h-4 w-4" />
-                    </button>
+                    </Button>
                 </Tooltip>
                 <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-semibold">{ms("thread_title")}</h3>

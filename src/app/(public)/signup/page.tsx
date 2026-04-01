@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
     AuthFormField,
     AuthLayout,
@@ -297,12 +298,12 @@ function SignupForm() {
                 />
 
                 <div className="space-y-2">
-                    <label htmlFor="signup-password" className="text-sm font-medium leading-none">
+                    <Label htmlFor="signup-password" className="text-sm font-medium leading-none">
                         Password{" "}
                         <span className="text-destructive ml-1" aria-hidden="true">
                             *
                         </span>
-                    </label>
+                    </Label>
                     <PasswordInput
                         id="signup-password"
                         placeholder="••••••••"

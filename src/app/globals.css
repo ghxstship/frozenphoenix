@@ -876,6 +876,27 @@ body {
     }
 }
 
+/* Overscroll containment — prevents iOS rubber-banding on overlays */
+.overscroll-contain {
+    overscroll-behavior: contain;
+}
+
+/* Global input zoom prevention on iOS (CSS safety net) */
+@media (max-width: 640px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea {
+        font-size: max(16px, 1em) !important;
+    }
+}
+
+/* Smooth scrolling with reduced-motion respect */
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
 /* ═══════ Accessibility ═══════ */
 
 /* Screen reader only (WCAG compliant) */

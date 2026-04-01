@@ -19,6 +19,7 @@ import { useHydrated } from "@/hooks/use-hydrated";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useEscapeKey, useFocusTrap } from "@/hooks/use-accessibility";
 import { Tooltip } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 import { OrgSwitcher, TeamSwitcher } from "@/components/context-switcher";
 import type { PermissionLevel } from "@/types";
 import {
@@ -125,14 +126,16 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
                                 </span>
                             )}
                             {depth === 0 && (
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
                                         onTogglePin(item.path);
                                     }}
                                     className={cn(
-                                        "h-5 w-5 rounded flex items-center justify-center transition-opacity",
+                                        "h-5 w-5 transition-opacity",
                                         isPinned
                                             ? "opacity-100"
                                             : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto",
@@ -149,16 +152,18 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
                                     ) : (
                                         <Pin className="h-3 w-3" />
                                     )}
-                                </button>
+                                </Button>
                             )}
                         </>
                     )}
                 </Link>
                 {/* Expand/collapse toggle for items with children */}
                 {hasChildren && (!collapsed || isMobile) && (
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => onToggleChildren(item.path)}
-                        className="h-6 w-6 shrink-0 rounded flex items-center justify-center text-sidebar-foreground/30 hover:text-sidebar-foreground/60 transition-colors"
+                        className="h-6 w-6 shrink-0 text-sidebar-foreground/30 hover:text-sidebar-foreground/60"
                         aria-label={
                             childrenOpen ? `Collapse ${item.title}` : `Expand ${item.title}`
                         }
@@ -169,7 +174,7 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
                         ) : (
                             <ChevronRight className="h-3 w-3" />
                         )}
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -460,17 +465,21 @@ export function Sidebar() {
                     >
                         <OrgSwitcher collapsed={collapsed} isMobile={isMobile} />
                         {isMobile ? (
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={closeMobileSidebar}
-                                className="h-7 w-7 rounded-md flex items-center justify-center text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors shrink-0"
+                                className="h-7 w-7 shrink-0 text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                                 aria-label="Close sidebar"
                             >
                                 <X className="h-4 w-4" />
-                            </button>
+                            </Button>
                         ) : (
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={toggleCollapse}
-                                className="h-7 w-7 rounded-md flex items-center justify-center text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors shrink-0"
+                                className="h-7 w-7 shrink-0 text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                                 aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                             >
                                 {collapsed ? (
@@ -478,7 +487,7 @@ export function Sidebar() {
                                 ) : (
                                     <PanelLeftClose className="h-4 w-4" />
                                 )}
-                            </button>
+                            </Button>
                         )}
                     </div>
                     <TeamSwitcher collapsed={collapsed} isMobile={isMobile} />
@@ -506,13 +515,15 @@ export function Sidebar() {
                             tabIndex={collapsed && !isMobile ? -1 : 0}
                         />
                         {filterQuery ? (
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => setFilterQuery("")}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 rounded-sm flex items-center justify-center text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-sidebar-foreground/40 hover:text-sidebar-foreground"
                                 aria-label="Clear filter"
                             >
                                 <X className="h-3 w-3" />
-                            </button>
+                            </Button>
                         ) : (
                             <kbd className="absolute right-2 top-1/2 -translate-y-1/2 density-caption text-sidebar-foreground/25 bg-sidebar-accent px-1 py-0.5 rounded font-mono">
                                 /
@@ -607,9 +618,11 @@ export function Sidebar() {
                         <div key={section.title} className="mb-0.5">
                             {/* Section Header */}
                             {!collapsed || isMobile ? (
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => toggleSection(section.title)}
-                                    className="flex w-full items-center justify-between rounded-md px-2 py-1.5 density-caption font-semibold uppercase tracking-wider text-sidebar-foreground/35 hover:text-sidebar-foreground/55 transition-colors"
+                                    className="flex w-full items-center justify-between h-auto px-2 py-1.5 density-caption font-semibold uppercase tracking-wider text-sidebar-foreground/35 hover:text-sidebar-foreground/55"
                                     aria-expanded={isSectionExpanded(section.title)}
                                 >
                                     <span>{section.title}</span>
@@ -619,7 +632,7 @@ export function Sidebar() {
                                             !isSectionExpanded(section.title) && "-rotate-90"
                                         )}
                                     />
-                                </button>
+                                </Button>
                             ) : (
                                 <div className="mx-auto my-1.5 w-6 border-t border-sidebar-border/40" />
                             )}
@@ -662,12 +675,14 @@ export function Sidebar() {
                     {filteredSections.length === 0 && isFiltering && (
                         <div className="px-3 py-8 text-center">
                             <p className="text-xs text-sidebar-foreground/40">No matching pages</p>
-                            <button
+                            <Button
+                                variant="link"
+                                size="sm"
                                 onClick={() => setFilterQuery("")}
-                                className="mt-2 text-xs text-sidebar-primary hover:underline"
+                                className="mt-2 text-xs p-0 h-auto text-sidebar-primary"
                             >
                                 Clear filter
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </nav>
@@ -754,10 +769,12 @@ export function Sidebar() {
                                     )}
                                 </div>
                                 {user && (
-                                    <button
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
                                         onClick={handleSignOut}
                                         disabled={signingOut}
-                                        className="h-7 w-7 rounded-md flex items-center justify-center text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+                                        className="h-7 w-7 text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                                         title="Sign out"
                                         aria-label="Sign out"
                                     >
@@ -766,7 +783,7 @@ export function Sidebar() {
                                         ) : (
                                             <LogOut className="h-3.5 w-3.5" />
                                         )}
-                                    </button>
+                                    </Button>
                                 )}
                             </div>
                         );

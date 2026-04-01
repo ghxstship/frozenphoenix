@@ -3,6 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Globe, MessageSquare, MoreHorizontal, Pencil, Pin, Trash2 } from "lucide-react";
 import { VoiceMessagePlayer } from "./voice-message-player";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -144,18 +145,22 @@ export function MessageBubble({
                             autoFocus
                         />
                         <div className="flex gap-1 mt-1">
-                            <button
+                            <Button
+                                variant="link"
+                                size="sm"
                                 onClick={handleEditSave}
-                                className="text-xs text-primary hover:underline"
+                                className="text-xs p-0 h-auto"
                             >
                                 Save
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="link"
+                                size="sm"
                                 onClick={() => setIsEditing(false)}
-                                className="text-xs text-muted-foreground hover:underline"
+                                className="text-xs p-0 h-auto text-muted-foreground"
                             >
                                 Cancel
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 ) : (
@@ -174,20 +179,21 @@ export function MessageBubble({
                 {message.reactions.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1.5">
                         {message.reactions.map((reaction: ReactionAggregate) => (
-                            <button
+                            <Button
                                 key={reaction.emoji}
+                                variant="outline"
+                                size="sm"
                                 onClick={() => onReact?.(message.id, reaction.emoji)}
                                 className={cn(
-                                    "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors",
-                                    reaction.has_reacted
-                                        ? "border-primary/30 bg-primary/10 text-primary"
-                                        : "border-border bg-secondary/50 text-muted-foreground hover:bg-secondary"
+                                    "rounded-full h-auto px-2 py-0.5 text-xs gap-1",
+                                    reaction.has_reacted &&
+                                        "border-primary/30 bg-primary/10 text-primary"
                                 )}
                                 aria-label={`${reaction.emoji} ${reaction.count} reactions`}
                             >
                                 <span>{reaction.emoji}</span>
                                 <span>{reaction.count}</span>
-                            </button>
+                            </Button>
                         ))}
                     </div>
                 )}
@@ -215,39 +221,45 @@ export function MessageBubble({
                         <p className="text-xs text-foreground/80 italic bg-secondary/30 rounded px-2 py-1">
                             {translatedTexts[message.id]}
                         </p>
-                        <button
+                        <Button
+                            variant="link"
+                            size="sm"
                             onClick={() => onClearTranslation?.(message.id)}
-                            className="density-caption text-primary hover:underline"
+                            className="density-caption p-0 h-auto"
                         >
                             {ms("translate_show_original")}
-                        </button>
+                        </Button>
                     </div>
                 ) : onTranslate && !message.deleted_at ? (
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => onTranslate(message.id, message.body, "es")}
                         disabled={translatingMessageId === message.id}
-                        className="inline-flex items-center gap-1 mt-1 density-caption text-muted-foreground hover:text-foreground transition-colors"
+                        className="inline-flex items-center gap-1 mt-1 density-caption p-0 h-auto text-muted-foreground hover:text-foreground"
                         aria-label={ms("translate_button")}
                     >
                         <Globe className="h-3 w-3" />
                         {translatingMessageId === message.id
                             ? ms("translate_translating")
                             : ms("translate_button")}
-                    </button>
+                    </Button>
                 ) : null}
 
                 {/* Thread indicator */}
                 {message.thread_message_count > 0 && (
-                    <button
+                    <Button
+                        variant="link"
+                        size="sm"
                         onClick={() => onThreadOpen?.(message.id)}
-                        className="flex items-center gap-1.5 mt-1.5 text-xs text-primary hover:underline"
+                        className="flex items-center gap-1.5 mt-1.5 text-xs p-0 h-auto"
                     >
                         <MessageSquare className="h-3 w-3" />
                         <span>
                             {message.thread_message_count}{" "}
                             {message.thread_message_count === 1 ? "reply" : "replies"}
                         </span>
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -261,33 +273,39 @@ export function MessageBubble({
                             side="top"
                             delayDuration={200}
                         >
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => onReact?.(message.id, emoji)}
-                                className="h-6 w-6 rounded flex items-center justify-center text-sm hover:bg-secondary transition-colors"
+                                className="h-6 w-6 text-sm"
                                 aria-label={`React with ${emoji}`}
                             >
                                 {emoji}
-                            </button>
+                            </Button>
                         </Tooltip>
                     ))}
                     <Tooltip content={ms("message_thread")} side="top">
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => onReply?.(message)}
-                            className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                            className="h-6 w-6"
                             aria-label={ms("message_thread")}
                         >
                             <MessageSquare className="h-3.5 w-3.5" />
-                        </button>
+                        </Button>
                     </Tooltip>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Tooltip content="More actions" side="top">
-                                <button
-                                    className="h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6"
                                     aria-label="More actions"
                                 >
                                     <MoreHorizontal className="h-3.5 w-3.5" />
-                                </button>
+                                </Button>
                             </Tooltip>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-40">

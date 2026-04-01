@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { OverlineText } from "@/components/ui/overline-text";
 import { StaggerItem } from "@/components/ui/stagger-container";
+import { Textarea } from "@/components/ui/textarea";
 import { RecordChatter } from "@/components/activity";
 import type { CommentItem } from "@/components/activity";
 import type { DetailPageConfig } from "@/types/detail-page-config";
@@ -182,10 +183,11 @@ export function BrandKitDetailClient({
                         { label: "Secondary", color: secondaryColor },
                         { label: "Accent", color: accentColor },
                     ].map((c) => (
-                        <button
+                        <Button
                             key={c.label}
+                            variant="ghost"
                             onClick={() => copyColor(c.color)}
-                            className="flex items-center gap-2 w-full text-left hover:bg-secondary/30 rounded px-1 py-0.5"
+                            className="flex items-center gap-2 w-full justify-start h-auto px-1 py-0.5"
                         >
                             <div
                                 className="h-5 w-5 rounded border border-border shrink-0"
@@ -195,7 +197,7 @@ export function BrandKitDetailClient({
                             <span className="density-caption font-mono text-muted-foreground ml-auto">
                                 {c.color}
                             </span>
-                        </button>
+                        </Button>
                     ))}
                 </CardContent>
             </Card>
@@ -233,9 +235,10 @@ export function BrandKitDetailClient({
                         { label: "Accent", color: accentColor },
                     ].map((c) => (
                         <div key={c.label} className="flex items-center gap-4">
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={() => copyColor(c.color)}
-                                className="h-16 w-16 rounded-xl border border-border shrink-0 relative overflow-hidden transition-transform hover:scale-105"
+                                className="h-16 w-16 rounded-xl border border-border shrink-0 relative overflow-hidden p-0 hover:scale-105 transition-transform"
                                 style={{ backgroundColor: c.color }}
                             >
                                 {copiedColor === c.color && (
@@ -243,18 +246,20 @@ export function BrandKitDetailClient({
                                         <CheckCircle2 className="h-5 w-5 text-primary-foreground" />
                                     </div>
                                 )}
-                            </button>
+                            </Button>
                             <div className="flex-1">
                                 <p className="text-sm font-semibold">{c.label}</p>
                                 <p className="text-xs font-mono text-muted-foreground">{c.color}</p>
                                 <div className="flex gap-1 mt-1">
-                                    <button
+                                    <Button
+                                        variant="link"
+                                        size="sm"
                                         onClick={() => copyColor(c.color)}
-                                        className="density-caption text-primary hover:underline flex items-center gap-0.5"
+                                        className="density-caption text-primary h-auto p-0 gap-0.5"
                                     >
                                         <Copy className="h-2.5 w-2.5" />
                                         HEX
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -480,7 +485,7 @@ export function BrandKitDetailClient({
                                             </Button>
                                         </CardHeader>
                                         <CardContent>
-                                            <textarea
+                                            <Textarea
                                                 value={section.content}
                                                 onChange={(e) => {
                                                     const updated = [...guidelineSections];

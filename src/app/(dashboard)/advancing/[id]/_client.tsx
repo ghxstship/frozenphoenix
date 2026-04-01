@@ -18,6 +18,7 @@ import { DetailPageShell } from "@/components/shells";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
     AdvanceItemStatusBadge,
     AdvancePriorityBadge,
@@ -253,7 +254,7 @@ export function AdvancingOrderDetailPageClient({
                 {/* Reject reason input */}
                 {showRejectInput && (
                     <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3">
-                        <input
+                        <Input
                             type="text"
                             value={rejectReason}
                             onChange={(e) => setRejectReason(e.target.value)}
@@ -289,7 +290,7 @@ export function AdvancingOrderDetailPageClient({
                 {/* Cancel reason input */}
                 {showCancelInput && (
                     <div className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/5 px-4 py-3">
-                        <input
+                        <Input
                             type="text"
                             value={cancelReason}
                             onChange={(e) => setCancelReason(e.target.value)}
@@ -328,12 +329,14 @@ export function AdvancingOrderDetailPageClient({
                 {actionError && (
                     <div className="flex items-center justify-between rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
                         <span>{actionError}</span>
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => setActionError(null)}
                             className="text-xs text-muted-foreground hover:text-foreground ml-4"
                         >
                             Dismiss
-                        </button>
+                        </Button>
                     </div>
                 )}
 

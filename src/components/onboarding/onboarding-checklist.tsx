@@ -208,8 +208,9 @@ export function OnboardingChecklist() {
 
                         return (
                             <li key={step.id}>
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
                                     onClick={() => {
                                         if (step.completed) return;
                                         if (route) {
@@ -220,10 +221,8 @@ export function OnboardingChecklist() {
                                     }}
                                     disabled={step.completed || isCompleting}
                                     className={cn(
-                                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors",
-                                        step.completed
-                                            ? "opacity-60"
-                                            : "hover:bg-muted/50 cursor-pointer"
+                                        "w-full flex items-center gap-3 px-3 py-2.5 h-auto text-left justify-start",
+                                        step.completed && "opacity-60"
                                     )}
                                 >
                                     {step.completed ? (
@@ -261,7 +260,7 @@ export function OnboardingChecklist() {
                                             aria-hidden="true"
                                         />
                                     )}
-                                </button>
+                                </Button>
                             </li>
                         );
                     })}

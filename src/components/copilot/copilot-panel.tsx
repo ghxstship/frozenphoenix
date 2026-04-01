@@ -11,6 +11,7 @@ import { CopilotInput } from "./copilot-input";
 import { CopilotSuggestions, getDefaultSuggestions } from "./copilot-suggestions";
 import { ModelBadge } from "./model-badge";
 import { Bot, Plus, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Tooltip } from "@/components/ui/tooltip";
 
 // ─── Main Panel ──────────────────────────────────────────────
@@ -225,13 +226,15 @@ export function CopilotPanel() {
                     <div className="flex items-center gap-1">
                         <ModelBadge modelName="Claude Sonnet" providerName="Anthropic" />
                         <Tooltip content="New conversation" side="bottom">
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={handleNewConversation}
-                                className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                                className="h-7 w-7"
                                 aria-label="New conversation"
                             >
                                 <Plus className="h-4 w-4" />
-                            </button>
+                            </Button>
                         </Tooltip>
                     </div>
                 </div>
@@ -304,18 +307,15 @@ export function CopilotButton({ className }: CopilotButtonProps) {
 
     return (
         <Tooltip content="Open Copilot (⌘K)" side="bottom">
-            <button
+            <Button
+                variant="ghost"
+                size="icon"
                 onClick={togglePanel}
-                className={cn(
-                    "h-8 w-8 rounded-lg flex items-center justify-center",
-                    "text-muted-foreground hover:text-foreground hover:bg-secondary",
-                    "transition-colors relative",
-                    className
-                )}
+                className={cn("h-8 w-8", className)}
                 aria-label="Toggle AI Copilot"
             >
                 <Sparkles className="h-4 w-4" />
-            </button>
+            </Button>
         </Tooltip>
     );
 }

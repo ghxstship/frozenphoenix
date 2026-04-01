@@ -14,6 +14,7 @@ import {
 } from "@dnd-kit/core";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { NativeSelect } from "@/components/ui/native-select";
 import { GripVertical, User } from "lucide-react";
 import { useCrewMembers, useProjects, useUpdateCrewMember } from "@/lib/supabase";
 import { ListPageShell } from "@/components/shells";
@@ -276,13 +277,13 @@ export function OrgChartPageClient() {
             title: "Org Chart",
             description: "Drag crew members to reorganize the reporting hierarchy",
             toolbarActions: (
-                <select className="h-8 rounded-lg border border-input bg-background px-2 text-xs">
+                <NativeSelect className="h-8 rounded-lg border border-input bg-background px-2 text-xs">
                     {projects.map((p) => (
                         <option key={String(p.id)} value={String(p.id)}>
                             {String(p.name ?? "")}
                         </option>
                     ))}
-                </select>
+                </NativeSelect>
             ),
             contentSlot: (
                 <DndContext

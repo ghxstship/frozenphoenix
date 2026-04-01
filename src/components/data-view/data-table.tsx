@@ -487,13 +487,15 @@ export function DataTable<T extends object>({
                                 />
                                 {search && (
                                     <Tooltip content="Clear search" side="bottom">
-                                        <button
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
                                             onClick={() => setSearch("")}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
                                             aria-label="Clear search"
                                         >
                                             <X className="h-4 w-4" />
-                                        </button>
+                                        </Button>
                                     </Tooltip>
                                 )}
                             </div>
@@ -501,9 +503,15 @@ export function DataTable<T extends object>({
                         {selected.size > 0 && (
                             <Badge variant="secondary" className="gap-1">
                                 {selected.size} selected
-                                <button onClick={() => setSelected(new Set())} className="ml-1">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setSelected(new Set())}
+                                    className="h-4 w-4 ml-1 p-0"
+                                    aria-label="Clear selection"
+                                >
                                     <X className="h-3 w-3" />
-                                </button>
+                                </Button>
                             </Badge>
                         )}
                     </div>

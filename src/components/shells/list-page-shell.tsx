@@ -37,6 +37,7 @@ const CsvImportDialog = dynamic(() =>
     import("@/components/csv/csv-import-dialog").then((m) => m.CsvImportDialog)
 );
 import { QuickViewPanel } from "@/components/shells/quick-view-panel";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -815,80 +816,86 @@ function ListPageShellInner({
                                         activeCount={activeFilterCount}
                                     />
                                 )}
-                                {!isDashboardMode && colVisibilityItems.length > 1 && (
-                                    <ColumnVisibilityPopover
-                                        columns={colVisibilityItems}
-                                        onToggle={columnPrefs.toggleVisibility}
-                                        onReset={columnPrefs.reset}
-                                        onShowAll={columnPrefs.showAll}
-                                        onHideAll={columnPrefs.hideAll}
-                                        onReorder={columnPrefs.reorder}
-                                        label={fieldPopoverLabel}
-                                    />
-                                )}
-                                {!isDashboardMode && hasMultiView && (
-                                    <ViewSwitcher
-                                        views={views}
-                                        value={viewMode}
-                                        onValueChange={setViewMode}
-                                    />
-                                )}
-                                <Tooltip content="Refresh data" side="bottom">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-8 w-8 p-0"
-                                        onClick={invalidateEntity}
-                                        aria-label="Refresh data"
-                                    >
-                                        <RefreshCw
-                                            className={cn(
-                                                "h-4 w-4 transition-transform",
-                                                isFetching && "motion-safe:animate-spin"
-                                            )}
+                                {/* Desktop-only actions: column visibility, view switcher, refresh, import/export */}
+                                <div className="hidden sm:contents">
+                                    {!isDashboardMode && colVisibilityItems.length > 1 && (
+                                        <ColumnVisibilityPopover
+                                            columns={colVisibilityItems}
+                                            onToggle={columnPrefs.toggleVisibility}
+                                            onReset={columnPrefs.reset}
+                                            onShowAll={columnPrefs.showAll}
+                                            onHideAll={columnPrefs.hideAll}
+                                            onReorder={columnPrefs.reorder}
+                                            label={fieldPopoverLabel}
                                         />
-                                    </Button>
-                                </Tooltip>
-                                {(importable || exportable) && (
-                                    <DropdownMenu>
-                                        <Tooltip content="More actions" side="bottom">
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-8 w-8 p-0"
-                                                    aria-label="More actions"
-                                                >
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                        </Tooltip>
-                                        <DropdownMenuContent align="end">
-                                            {importable && (
-                                                <DropdownMenuItem
-                                                    onClick={() => setImportOpen(true)}
-                                                >
-                                                    <Upload className="h-4 w-4 mr-2" />
-                                                    Import
-                                                </DropdownMenuItem>
-                                            )}
-                                            {exportable && (
-                                                <DropdownMenuItem>
-                                                    <CsvExportButton
-                                                        entity={config.entityKey}
+                                    )}
+                                    {!isDashboardMode && hasMultiView && (
+                                        <ViewSwitcher
+                                            views={views}
+                                            value={viewMode}
+                                            onValueChange={setViewMode}
+                                        />
+                                    )}
+                                    <Tooltip content="Refresh data" side="bottom">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 w-8 p-0"
+                                            onClick={invalidateEntity}
+                                            aria-label="Refresh data"
+                                        >
+                                            <RefreshCw
+                                                className={cn(
+                                                    "h-4 w-4 transition-transform",
+                                                    isFetching && "motion-safe:animate-spin"
+                                                )}
+                                            />
+                                        </Button>
+                                    </Tooltip>
+                                    {(importable || exportable) && (
+                                        <DropdownMenu>
+                                            <Tooltip content="More actions" side="bottom">
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="h-auto p-0 font-normal hover:bg-transparent"
-                                                    />
-                                                </DropdownMenuItem>
-                                            )}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                )}
+                                                        className="h-8 w-8 p-0"
+                                                        aria-label="More actions"
+                                                    >
+                                                        <MoreVertical className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                            </Tooltip>
+                                            <DropdownMenuContent align="end">
+                                                {importable && (
+                                                    <DropdownMenuItem
+                                                        onClick={() => setImportOpen(true)}
+                                                    >
+                                                        <Upload className="h-4 w-4 mr-2" />
+                                                        Import
+                                                    </DropdownMenuItem>
+                                                )}
+                                                {exportable && (
+                                                    <DropdownMenuItem>
+                                                        <CsvExportButton
+                                                            entity={config.entityKey}
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-auto p-0 font-normal hover:bg-transparent"
+                                                        />
+                                                    </DropdownMenuItem>
+                                                )}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    )}
+                                </div>{" "}
+                                {/* End desktop-only actions */}
                                 {hasCreate && (
                                     <Button size="sm" onClick={openCreate}>
-                                        <Plus className="h-4 w-4" />{" "}
-                                        {config.createLabel ?? `New ${displayName}`}
+                                        <Plus className="h-4 w-4" />
+                                        <span className="hidden sm:inline ml-1">
+                                            {config.createLabel ?? `New ${displayName}`}
+                                        </span>
                                     </Button>
                                 )}
                             </>
@@ -956,46 +963,48 @@ function ListPageShellInner({
                     )
                 ) : (
                     /* ─── Standard entity list view (DataTable / Board / Cards / etc.) ─── */
-                    <ViewContent
-                        viewMode={viewMode}
-                        filtered={filtered}
-                        dtColumns={orderedVisibleColumns}
-                        config={config}
-                        title={title}
-                        hasBulkActions={hasBulkActions}
-                        selectedKeys={selectedKeys}
-                        setSelectedKeys={setSelectedKeys}
-                        handleRowClick={handleRowClick}
-                        renderRowActions={renderRowActions}
-                        renderRowActionItems={renderRowActionItems}
-                        emptyState={tableEmptyText}
-                        isLoading={isLoading}
-                        fieldVisibility={columnPrefs.visibility}
-                        fieldOrder={columnPrefs.order}
-                        onBoardDragEnd={
-                            config.boardConfig
-                                ? async (itemId: string, _from: string, toColumn: string) => {
-                                      try {
-                                          await apiUpdate(basePath, itemId, {
-                                              [config.boardConfig?.groupByKey ?? "status"]:
-                                                  toColumn,
-                                          });
-                                          invalidateEntity();
-                                      } catch (err) {
-                                          addToast({
-                                              title: "Failed to update status",
-                                              description:
-                                                  err instanceof Error
-                                                      ? err.message
-                                                      : "An unexpected error occurred.",
-                                              variant: "destructive",
-                                          });
-                                          invalidateEntity();
+                    <PullToRefresh onRefresh={invalidateEntity} isFetching={isFetching}>
+                        <ViewContent
+                            viewMode={viewMode}
+                            filtered={filtered}
+                            dtColumns={orderedVisibleColumns}
+                            config={config}
+                            title={title}
+                            hasBulkActions={hasBulkActions}
+                            selectedKeys={selectedKeys}
+                            setSelectedKeys={setSelectedKeys}
+                            handleRowClick={handleRowClick}
+                            renderRowActions={renderRowActions}
+                            renderRowActionItems={renderRowActionItems}
+                            emptyState={tableEmptyText}
+                            isLoading={isLoading}
+                            fieldVisibility={columnPrefs.visibility}
+                            fieldOrder={columnPrefs.order}
+                            onBoardDragEnd={
+                                config.boardConfig
+                                    ? async (itemId: string, _from: string, toColumn: string) => {
+                                          try {
+                                              await apiUpdate(basePath, itemId, {
+                                                  [config.boardConfig?.groupByKey ?? "status"]:
+                                                      toColumn,
+                                              });
+                                              invalidateEntity();
+                                          } catch (err) {
+                                              addToast({
+                                                  title: "Failed to update status",
+                                                  description:
+                                                      err instanceof Error
+                                                          ? err.message
+                                                          : "An unexpected error occurred.",
+                                                  variant: "destructive",
+                                              });
+                                              invalidateEntity();
+                                          }
                                       }
-                                  }
-                                : undefined
-                        }
-                    />
+                                    : undefined
+                            }
+                        />
+                    </PullToRefresh>
                 )}
 
                 {/* After-cards slot */}

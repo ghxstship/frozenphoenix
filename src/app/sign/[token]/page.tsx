@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { formatDate } from "@/lib/utils";
 
 type SignatureData = {
@@ -219,9 +220,9 @@ export default function ESignaturePage() {
                         )}
 
                         <div className="space-y-2">
-                            <label htmlFor="typed-name" className="text-sm font-medium">
+                            <Label htmlFor="typed-name" className="text-sm font-medium">
                                 Type your full legal name
-                            </label>
+                            </Label>
                             <Input
                                 id="typed-name"
                                 value={signedName}
@@ -242,19 +243,19 @@ export default function ESignaturePage() {
                         </div>
 
                         <div className="flex items-start gap-2">
-                            <input
+                            <Input
                                 type="checkbox"
                                 id="consent"
                                 checked={consent}
                                 onChange={(e) => setConsent(e.target.checked)}
                                 className="mt-1 rounded border-input"
                             />
-                            <label htmlFor="consent" className="text-xs text-muted-foreground">
+                            <Label htmlFor="consent" className="text-xs text-muted-foreground">
                                 I agree that my typed name above constitutes my electronic
                                 signature, and that this signature has the same legal force as a
                                 handwritten signature. I have read and agree to the terms of this
                                 document.
-                            </label>
+                            </Label>
                         </div>
 
                         <Button

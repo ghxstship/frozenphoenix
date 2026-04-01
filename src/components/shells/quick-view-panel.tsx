@@ -288,18 +288,20 @@ export function QuickViewPanel({
                                     {extraActions.map((action) => {
                                         const ActionIcon = action.icon;
                                         return (
-                                            <button
+                                            <Button
                                                 key={action.id}
-                                                onClick={() => action.onExecute(record)}
-                                                className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors hover:bg-secondary ${
+                                                variant={
                                                     action.variant === "destructive"
-                                                        ? "text-destructive hover:bg-destructive/10"
-                                                        : ""
-                                                }`}
+                                                        ? "destructive"
+                                                        : "ghost"
+                                                }
+                                                size="sm"
+                                                className="w-full justify-start gap-2"
+                                                onClick={() => action.onExecute(record)}
                                             >
                                                 {ActionIcon && <ActionIcon className="h-4 w-4" />}
                                                 {action.label}
-                                            </button>
+                                            </Button>
                                         );
                                     })}
                                 </div>

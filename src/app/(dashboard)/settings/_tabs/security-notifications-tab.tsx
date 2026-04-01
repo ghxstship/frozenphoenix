@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/supabase/auth-context";
 import {
     useNotificationPreferences,
@@ -79,9 +80,10 @@ export function NotificationsTab({ settingsLoading, settingsContent }: Notificat
                                         <method.icon className="h-4 w-4 text-muted-foreground" />
                                         <span className="text-sm">{method.label}</span>
                                     </div>
-                                    <button
+                                    <Button
+                                        variant="ghost"
                                         onClick={() => handleNotifToggle(method.id, !enabled)}
-                                        className={`h-6 w-11 rounded-full transition-colors ${enabled ? "bg-primary" : "bg-muted"}`}
+                                        className={`h-6 w-11 rounded-full p-0 transition-colors ${enabled ? "bg-primary" : "bg-muted"}`}
                                         role="switch"
                                         aria-checked={enabled}
                                         aria-label={`Toggle ${method.label}`}
@@ -89,7 +91,7 @@ export function NotificationsTab({ settingsLoading, settingsContent }: Notificat
                                         <div
                                             className={`h-5 w-5 rounded-full bg-background shadow-sm transition-transform ${enabled ? "translate-x-5" : "translate-x-0.5"}`}
                                         />
-                                    </button>
+                                    </Button>
                                 </div>
                             );
                         })}
@@ -116,21 +118,21 @@ export function SecurityTab() {
                 </CardHeader>
                 <CardContent className="density-gap-section">
                     <div className="space-y-2">
-                        <label htmlFor="current-password" className="text-sm font-medium">
+                        <Label htmlFor="current-password" className="text-sm font-medium">
                             Current Password
-                        </label>
+                        </Label>
                         <Input id="current-password" type="password" placeholder="••••••••" />
                     </div>
                     <div className="space-y-2">
-                        <label htmlFor="new-password" className="text-sm font-medium">
+                        <Label htmlFor="new-password" className="text-sm font-medium">
                             New Password
-                        </label>
+                        </Label>
                         <Input id="new-password" type="password" placeholder="••••••••" />
                     </div>
                     <div className="space-y-2">
-                        <label htmlFor="confirm-password" className="text-sm font-medium">
+                        <Label htmlFor="confirm-password" className="text-sm font-medium">
                             Confirm New Password
-                        </label>
+                        </Label>
                         <Input id="confirm-password" type="password" placeholder="••••••••" />
                     </div>
                     <Button onClick={() => router.push("/settings/security")}>

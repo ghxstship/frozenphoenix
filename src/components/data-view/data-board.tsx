@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "@/lib/motion";
 import { useMotion } from "@/hooks/use-motion";
 import { useBreakpoint } from "@/hooks/use-media-query";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TruncatedText } from "@/components/ui/truncated-text";
 import { type FieldConfig, FieldRenderer, type FieldType } from "./field-renderers";
@@ -390,20 +391,16 @@ export function DataBoard<T extends object>({
                 {columns.map((col, idx) => {
                     const count = (groupedData[col.id] ?? []).length;
                     return (
-                        <button
+                        <Button
                             key={col.id}
-                            type="button"
+                            variant={idx === mobileColumnIdx ? "default" : "secondary"}
+                            size="sm"
                             onClick={() => setMobileColumnIdx(idx)}
-                            className={cn(
-                                "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
-                                idx === mobileColumnIdx
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-muted text-muted-foreground hover:text-foreground"
-                            )}
+                            className="shrink-0 rounded-full h-auto px-3 py-1.5"
                         >
                             {col.title}
                             <span className="ml-1 opacity-70">{count}</span>
-                        </button>
+                        </Button>
                     );
                 })}
             </div>

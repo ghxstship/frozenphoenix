@@ -12,6 +12,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { PERMISSION_LEVEL_MAP } from "@/config/domain-config";
 import type { AccessReviewEntry, TemporaryAccessGrant } from "@/types/user-lifecycle";
 import {
@@ -171,42 +179,42 @@ export function AccessReviewsPageClient() {
                     </div>
 
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b">
-                                    <th className="text-left py-2 pr-4 font-medium text-muted-foreground">
+                        <Table className="w-full text-sm">
+                            <TableHeader>
+                                <TableRow className="border-b">
+                                    <TableHead className="text-left py-2 pr-4 font-medium text-muted-foreground">
                                         User
-                                    </th>
-                                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                                    </TableHead>
+                                    <TableHead className="text-left py-2 px-3 font-medium text-muted-foreground">
                                         Role
-                                    </th>
-                                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                                    </TableHead>
+                                    <TableHead className="text-left py-2 px-3 font-medium text-muted-foreground">
                                         Status
-                                    </th>
-                                    <th className="text-center py-2 px-3 font-medium text-muted-foreground">
+                                    </TableHead>
+                                    <TableHead className="text-center py-2 px-3 font-medium text-muted-foreground">
                                         Projects
-                                    </th>
-                                    <th className="text-right py-2 px-3 font-medium text-muted-foreground">
+                                    </TableHead>
+                                    <TableHead className="text-right py-2 px-3 font-medium text-muted-foreground">
                                         Inactive
-                                    </th>
-                                    <th className="text-center py-2 px-3 font-medium text-muted-foreground">
+                                    </TableHead>
+                                    <TableHead className="text-center py-2 px-3 font-medium text-muted-foreground">
                                         Risk
-                                    </th>
-                                    <th className="text-right py-2 pl-3 font-medium text-muted-foreground">
+                                    </TableHead>
+                                    <TableHead className="text-right py-2 pl-3 font-medium text-muted-foreground">
                                         Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
                                 {filtered.map((review) => {
                                     const roleConfig =
                                         PERMISSION_LEVEL_MAP[review.role as PermissionLevel];
                                     return (
-                                        <tr
+                                        <TableRow
                                             key={review.userId}
                                             className="border-b border-border/50 hover:bg-secondary/30 transition-colors"
                                         >
-                                            <td className="py-2.5 pr-4">
+                                            <TableCell className="py-2.5 pr-4">
                                                 <div>
                                                     <p className="font-medium text-xs">
                                                         {review.userName}
@@ -215,8 +223,8 @@ export function AccessReviewsPageClient() {
                                                         {review.email}
                                                     </p>
                                                 </div>
-                                            </td>
-                                            <td className="py-2.5 px-3">
+                                            </TableCell>
+                                            <TableCell className="py-2.5 px-3">
                                                 {roleConfig && (
                                                     <Badge
                                                         variant={roleConfig.variant}
@@ -225,14 +233,14 @@ export function AccessReviewsPageClient() {
                                                         {roleConfig.label}
                                                     </Badge>
                                                 )}
-                                            </td>
-                                            <td className="py-2.5 px-3">
+                                            </TableCell>
+                                            <TableCell className="py-2.5 px-3">
                                                 <StatusBadge status={review.membershipStatus} />
-                                            </td>
-                                            <td className="py-2.5 px-3 text-center text-xs">
+                                            </TableCell>
+                                            <TableCell className="py-2.5 px-3 text-center text-xs">
                                                 {review.projectCount}
-                                            </td>
-                                            <td className="py-2.5 px-3 text-right text-xs">
+                                            </TableCell>
+                                            <TableCell className="py-2.5 px-3 text-right text-xs">
                                                 <span
                                                     className={
                                                         review.daysSinceActive > 30
@@ -242,8 +250,8 @@ export function AccessReviewsPageClient() {
                                                 >
                                                     {review.daysSinceActive}d
                                                 </span>
-                                            </td>
-                                            <td className="py-2.5 px-3 text-center">
+                                            </TableCell>
+                                            <TableCell className="py-2.5 px-3 text-center">
                                                 <span
                                                     className={`inline-flex items-center px-2 py-0.5 rounded-full density-caption font-medium ${RISK_BG_CLASSES[review.riskLevel]}`}
                                                 >
@@ -253,8 +261,8 @@ export function AccessReviewsPageClient() {
                                                           ? "Medium"
                                                           : "Low"}
                                                 </span>
-                                            </td>
-                                            <td className="py-2.5 pl-3 text-right">
+                                            </TableCell>
+                                            <TableCell className="py-2.5 pl-3 text-right">
                                                 <div className="flex justify-end gap-1">
                                                     {review.riskLevel !== "low" && (
                                                         <Button
@@ -268,12 +276,12 @@ export function AccessReviewsPageClient() {
                                                         </Button>
                                                     )}
                                                 </div>
-                                            </td>
-                                        </tr>
+                                            </TableCell>
+                                        </TableRow>
                                     );
                                 })}
-                            </tbody>
-                        </table>
+                            </TableBody>
+                        </Table>
                     </div>
                 </CardContent>
             </Card>

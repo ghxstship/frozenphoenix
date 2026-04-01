@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ConditionBadge } from "@/components/ui/status-badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { ASSET_CONDITION_MAP } from "@/config/domain-config";
 import { useAssetScanHistory } from "@/lib/supabase/hooks-scanning";
@@ -713,7 +715,7 @@ export function AssetDetailClient({
                         <DialogTitle>Check Out Asset</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-3">
-                        <label className="text-sm font-medium">Project ID (optional)</label>
+                        <Label className="text-sm font-medium">Project ID (optional)</Label>
                         <Input
                             placeholder="Enter project ID"
                             value={checkoutProject}
@@ -739,8 +741,8 @@ export function AssetDetailClient({
                         <DialogTitle>Log Maintenance</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-3">
-                        <label className="text-sm font-medium">Maintenance Notes</label>
-                        <textarea
+                        <Label className="text-sm font-medium">Maintenance Notes</Label>
+                        <Textarea
                             className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm min-h-[100px]"
                             placeholder="Describe maintenance performed..."
                             value={maintenanceNote}

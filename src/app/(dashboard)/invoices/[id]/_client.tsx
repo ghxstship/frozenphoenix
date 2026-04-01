@@ -18,6 +18,15 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import type { DetailPageConfig } from "@/types/detail-page-config";
 import { Badge } from "@/components/ui/badge";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableFooter,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { EmptyState } from "@/components/layouts/empty-state";
 import {
     Building2,
@@ -408,56 +417,68 @@ export function InvoiceDetailClient({
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b text-muted-foreground">
-                                <th className="text-left py-2 font-medium">Description</th>
-                                <th className="text-right py-2 font-medium">Qty</th>
-                                <th className="text-right py-2 font-medium">Unit Price</th>
-                                <th className="text-right py-2 font-medium">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                    <Table className="w-full text-sm">
+                        <TableHeader>
+                            <TableRow className="border-b text-muted-foreground">
+                                <TableHead className="text-left py-2 font-medium">
+                                    Description
+                                </TableHead>
+                                <TableHead className="text-right py-2 font-medium">Qty</TableHead>
+                                <TableHead className="text-right py-2 font-medium">
+                                    Unit Price
+                                </TableHead>
+                                <TableHead className="text-right py-2 font-medium">Total</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
                             {lineItems.map((item) => (
-                                <tr key={item.id} className="border-b border-border/50">
-                                    <td className="py-2.5">{item.description}</td>
-                                    <td className="py-2.5 text-right">{item.quantity}</td>
-                                    <td className="py-2.5 text-right">
+                                <TableRow key={item.id} className="border-b border-border/50">
+                                    <TableCell className="py-2.5">{item.description}</TableCell>
+                                    <TableCell className="py-2.5 text-right">
+                                        {item.quantity}
+                                    </TableCell>
+                                    <TableCell className="py-2.5 text-right">
                                         {formatCurrency(item.unitPrice)}
-                                    </td>
-                                    <td className="py-2.5 text-right font-medium">
+                                    </TableCell>
+                                    <TableCell className="py-2.5 text-right font-medium">
                                         {formatCurrency(item.total)}
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                </TableRow>
                             ))}
-                        </tbody>
-                        <tfoot>
-                            <tr className="border-b border-border/50">
-                                <td colSpan={3} className="py-2 text-right text-muted-foreground">
+                        </TableBody>
+                        <TableFooter>
+                            <TableRow className="border-b border-border/50">
+                                <TableCell
+                                    colSpan={3}
+                                    className="py-2 text-right text-muted-foreground"
+                                >
                                     Subtotal
-                                </td>
-                                <td className="py-2 text-right font-medium">
+                                </TableCell>
+                                <TableCell className="py-2 text-right font-medium">
                                     {formatCurrency(subtotal)}
-                                </td>
-                            </tr>
-                            <tr className="border-b border-border/50">
-                                <td colSpan={3} className="py-2 text-right text-muted-foreground">
+                                </TableCell>
+                            </TableRow>
+                            <TableRow className="border-b border-border/50">
+                                <TableCell
+                                    colSpan={3}
+                                    className="py-2 text-right text-muted-foreground"
+                                >
                                     Tax ({taxRate}%)
-                                </td>
-                                <td className="py-2 text-right font-medium">
+                                </TableCell>
+                                <TableCell className="py-2 text-right font-medium">
                                     {formatCurrency(taxAmount)}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colSpan={3} className="py-2 text-right font-bold">
+                                </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell colSpan={3} className="py-2 text-right font-bold">
                                     Total
-                                </td>
-                                <td className="py-2 text-right font-bold text-lg">
+                                </TableCell>
+                                <TableCell className="py-2 text-right font-bold text-lg">
                                     {formatCurrency(total)}
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
+                                </TableCell>
+                            </TableRow>
+                        </TableFooter>
+                    </Table>
                     {invoiceNotes && (
                         <div className="mt-4 p-3 rounded-lg bg-secondary/30">
                             <p className="text-xs text-muted-foreground font-medium mb-1">Notes</p>

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { ArrowUp, Loader2, Square } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 
@@ -85,28 +86,25 @@ export function CopilotInput({
                 {/* Send / Stop button */}
                 {isStreaming ? (
                     <Tooltip content="Stop generating" side="top">
-                        <button
+                        <Button
+                            variant="destructive"
+                            size="icon"
                             onClick={onStop}
-                            className={cn(
-                                "h-9 w-9 shrink-0 rounded-xl flex items-center justify-center",
-                                "bg-destructive text-destructive-foreground",
-                                "hover:bg-destructive/90 transition-colors"
-                            )}
+                            className="h-9 w-9 shrink-0 rounded-xl"
                             aria-label="Stop generating"
                         >
                             <Square className="h-3.5 w-3.5" />
-                        </button>
+                        </Button>
                     </Tooltip>
                 ) : (
                     <Tooltip content="Send message (Enter)" side="top">
-                        <button
+                        <Button
+                            size="icon"
                             onClick={handleSubmit}
                             disabled={!value.trim() || disabled}
                             className={cn(
-                                "h-9 w-9 shrink-0 rounded-xl flex items-center justify-center transition-colors",
-                                value.trim()
-                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                    : "bg-secondary text-muted-foreground cursor-not-allowed"
+                                "h-9 w-9 shrink-0 rounded-xl",
+                                !value.trim() && "bg-secondary text-muted-foreground"
                             )}
                             aria-label="Send message"
                         >
@@ -115,7 +113,7 @@ export function CopilotInput({
                             ) : (
                                 <ArrowUp className="h-4 w-4" />
                             )}
-                        </button>
+                        </Button>
                     </Tooltip>
                 )}
             </div>

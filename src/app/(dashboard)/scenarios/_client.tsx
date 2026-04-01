@@ -11,6 +11,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { OverlineText } from "@/components/ui/overline-text";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { StatCard } from "@/components/ui/stat-card";
+import { Input } from "@/components/ui/input";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 // MetricCard available for future scenario summary cards
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -183,7 +192,7 @@ function VariableSlider({
                     </span>
                 </div>
             </div>
-            <input
+            <Input
                 type="range"
                 min={min}
                 max={max}
@@ -642,24 +651,24 @@ export function ScenariosPageClient() {
                                                         Detailed Breakdown
                                                     </OverlineText>
                                                     <div className="border rounded-lg overflow-hidden">
-                                                        <table className="w-full text-sm">
-                                                            <thead>
-                                                                <tr className="bg-muted/50 border-b">
-                                                                    <th className="text-left p-3 font-medium text-xs">
+                                                        <Table className="w-full text-sm">
+                                                            <TableHeader>
+                                                                <TableRow className="bg-muted/50 border-b">
+                                                                    <TableHead className="text-left p-3 font-medium text-xs">
                                                                         Metric
-                                                                    </th>
-                                                                    <th className="text-right p-3 font-medium text-xs">
+                                                                    </TableHead>
+                                                                    <TableHead className="text-right p-3 font-medium text-xs">
                                                                         Baseline
-                                                                    </th>
-                                                                    <th className="text-right p-3 font-medium text-xs">
+                                                                    </TableHead>
+                                                                    <TableHead className="text-right p-3 font-medium text-xs">
                                                                         Projected
-                                                                    </th>
-                                                                    <th className="text-right p-3 font-medium text-xs">
+                                                                    </TableHead>
+                                                                    <TableHead className="text-right p-3 font-medium text-xs">
                                                                         Variance
-                                                                    </th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
+                                                                    </TableHead>
+                                                                </TableRow>
+                                                            </TableHeader>
+                                                            <TableBody>
                                                                 {scenario.outcomes.map((o, i) => {
                                                                     const variance =
                                                                         o.projectedValue -
@@ -683,22 +692,22 @@ export function ScenariosPageClient() {
                                                                               ? `${v.toFixed(1)}%`
                                                                               : v.toLocaleString();
                                                                     return (
-                                                                        <tr
+                                                                        <TableRow
                                                                             key={i}
                                                                             className="border-b last:border-0 hover:bg-secondary/30"
                                                                         >
-                                                                            <td className="p-3 font-medium text-xs">
+                                                                            <TableCell className="p-3 font-medium text-xs">
                                                                                 {o.metric}
-                                                                            </td>
-                                                                            <td className="p-3 text-right text-xs text-muted-foreground tabular-nums">
+                                                                            </TableCell>
+                                                                            <TableCell className="p-3 text-right text-xs text-muted-foreground tabular-nums">
                                                                                 {fmt(o.baseValue)}
-                                                                            </td>
-                                                                            <td className="p-3 text-right text-xs font-bold tabular-nums">
+                                                                            </TableCell>
+                                                                            <TableCell className="p-3 text-right text-xs font-bold tabular-nums">
                                                                                 {fmt(
                                                                                     o.projectedValue
                                                                                 )}
-                                                                            </td>
-                                                                            <td
+                                                                            </TableCell>
+                                                                            <TableCell
                                                                                 className={`p-3 text-right text-xs font-medium tabular-nums ${isPositive ? "text-success" : "text-destructive"}`}
                                                                             >
                                                                                 {variance > 0
@@ -719,12 +728,12 @@ export function ScenariosPageClient() {
                                                                                         %)
                                                                                     </span>
                                                                                 )}
-                                                                            </td>
-                                                                        </tr>
+                                                                            </TableCell>
+                                                                        </TableRow>
                                                                     );
                                                                 })}
-                                                            </tbody>
-                                                        </table>
+                                                            </TableBody>
+                                                        </Table>
                                                     </div>
                                                 </div>
 

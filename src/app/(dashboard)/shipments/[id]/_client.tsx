@@ -17,6 +17,14 @@ import { DetailPageShell } from "@/components/shells/detail-page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { RecordChatter } from "@/components/activity";
 import type { ActivityItem, CommentItem } from "@/components/activity";
@@ -320,57 +328,57 @@ export function ShipmentDetailClient({
                                           />
                                       ) : (
                                           <div className="overflow-x-auto">
-                                              <table className="w-full text-sm">
-                                                  <thead>
-                                                      <tr className="border-b text-left">
-                                                          <th className="py-2 pr-4 font-medium text-muted-foreground">
+                                              <Table className="w-full text-sm">
+                                                  <TableHeader>
+                                                      <TableRow className="border-b text-left">
+                                                          <TableHead className="py-2 pr-4 font-medium text-muted-foreground">
                                                               Description
-                                                          </th>
-                                                          <th className="py-2 pr-4 font-medium text-muted-foreground text-right">
+                                                          </TableHead>
+                                                          <TableHead className="py-2 pr-4 font-medium text-muted-foreground text-right">
                                                               Qty
-                                                          </th>
-                                                          <th className="py-2 pr-4 font-medium text-muted-foreground text-right">
+                                                          </TableHead>
+                                                          <TableHead className="py-2 pr-4 font-medium text-muted-foreground text-right">
                                                               Weight
-                                                          </th>
-                                                          <th className="py-2 font-medium text-muted-foreground text-right">
+                                                          </TableHead>
+                                                          <TableHead className="py-2 font-medium text-muted-foreground text-right">
                                                               Value
-                                                          </th>
-                                                      </tr>
-                                                  </thead>
-                                                  <tbody>
+                                                          </TableHead>
+                                                      </TableRow>
+                                                  </TableHeader>
+                                                  <TableBody>
                                                       {items.map((item, i: number) => {
                                                           return (
-                                                              <tr
+                                                              <TableRow
                                                                   key={String(item.id ?? i)}
                                                                   className="border-b last:border-0 hover:bg-secondary/30 transition-colors"
                                                               >
-                                                                  <td className="py-3 pr-4 font-medium">
+                                                                  <TableCell className="py-3 pr-4 font-medium">
                                                                       {String(
                                                                           item.description ?? ""
                                                                       )}
-                                                                  </td>
-                                                                  <td className="py-3 pr-4 text-right">
+                                                                  </TableCell>
+                                                                  <TableCell className="py-3 pr-4 text-right">
                                                                       {String(item.quantity ?? 0)}
-                                                                  </td>
-                                                                  <td className="py-3 pr-4 text-right">
+                                                                  </TableCell>
+                                                                  <TableCell className="py-3 pr-4 text-right">
                                                                       {Number(
                                                                           item.weight ?? 0
                                                                       ).toLocaleString()}{" "}
                                                                       lbs
-                                                                  </td>
-                                                                  <td className="py-3 text-right">
+                                                                  </TableCell>
+                                                                  <TableCell className="py-3 text-right">
                                                                       {formatCurrency(
                                                                           Number(
                                                                               item.declared_value ??
                                                                                   0
                                                                           )
                                                                       )}
-                                                                  </td>
-                                                              </tr>
+                                                                  </TableCell>
+                                                              </TableRow>
                                                           );
                                                       })}
-                                                  </tbody>
-                                              </table>
+                                                  </TableBody>
+                                              </Table>
                                           </div>
                                       )}
                                   </CardContent>

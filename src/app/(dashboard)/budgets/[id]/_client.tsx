@@ -19,6 +19,14 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/layouts/empty-state";
 import { EntityLink } from "@/components/linked-records/entity-link";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { BUDGET_CATEGORY_CONFIG } from "@/config/production-config";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { DetailPageConfig } from "@/types/detail-page-config";
@@ -385,58 +393,58 @@ export function BudgetDetailClient({
                                     />
                                 ) : (
                                     <div className="overflow-x-auto">
-                                        <table className="w-full text-sm">
-                                            <thead>
-                                                <tr className="border-b text-left">
-                                                    <th className="py-2 pr-4 font-medium text-muted-foreground">
+                                        <Table className="w-full text-sm">
+                                            <TableHeader>
+                                                <TableRow className="border-b text-left">
+                                                    <TableHead className="py-2 pr-4 font-medium text-muted-foreground">
                                                         Description
-                                                    </th>
-                                                    <th className="py-2 pr-4 font-medium text-muted-foreground">
+                                                    </TableHead>
+                                                    <TableHead className="py-2 pr-4 font-medium text-muted-foreground">
                                                         Category
-                                                    </th>
-                                                    <th className="py-2 pr-4 font-medium text-muted-foreground text-right">
+                                                    </TableHead>
+                                                    <TableHead className="py-2 pr-4 font-medium text-muted-foreground text-right">
                                                         Budgeted
-                                                    </th>
-                                                    <th className="py-2 pr-4 font-medium text-muted-foreground text-right">
+                                                    </TableHead>
+                                                    <TableHead className="py-2 pr-4 font-medium text-muted-foreground text-right">
                                                         Actual
-                                                    </th>
-                                                    <th className="py-2 font-medium text-muted-foreground text-right">
+                                                    </TableHead>
+                                                    <TableHead className="py-2 font-medium text-muted-foreground text-right">
                                                         Variance
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
+                                                    </TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
                                                 {lineItems.map((li) => (
-                                                    <tr
+                                                    <TableRow
                                                         key={li.id}
                                                         className="border-b last:border-0 hover:bg-secondary/30 transition-colors"
                                                     >
-                                                        <td className="py-3 pr-4 font-medium">
+                                                        <TableCell className="py-3 pr-4 font-medium">
                                                             {li.description}
-                                                        </td>
-                                                        <td className="py-3 pr-4">
+                                                        </TableCell>
+                                                        <TableCell className="py-3 pr-4">
                                                             <Badge
                                                                 variant="secondary"
                                                                 className="capitalize"
                                                             >
                                                                 {li.category}
                                                             </Badge>
-                                                        </td>
-                                                        <td className="py-3 pr-4 text-right">
+                                                        </TableCell>
+                                                        <TableCell className="py-3 pr-4 text-right">
                                                             {formatCurrency(li.budgetedAmount)}
-                                                        </td>
-                                                        <td className="py-3 pr-4 text-right">
+                                                        </TableCell>
+                                                        <TableCell className="py-3 pr-4 text-right">
                                                             {formatCurrency(li.actualAmount)}
-                                                        </td>
-                                                        <td
+                                                        </TableCell>
+                                                        <TableCell
                                                             className={`py-3 text-right font-medium ${li.variance < 0 ? "text-success" : li.variance > 0 ? "text-destructive" : ""}`}
                                                         >
                                                             {formatCurrency(li.variance)}
-                                                        </td>
-                                                    </tr>
+                                                        </TableCell>
+                                                    </TableRow>
                                                 ))}
-                                            </tbody>
-                                        </table>
+                                            </TableBody>
+                                        </Table>
                                     </div>
                                 )}
                             </CardContent>

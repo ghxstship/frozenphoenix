@@ -8,6 +8,8 @@ import type { WizardConfig } from "@/types/wizard-config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/utils";
 import { Building2, CheckCircle2, DollarSign, FileText, Plus, Trash2 } from "lucide-react";
 
@@ -76,7 +78,7 @@ export function NewInvoicePageClient() {
                             Client & Project Details
                         </CardTitle>
                         <div>
-                            <label className="text-sm font-medium mb-1 block">Company Name</label>
+                            <Label className="text-sm font-medium mb-1 block">Company Name</Label>
                             <Input
                                 placeholder="e.g., Nike Inc."
                                 value={client.companyName}
@@ -86,7 +88,7 @@ export function NewInvoicePageClient() {
                             />
                         </div>
                         <div>
-                            <label className="text-sm font-medium mb-1 block">Project Name</label>
+                            <Label className="text-sm font-medium mb-1 block">Project Name</Label>
                             <Input
                                 placeholder="e.g., Air Max Launch Experience"
                                 value={client.projectName}
@@ -96,9 +98,9 @@ export function NewInvoicePageClient() {
                             />
                         </div>
                         <div>
-                            <label className="text-sm font-medium mb-1 block">
+                            <Label className="text-sm font-medium mb-1 block">
                                 PO Number (optional)
-                            </label>
+                            </Label>
                             <Input
                                 placeholder="e.g., PO-NIKE-2026-0089"
                                 value={client.poNumber}
@@ -132,9 +134,9 @@ export function NewInvoicePageClient() {
                             >
                                 <div className="col-span-5">
                                     {i === 0 && (
-                                        <label className="text-xs text-muted-foreground mb-1 block">
+                                        <Label className="text-xs text-muted-foreground mb-1 block">
                                             Description
-                                        </label>
+                                        </Label>
                                     )}
                                     <Input
                                         placeholder="Service or item description"
@@ -146,9 +148,9 @@ export function NewInvoicePageClient() {
                                 </div>
                                 <div className="col-span-2">
                                     {i === 0 && (
-                                        <label className="text-xs text-muted-foreground mb-1 block">
+                                        <Label className="text-xs text-muted-foreground mb-1 block">
                                             Qty
-                                        </label>
+                                        </Label>
                                     )}
                                     <Input
                                         type="number"
@@ -165,9 +167,9 @@ export function NewInvoicePageClient() {
                                 </div>
                                 <div className="col-span-2">
                                     {i === 0 && (
-                                        <label className="text-xs text-muted-foreground mb-1 block">
+                                        <Label className="text-xs text-muted-foreground mb-1 block">
                                             Unit Price
-                                        </label>
+                                        </Label>
                                     )}
                                     <Input
                                         type="number"
@@ -233,9 +235,9 @@ export function NewInvoicePageClient() {
                         </CardTitle>
                         <div className="grid grid-cols-1 sm:grid-cols-2 density-gap-card">
                             <div>
-                                <label className="text-sm font-medium mb-1 block">
+                                <Label className="text-sm font-medium mb-1 block">
                                     Payment Terms
-                                </label>
+                                </Label>
                                 <Input
                                     value={terms.paymentTerms}
                                     onChange={(e) =>
@@ -244,9 +246,9 @@ export function NewInvoicePageClient() {
                                 />
                             </div>
                             <div>
-                                <label className="text-sm font-medium mb-1 block">
+                                <Label className="text-sm font-medium mb-1 block">
                                     Due In (days)
-                                </label>
+                                </Label>
                                 <Input
                                     type="number"
                                     value={terms.dueInDays}
@@ -257,7 +259,7 @@ export function NewInvoicePageClient() {
                             </div>
                         </div>
                         <div>
-                            <label className="text-sm font-medium mb-1 block">Tax Rate (%)</label>
+                            <Label className="text-sm font-medium mb-1 block">Tax Rate (%)</Label>
                             <Input
                                 type="number"
                                 step={0.001}
@@ -266,8 +268,8 @@ export function NewInvoicePageClient() {
                             />
                         </div>
                         <div>
-                            <label className="text-sm font-medium mb-1 block">Notes</label>
-                            <textarea
+                            <Label className="text-sm font-medium mb-1 block">Notes</Label>
+                            <Textarea
                                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px]"
                                 placeholder="Payment instructions, late fees, etc."
                                 value={terms.notes}

@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { formatDate } from "@/lib/utils";
 import {
     BarChart3,
@@ -164,7 +165,7 @@ export function AiReportsPageClient() {
                         <CardContent className="p-4">
                             <div className="flex items-center gap-3">
                                 <Sparkles className="h-5 w-5 text-primary shrink-0" />
-                                <input
+                                <Input
                                     type="text"
                                     value={queryInput}
                                     onChange={(e) => setQueryInput(e.target.value)}
@@ -197,16 +198,17 @@ export function AiReportsPageClient() {
                         </h3>
                         <div className="flex flex-wrap gap-2">
                             {SUGGESTED_QUERIES.map((sq) => (
-                                <button
+                                <Button
                                     key={sq.label}
+                                    variant="outline"
                                     onClick={() => setQueryInput(sq.query)}
-                                    className="text-xs px-3 py-1.5 rounded-full border bg-secondary/30 hover:bg-secondary/60 transition-colors flex items-center gap-1.5"
+                                    className="text-xs h-auto px-3 py-1.5 rounded-full gap-1.5"
                                 >
                                     <Badge variant="ghost" className="density-caption px-1">
                                         {sq.category}
                                     </Badge>
                                     {sq.label}
-                                </button>
+                                </Button>
                             ))}
                         </div>
                     </div>
@@ -222,24 +224,27 @@ export function AiReportsPageClient() {
                             </CardHeader>
                             <CardContent className="space-y-2">
                                 {queries.map((q) => (
-                                    <button
+                                    <Button
                                         key={q.id}
+                                        variant="ghost"
                                         onClick={() => setSelectedQuery(q)}
-                                        className={`w-full text-left p-3 rounded-lg transition-colors ${activeQuery?.id === q.id ? "bg-primary/10 border border-primary/30" : "bg-secondary/30 hover:bg-secondary/50"}`}
+                                        className={`w-full justify-start h-auto p-3 rounded-lg ${activeQuery?.id === q.id ? "bg-primary/10 border border-primary/30" : "bg-secondary/30 hover:bg-secondary/50"}`}
                                     >
-                                        <div className="flex items-center gap-2 mb-1">
-                                            {CHART_ICONS[q.chartType]}
-                                            <span className="density-caption text-muted-foreground">
-                                                {q.executionTimeMs}ms
-                                            </span>
+                                        <div className="w-full text-left">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                {CHART_ICONS[q.chartType]}
+                                                <span className="density-caption text-muted-foreground">
+                                                    {q.executionTimeMs}ms
+                                                </span>
+                                            </div>
+                                            <p className="text-xs font-medium line-clamp-2">
+                                                {q.query}
+                                            </p>
+                                            <p className="density-caption text-muted-foreground mt-1">
+                                                {formatDate(q.createdAt)}
+                                            </p>
                                         </div>
-                                        <p className="text-xs font-medium line-clamp-2">
-                                            {q.query}
-                                        </p>
-                                        <p className="density-caption text-muted-foreground mt-1">
-                                            {formatDate(q.createdAt)}
-                                        </p>
-                                    </button>
+                                    </Button>
                                 ))}
                             </CardContent>
                         </Card>

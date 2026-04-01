@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Loader2, Radio, RadioTower } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useMessagingStrings } from "@/hooks/use-messaging-strings";
@@ -106,7 +107,9 @@ export function PushToTalkButton({
             </div>
 
             {/* PTT Button */}
-            <button
+            <Button
+                variant="ghost"
+                size="icon"
                 onPointerDown={handlePointerDown}
                 onPointerUp={handlePointerUp}
                 onPointerLeave={handlePointerLeave}
@@ -114,14 +117,13 @@ export function PushToTalkButton({
                 onKeyUp={handleKeyUp}
                 disabled={disabled}
                 className={cn(
-                    "relative flex items-center justify-center rounded-full transition-all select-none touch-none",
+                    "relative rounded-full select-none touch-none",
                     "h-12 w-12 shrink-0",
                     state === "idle" &&
                         "bg-secondary text-muted-foreground hover:bg-secondary/80 active:scale-95",
                     state === "connecting" && "bg-warning/20 text-warning",
                     state === "transmitting" &&
-                        "bg-destructive/20 text-destructive ring-4 ring-destructive/20 scale-105",
-                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                        "bg-destructive/20 text-destructive ring-4 ring-destructive/20 scale-105"
                 )}
                 aria-label={
                     state === "transmitting" ? ms("ptt_release_to_send") : ms("ptt_hold_to_talk")
@@ -143,7 +145,7 @@ export function PushToTalkButton({
                 {state === "transmitting" && (
                     <span className="absolute inset-0 rounded-full border-2 border-destructive/40 motion-safe:animate-ping" />
                 )}
-            </button>
+            </Button>
 
             {/* State label */}
             <span

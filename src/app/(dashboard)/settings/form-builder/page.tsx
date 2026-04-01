@@ -14,6 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/native-select";
 import {
     AlignLeft,
     ArrowDown,
@@ -176,27 +179,27 @@ export default function FormBuilderPage() {
                                     const _Meta = FIELD_TYPE_META[field.type];
                                     return (
                                         <div key={field.id} className="space-y-1.5">
-                                            <label className="text-sm font-medium flex items-center gap-1">
+                                            <Label className="text-sm font-medium flex items-center gap-1">
                                                 {field.label}
                                                 {field.required && (
                                                     <span className="text-destructive">*</span>
                                                 )}
-                                            </label>
+                                            </Label>
                                             {field.type === "select" ? (
-                                                <select className="w-full border rounded-md p-2 text-sm bg-background">
+                                                <NativeSelect className="w-full border rounded-md p-2 text-sm bg-background">
                                                     <option value="">Select...</option>
                                                     {(field.options ?? []).map((opt) => (
                                                         <option key={opt}>{opt}</option>
                                                     ))}
-                                                </select>
+                                                </NativeSelect>
                                             ) : field.type === "checkbox" ||
                                               field.type === "toggle" ? (
                                                 <div className="flex items-center gap-2">
-                                                    <input type="checkbox" className="rounded" />
+                                                    <Input type="checkbox" className="rounded" />
                                                     <span className="text-sm">{field.label}</span>
                                                 </div>
                                             ) : field.type === "richtext" ? (
-                                                <textarea
+                                                <Textarea
                                                     className="w-full border rounded-md p-2 text-sm bg-background min-h-[80px]"
                                                     placeholder={field.placeholder}
                                                 />
@@ -231,10 +234,10 @@ export default function FormBuilderPage() {
                                 const Meta = FIELD_TYPE_META[field.type];
                                 const isSelected = selectedField === field.id;
                                 return (
-                                    <button
+                                    <Button
                                         key={field.id}
-                                        type="button"
-                                        className={`w-full text-left flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                                        variant="ghost"
+                                        className={`w-full text-left h-auto flex items-center gap-3 p-3 rounded-lg border transition-colors ${
                                             isSelected
                                                 ? "border-primary bg-primary/5"
                                                 : "border-border hover:bg-accent/30"
@@ -262,9 +265,10 @@ export default function FormBuilderPage() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-0.5 shrink-0">
-                                            <button
-                                                type="button"
-                                                className="p-1 rounded hover:bg-accent"
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     moveField(i, -1);
@@ -273,10 +277,11 @@ export default function FormBuilderPage() {
                                                 disabled={i === 0}
                                             >
                                                 <ArrowUp className="h-3 w-3" />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="p-1 rounded hover:bg-accent"
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     moveField(i, 1);
@@ -285,10 +290,11 @@ export default function FormBuilderPage() {
                                                 disabled={i === fields.length - 1}
                                             >
                                                 <ArrowDown className="h-3 w-3" />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="p-1 rounded hover:bg-destructive/10"
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6 hover:bg-destructive/10"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     deleteField(field.id);
@@ -296,9 +302,9 @@ export default function FormBuilderPage() {
                                                 aria-label="Delete"
                                             >
                                                 <Trash2 className="h-3 w-3 text-destructive" />
-                                            </button>
+                                            </Button>
                                         </div>
-                                    </button>
+                                    </Button>
                                 );
                             })
                         )}
@@ -343,9 +349,9 @@ export default function FormBuilderPage() {
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div>
-                                    <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                    <Label className="text-xs font-medium text-muted-foreground block mb-1">
                                         Label
-                                    </label>
+                                    </Label>
                                     <Input
                                         value={selected.label}
                                         onChange={(e) =>
@@ -355,9 +361,9 @@ export default function FormBuilderPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                    <Label className="text-xs font-medium text-muted-foreground block mb-1">
                                         Placeholder
-                                    </label>
+                                    </Label>
                                     <Input
                                         value={selected.placeholder ?? ""}
                                         onChange={(e) =>
@@ -369,9 +375,9 @@ export default function FormBuilderPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-medium text-muted-foreground block mb-1">
+                                    <Label className="text-xs font-medium text-muted-foreground block mb-1">
                                         Help Text
-                                    </label>
+                                    </Label>
                                     <Input
                                         value={selected.helpText ?? ""}
                                         onChange={(e) =>
@@ -384,7 +390,7 @@ export default function FormBuilderPage() {
                                     />
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <input
+                                    <Input
                                         type="checkbox"
                                         checked={selected.required}
                                         onChange={(e) =>

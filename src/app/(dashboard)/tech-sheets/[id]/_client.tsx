@@ -9,6 +9,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OverlineText } from "@/components/ui/overline-text";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableFooter,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { getStatusLabel, getStatusVariant } from "@/config/ui-variants";
 import { formatDate } from "@/lib/utils";
 import { RecordChatter } from "@/components/activity";
@@ -324,43 +333,62 @@ export function TechSheetDetailClient({
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b text-muted-foreground">
-                                        <th className="text-left py-2 font-medium">Circuit</th>
-                                        <th className="text-right py-2 font-medium">Amps</th>
-                                        <th className="text-right py-2 font-medium">Voltage</th>
-                                        <th className="text-right py-2 font-medium">Phase</th>
-                                        <th className="text-right py-2 font-medium">Dept</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                            <Table className="w-full text-sm">
+                                <TableHeader>
+                                    <TableRow className="border-b text-muted-foreground">
+                                        <TableHead className="text-left py-2 font-medium">
+                                            Circuit
+                                        </TableHead>
+                                        <TableHead className="text-right py-2 font-medium">
+                                            Amps
+                                        </TableHead>
+                                        <TableHead className="text-right py-2 font-medium">
+                                            Voltage
+                                        </TableHead>
+                                        <TableHead className="text-right py-2 font-medium">
+                                            Phase
+                                        </TableHead>
+                                        <TableHead className="text-right py-2 font-medium">
+                                            Dept
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
                                     {powerCircuits.map((circuit) => (
-                                        <tr key={circuit.id} className="border-b border-border/50">
-                                            <td className="py-2.5 font-medium">{circuit.label}</td>
-                                            <td className="py-2.5 text-right">
+                                        <TableRow
+                                            key={circuit.id}
+                                            className="border-b border-border/50"
+                                        >
+                                            <TableCell className="py-2.5 font-medium">
+                                                {circuit.label}
+                                            </TableCell>
+                                            <TableCell className="py-2.5 text-right">
                                                 {circuit.amperage}A
-                                            </td>
-                                            <td className="py-2.5 text-right">
+                                            </TableCell>
+                                            <TableCell className="py-2.5 text-right">
                                                 {circuit.voltage}V
-                                            </td>
-                                            <td className="py-2.5 text-right">{circuit.phase}</td>
-                                            <td className="py-2.5 text-right">
+                                            </TableCell>
+                                            <TableCell className="py-2.5 text-right">
+                                                {circuit.phase}
+                                            </TableCell>
+                                            <TableCell className="py-2.5 text-right">
                                                 <Badge variant="ghost" className="density-caption">
                                                     {circuit.department}
                                                 </Badge>
-                                            </td>
-                                        </tr>
+                                            </TableCell>
+                                        </TableRow>
                                     ))}
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td className="py-2 font-bold">Total</td>
-                                        <td className="py-2 text-right font-bold">{totalAmps}A</td>
-                                        <td colSpan={3}></td>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                                </TableBody>
+                                <TableFooter>
+                                    <TableRow>
+                                        <TableCell className="py-2 font-bold">Total</TableCell>
+                                        <TableCell className="py-2 text-right font-bold">
+                                            {totalAmps}A
+                                        </TableCell>
+                                        <TableCell colSpan={3}></TableCell>
+                                    </TableRow>
+                                </TableFooter>
+                            </Table>
                         </CardContent>
                     </Card>
                 ),

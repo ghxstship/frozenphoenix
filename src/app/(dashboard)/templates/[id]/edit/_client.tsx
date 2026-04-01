@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
     AlignLeft,
     ArrowLeft,
@@ -217,18 +218,18 @@ function TemplateEditorInner({
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div>
-                                    <label className="text-xs text-muted-foreground mb-1 block">
+                                    <Label className="text-xs text-muted-foreground mb-1 block">
                                         Template Name
-                                    </label>
+                                    </Label>
                                     <Input
                                         value={templateName}
                                         onChange={(e) => setTemplateName(e.target.value)}
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-muted-foreground mb-1 block">
+                                    <Label className="text-xs text-muted-foreground mb-1 block">
                                         Category
-                                    </label>
+                                    </Label>
                                     <div className="flex flex-wrap gap-1.5">
                                         {[
                                             "invoice",
@@ -285,13 +286,14 @@ function TemplateEditorInner({
                             <CardContent>
                                 <div className="space-y-1.5 max-h-48 overflow-y-auto">
                                     {AVAILABLE_VARIABLES.map((v) => (
-                                        <button
+                                        <Button
                                             key={v}
-                                            className="w-full text-left text-xs font-mono px-2 py-1.5 rounded bg-secondary/30 hover:bg-secondary/60 transition-colors"
+                                            variant="ghost"
+                                            className="w-full justify-start text-xs font-mono h-auto px-2 py-1.5 bg-secondary/30 hover:bg-secondary/60"
                                             onClick={() => navigator.clipboard.writeText(v)}
                                         >
                                             {v}
-                                        </button>
+                                        </Button>
                                     ))}
                                 </div>
                                 <p className="density-caption text-muted-foreground mt-2">

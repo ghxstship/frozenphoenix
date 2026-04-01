@@ -26,6 +26,7 @@ import {
 import { EntityBreadcrumb } from "@/components/context-switcher";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -172,9 +173,16 @@ function TopbarIconButton({
 
     return (
         <Tooltip content={tooltipContent} side="bottom">
-            <button onClick={onClick} className={buttonClasses} aria-label={label} {...ariaProps}>
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClick}
+                className={buttonClasses}
+                aria-label={label}
+                {...ariaProps}
+            >
                 {inner}
-            </button>
+            </Button>
         </Tooltip>
     );
 }
@@ -655,16 +663,14 @@ function QuickCreateMenu({ userRole }: { userRole: PermissionLevel }) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button
-                    className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
-                        "hover:text-foreground hover:bg-secondary transition-colors",
-                        FOCUS_RING
-                    )}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn("h-8 w-8", FOCUS_RING)}
                     aria-label="Quick create"
                 >
                     <Plus className={ICON_SIZES.sm} />
-                </button>
+                </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 max-h-[70vh] overflow-y-auto">
                 <DropdownMenuLabel>Create New</DropdownMenuLabel>
@@ -699,13 +705,11 @@ function MessagesMenu() {
     const { data: unreadCount = 0 } = useUnreadCounts();
 
     return (
-        <button
+        <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setPanelOpen(true)}
-            className={cn(
-                "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
-                "hover:text-foreground hover:bg-secondary transition-colors relative",
-                FOCUS_RING
-            )}
+            className={cn("h-8 w-8 relative", FOCUS_RING)}
             aria-label={`Messages${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
         >
             <MessageSquare className={ICON_SIZES.sm} />
@@ -714,7 +718,7 @@ function MessagesMenu() {
                     {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
             )}
-        </button>
+        </Button>
     );
 }
 
@@ -724,16 +728,14 @@ function HelpMenu() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button
-                    className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
-                        "hover:text-foreground hover:bg-secondary transition-colors",
-                        FOCUS_RING
-                    )}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn("h-8 w-8", FOCUS_RING)}
                     aria-label="Help and resources"
                 >
                     <HelpCircle className={ICON_SIZES.sm} />
-                </button>
+                </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>Help & Resources</DropdownMenuLabel>
@@ -795,16 +797,14 @@ function LocaleSwitcher() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button
-                    className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
-                        "hover:text-foreground hover:bg-secondary transition-colors",
-                        FOCUS_RING
-                    )}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn("h-8 w-8", FOCUS_RING)}
                     aria-label={`Language: ${currentOption?.label ?? current}`}
                 >
                     <Globe className={ICON_SIZES.sm} />
-                </button>
+                </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52 max-h-72 overflow-y-auto">
                 <DropdownMenuLabel>Language</DropdownMenuLabel>
@@ -849,12 +849,9 @@ function UserMenu() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button
-                    className={cn(
-                        "flex items-center gap-2 h-8 rounded-lg px-1.5",
-                        "hover:bg-secondary transition-colors",
-                        FOCUS_RING
-                    )}
+                <Button
+                    variant="ghost"
+                    className={cn("flex items-center gap-2 h-8 px-1.5", FOCUS_RING)}
                     aria-label="User menu"
                 >
                     <div className="relative h-7 w-7 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center ring-2 ring-background shrink-0 overflow-hidden">
@@ -881,7 +878,7 @@ function UserMenu() {
                         )}
                     </span>
                     <ChevronDown className="hidden lg:block h-3 w-3 text-muted-foreground" />
-                </button>
+                </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
                 {/* User identity header */}
@@ -967,16 +964,14 @@ function OverflowMenu() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button
-                    className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
-                        "hover:text-foreground hover:bg-secondary transition-colors md:hidden",
-                        FOCUS_RING
-                    )}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn("h-8 w-8 md:hidden", FOCUS_RING)}
                     aria-label="More actions"
                 >
                     <MoreHorizontal className={ICON_SIZES.sm} />
-                </button>
+                </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
                 {/* Quick Create — always visible (OverflowMenu itself is md:hidden) */}
@@ -1156,20 +1151,18 @@ export function Topbar() {
             {/* Left: Mobile Menu + Breadcrumbs + Env Badge */}
             <div className="flex items-center gap-3 min-w-0">
                 {isMobile && (
-                    <button
+                    <Button
                         id="sidebar-menu-toggle"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => setOpen(true)}
-                        className={cn(
-                            "h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground",
-                            "hover:text-foreground hover:bg-secondary transition-colors lg:hidden shrink-0",
-                            FOCUS_RING
-                        )}
+                        className="h-8 w-8 lg:hidden shrink-0"
                         aria-label="Open navigation menu"
                         aria-controls="main-navigation"
                         aria-expanded={isOpen}
                     >
                         <Menu className={ICON_SIZES.md} />
-                    </button>
+                    </Button>
                 )}
 
                 <EnvironmentBadge />
@@ -1191,15 +1184,14 @@ export function Topbar() {
                                 {"isEllipsis" in crumb && crumb.isEllipsis ? (
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <button
-                                                className={cn(
-                                                    "font-medium text-muted-foreground hover:text-foreground transition-colors px-1",
-                                                    FOCUS_RING
-                                                )}
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="px-1 h-auto text-muted-foreground hover:text-foreground"
                                                 aria-label="Show collapsed breadcrumbs"
                                             >
                                                 …
-                                            </button>
+                                            </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="start" className="w-48">
                                             {breadcrumbs.slice(1, -1).map((hidden) => (
@@ -1247,12 +1239,12 @@ export function Topbar() {
             </div>
 
             {/* Center: Command bar trigger */}
-            <button
+            <Button
+                variant="outline"
                 onClick={openCommandBar}
                 className={cn(
-                    "hidden md:flex items-center gap-2 h-8 px-3 rounded-lg border border-border",
-                    "bg-secondary/50 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer",
-                    FOCUS_RING
+                    "hidden md:flex items-center gap-2 h-8 px-3",
+                    "bg-secondary/50 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary"
                 )}
                 aria-label="Search or type a command"
             >
@@ -1261,7 +1253,7 @@ export function Topbar() {
                 <kbd className="flex items-center gap-0.5 density-caption font-mono bg-muted px-1.5 py-0.5 rounded border border-border/50">
                     <Command className="h-2.5 w-2.5" />K
                 </kbd>
-            </button>
+            </Button>
 
             {/* Right: Actions — wrapped in nav landmark */}
             <nav className="flex items-center gap-1" aria-label="Global actions">
@@ -1305,8 +1297,10 @@ export function Topbar() {
                     <LocaleSwitcher />
                 </div>
 
-                {/* Theme Switcher */}
-                <ThemeSwitcher />
+                {/* Theme Switcher — hidden on xs (available in Settings on mobile) */}
+                <div className="hidden sm:block">
+                    <ThemeSwitcher />
+                </div>
 
                 {/* Overflow menu for tablet/mobile (items hidden at smaller breakpoints) */}
                 <OverflowMenu />

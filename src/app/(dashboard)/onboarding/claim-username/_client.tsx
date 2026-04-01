@@ -5,6 +5,8 @@ import { csrfHeaders } from "@/lib/security/csrf";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { AtSign, CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { WizardShell } from "@/components/shells/wizard-shell";
 import type { WizardConfig } from "@/types/wizard-config";
@@ -159,9 +161,7 @@ export function ClaimUsernamePageClient() {
                             )}
 
                             <div className="space-y-2">
-                                <label htmlFor="username-input" className="text-sm font-medium">
-                                    Username
-                                </label>
+                                <Label htmlFor="username-input">Username</Label>
                                 <div className="relative">
                                     <AtSign
                                         className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
@@ -212,13 +212,14 @@ export function ClaimUsernamePageClient() {
                                     </p>
                                     <div className="flex flex-wrap gap-2">
                                         {suggestions.map((s) => (
-                                            <button
+                                            <Button
                                                 key={s}
+                                                variant="outline"
+                                                size="sm"
                                                 onClick={() => setInput(s)}
-                                                className="px-3 py-1 text-xs rounded-lg border border-border hover:bg-accent/10 transition-colors"
                                             >
                                                 @{s}
-                                            </button>
+                                            </Button>
                                         ))}
                                     </div>
                                 </div>

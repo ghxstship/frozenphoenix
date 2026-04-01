@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Bot, Check, Copy, User } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { CopilotMessage as CopilotMessageType } from "@/hooks/use-copilot";
@@ -79,9 +80,11 @@ export function CopilotMessage({ message, className }: CopilotMessageProps) {
                 {isAssistant && !message.isStreaming && message.content && (
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Tooltip content={copied ? "Copied!" : "Copy"} side="bottom">
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={handleCopy}
-                                className="h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                                className="h-6 w-6"
                                 aria-label="Copy message"
                             >
                                 {copied ? (
@@ -89,7 +92,7 @@ export function CopilotMessage({ message, className }: CopilotMessageProps) {
                                 ) : (
                                     <Copy className="h-3 w-3" />
                                 )}
-                            </button>
+                            </Button>
                         </Tooltip>
                     </div>
                 )}

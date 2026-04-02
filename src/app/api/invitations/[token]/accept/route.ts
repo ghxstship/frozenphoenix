@@ -16,7 +16,7 @@ export const POST = withApiHandlerParams(
         // Find the invitation
         const { data: invitation, error: invError } = await serverFromTable(supabase, "invitations")
             .select(
-                "id, token, email, role, status, expires_at, invite_type, organization_id, accepted_by, accepted_at"
+                "id, token, email, invited_email, role, role_id, status, expires_at, invite_type, organization_id, project_id, invited_by, accepted_by, accepted_at"
             )
             .eq("token", token)
             .single();
@@ -43,11 +43,59 @@ export const POST = withApiHandlerParams(
             return ApiErrors.gone("This invitation has expired");
         }
 
-        // Referral invites: just mark as accepted — no org membership needed
+        // ── HARBOR-MASTER §6.2: STRICT email mismatch check ──────────────
+        // For org_invites, the authenticated user's email MUST match invited_email.
+        // No overrides. This is the security gate.
         const isReferral = invitation.invite_type === "referral" || !invitation.organization_id;
+        if (!isReferral) {
+            const canonicalInvitedEmail = (invitation.invited_email ?? invitation.email)
+                .toLowerCase()
+                .trim();
+            const authenticatedEmail = (user.email ?? "").toLowerCase().trim();
+
+            if (!authenticatedEmail || canonicalInvitedEmail !== authenticatedEmail) {
+                return NextResponse.json(
+                    {
+                        error: "Email mismatch",
+                        message:
+                            "This invitation was sent to a different email address. " +
+                            "Please sign in with the account that matches the invited email.",
+                    },
+                    { status: 403 }
+                );
+            }
+        }
 
         if (!isReferral && invitation.organization_id) {
-            // Create org membership for org invites
+            // Check not already an active member
+            const memberQuery = serverFromTable(supabase, "org_memberships")
+                .select("id, status")
+                .eq("user_id", user.id)
+                .eq("organization_id", invitation.organization_id);
+
+            const { data: existingMember } = invitation.project_id
+                ? await memberQuery.eq("project_id", invitation.project_id).maybeSingle()
+                : await memberQuery.is("project_id", null).maybeSingle();
+
+            if (existingMember?.status === "active") {
+                // Mark invitation accepted for UX, then return success
+                await serverFromTable(supabase, "invitations")
+                    .update({
+                        status: "accepted",
+                        accepted_by: user.id,
+                        accepted_at: new Date().toISOString(),
+                    })
+                    .eq("id", invitation.id);
+
+                return NextResponse.json({
+                    success: true,
+                    invite_type: "org_invite",
+                    organization_id: invitation.organization_id,
+                    already_member: true,
+                });
+            }
+
+            // Create org membership
             const { error: memberError } = await serverFromTable(
                 supabase,
                 "org_memberships"
@@ -55,10 +103,15 @@ export const POST = withApiHandlerParams(
                 {
                     user_id: user.id,
                     organization_id: invitation.organization_id,
+                    project_id: invitation.project_id ?? null,
+                    role_id: invitation.role_id ?? null,
                     role: invitation.role ?? "member",
                     status: "active",
                     is_default_org: false,
                     is_owner: false,
+                    joined_via: "direct_invite",
+                    invited_by: invitation.invited_by ?? null,
+                    joined_at: new Date().toISOString(),
                 },
                 { onConflict: "user_id,organization_id" }
             );
@@ -66,8 +119,6 @@ export const POST = withApiHandlerParams(
             if (memberError) {
                 return ApiErrors.internalError("Failed to join organization");
             }
-
-            // org_memberships upsert above already tracks user→org relationship (profiles table dropped)
         }
 
         // Mark invitation as accepted
@@ -102,7 +153,7 @@ export const GET = withApiHandlerParams(
 
         const { data: invitation, error } = await serverFromTable(supabase, "invitations")
             .select(
-                "email, role, status, expires_at, personal_message, organizations(id, name, slug)"
+                "invited_email, email, role, status, expires_at, personal_message, organizations(id, name, slug)"
             )
             .eq("token", token)
             .single();
@@ -123,6 +174,11 @@ export const GET = withApiHandlerParams(
             return ApiErrors.gone("This invitation has expired");
         }
 
-        return NextResponse.json({ invitation });
+        return NextResponse.json({
+            invitation: {
+                ...invitation,
+                invited_email: invitation.invited_email ?? invitation.email,
+            },
+        });
     }
 );

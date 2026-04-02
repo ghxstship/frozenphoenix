@@ -25,10 +25,12 @@ import {
 import { signInWithMagicLink } from "@/lib/supabase/auth-actions";
 import { logAuthEvent } from "@/lib/supabase/auth-audit";
 import { AlertCircle, CheckCircle2, Loader2, Mail, Sparkles } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 
 function LoginForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { t } = useTranslation("auth");
     const redirectTo = validateRedirectUrl(searchParams.get("redirect"));
 
     const suspendedReason = searchParams.get("reason") === "account_suspended";
@@ -91,7 +93,7 @@ function LoginForm() {
             try {
                 const supabase = createClient();
                 if (!supabase) {
-                    setError("Authentication service unavailable. Please try again later.");
+                    setError(t("common.serviceUnavailable"));
                     return;
                 }
                 const { error: authError } = await supabase.auth.signInWithPassword({
@@ -116,12 +118,12 @@ function LoginForm() {
                 resetRateLimit();
                 router.push(redirectTo);
             } catch {
-                setError("Something went wrong. Please try again.");
+                setError(t("common.error"));
             } finally {
                 setLoading(false);
             }
         },
-        [email, password, redirectTo, router, botProtection.token]
+        [email, password, redirectTo, router, botProtection.token, t]
     );
 
     const handleOAuthLogin = useCallback(
@@ -185,7 +187,7 @@ function LoginForm() {
 
     const handleMagicLink = useCallback(async () => {
         if (!email) {
-            setError("Enter your email address to receive a sign-in link.");
+            setError(t("login.magicLinkPrompt"));
             return;
         }
         setError(null);
@@ -206,13 +208,13 @@ function LoginForm() {
         } finally {
             setMagicLinkLoading(false);
         }
-    }, [email, redirectTo]);
+    }, [email, redirectTo, t]);
 
     const isLocked = lockoutMs > 0;
     const isDisabled = loading || isLocked;
 
     return (
-        <AuthLayout title="Welcome back" subtitle="Sign in to your account to continue">
+        <AuthLayout title={t("login.title")} subtitle={t("login.subtitle")}>
             <form onSubmit={handleLogin} className="density-gap-section" noValidate>
                 {error && (
                     <div
@@ -228,10 +230,10 @@ function LoginForm() {
                 <AuthFormField
                     ref={emailRef}
                     fieldId="login-email"
-                    label="Email"
+                    label={t("login.emailLabel")}
                     type="email"
                     icon={Mail}
-                    placeholder="you@company.com"
+                    placeholder={t("login.emailPlaceholder")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     autoComplete="email"
@@ -241,11 +243,11 @@ function LoginForm() {
 
                 <div className="space-y-2">
                     <Label htmlFor="login-password" className="text-sm font-medium leading-none">
-                        Password
+                        {t("login.passwordLabel")}
                     </Label>
                     <PasswordInput
                         id="login-password"
-                        placeholder="••••••••"
+                        placeholder={t("login.passwordPlaceholder")}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         autoComplete="current-password"
@@ -259,7 +261,7 @@ function LoginForm() {
                         href="/forgot-password"
                         className="text-xs text-muted-foreground hover:text-primary transition-colors"
                     >
-                        Forgot password?
+                        {t("login.forgotPasswordLink")}
                     </Link>
                 </div>
 
@@ -277,12 +279,12 @@ function LoginForm() {
                                 className="h-4 w-4 motion-safe:animate-spin"
                                 aria-hidden="true"
                             />
-                            Signing in…
+                            {t("login.submittingButton")}
                         </>
                     ) : isLocked ? (
                         `Locked — ${formatLockoutTime(lockoutMs)}`
                     ) : (
-                        "Sign In"
+                        t("login.submitButton")
                     )}
                 </Button>
             </form>
@@ -301,7 +303,7 @@ function LoginForm() {
                     aria-live="polite"
                 >
                     <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    Check your email for a sign-in link.
+                    {t("login.magicLinkSent")}
                 </div>
             ) : (
                 <div className="text-center">
@@ -320,15 +322,15 @@ function LoginForm() {
                         ) : (
                             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                         )}
-                        Sign in with email link instead
+                        {t("login.magicLinkButton")}
                     </Button>
                 </div>
             )}
 
             <div className="text-center text-sm text-muted-foreground">
-                Don&apos;t have an account?{" "}
+                {t("login.signupPrompt")}{" "}
                 <Link href="/signup" className="text-primary hover:underline font-medium">
-                    Sign up
+                    {t("login.signupLink")}
                 </Link>
             </div>
         </AuthLayout>

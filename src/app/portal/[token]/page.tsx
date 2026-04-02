@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatDate } from "@/lib/utils";
 import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 
 type PortalData = {
     project: Record<string, unknown> | null;
@@ -83,6 +84,7 @@ const TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
 };
 
 export default function CollaboratorPortalPage() {
+    const { t } = useTranslation("auth");
     const params = useParams();
     const token = params.token as string;
 
@@ -610,7 +612,7 @@ export default function CollaboratorPortalPage() {
                                 className="flex items-center gap-2 rounded-lg border border-dashed border-primary/30 p-3"
                             >
                                 <Input
-                                    placeholder="First name"
+                                    placeholder={t("portal.firstName")}
                                     value={row.first_name}
                                     onChange={(e) =>
                                         updateCrewRow(idx, "first_name", e.target.value)
@@ -618,7 +620,7 @@ export default function CollaboratorPortalPage() {
                                     className="h-8 text-sm"
                                 />
                                 <Input
-                                    placeholder="Last name"
+                                    placeholder={t("portal.lastName")}
                                     value={row.last_name}
                                     onChange={(e) =>
                                         updateCrewRow(idx, "last_name", e.target.value)
@@ -626,7 +628,7 @@ export default function CollaboratorPortalPage() {
                                     className="h-8 text-sm"
                                 />
                                 <Input
-                                    placeholder="Role / Title"
+                                    placeholder={t("portal.role")}
                                     value={row.role_title}
                                     onChange={(e) =>
                                         updateCrewRow(idx, "role_title", e.target.value)
@@ -634,7 +636,7 @@ export default function CollaboratorPortalPage() {
                                     className="h-8 text-sm"
                                 />
                                 <Input
-                                    placeholder="Email"
+                                    placeholder={t("portal.email")}
                                     value={row.email}
                                     onChange={(e) => updateCrewRow(idx, "email", e.target.value)}
                                     className="h-8 text-sm"

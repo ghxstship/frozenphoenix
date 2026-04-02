@@ -6,6 +6,7 @@ import { useEscapeKey, useFocusReturn, useFocusTrap } from "@/hooks/use-accessib
 import { AnimatePresence, motion, MOTION_TOKENS } from "@/lib/motion";
 import { SPRING_PRESETS } from "@/config/design-tokens";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 import { AlertTriangle } from "lucide-react";
 import { useSwipeToDismiss } from "@/hooks/use-swipe-to-dismiss";
 import { useBreakpoint } from "@/hooks/use-media-query";
@@ -97,6 +98,7 @@ function ConfirmDialogContent({
     onConfirm: () => void;
     onCancel: () => void;
 }) {
+    const { t } = useTranslation("common");
     const trapRef = useFocusTrap(true);
     useFocusReturn();
     useEscapeKey(onCancel);
@@ -143,7 +145,7 @@ function ConfirmDialogContent({
             </p>
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end mt-6">
                 <Button variant="outline" size="sm" onClick={onCancel}>
-                    {options.cancelLabel ?? "Cancel"}
+                    {options.cancelLabel ?? t("action_cancel")}
                 </Button>
                 <Button
                     variant={options.variant === "destructive" ? "destructive" : "default"}
@@ -151,7 +153,7 @@ function ConfirmDialogContent({
                     onClick={onConfirm}
                     autoFocus
                 >
-                    {options.confirmLabel ?? "Confirm"}
+                    {options.confirmLabel ?? t("action_confirm")}
                 </Button>
             </div>
         </motion.div>

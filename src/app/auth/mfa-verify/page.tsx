@@ -10,8 +10,10 @@ import { AuthLayout } from "@/components/auth";
 import { mapAuthError } from "@/features/auth/utils/auth-utils";
 import { csrfHeaders } from "@/lib/security/csrf";
 import { AlertCircle, Loader2, Shield } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 
 function MfaVerifyForm() {
+    const { t } = useTranslation("auth");
     const router = useRouter();
 
     const [code, setCode] = useState("");
@@ -31,7 +33,7 @@ function MfaVerifyForm() {
             setError(null);
 
             if (!code.trim() || code.length !== 6) {
-                setError("Please enter a 6-digit code from your authenticator app.");
+                setError(t("mfa.invalidCodeLength"));
                 return;
             }
 
@@ -40,7 +42,7 @@ function MfaVerifyForm() {
             try {
                 const supabase = createClient();
                 if (!supabase) {
-                    setError("Authentication service unavailable.");
+                    setError(t("common.serviceUnavailable"));
                     return;
                 }
 
@@ -106,7 +108,7 @@ function MfaVerifyForm() {
                 setLoading(false);
             }
         },
-        [code, router]
+        [code, router, t]
     );
 
     return (
@@ -146,7 +148,7 @@ function MfaVerifyForm() {
                         inputMode="numeric"
                         pattern="[0-9]{6}"
                         maxLength={6}
-                        placeholder="000000"
+                        placeholder={t("mfa.codePlaceholder")}
                         value={code}
                         onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                         autoComplete="one-time-code"

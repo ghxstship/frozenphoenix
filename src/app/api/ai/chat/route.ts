@@ -27,6 +27,7 @@ import {
 import { checkTokenBudget, estimateCost, logUsage } from "@/lib/ai/copilot/rate-limiter";
 import { sseHeaders } from "@/lib/ai/copilot/stream-manager";
 import { ModelRegistry } from "@/lib/ai/model-registry";
+import { initRegistry } from "@/lib/ai/registry-bootstrap";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 
 export const dynamic = "force-dynamic";
@@ -120,7 +121,8 @@ export const POST = withApiHandler(
         const history = await getConversationMessages(conversationId, 50);
         const chatHistory = messagesToChatHistory(history);
 
-        // Resolve provider + model
+        // Resolve provider + model (bootstrap env-var adapters on first call)
+        initRegistry();
         const registry = ModelRegistry.getInstance();
         let provider;
         try {

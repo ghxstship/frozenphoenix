@@ -21,6 +21,11 @@ export const AUTH_STRINGS = {
         rateLimitMessage: "Too many attempts. Try again in {time}.",
         serviceUnavailable: "Authentication service unavailable. Please try again later.",
         genericError: "Something went wrong. Please try again.",
+        magicLinkPrompt: "Enter your email address to receive a sign-in link.",
+        magicLinkButton: "Sign in with email link instead",
+        magicLinkSent: "Check your email for a sign-in link.",
+        suspendedMessage:
+            "Your account has been suspended. Please contact your organization administrator.",
     },
 
     // ─── Signup ─────────────────────────────────────────────────
@@ -239,6 +244,14 @@ export const AUTH_STRINGS = {
         pmDescription: "I coordinate tasks, timelines, and deliverables",
         memberLabel: "Team Member",
         memberDescription: "I contribute to projects and tasks",
+    },
+
+    // ─── Portal (Client-facing crew onboarding) ────────────────
+    portal: {
+        firstName: "First name",
+        lastName: "Last name",
+        role: "Role / Title",
+        email: "Email",
     },
 
     // ─── Shared / Common ────────────────────────────────────────

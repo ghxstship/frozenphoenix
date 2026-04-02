@@ -16,8 +16,10 @@ import {
 } from "@/components/auth";
 import { mapAuthError, validatePassword } from "@/features/auth/utils/auth-utils";
 import { AlertCircle, ArrowLeft, Building2, CheckCircle2, Loader2, Mail, User } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 
 function SignupForm() {
+    const { t } = useTranslation("auth");
     const router = useRouter();
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get("invite");
@@ -67,7 +69,7 @@ function SignupForm() {
             try {
                 const supabase = createClient();
                 if (!supabase) {
-                    setError("Authentication service unavailable. Please try again later.");
+                    setError(t("signup.serviceUnavailable"));
                     return;
                 }
 
@@ -115,7 +117,7 @@ function SignupForm() {
 
                 setSuccess(true);
             } catch {
-                setError("Something went wrong. Please try again.");
+                setError(t("signup.genericError"));
             } finally {
                 setLoading(false);
             }
@@ -130,6 +132,7 @@ function SignupForm() {
             router,
             validate,
             botProtection.token,
+            t,
         ]
     );
 
@@ -249,10 +252,10 @@ function SignupForm() {
                     <AuthFormField
                         ref={firstNameRef}
                         fieldId="signup-first-name"
-                        label="First Name"
+                        label={t("signup.firstNameLabel")}
                         type="text"
                         icon={User}
-                        placeholder="Alex"
+                        placeholder={t("signup.firstNamePlaceholder")}
                         value={firstName}
                         onChange={(e) => {
                             setFirstName(e.target.value);
@@ -265,9 +268,9 @@ function SignupForm() {
                     />
                     <AuthFormField
                         fieldId="signup-last-name"
-                        label="Last Name"
+                        label={t("signup.lastNameLabel")}
                         type="text"
-                        placeholder="Rivera"
+                        placeholder={t("signup.lastNamePlaceholder")}
                         value={lastName}
                         onChange={(e) => {
                             setLastName(e.target.value);
@@ -282,10 +285,10 @@ function SignupForm() {
 
                 <AuthFormField
                     fieldId="signup-email"
-                    label="Email"
+                    label={t("signup.emailLabel")}
                     type="email"
                     icon={Mail}
-                    placeholder="you@company.com"
+                    placeholder={t("signup.emailPlaceholder")}
                     value={email}
                     onChange={(e) => {
                         setEmail(e.target.value);
@@ -306,7 +309,7 @@ function SignupForm() {
                     </Label>
                     <PasswordInput
                         id="signup-password"
-                        placeholder="••••••••"
+                        placeholder={t("signup.passwordPlaceholder")}
                         value={password}
                         onChange={(e) => {
                             setPassword(e.target.value);
@@ -328,10 +331,10 @@ function SignupForm() {
                 {!inviteToken && (
                     <AuthFormField
                         fieldId="signup-org"
-                        label="Organization Name"
+                        label={t("signup.orgNameLabel")}
                         type="text"
                         icon={Building2}
-                        placeholder="Acme Productions"
+                        placeholder={t("signup.orgNamePlaceholder")}
                         value={orgName}
                         onChange={(e) => setOrgName(e.target.value)}
                         description="Optional — you can set this up later."
@@ -353,10 +356,10 @@ function SignupForm() {
                                 className="h-4 w-4 motion-safe:animate-spin"
                                 aria-hidden="true"
                             />
-                            Creating account…
+                            {t("signup.submittingButton")}
                         </>
                     ) : (
-                        "Create Account"
+                        t("signup.submitButton")
                     )}
                 </Button>
             </form>
@@ -369,9 +372,9 @@ function SignupForm() {
             />
 
             <div className="text-center text-sm text-muted-foreground">
-                Already have an account?{" "}
+                {t("signup.loginPrompt")}{" "}
                 <Link href="/login" className="text-primary hover:underline font-medium">
-                    Sign in
+                    {t("signup.loginLink")}
                 </Link>
             </div>
         </AuthLayout>

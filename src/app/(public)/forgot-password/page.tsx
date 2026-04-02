@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { AuthFormField, AuthLayout, BotProtection, useBotProtection } from "@/components/auth";
 import { mapAuthError } from "@/features/auth/utils/auth-utils";
 import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, Mail } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 
 export default function ForgotPasswordPage() {
+    const { t } = useTranslation("auth");
     const [email, setEmail] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -46,7 +48,7 @@ export default function ForgotPasswordPage() {
             try {
                 const supabase = createClient();
                 if (!supabase) {
-                    setError("Authentication service unavailable. Please try again later.");
+                    setError(t("forgotPassword.serviceUnavailable"));
                     return;
                 }
 
@@ -63,12 +65,12 @@ export default function ForgotPasswordPage() {
                 // Always show success to prevent email enumeration
                 setSuccess(true);
             } catch {
-                setError("Something went wrong. Please try again.");
+                setError(t("forgotPassword.genericError"));
             } finally {
                 setLoading(false);
             }
         },
-        [email, botProtection.token]
+        [email, botProtection.token, t]
     );
 
     const handleResend = useCallback(() => {
@@ -152,7 +154,7 @@ export default function ForgotPasswordPage() {
                     label="Email"
                     type="email"
                     icon={Mail}
-                    placeholder="you@company.com"
+                    placeholder={t("forgotPassword.emailPlaceholder")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     autoComplete="email"

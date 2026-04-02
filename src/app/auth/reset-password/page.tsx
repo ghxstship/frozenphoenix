@@ -9,8 +9,10 @@ import { Label } from "@/components/ui/label";
 import { AuthLayout, PasswordInput } from "@/components/auth";
 import { mapAuthError, validatePassword } from "@/features/auth/utils/auth-utils";
 import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 
 function ResetPasswordForm() {
+    const { t } = useTranslation("auth");
     const router = useRouter();
 
     const [password, setPassword] = useState("");
@@ -40,7 +42,7 @@ function ResetPasswordForm() {
             }
 
             if (password !== confirmPassword) {
-                setConfirmError("Passwords do not match.");
+                setConfirmError(t("resetPassword.confirmMismatch"));
                 return;
             }
 
@@ -64,12 +66,12 @@ function ResetPasswordForm() {
 
                 setSuccess(true);
             } catch {
-                setError("Something went wrong. Please try again.");
+                setError(t("resetPassword.genericError"));
             } finally {
                 setLoading(false);
             }
         },
-        [password, confirmPassword]
+        [password, confirmPassword, t]
     );
 
     if (success) {
@@ -126,7 +128,7 @@ function ResetPasswordForm() {
                     <PasswordInput
                         ref={passwordRef}
                         id="reset-password"
-                        placeholder="••••••••"
+                        placeholder={t("resetPassword.passwordPlaceholder")}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         autoComplete="new-password"

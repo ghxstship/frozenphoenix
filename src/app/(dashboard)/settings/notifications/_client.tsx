@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Toggle } from "@/components/ui/toggle";
+import { Badge } from "@/components/ui/badge";
 import { SettingsPageShell } from "@/components/shells/settings-page-shell";
 import type { SettingsPageConfig } from "@/types/settings-page-config";
 import { useAuth } from "@/lib/supabase/auth-context";
@@ -13,6 +14,7 @@ import {
     useUpsertNotificationPreferences,
 } from "@/lib/supabase/hooks-workflows";
 import { useToast } from "@/components/ui/toast";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { Bell, Clock, Mail, MessageSquare, Moon, Smartphone, Zap } from "lucide-react";
 import { LoadingState } from "@/components/layouts/loading-state";
 
@@ -59,6 +61,7 @@ export function NotificationSettingsPageClient() {
     const { data: prefs, isLoading } = useNotificationPreferences(user?.id ?? "");
     const upsert = useUpsertNotificationPreferences();
     const { addToast } = useToast();
+    const push = usePushNotifications();
 
     const handleToggle = useCallback(
         (channel: string, currentValue: boolean) => {
@@ -115,13 +118,62 @@ export function NotificationSettingsPageClient() {
                             handleToggle("email_enabled", getBool("email_enabled", true))
                         }
                     />
-                    <ChannelRow
-                        icon={Bell}
-                        label="Push notifications"
-                        description="Browser push notifications"
-                        enabled={getBool("push_enabled", true)}
-                        onToggle={() => handleToggle("push_enabled", getBool("push_enabled", true))}
-                    />
+                    <div className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <Bell className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                                <p className="text-sm font-medium">Push notifications</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {!push.isSupported
+                                        ? "Not supported in this browser"
+                                        : push.permissionState === "denied"
+                                          ? "Blocked — enable in browser settings"
+                                          : "Browser push notifications"}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {push.isSupported && push.permissionState === "denied" && (
+                                <Badge
+                                    variant="outline"
+                                    className="text-xs text-destructive border-destructive/30"
+                                >
+                                    Blocked
+                                </Badge>
+                            )}
+                            <Toggle
+                                checked={push.isSubscribed && getBool("push_enabled", true)}
+                                onCheckedChange={async () => {
+                                    if (!push.isSupported) return;
+                                    if (push.isSubscribed) {
+                                        const ok = await push.unsubscribe();
+                                        if (ok) handleToggle("push_enabled", true);
+                                    } else {
+                                        const ok = await push.subscribe();
+                                        if (ok) {
+                                            handleToggle("push_enabled", false);
+                                            addToast({
+                                                title: "Push notifications enabled",
+                                                variant: "success",
+                                            });
+                                        } else if (push.permissionState === "denied") {
+                                            addToast({
+                                                title: "Permission denied — enable notifications in your browser settings",
+                                                variant: "destructive",
+                                            });
+                                        }
+                                    }
+                                }}
+                                disabled={
+                                    !push.isSupported ||
+                                    push.isLoading ||
+                                    push.permissionState === "denied"
+                                }
+                                aria-label="Toggle push notifications"
+                                size="sm"
+                            />
+                        </div>
+                    </div>
                     <ChannelRow
                         icon={Smartphone}
                         label="SMS notifications"

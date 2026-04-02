@@ -11,9 +11,7 @@ import { Camera, CameraOff, Flashlight, FlashlightOff, Upload } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { playSuccessBeep, triggerHaptic } from "@/lib/audio/scan-audio";
-import { SCANNING_STRINGS } from "@/lib/i18n/scanning-strings";
-
-const S = SCANNING_STRINGS.scanner;
+import { useTranslation } from "@/lib/i18n/locale-provider";
 
 const ALL_FORMATS = [
     Html5QrcodeSupportedFormats.QR_CODE,
@@ -52,6 +50,7 @@ export function BarcodeScanner({
     className,
     disabled = false,
 }: BarcodeScannerProps) {
+    const { t } = useTranslation("scanning");
     const elementId = useId().replace(/:/g, "_");
     const scannerId = `scanner_${elementId}`;
     const scannerRef = useRef<Html5Qrcode | null>(null);
@@ -122,12 +121,12 @@ export function BarcodeScanner({
                 // Torch detection failed — not critical
             }
         } catch (err) {
-            const message = err instanceof Error ? err.message : S.permissionDenied;
+            const message = err instanceof Error ? err.message : t("scanner.permissionDenied");
             setError(message);
             onError?.(message);
             scannerRef.current = null;
         }
-    }, [disabled, scannerId, facingMode, formats, handleScanSuccess, onError]);
+    }, [disabled, scannerId, facingMode, formats, handleScanSuccess, onError, t]);
 
     const stopScanner = useCallback(async () => {
         if (!scannerRef.current) return;
@@ -171,8 +170,8 @@ export function BarcodeScanner({
                 triggerHaptic(200);
                 onScan(result, "FILE");
             } catch {
-                setError(S.scanError);
-                onError?.(S.scanError);
+                setError(t("scanner.scanError"));
+                onError?.(t("scanner.scanError"));
             }
 
             // Reset file input
@@ -180,7 +179,7 @@ export function BarcodeScanner({
                 fileInputRef.current.value = "";
             }
         },
-        [scannerId, onScan, onError]
+        [scannerId, onScan, onError, t]
     );
 
     // Auto-start on mount, stop on unmount
@@ -194,7 +193,7 @@ export function BarcodeScanner({
             cancelled = true;
             void stopScanner();
         };
-    }, [startScanner, stopScanner]);
+    }, [startScanner, stopScanner, t]);
 
     return (
         <div className={cn("relative flex flex-col gap-3", className)}>
@@ -203,7 +202,7 @@ export function BarcodeScanner({
                 id={scannerId}
                 className="relative w-full aspect-square max-w-[400px] mx-auto rounded-lg overflow-hidden bg-black/5"
                 role="img"
-                aria-label={isScanning ? S.scanning : S.paused}
+                aria-label={isScanning ? t("scanner.scanning") : t("scanner.paused")}
             />
 
             {/* Status bar */}
@@ -212,7 +211,7 @@ export function BarcodeScanner({
                     {isScanning ? (
                         <>
                             <Camera className="h-4 w-4 text-green-500 motion-safe:animate-pulse" />
-                            <span>{S.scanning}</span>
+                            <span>{t("scanner.scanning")}</span>
                         </>
                     ) : error ? (
                         <>
@@ -222,14 +221,14 @@ export function BarcodeScanner({
                     ) : (
                         <>
                             <Camera className="h-4 w-4" />
-                            <span>{S.paused}</span>
+                            <span>{t("scanner.paused")}</span>
                         </>
                     )}
                 </div>
 
                 {lastFormat && (
                     <span className="text-xs font-mono text-muted-foreground">
-                        {S.formatDetected.replace("{format}", lastFormat)}
+                        {t("scanner.formatDetected").replace("{format}", lastFormat)}
                     </span>
                 )}
             </div>
@@ -241,7 +240,7 @@ export function BarcodeScanner({
                         variant="outline"
                         size="icon"
                         onClick={toggleTorch}
-                        aria-label={S.toggleTorch}
+                        aria-label={t("scanner.toggleTorch")}
                         aria-pressed={torchOn}
                     >
                         {torchOn ? (
@@ -258,10 +257,10 @@ export function BarcodeScanner({
                             variant="outline"
                             size="sm"
                             onClick={() => fileInputRef.current?.click()}
-                            aria-label={S.fileUpload}
+                            aria-label={t("scanner.fileUpload")}
                         >
                             <Upload className="h-4 w-4 mr-1" />
-                            {S.fileUpload}
+                            {t("scanner.fileUpload")}
                         </Button>
                         <input
                             ref={fileInputRef}

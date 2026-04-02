@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAdvanceCart } from "@/hooks/use-advance-cart";
@@ -19,6 +19,7 @@ interface AdvanceCheckoutProps {
 }
 
 export function AdvanceCheckout({ onBack, onSuccess, className }: AdvanceCheckoutProps) {
+    const { t } = useTranslation("common");
     const items = useAdvanceCart((s) => s.items);
     const eventId = useAdvanceCart((s) => s.event_id);
     const projectId = useAdvanceCart((s) => s.project_id);
@@ -366,7 +367,7 @@ export function AdvanceCheckout({ onBack, onSuccess, className }: AdvanceCheckou
                 </Button>
                 <Button onClick={() => handleSubmit(false)} disabled={!canSubmit}>
                     <Send className="h-4 w-4" />
-                    {isSubmitting ? COMMON_STRINGS.action_submitting : "Submit for Review"}
+                    {isSubmitting ? t("action_submitting") : "Submit for Review"}
                 </Button>
             </div>
         </div>

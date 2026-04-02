@@ -72,6 +72,7 @@ export const SHELLS_STRINGS = {
     topbar_help: "Help",
     topbar_settings: "Settings",
     topbar_quick_create: "Quick create",
+    topbar_messages: "Messages",
 
     // ─── Theme ──────────────────────────────────────────────────
     theme_light: "Light",

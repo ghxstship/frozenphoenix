@@ -56,6 +56,15 @@ export const DEPRECIATION_SCHEDULES_PAGE: ListPageConfig = {
 
 export const EXPENSE_REPORTS_PAGE: ListPageConfig = {
     entityKey: "expense_report",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "submitted", label: "Submitted", value: "submitted" },
+            { id: "approved", label: "Approved", value: "approved" },
+        ],
+    },
     description: "Consolidated expense reports for review and reimbursement",
     icon: Receipt,
     createConfig: CREATE_EXPENSE_REPORT_CONFIG,
@@ -135,6 +144,15 @@ export const INVOICE_TEMPLATES_PAGE: ListPageConfig = {
 
 export const PAYROLL_BATCHES_PAGE: ListPageConfig = {
     entityKey: "payroll_batch",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "processing", label: "Processing", value: "processing" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Payroll processing batches and payment runs",
     icon: Banknote,
     createConfig: CREATE_PAYROLL_BATCH_CONFIG,
@@ -174,6 +192,15 @@ export const PAYROLL_BATCHES_PAGE: ListPageConfig = {
 
 export const REVENUE_SCHEDULES_PAGE: ListPageConfig = {
     entityKey: "revenue_schedule",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "scheduled", label: "Scheduled", value: "scheduled" },
+            { id: "recognized", label: "Recognized", value: "recognized" },
+            { id: "deferred", label: "Deferred", value: "deferred" },
+        ],
+    },
     description: "Revenue recognition schedules for financial planning",
     icon: DollarSign,
     createConfig: CREATE_REVENUE_SCHEDULE_CONFIG,
@@ -400,6 +427,14 @@ export const REVENUE_RECOGNITION_ENTRIES_PAGE: ListPageConfig = {
 
 export const FINANCIAL_PERIODS_PAGE: ListPageConfig = {
     entityKey: "financial_period",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "open", label: "Open", value: "open" },
+            { id: "closed", label: "Closed", value: "closed" },
+        ],
+    },
     description: "Fiscal periods for financial close and reporting cycles",
     icon: CalendarRange,
     searchKeys: ["name"],

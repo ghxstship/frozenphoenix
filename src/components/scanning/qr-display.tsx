@@ -10,9 +10,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { SCANNING_STRINGS } from "@/lib/i18n/scanning-strings";
-
-const S = SCANNING_STRINGS.qr;
+import { useTranslation } from "@/lib/i18n/locale-provider";
 
 export interface QRDisplayProps {
     /** The data to encode in the QR code. */
@@ -35,6 +33,7 @@ export function QRDisplay({
     showPrint = true,
     className,
 }: QRDisplayProps) {
+    const { t } = useTranslation("scanning");
     const svgContainerRef = useRef<HTMLDivElement>(null);
 
     const handleDownload = useCallback(() => {
@@ -71,7 +70,7 @@ export function QRDisplay({
         printWindow.document.write(`
             <!DOCTYPE html>
             <html>
-            <head><title>${S.print} — ${label ?? value}</title></head>
+            <head><title>${t("qr.print")} — ${label ?? value}</title></head>
             <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;font-family:system-ui,sans-serif;">
                 ${svgString}
                 ${label ? `<p style="margin-top:12px;font-size:14px;font-weight:600;">${label}</p>` : ""}
@@ -83,7 +82,7 @@ export function QRDisplay({
         printWindow.focus();
         printWindow.print();
         printWindow.close();
-    }, [value, label, sublabel]);
+    }, [value, label, sublabel, t]);
 
     if (!value) {
         return (
@@ -93,7 +92,7 @@ export function QRDisplay({
                     className
                 )}
             >
-                {S.noData}
+                {t("qr.noData")}
             </div>
         );
     }
@@ -120,10 +119,10 @@ export function QRDisplay({
                             variant="outline"
                             size="sm"
                             onClick={handleDownload}
-                            aria-label={S.downloadSvg}
+                            aria-label={t("qr.downloadSvg")}
                         >
                             <Download className="h-4 w-4 mr-1" />
-                            {S.download}
+                            {t("qr.download")}
                         </Button>
                     )}
                     {showPrint && (
@@ -131,10 +130,10 @@ export function QRDisplay({
                             variant="outline"
                             size="sm"
                             onClick={handlePrint}
-                            aria-label={S.print}
+                            aria-label={t("qr.print")}
                         >
                             <Printer className="h-4 w-4 mr-1" />
-                            {S.print}
+                            {t("qr.print")}
                         </Button>
                     )}
                 </div>

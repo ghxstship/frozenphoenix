@@ -252,6 +252,32 @@ export interface ListTabDef {
     content?: React.ReactNode | undefined;
 }
 
+// ─── Scoping Tab Definition ─────────────────────────────────
+
+export interface ScopingTabItem {
+    /** Tab ID — used as URL search param value (e.g. "all", "overdue", "mine") */
+    id: string;
+    /** Tab label */
+    label: string;
+    /** Tab icon */
+    icon?: LucideIcon | undefined;
+    /** Custom filter predicate — records matching this appear under this tab.
+     *  When omitted AND value is omitted, shows all records ("All" tab). */
+    filter?: ((record: Record<string, unknown>) => boolean) | undefined;
+    /** Simple equality match against `scopingTabs.groupByKey`.
+     *  Shorthand for `filter: (r) => r[groupByKey] === value`. */
+    value?: string | undefined;
+}
+
+export interface ScopingTabsConfig {
+    /** Record key for simple value-based tabs (used with item.value) */
+    groupByKey?: string | undefined;
+    /** Tab definitions — first tab with no filter/value acts as "All" */
+    items: ScopingTabItem[];
+    /** Show record count badges on each tab (default: true) */
+    showCounts?: boolean | undefined;
+}
+
 // ─── Main Config ────────────────────────────────────────────
 
 export interface ListPageConfig {
@@ -307,6 +333,12 @@ export interface ListPageConfig {
     mapConfig?: ListMapConfig | undefined;
     /** Workload configuration — required when views includes "workload" */
     workloadConfig?: ListWorkloadConfig | undefined;
+    // ─── Scoping Tabs ───
+    /** Primary scoping tabs — the highest-value filtering dimension for this entity.
+     *  Renders a prominent TabBar (with counts) between stats and toolbar.
+     *  Unlike `tabs` (which renders separate content panels), scoping tabs
+     *  filter the same dataset by predicate within the same view. */
+    scopingTabs?: ScopingTabsConfig | undefined;
     // ─── Tabs ───
     /** Tab definitions — when provided, shell uses tabbed layout with URL-synced state.
      *  Renders TabBar below the toolbar and TabPanel for each tab. */

@@ -11,6 +11,7 @@ import { ToastProvider } from "@/components/ui/toast";
 import { ErrorBoundary } from "@/components/app/error-boundary";
 import { NetworkStatusProvider } from "@/components/app/network-status";
 import { ConfirmDialogProvider } from "@/components/ui/confirm-dialog";
+import { LocaleProvider } from "@/lib/i18n/locale-provider";
 
 // Performance: Dynamic imports for overlay components that aren't needed at initial render.
 // CommandBar only opens on Cmd+K; CookieConsent shows once per visitor.
@@ -73,19 +74,21 @@ export function Providers({ children }: { children: React.ReactNode }) {
                 <AuthProvider>
                     <SettingsProvider>
                         <ThemeProvider>
-                            <AccessibilityProvider>
-                                <NetworkStatusProvider>
-                                    <ToastProvider>
-                                        <ConfirmDialogProvider>
-                                            {children}
-                                            <CommandBar />
-                                            <React.Suspense fallback={null}>
-                                                <CookieConsent />
-                                            </React.Suspense>
-                                        </ConfirmDialogProvider>
-                                    </ToastProvider>
-                                </NetworkStatusProvider>
-                            </AccessibilityProvider>
+                            <LocaleProvider>
+                                <AccessibilityProvider>
+                                    <NetworkStatusProvider>
+                                        <ToastProvider>
+                                            <ConfirmDialogProvider>
+                                                {children}
+                                                <CommandBar />
+                                                <React.Suspense fallback={null}>
+                                                    <CookieConsent />
+                                                </React.Suspense>
+                                            </ConfirmDialogProvider>
+                                        </ToastProvider>
+                                    </NetworkStatusProvider>
+                                </AccessibilityProvider>
+                            </LocaleProvider>
                         </ThemeProvider>
                     </SettingsProvider>
                 </AuthProvider>

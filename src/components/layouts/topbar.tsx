@@ -37,6 +37,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { SupportedLocale } from "@/lib/formatters/locale";
+import { useLocaleStore } from "@/lib/i18n/locale-store";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 import type { PermissionLevel } from "@/types";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -650,6 +652,7 @@ const QUICK_CREATE_GROUPS: QuickCreateGroup[] = [
 
 function QuickCreateMenu({ userRole }: { userRole: PermissionLevel }) {
     const router = useRouter();
+    const { t } = useTranslation("shells");
 
     const visibleGroups = useMemo(() => {
         return QUICK_CREATE_GROUPS.map((group) => ({
@@ -667,13 +670,13 @@ function QuickCreateMenu({ userRole }: { userRole: PermissionLevel }) {
                     variant="ghost"
                     size="icon"
                     className={cn("h-8 w-8", FOCUS_RING)}
-                    aria-label="Quick create"
+                    aria-label={t("topbar_quick_create")}
                 >
                     <Plus className={ICON_SIZES.sm} />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 max-h-[70vh] overflow-y-auto">
-                <DropdownMenuLabel>Create New</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("topbar_create_new")}</DropdownMenuLabel>
                 {visibleGroups.map((group, gi) => (
                     <React.Fragment key={group.label}>
                         {gi > 0 && <DropdownMenuSeparator />}
@@ -725,6 +728,8 @@ function MessagesMenu() {
 // ─── Help Dropdown ───
 
 function HelpMenu() {
+    const { t } = useTranslation("shells");
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -732,16 +737,16 @@ function HelpMenu() {
                     variant="ghost"
                     size="icon"
                     className={cn("h-8 w-8", FOCUS_RING)}
-                    aria-label="Help and resources"
+                    aria-label={t("topbar_help_title")}
                 >
                     <HelpCircle className={ICON_SIZES.sm} />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Help & Resources</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("topbar_help_title")}</DropdownMenuLabel>
                 <DropdownMenuItem onClick={() => window.open("/docs", "_blank")}>
                     <FileText className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
-                    Documentation
+                    {t("topbar_help_docs")}
                     <ExternalLink className="h-3 w-3 ml-auto text-muted-foreground/50" />
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -752,7 +757,7 @@ function HelpMenu() {
                     }}
                 >
                     <Keyboard className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
-                    Keyboard shortcuts
+                    {t("topbar_help_shortcuts")}
                     <kbd className="ml-auto density-caption font-mono text-muted-foreground/60">
                         ⌘K
                     </kbd>
@@ -760,11 +765,11 @@ function HelpMenu() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                     <LifeBuoy className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
-                    Contact support
+                    {t("topbar_help_support")}
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                     <Sparkles className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
-                    What&apos;s new
+                    {t("topbar_help_whats_new")}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
@@ -774,23 +779,9 @@ function HelpMenu() {
 // ─── Locale Switcher ───
 
 function LocaleSwitcher() {
-    const [current, setCurrent] = useState<SupportedLocale>(() => {
-        if (typeof window !== "undefined") {
-            return (localStorage.getItem("fp-locale") as SupportedLocale) || "en-US";
-        }
-        return "en-US";
-    });
-
-    const handleChange = useCallback((locale: SupportedLocale) => {
-        setCurrent(locale);
-        if (typeof window !== "undefined") {
-            localStorage.setItem("fp-locale", locale);
-            // Apply RTL if needed
-            const dir = locale === "ar-SA" ? "rtl" : "ltr";
-            document.documentElement.dir = dir;
-            document.documentElement.lang = locale;
-        }
-    }, []);
+    const current = useLocaleStore((s) => s.locale);
+    const setLocale = useLocaleStore((s) => s.setLocale);
+    const { t } = useTranslation("shells");
 
     const currentOption = LOCALE_OPTIONS.find((o) => o.value === current);
 
@@ -801,15 +792,15 @@ function LocaleSwitcher() {
                     variant="ghost"
                     size="icon"
                     className={cn("h-8 w-8", FOCUS_RING)}
-                    aria-label={`Language: ${currentOption?.label ?? current}`}
+                    aria-label={`${t("topbar_language")}: ${currentOption?.label ?? current}`}
                 >
                     <Globe className={ICON_SIZES.sm} />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52 max-h-72 overflow-y-auto">
-                <DropdownMenuLabel>Language</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("topbar_language")}</DropdownMenuLabel>
                 {LOCALE_OPTIONS.map((opt) => (
-                    <DropdownMenuItem key={opt.value} onClick={() => handleChange(opt.value)}>
+                    <DropdownMenuItem key={opt.value} onClick={() => setLocale(opt.value)}>
                         <span className="mr-2 text-sm">{opt.flag}</span>
                         {opt.label}
                         {opt.value === current && (
@@ -960,6 +951,7 @@ function UserMenu() {
 function OverflowMenu() {
     const router = useRouter();
     const setPanelOpen = useMessaging((s) => s.setPanelOpen);
+    const { t } = useTranslation("shells");
 
     return (
         <DropdownMenu>
@@ -968,7 +960,7 @@ function OverflowMenu() {
                     variant="ghost"
                     size="icon"
                     className={cn("h-8 w-8 md:hidden", FOCUS_RING)}
-                    aria-label="More actions"
+                    aria-label={t("topbar_more")}
                 >
                     <MoreHorizontal className={ICON_SIZES.sm} />
                 </Button>
@@ -977,25 +969,25 @@ function OverflowMenu() {
                 {/* Quick Create — always visible (OverflowMenu itself is md:hidden) */}
                 <DropdownMenuItem onClick={() => router.push("/tasks?action=create")}>
                     <Plus className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
-                    Create New…
+                    {t("topbar_create_new")}
                 </DropdownMenuItem>
                 {/* Messages — always visible (OverflowMenu itself is md:hidden) */}
                 <DropdownMenuItem onClick={() => setPanelOpen(true)}>
                     <MessageSquare className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
-                    Messages
+                    {t("topbar_messages")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => window.open("/docs", "_blank")}>
                     <HelpCircle className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
-                    Help
+                    {t("topbar_help_title")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push("/settings")}>
                     <Globe className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
-                    Language
+                    {t("topbar_language")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push("/settings")}>
                     <Settings className={cn(ICON_SIZES.sm, "mr-2 text-muted-foreground")} />
-                    Settings
+                    {t("topbar_settings")}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
@@ -1010,6 +1002,7 @@ export function Topbar() {
     const isMobile = useSidebar((state) => state.isMobile);
     const isOpen = useSidebar((state) => state.isOpen);
     const setOpen = useSidebar((state) => state.setOpen);
+    const { t } = useTranslation("shells");
     // Auth context (safe fallback for when not inside AuthProvider)
     let userRole: PermissionLevel = "collaborator";
     let _authLoading = true;
@@ -1157,7 +1150,7 @@ export function Topbar() {
                         size="icon"
                         onClick={() => setOpen(true)}
                         className="h-8 w-8 lg:hidden shrink-0"
-                        aria-label="Open navigation menu"
+                        aria-label={t("topbar_open_nav")}
                         aria-controls="main-navigation"
                         aria-expanded={isOpen}
                     >
@@ -1246,10 +1239,10 @@ export function Topbar() {
                     "hidden md:flex items-center gap-2 h-8 px-3",
                     "bg-secondary/50 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary"
                 )}
-                aria-label="Search or type a command"
+                aria-label={t("topbar_search_label")}
             >
                 <Search className="h-3.5 w-3.5" />
-                <span>Search or type a command...</span>
+                <span>{t("topbar_search")}</span>
                 <kbd className="flex items-center gap-0.5 density-caption font-mono bg-muted px-1.5 py-0.5 rounded border border-border/50">
                     <Command className="h-2.5 w-2.5" />K
                 </kbd>

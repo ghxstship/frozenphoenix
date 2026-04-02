@@ -82,6 +82,14 @@ import {
 
 export const AUTOMATION_RULES_PAGE: ListPageConfig = {
     entityKey: "automation_rule",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "disabled", label: "Disabled", value: "disabled" },
+        ],
+    },
     description: "Define rules that trigger automated workflows and actions",
     icon: Zap,
     createConfig: CREATE_AUTOMATION_RULE_CONFIG,
@@ -278,6 +286,15 @@ export const REPORT_DEFINITIONS_PAGE: ListPageConfig = {
 
 export const RESILIENCE_TARGETS_PAGE: ListPageConfig = {
     entityKey: "resilience_target",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "met", label: "Met", value: "met" },
+            { id: "at_risk", label: "At Risk", value: "at_risk" },
+        ],
+    },
     description: "Business continuity and resilience targets for critical services",
     icon: ShieldAlert,
     createConfig: CREATE_RESILIENCE_TARGET_CONFIG,
@@ -305,6 +322,14 @@ export const RESILIENCE_TARGETS_PAGE: ListPageConfig = {
 
 export const SLA_DEFINITIONS_PAGE: ListPageConfig = {
     entityKey: "sla_definition",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "draft", label: "Draft", value: "draft" },
+        ],
+    },
     description: "Service level agreement definitions and response time targets",
     icon: Timer,
     createConfig: CREATE_SLA_DEFINITION_CONFIG,
@@ -418,6 +443,15 @@ export const VAULT_DOCUMENTS_PAGE: ListPageConfig = {
 
 export const WORKFLOWS_PAGE: ListPageConfig = {
     entityKey: "workflow",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "paused", label: "Paused", value: "paused" },
+        ],
+    },
     description: "Workflow definitions, automation sequences, and process templates",
     icon: Cog,
     createConfig: CREATE_WORKFLOW_CONFIG,
@@ -590,6 +624,15 @@ export const APPROVAL_STEPS_PAGE: ListPageConfig = {
 
 export const APPROVAL_WORKFLOWS_PAGE: ListPageConfig = {
     entityKey: "approval_workflow",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "archived", label: "Archived", value: "archived" },
+        ],
+    },
     description: "Multi-step approval workflow definitions and templates",
     icon: GitBranch,
     createConfig: CREATE_BUDGET_APPROVAL_CONFIG,
@@ -1139,6 +1182,14 @@ export const LOGIN_AUDIT_LOG_PAGE: ListPageConfig = {
 
 export const NOTIFICATIONS_PAGE: ListPageConfig = {
     entityKey: "notification",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "unread", label: "Unread", value: "unread" },
+            { id: "read", label: "Read", value: "read" },
+        ],
+    },
     description: "System notifications and alerts",
     icon: Bell,
     searchKeys: ["title", "message"],

@@ -70,6 +70,15 @@ export const CONTACTS_PAGE: ListPageConfig = {
 
 export const GUEST_INCIDENTS_PAGE: ListPageConfig = {
     entityKey: "guest_incident",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "open", label: "Open", value: "open" },
+            { id: "investigating", label: "Investigating", value: "investigating" },
+            { id: "resolved", label: "Resolved", value: "resolved" },
+        ],
+    },
     description: "Log and manage guest-facing incidents at events and venues",
     icon: ShieldAlert,
     createConfig: CREATE_GUEST_INCIDENT_CONFIG,
@@ -265,6 +274,15 @@ export const ACCOUNT_HEALTH_SCORES_PAGE: ListPageConfig = {
 
 export const UPSELL_EVENTS_PAGE: ListPageConfig = {
     entityKey: "upsell_event",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "accepted", label: "Accepted", value: "accepted" },
+            { id: "declined", label: "Declined", value: "declined" },
+        ],
+    },
     description: "Upsell events and conversion tracking",
     icon: Sparkles,
     searchKeys: ["event_type", "customer_name"],

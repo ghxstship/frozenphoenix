@@ -141,6 +141,15 @@ export const CONTRACT_AMENDMENTS_PAGE: ListPageConfig = {
 
 export const E_SIGNATURES_PAGE: ListPageConfig = {
     entityKey: "e_signature",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "signed", label: "Signed", value: "signed" },
+            { id: "declined", label: "Declined", value: "declined" },
+        ],
+    },
     description: "Electronic signature requests and completed signatures",
     icon: PenTool,
     createConfig: CREATE_E_SIGNATURE_CONFIG,
@@ -222,6 +231,14 @@ export const INSURANCE_REQUIREMENTS_PAGE: ListPageConfig = {
 
 export const LEGAL_HOLDS_PAGE: ListPageConfig = {
     entityKey: "legal_hold",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "released", label: "Released", value: "released" },
+        ],
+    },
     description: "Track litigation holds and data preservation requirements",
     icon: Scale,
     createConfig: CREATE_LEGAL_HOLD_CONFIG,
@@ -259,6 +276,15 @@ export const LEGAL_HOLDS_PAGE: ListPageConfig = {
 
 export const RFQS_PAGE: ListPageConfig = {
     entityKey: "rfq",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "open", label: "Open", value: "open" },
+            { id: "closed", label: "Closed", value: "closed" },
+            { id: "awarded", label: "Awarded", value: "awarded" },
+        ],
+    },
     description: "Requests for quotation to source vendors and suppliers",
     icon: FileText,
     createConfig: CREATE_RFQ_CONFIG,
@@ -319,6 +345,15 @@ export const RIGHTS_PAGE: ListPageConfig = {
 
 export const RISK_ASSESSMENTS_PAGE: ListPageConfig = {
     entityKey: "risk_assessment",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "open", label: "Open", value: "open" },
+            { id: "mitigated", label: "Mitigated", value: "mitigated" },
+            { id: "accepted", label: "Accepted", value: "accepted" },
+        ],
+    },
     description: "Risk identification, analysis, and mitigation tracking",
     icon: AlertTriangle,
     createConfig: CREATE_RISK_ASSESSMENT_CONFIG,
@@ -472,6 +507,15 @@ export const CONTRACT_OBLIGATIONS_PAGE: ListPageConfig = {
 
 export const ENGAGEMENT_TERMS_PAGE: ListPageConfig = {
     entityKey: "engagement_term",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "expired", label: "Expired", value: "expired" },
+        ],
+    },
     description: "Terms and conditions for engagements and contracts",
     icon: FileSignature,
     createConfig: CREATE_ENGAGEMENT_TERM_CONFIG,

@@ -10,9 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Cloud, CloudOff, Loader2, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SCANNING_STRINGS } from "@/lib/i18n/scanning-strings";
-
-const S = SCANNING_STRINGS.offline;
+import { useTranslation } from "@/lib/i18n/locale-provider";
 
 export interface OfflineIndicatorProps {
     isOnline: boolean;
@@ -31,6 +29,7 @@ export function OfflineIndicator({
     onClearPending,
     className,
 }: OfflineIndicatorProps) {
+    const { t } = useTranslation("scanning");
     // Fully online with nothing pending — show nothing
     if (isOnline && pendingCount === 0) return null;
 
@@ -54,11 +53,13 @@ export function OfflineIndicator({
 
             <span className="flex-1">
                 {!isOnline && (
-                    <span className="font-medium text-destructive">{S.offlineTitle}</span>
+                    <span className="font-medium text-destructive">
+                        {t("offline.offlineTitle")}
+                    </span>
                 )}
                 {pendingCount > 0 && (
                     <Badge variant="secondary" className="ml-2 text-xs">
-                        {S.pendingCount.replace("{count}", String(pendingCount))}
+                        {t("offline.pendingCount").replace("{count}", String(pendingCount))}
                     </Badge>
                 )}
             </span>
@@ -76,7 +77,7 @@ export function OfflineIndicator({
                     ) : (
                         <RefreshCw className="h-3 w-3 mr-1" />
                     )}
-                    {S.syncNow}
+                    {t("offline.syncNow")}
                 </Button>
             )}
 
@@ -87,7 +88,7 @@ export function OfflineIndicator({
                     onClick={onClearPending}
                     className="h-7 text-xs text-muted-foreground"
                 >
-                    {S.clearQueue}
+                    {t("offline.clearQueue")}
                 </Button>
             )}
         </div>

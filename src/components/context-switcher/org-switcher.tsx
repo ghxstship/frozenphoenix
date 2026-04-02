@@ -6,7 +6,7 @@ import { Building2, ChevronDown } from "lucide-react";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Tooltip } from "@/components/ui/tooltip";
 import { ContextSwitcherPopover } from "./popover";
-import { CONTEXT_SWITCHER_STRINGS } from "@/lib/i18n/context-switcher-strings";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 import { hasPermission } from "@/config/rbac";
 import { useHydrated } from "@/hooks/use-hydrated";
 import type { PermissionLevel } from "@/types";
@@ -18,6 +18,7 @@ interface OrgSwitcherProps {
 }
 
 export function OrgSwitcher({ collapsed = false, isMobile = false }: OrgSwitcherProps) {
+    const { t } = useTranslation("contextSwitcher");
     const { memberships, activeOrg, switchOrg, loading } = useAuth();
     const hydrated = useHydrated();
     const userRole = (activeOrg?.role ?? undefined) as PermissionLevel | undefined;
@@ -103,13 +104,13 @@ export function OrgSwitcher({ collapsed = false, isMobile = false }: OrgSwitcher
             items={orgItems}
             activeId={activeOrgId}
             onSelect={switchOrg}
-            searchPlaceholder={CONTEXT_SWITCHER_STRINGS.org.searchPlaceholder}
-            createLabel={CONTEXT_SWITCHER_STRINGS.org.createLabel}
+            searchPlaceholder={t("org.searchPlaceholder")}
+            createLabel={t("org.createLabel")}
             createHref="/onboarding/org-setup"
             canCreate={canCreate}
-            emptyMessage={CONTEXT_SWITCHER_STRINGS.org.emptyMessage}
+            emptyMessage={t("org.emptyMessage")}
             trigger={trigger}
-            label={CONTEXT_SWITCHER_STRINGS.org.switchLabel}
+            label={t("org.switchLabel")}
             width={280}
         />
     );

@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/supabase/auth-context";
 import { useWorkspaceContext } from "@/hooks/use-workspace-context";
 import { useActivationsForSwitcher } from "@/lib/supabase/hooks-switcher";
 import { ContextSwitcherPopover } from "./popover";
-import { CONTEXT_SWITCHER_STRINGS } from "@/lib/i18n/context-switcher-strings";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 import { hasPermission } from "@/config/rbac";
 import type { PermissionLevel } from "@/types";
 
@@ -26,6 +26,7 @@ export function ActivationSwitcher({
     navigateOnSelect = false,
     subPath,
 }: ActivationSwitcherProps) {
+    const { t } = useTranslation("contextSwitcher");
     const router = useRouter();
     const { activeOrg } = useAuth();
     const orgId = activeOrg?.organization_id ?? null;
@@ -38,8 +39,7 @@ export function ActivationSwitcher({
     const { data: activations = [], isLoading } = useActivationsForSwitcher(activeProjectId);
 
     const activeActivation = activations.find((a) => a.id === activeActivationId);
-    const displayName =
-        activeName || activeActivation?.name || CONTEXT_SWITCHER_STRINGS.activation.clearLabel;
+    const displayName = activeName || activeActivation?.name || t("activation.clearLabel");
 
     const canCreate = userRole ? hasPermission(userRole, "activations", "write") : false;
 
@@ -70,16 +70,16 @@ export function ActivationSwitcher({
             activeId={activeActivationId}
             onSelect={handleSelect}
             onClear={() => setActiveActivation(null)}
-            clearLabel={CONTEXT_SWITCHER_STRINGS.activation.clearLabel}
-            searchPlaceholder={CONTEXT_SWITCHER_STRINGS.activation.searchPlaceholder}
-            createLabel={CONTEXT_SWITCHER_STRINGS.activation.createLabel}
+            clearLabel={t("activation.clearLabel")}
+            searchPlaceholder={t("activation.searchPlaceholder")}
+            createLabel={t("activation.createLabel")}
             canCreate={canCreate}
-            viewAllLabel={CONTEXT_SWITCHER_STRINGS.activation.viewAllLabel}
-            viewAllHref={CONTEXT_SWITCHER_STRINGS.activation.viewAllHref}
-            emptyMessage={CONTEXT_SWITCHER_STRINGS.activation.emptyMessage}
+            viewAllLabel={t("activation.viewAllLabel")}
+            viewAllHref={t("activation.viewAllHref")}
+            emptyMessage={t("activation.emptyMessage")}
             isLoading={isLoading}
             trigger={trigger}
-            label={CONTEXT_SWITCHER_STRINGS.activation.switchLabel}
+            label={t("activation.switchLabel")}
             width={260}
         />
     );

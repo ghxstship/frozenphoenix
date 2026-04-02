@@ -25,10 +25,7 @@ const BarcodeScanner = dynamic(() => import("./barcode-scanner").then((m) => m.B
 });
 import { isNfcSupported, NfcReader } from "./nfc-reader";
 import type { NfcReadResult } from "./nfc-reader";
-import { SCANNING_STRINGS } from "@/lib/i18n/scanning-strings";
-
-const S = SCANNING_STRINGS.input;
-const SCANNER_S = SCANNING_STRINGS.scanner;
+import { useTranslation } from "@/lib/i18n/locale-provider";
 
 export type ScanMethod = "keyboard" | "camera" | "nfc";
 
@@ -52,7 +49,7 @@ export interface ScanInputProps {
 
 export function ScanInput({
     onScan,
-    placeholder = S.placeholder,
+    placeholder = undefined,
     showCamera: showCameraProp,
     showNfc: showNfcProp,
     submitOnEnter = true,
@@ -65,6 +62,7 @@ export function ScanInput({
     const [cameraOpen, setCameraOpen] = useState(false);
     const [nfcActive, setNfcActive] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    const { t } = useTranslation("scanning");
 
     const device = useScanDevice();
 
@@ -131,11 +129,11 @@ export function ScanInput({
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder={placeholder}
+                        placeholder={placeholder ?? t("input.placeholder")}
                         disabled={disabled}
                         autoFocus={autoFocus}
                         className="pl-9"
-                        aria-label={placeholder}
+                        aria-label={placeholder ?? t("input.placeholder")}
                     />
                 </div>
 
@@ -146,8 +144,8 @@ export function ScanInput({
                         size="icon"
                         onClick={() => setCameraOpen(true)}
                         disabled={disabled}
-                        aria-label={S.toggleCamera}
-                        title={S.toggleCamera}
+                        aria-label={t("input.toggleCamera")}
+                        title={t("input.toggleCamera")}
                     >
                         <Camera className="h-4 w-4" />
                     </Button>
@@ -160,9 +158,9 @@ export function ScanInput({
                         size="icon"
                         onClick={() => setNfcActive(!nfcActive)}
                         disabled={disabled}
-                        aria-label={S.toggleNfc}
+                        aria-label={t("input.toggleNfc")}
                         aria-pressed={nfcActive}
-                        title={S.toggleNfc}
+                        title={t("input.toggleNfc")}
                     >
                         <Nfc className={cn("h-4 w-4", nfcActive && "motion-safe:animate-pulse")} />
                     </Button>
@@ -176,8 +174,8 @@ export function ScanInput({
             <Dialog open={cameraOpen} onOpenChange={setCameraOpen}>
                 <DialogContent size="lg" showClose>
                     <DialogHeader>
-                        <DialogTitle>{SCANNER_S.title}</DialogTitle>
-                        <DialogDescription>{SCANNER_S.subtitle}</DialogDescription>
+                        <DialogTitle>{t("scanner.title")}</DialogTitle>
+                        <DialogDescription>{t("scanner.subtitle")}</DialogDescription>
                     </DialogHeader>
                     {cameraOpen && (
                         <BarcodeScanner

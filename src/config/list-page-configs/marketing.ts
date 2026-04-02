@@ -86,6 +86,15 @@ export const BRIEF_TEMPLATES_PAGE: ListPageConfig = {
 
 export const CREATIVE_REVIEWS_PAGE: ListPageConfig = {
     entityKey: "creative_review",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "in_review", label: "In Review", value: "in_review" },
+            { id: "approved", label: "Approved", value: "approved" },
+            { id: "revision_requested", label: "Revision Needed", value: "revision_requested" },
+        ],
+    },
     description: "Review and approve creative deliverables and assets",
     icon: Eye,
     createConfig: CREATE_CREATIVE_REVIEW_CONFIG,

@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StepIndicator } from "@/components/ui/step-indicator";
 import { ChevronLeft, ChevronRight, SkipForward } from "lucide-react";
-import { SHELLS_STRINGS } from "@/lib/i18n/shells-strings";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 import type { WizardConfig } from "@/types/wizard-config";
 
 // ─── Types ───────────────────────────────────────────────────
@@ -46,6 +46,7 @@ export function WizardShell({
 }: WizardShellProps) {
     const [internalStep, setInternalStep] = useState(0);
     const [validationError, setValidationError] = useState<string | null>(null);
+    const { t } = useTranslation("shells");
 
     const currentIndex = controlledStep ?? internalStep;
     const setCurrentIndex = controlledOnStepChange ?? setInternalStep;
@@ -58,10 +59,10 @@ export function WizardShell({
     const showProgress = config.showProgress !== false;
     const allowBack = config.allowBack !== false;
 
-    const nextLabel = config.nextLabel ?? SHELLS_STRINGS.wizard_continue;
-    const backLabel = config.backLabel ?? SHELLS_STRINGS.wizard_back;
-    const submitLabel = config.submitLabel ?? SHELLS_STRINGS.wizard_complete;
-    const skipLabel = config.skipLabel ?? SHELLS_STRINGS.wizard_skip;
+    const nextLabel = config.nextLabel ?? t("wizard_continue");
+    const backLabel = config.backLabel ?? t("wizard_back");
+    const submitLabel = config.submitLabel ?? t("wizard_complete");
+    const skipLabel = config.skipLabel ?? t("wizard_skip");
 
     const handleNext = useCallback(async () => {
         setValidationError(null);
@@ -69,7 +70,7 @@ export function WizardShell({
         if (currentStep?.validate) {
             const result = currentStep.validate();
             if (result === false) {
-                setValidationError(SHELLS_STRINGS.wizard_validation_default);
+                setValidationError(t("wizard_validation_default"));
                 return;
             }
             if (typeof result === "string") {
@@ -83,7 +84,7 @@ export function WizardShell({
         } else {
             setCurrentIndex(currentIndex + 1);
         }
-    }, [currentStep, isLastStep, config, currentIndex, setCurrentIndex]);
+    }, [currentStep, isLastStep, config, currentIndex, setCurrentIndex, t]);
 
     const handleBack = useCallback(() => {
         setValidationError(null);
@@ -167,7 +168,7 @@ export function WizardShell({
                     )}
                     {config.onCancel && isFirstStep && (
                         <Button variant="ghost" onClick={config.onCancel} disabled={isSubmitting}>
-                            {SHELLS_STRINGS.wizard_cancel}
+                            {t("wizard_cancel")}
                         </Button>
                     )}
                 </div>
@@ -186,11 +187,7 @@ export function WizardShell({
                         </Button>
                     )}
                     <Button onClick={handleNext} disabled={isSubmitting}>
-                        {isSubmitting
-                            ? SHELLS_STRINGS.form_saving
-                            : isLastStep
-                              ? submitLabel
-                              : nextLabel}
+                        {isSubmitting ? t("form_saving") : isLastStep ? submitLabel : nextLabel}
                         {!isLastStep && !isSubmitting && <ChevronRight className="h-4 w-4 ml-1" />}
                     </Button>
                 </div>

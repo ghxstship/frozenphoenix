@@ -161,6 +161,14 @@ const WORK_PACKAGE_QUICK_VIEW: QuickViewConfig = {
 
 export const WORK_PACKAGES_PAGE: ListPageConfig = {
     entityKey: "work_package",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Deliverable work packages within projects and scopes of work",
     icon: Component,
     createConfig: CREATE_WORK_PACKAGE_CONFIG,
@@ -196,6 +204,15 @@ export const WORK_PACKAGES_PAGE: ListPageConfig = {
 
 export const MILESTONES_PAGE: ListPageConfig = {
     entityKey: "milestone",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "in_progress", label: "In Progress", value: "in_progress" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Project and production milestones",
     icon: Milestone,
     createConfig: CREATE_MILESTONE_CONFIG,

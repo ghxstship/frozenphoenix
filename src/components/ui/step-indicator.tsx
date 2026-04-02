@@ -11,7 +11,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
-import { SHELLS_STRINGS } from "@/lib/i18n/shells-strings";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 
 export interface StepDef {
     /** Unique step identifier */
@@ -44,9 +44,10 @@ export const StepIndicator = React.memo(function StepIndicator({
     ariaLabel,
 }: StepIndicatorProps) {
     const visibleSteps = steps.filter((s) => !s.hidden);
+    const { t } = useTranslation("shells");
 
     return (
-        <nav aria-label={ariaLabel ?? SHELLS_STRINGS.wizard_progress_label} className="w-full">
+        <nav aria-label={ariaLabel ?? t("wizard_progress_label")} className="w-full">
             <ol className="flex items-center gap-2">
                 {visibleSteps.map((step, i) => {
                     const originalIndex = steps.indexOf(step);

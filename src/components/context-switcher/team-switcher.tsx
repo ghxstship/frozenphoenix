@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/supabase/auth-context";
 import { useWorkspaceContext } from "@/hooks/use-workspace-context";
 import { useTeamsForSwitcher } from "@/lib/supabase/hooks-switcher";
 import { ContextSwitcherPopover } from "./popover";
-import { CONTEXT_SWITCHER_STRINGS } from "@/lib/i18n/context-switcher-strings";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 import { hasPermission } from "@/config/rbac";
 import type { PermissionLevel } from "@/types";
 import type { SwitcherItem } from "@/types/workspace-context";
@@ -17,6 +17,7 @@ interface TeamSwitcherProps {
 }
 
 export function TeamSwitcher({ collapsed = false, isMobile = false }: TeamSwitcherProps) {
+    const { t } = useTranslation("contextSwitcher");
     const { activeOrg } = useAuth();
     const orgId = activeOrg?.organization_id ?? null;
     const userRole = (activeOrg?.role ?? undefined) as PermissionLevel | undefined;
@@ -35,7 +36,7 @@ export function TeamSwitcher({ collapsed = false, isMobile = false }: TeamSwitch
     }));
 
     const activeTeam = teams.find((t) => t.id === activeTeamId);
-    const teamName = activeTeam?.name || CONTEXT_SWITCHER_STRINGS.team.clearLabel;
+    const teamName = activeTeam?.name || t("team.clearLabel");
 
     const canCreate = userRole ? hasPermission(userRole, "teams", "write") : false;
     const showLabel = !collapsed || isMobile;
@@ -62,16 +63,16 @@ export function TeamSwitcher({ collapsed = false, isMobile = false }: TeamSwitch
             activeId={activeTeamId}
             onSelect={setActiveTeam}
             onClear={() => setActiveTeam(null)}
-            clearLabel={CONTEXT_SWITCHER_STRINGS.team.clearLabel}
-            searchPlaceholder={CONTEXT_SWITCHER_STRINGS.team.searchPlaceholder}
-            createLabel={CONTEXT_SWITCHER_STRINGS.team.createLabel}
+            clearLabel={t("team.clearLabel")}
+            searchPlaceholder={t("team.searchPlaceholder")}
+            createLabel={t("team.createLabel")}
             canCreate={canCreate}
-            viewAllLabel={CONTEXT_SWITCHER_STRINGS.team.viewAllLabel}
-            viewAllHref={CONTEXT_SWITCHER_STRINGS.team.viewAllHref}
-            emptyMessage={CONTEXT_SWITCHER_STRINGS.team.emptyMessage}
+            viewAllLabel={t("team.viewAllLabel")}
+            viewAllHref={t("team.viewAllHref")}
+            emptyMessage={t("team.emptyMessage")}
             isLoading={isLoading}
             trigger={trigger}
-            label={CONTEXT_SWITCHER_STRINGS.team.switchLabel}
+            label={t("team.switchLabel")}
             width={260}
         />
     );

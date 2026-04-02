@@ -10,9 +10,7 @@ import { Nfc, NfcIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { playSuccessBeep, triggerHaptic } from "@/lib/audio/scan-audio";
-import { SCANNING_STRINGS } from "@/lib/i18n/scanning-strings";
-
-const S = SCANNING_STRINGS.nfc;
+import { useTranslation } from "@/lib/i18n/locale-provider";
 
 export interface NfcReadResult {
     serialNumber: string;
@@ -32,6 +30,8 @@ export function isNfcSupported(): boolean {
 }
 
 export function NfcReader({ onRead, onError, enabled = true, className }: NfcReaderProps) {
+    const { t } = useTranslation("scanning");
+
     const [isReading, setIsReading] = useState(false);
     const [status, setStatus] = useState<"idle" | "reading" | "success" | "error">("idle");
     const abortRef = useRef<AbortController | null>(null);
@@ -94,7 +94,7 @@ export function NfcReader({ onRead, onError, enabled = true, className }: NfcRea
                 "readingerror",
                 () => {
                     setStatus("error");
-                    onError?.(S.readError);
+                    onError?.(t("nfc.readError"));
                     setTimeout(() => {
                         if (!controller.signal.aborted) {
                             setStatus("reading");
@@ -106,10 +106,10 @@ export function NfcReader({ onRead, onError, enabled = true, className }: NfcRea
         } catch (err) {
             setIsReading(false);
             setStatus("error");
-            const message = err instanceof Error ? err.message : S.readError;
+            const message = err instanceof Error ? err.message : t("nfc.readError");
             onError?.(message);
         }
-    }, [enabled, onRead, onError]);
+    }, [enabled, onRead, onError, t]);
 
     const stopReading = useCallback(() => {
         abortRef.current?.abort();
@@ -136,10 +136,10 @@ export function NfcReader({ onRead, onError, enabled = true, className }: NfcRea
                     size="sm"
                     onClick={startReading}
                     disabled={!enabled}
-                    aria-label={S.tapPrompt}
+                    aria-label={t("nfc.tapPrompt")}
                 >
                     <Nfc className="h-4 w-4 mr-1" />
-                    {S.tapPrompt}
+                    {t("nfc.tapPrompt")}
                 </Button>
             ) : (
                 <div className="flex flex-col items-center gap-2">
@@ -159,15 +159,15 @@ export function NfcReader({ onRead, onError, enabled = true, className }: NfcRea
                                 status === "reading" && "motion-safe:animate-pulse"
                             )}
                         />
-                        {status === "reading" && S.reading}
-                        {status === "success" && S.readSuccess}
-                        {status === "error" && S.readError}
+                        {status === "reading" && t("nfc.reading")}
+                        {status === "success" && t("nfc.readSuccess")}
+                        {status === "error" && t("nfc.readError")}
                     </Button>
 
                     <p className="text-xs text-muted-foreground text-center" aria-live="polite">
-                        {status === "reading" && S.tapPrompt}
-                        {status === "success" && S.readSuccess}
-                        {status === "error" && S.readError}
+                        {status === "reading" && t("nfc.tapPrompt")}
+                        {status === "success" && t("nfc.readSuccess")}
+                        {status === "error" && t("nfc.readError")}
                     </p>
                 </div>
             )}

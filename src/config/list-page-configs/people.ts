@@ -157,6 +157,14 @@ export const REVIEW_CYCLES_PAGE: ListPageConfig = {
 
 export const REVIEWS_PAGE: ListPageConfig = {
     entityKey: "review",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Performance reviews, evaluations, and feedback records",
     icon: Star,
     createConfig: CREATE_REVIEW_CONFIG,
@@ -184,6 +192,15 @@ export const REVIEWS_PAGE: ListPageConfig = {
 
 export const TIME_OFF_REQUESTS_PAGE: ListPageConfig = {
     entityKey: "time_off_request",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "approved", label: "Approved", value: "approved" },
+            { id: "denied", label: "Denied", value: "denied" },
+        ],
+    },
     description: "Employee time-off requests, approvals, and leave balance tracking",
     icon: CalendarClock,
     createConfig: CREATE_TIME_OFF_REQUEST_CONFIG,
@@ -225,6 +242,15 @@ export const TIME_OFF_REQUESTS_PAGE: ListPageConfig = {
 
 export const TIMESHEETS_PAGE: ListPageConfig = {
     entityKey: "timesheet",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "submitted", label: "Submitted", value: "submitted" },
+            { id: "approved", label: "Approved", value: "approved" },
+        ],
+    },
     description: "Weekly timesheet submissions and approvals",
     icon: Clock,
     createConfig: CREATE_TIMESHEET_CONFIG,
@@ -312,6 +338,26 @@ export const WORKER_ONBOARDING_RUNS_PAGE: ListPageConfig = {
 
 export const CERTIFICATIONS_PAGE: ListPageConfig = {
     entityKey: "certification",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            {
+                id: "expiring_soon",
+                label: "Expiring Soon",
+                filter: (r) => {
+                    const d = r.expiry_date ?? r.expires_at;
+                    if (!d) return false;
+                    const exp = new Date(String(d));
+                    const now = new Date();
+                    const days30 = 30 * 86400000;
+                    return exp.getTime() - now.getTime() < days30 && exp.getTime() > now.getTime();
+                },
+            },
+            { id: "expired", label: "Expired", value: "expired" },
+        ],
+    },
     description: "Certifications, licenses, and professional qualifications",
     icon: Award,
     createConfig: CREATE_CERTIFICATION_CONFIG,
@@ -575,6 +621,27 @@ export const SCHEDULE_ENTRIES_PAGE: ListPageConfig = {
 
 export const SHIFTS_PAGE: ListPageConfig = {
     entityKey: "shift",
+    scopingTabs: {
+        items: [
+            { id: "all", label: "All" },
+            {
+                id: "upcoming",
+                label: "Upcoming",
+                filter: (r) => {
+                    const d = r.start_time ?? r.start_date;
+                    return d ? new Date(String(d)).getTime() >= Date.now() : false;
+                },
+            },
+            {
+                id: "past",
+                label: "Past",
+                filter: (r) => {
+                    const d = r.start_time ?? r.start_date;
+                    return d ? new Date(String(d)).getTime() < Date.now() : false;
+                },
+            },
+        ],
+    },
     description: "Work shifts and scheduling periods",
     icon: Clock,
     createConfig: CREATE_SHIFT_CONFIG,

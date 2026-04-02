@@ -11,9 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Loader2, Nfc, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SCANNING_STRINGS } from "@/lib/i18n/scanning-strings";
-
-const S = SCANNING_STRINGS.nfc;
+import { useTranslation } from "@/lib/i18n/locale-provider";
 
 export interface NfcWriterProps {
     /** The value to write to the NFC tag */
@@ -41,13 +39,14 @@ export function NfcWriter({
     onWriteError,
     className,
 }: NfcWriterProps) {
+    const { t } = useTranslation("scanning");
     const [status, setStatus] = useState<WriteStatus>("idle");
     const [errorMessage, setErrorMessage] = useState("");
 
     const handleWrite = useCallback(async () => {
         if (!isNfcWriteSupported()) {
             setStatus("error");
-            setErrorMessage(S.unsupported);
+            setErrorMessage(t("nfc.unsupported"));
             return;
         }
 
@@ -81,13 +80,13 @@ export function NfcWriter({
             setErrorMessage(message);
             onWriteError?.(err instanceof Error ? err : new Error(message));
         }
-    }, [value, onWriteComplete, onWriteError]);
+    }, [value, onWriteComplete, onWriteError, t]);
 
     if (!isNfcWriteSupported()) {
         return (
             <div className={cn("text-center p-4", className)}>
                 <Nfc className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">{S.unsupported}</p>
+                <p className="text-sm text-muted-foreground">{t("nfc.unsupported")}</p>
                 <p className="text-xs text-muted-foreground/70 mt-1">
                     NFC writing requires Chrome on Android with NFC hardware.
                 </p>

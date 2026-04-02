@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/supabase/auth-context";
 import { useWorkspaceContext } from "@/hooks/use-workspace-context";
 import { useProjectsForSwitcher } from "@/lib/supabase/hooks-switcher";
 import { ContextSwitcherPopover } from "./popover";
-import { CONTEXT_SWITCHER_STRINGS } from "@/lib/i18n/context-switcher-strings";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 import { hasPermission } from "@/config/rbac";
 import type { PermissionLevel } from "@/types";
 
@@ -28,6 +28,7 @@ export function ProjectSwitcher({
     navigateOnSelect = false,
     subPath,
 }: ProjectSwitcherProps) {
+    const { t } = useTranslation("contextSwitcher");
     const router = useRouter();
     const { activeOrg } = useAuth();
     const orgId = activeOrg?.organization_id ?? null;
@@ -44,8 +45,7 @@ export function ProjectSwitcher({
     });
 
     const activeProject = projects.find((p) => p.id === activeProjectId);
-    const displayName =
-        activeName || activeProject?.name || CONTEXT_SWITCHER_STRINGS.project.clearLabel;
+    const displayName = activeName || activeProject?.name || t("project.clearLabel");
 
     const canCreate = userRole ? hasPermission(userRole, "projects", "write") : false;
 
@@ -74,16 +74,16 @@ export function ProjectSwitcher({
             activeId={activeProjectId}
             onSelect={handleSelect}
             onClear={() => setActiveProject(null)}
-            clearLabel={CONTEXT_SWITCHER_STRINGS.project.clearLabel}
-            searchPlaceholder={CONTEXT_SWITCHER_STRINGS.project.searchPlaceholder}
-            createLabel={CONTEXT_SWITCHER_STRINGS.project.createLabel}
+            clearLabel={t("project.clearLabel")}
+            searchPlaceholder={t("project.searchPlaceholder")}
+            createLabel={t("project.createLabel")}
             canCreate={canCreate}
-            viewAllLabel={CONTEXT_SWITCHER_STRINGS.project.viewAllLabel}
-            viewAllHref={CONTEXT_SWITCHER_STRINGS.project.viewAllHref}
-            emptyMessage={CONTEXT_SWITCHER_STRINGS.project.emptyMessage}
+            viewAllLabel={t("project.viewAllLabel")}
+            viewAllHref={t("project.viewAllHref")}
+            emptyMessage={t("project.emptyMessage")}
             isLoading={isLoading}
             trigger={trigger}
-            label={CONTEXT_SWITCHER_STRINGS.project.switchLabel}
+            label={t("project.switchLabel")}
             width={280}
         />
     );

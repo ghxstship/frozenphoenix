@@ -128,6 +128,18 @@ import {
 
 export const DEALS_PAGE: ListPageConfig = {
     entityKey: "deal",
+    scopingTabs: {
+        items: [
+            { id: "all", label: "All" },
+            {
+                id: "open",
+                label: "Open",
+                filter: (r) => !["won", "lost"].includes(String(r.stage ?? "")),
+            },
+            { id: "won", label: "Won", filter: (r) => String(r.stage ?? "") === "won" },
+            { id: "lost", label: "Lost", filter: (r) => String(r.stage ?? "") === "lost" },
+        ],
+    },
     description: "Sales pipeline — track deals from discovery to close",
     icon: Briefcase,
     createConfig: CREATE_DEAL_CONFIG,
@@ -174,6 +186,18 @@ export const DEALS_PAGE: ListPageConfig = {
 
 export const OPPORTUNITIES_PAGE: ListPageConfig = {
     entityKey: "opportunity",
+    scopingTabs: {
+        items: [
+            { id: "all", label: "All" },
+            {
+                id: "open",
+                label: "Open",
+                filter: (r) => !["won", "lost"].includes(String(r.stage ?? "")),
+            },
+            { id: "won", label: "Won", filter: (r) => String(r.stage ?? "") === "won" },
+            { id: "lost", label: "Lost", filter: (r) => String(r.stage ?? "") === "lost" },
+        ],
+    },
     description: "Sales pipeline — track opportunities from discovery to close",
     icon: Building2,
     createConfig: CREATE_OPPORTUNITY_CONFIG,
@@ -220,6 +244,14 @@ export const OPPORTUNITIES_PAGE: ListPageConfig = {
 
 export const COMPANIES_PAGE: ListPageConfig = {
     entityKey: "company",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "inactive", label: "Inactive", value: "inactive" },
+        ],
+    },
     description: "Client and partner organizations",
     icon: Building2,
     createConfig: CREATE_COMPANY_CONFIG,
@@ -258,6 +290,16 @@ export const COMPANIES_PAGE: ListPageConfig = {
 
 export const INVOICES_PAGE: ListPageConfig = {
     entityKey: "invoice",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "sent", label: "Unpaid", value: "sent" },
+            { id: "overdue", label: "Overdue", value: "overdue" },
+            { id: "paid", label: "Paid", value: "paid" },
+        ],
+    },
     description: "Internal invoices and billing records",
     icon: Receipt,
     createConfig: CREATE_INVOICE_CONFIG,
@@ -304,6 +346,16 @@ export const INVOICES_PAGE: ListPageConfig = {
 
 export const CLIENT_INVOICES_PAGE: ListPageConfig = {
     entityKey: "client_invoice",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "sent", label: "Unpaid", value: "sent" },
+            { id: "overdue", label: "Overdue", value: "overdue" },
+            { id: "paid", label: "Paid", value: "paid" },
+        ],
+    },
     description: "Create, send, and track client-facing invoices",
     icon: FileText,
     createConfig: CREATE_CLIENT_INVOICE_CONFIG,
@@ -350,6 +402,15 @@ export const CLIENT_INVOICES_PAGE: ListPageConfig = {
 
 export const RECURRING_INVOICES_PAGE: ListPageConfig = {
     entityKey: "recurring_invoice",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "paused", label: "Paused", value: "paused" },
+            { id: "cancelled", label: "Cancelled", value: "cancelled" },
+        ],
+    },
     description: "Automated recurring invoice schedules",
     icon: Repeat,
     createConfig: CREATE_RECURRING_INVOICE_CONFIG,
@@ -384,6 +445,15 @@ export const RECURRING_INVOICES_PAGE: ListPageConfig = {
 
 export const EXPENSES_PAGE: ListPageConfig = {
     entityKey: "expense",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "approved", label: "Approved", value: "approved" },
+            { id: "rejected", label: "Rejected", value: "rejected" },
+        ],
+    },
     description: "Track and categorize business expenses",
     icon: CreditCard,
     createConfig: CREATE_EXPENSE_CONFIG,
@@ -421,6 +491,15 @@ export const EXPENSES_PAGE: ListPageConfig = {
 
 export const PAYMENTS_PAGE: ListPageConfig = {
     entityKey: "payment",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "completed", label: "Completed", value: "completed" },
+            { id: "failed", label: "Failed", value: "failed" },
+        ],
+    },
     description: "Track incoming and outgoing payments",
     icon: Banknote,
     createConfig: CREATE_PAYMENT_CONFIG,
@@ -468,6 +547,15 @@ export const PAYMENTS_PAGE: ListPageConfig = {
 
 export const CREDIT_NOTES_PAGE: ListPageConfig = {
     entityKey: "credit_note",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "issued", label: "Issued", value: "issued" },
+            { id: "applied", label: "Applied", value: "applied" },
+        ],
+    },
     description: "Issue and track credit notes against invoices",
     icon: FileSignature,
     createConfig: CREATE_CREDIT_NOTE_CONFIG,
@@ -523,6 +611,15 @@ export const GL_ACCOUNTS_PAGE: ListPageConfig = {
 
 export const BUDGETS_PAGE: ListPageConfig = {
     entityKey: "budget",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "closed", label: "Closed", value: "closed" },
+        ],
+    },
     description: "Project and production budgets with real-time tracking",
     icon: DollarSign,
     createConfig: CREATE_BUDGET_CONFIG,
@@ -568,6 +665,15 @@ export const BUDGETS_PAGE: ListPageConfig = {
 
 export const BUDGET_APPROVALS_PAGE: ListPageConfig = {
     entityKey: "budget_approval",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "approved", label: "Approved", value: "approved" },
+            { id: "rejected", label: "Rejected", value: "rejected" },
+        ],
+    },
     description: "Budget approval requests and decisions",
     icon: CheckCircle2,
     searchKeys: ["title", "requester_name"],
@@ -601,6 +707,15 @@ export const BUDGET_APPROVALS_PAGE: ListPageConfig = {
 
 export const PAYMENT_APPROVALS_PAGE: ListPageConfig = {
     entityKey: "payment_approval",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "approved", label: "Approved", value: "approved" },
+            { id: "rejected", label: "Rejected", value: "rejected" },
+        ],
+    },
     description: "Payment approval requests and authorizations",
     icon: CheckCircle2,
     searchKeys: ["title", "requester_name"],
@@ -666,6 +781,26 @@ export const GOODS_RECEIPTS_PAGE: ListPageConfig = {
 
 export const CAMPAIGNS_PAGE: ListPageConfig = {
     entityKey: "campaign",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            {
+                id: "active",
+                label: "Active",
+                filter: (r) => ["live", "launching", "optimizing"].includes(String(r.status ?? "")),
+            },
+            {
+                id: "planning",
+                label: "Planning",
+                filter: (r) =>
+                    ["planning", "brief_approved", "in_production"].includes(
+                        String(r.status ?? "")
+                    ),
+            },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Plan, execute, and measure marketing campaigns",
     icon: Megaphone,
     createConfig: CREATE_CAMPAIGN_CONFIG,
@@ -712,6 +847,15 @@ export const CAMPAIGNS_PAGE: ListPageConfig = {
 
 export const BRIEFS_PAGE: ListPageConfig = {
     entityKey: "creative_brief",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Strategic briefs connecting creative intent to measurable outcomes",
     icon: CalendarDays,
     createConfig: CREATE_BRIEF_CONFIG,
@@ -786,6 +930,15 @@ export const CASE_STUDIES_PAGE: ListPageConfig = {
 
 export const DIGITAL_ASSETS_PAGE: ListPageConfig = {
     entityKey: "digital_asset",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "approved", label: "Approved", value: "approved" },
+            { id: "published", label: "Published", value: "published" },
+        ],
+    },
     description: "Manage digital media files and creative assets",
     icon: Layers,
     createConfig: CREATE_DIGITAL_ASSET_CONFIG,
@@ -820,6 +973,15 @@ export const DIGITAL_ASSETS_PAGE: ListPageConfig = {
 
 export const CREATIVE_ASSETS_PAGE: ListPageConfig = {
     entityKey: "digital_asset",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "approved", label: "Approved", value: "approved" },
+            { id: "published", label: "Published", value: "published" },
+        ],
+    },
     description: "Creative assets for campaigns, briefs, and productions",
     icon: Layers,
     createConfig: CREATE_ASSET_CONFIG,
@@ -854,6 +1016,14 @@ export const CREATIVE_ASSETS_PAGE: ListPageConfig = {
 
 export const DECKS_PAGE: ListPageConfig = {
     entityKey: "deck",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "published", label: "Published", value: "published" },
+        ],
+    },
     description: "Presentation decks and pitch materials",
     icon: ScrollText,
     createConfig: CREATE_DECK_CONFIG,
@@ -885,6 +1055,15 @@ export const DECKS_PAGE: ListPageConfig = {
 
 export const CONTRACTS_PAGE: ListPageConfig = {
     entityKey: "contract",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "expired", label: "Expired", value: "expired" },
+        ],
+    },
     description: "Track contracts, NDAs, SOWs, and amendments across all projects",
     icon: FileSignature,
     createConfig: CREATE_CONTRACT_CONFIG,
@@ -958,6 +1137,15 @@ export const CLAUSE_LIBRARY_PAGE: ListPageConfig = {
 
 export const SCOPES_OF_WORK_PAGE: ListPageConfig = {
     entityKey: "sow",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Define project scope, deliverables, and acceptance criteria",
     icon: FileCheck,
     createConfig: CREATE_SOW_CONFIG,
@@ -997,6 +1185,15 @@ export const SCOPES_OF_WORK_PAGE: ListPageConfig = {
 
 export const CHANGE_ORDERS_PAGE: ListPageConfig = {
     entityKey: "change_order",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "pending_review", label: "Pending", value: "pending_review" },
+            { id: "approved", label: "Approved", value: "approved" },
+        ],
+    },
     description: "Track and manage post-contract scope modifications",
     icon: AlertTriangle,
     createConfig: CREATE_CHANGE_ORDER_CONFIG,
@@ -1041,6 +1238,16 @@ export const CHANGE_ORDERS_PAGE: ListPageConfig = {
 
 export const PROPOSALS_PAGE: ListPageConfig = {
     entityKey: "proposal",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "sent", label: "Sent", value: "sent" },
+            { id: "accepted", label: "Accepted", value: "accepted" },
+            { id: "rejected", label: "Rejected", value: "rejected" },
+        ],
+    },
     description: "Client proposals with pricing, scope, and approval tracking",
     icon: Send,
     createConfig: CREATE_PROPOSAL_CONFIG,
@@ -1087,6 +1294,15 @@ export const PROPOSALS_PAGE: ListPageConfig = {
 
 export const ESTIMATES_PAGE: ListPageConfig = {
     entityKey: "estimate",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "sent", label: "Sent", value: "sent" },
+            { id: "accepted", label: "Accepted", value: "accepted" },
+        ],
+    },
     description: "Project cost estimates and quotations",
     icon: FileText,
     createConfig: CREATE_ESTIMATE_CONFIG,
@@ -1135,6 +1351,15 @@ export const ESTIMATES_PAGE: ListPageConfig = {
 
 export const CALL_SHEETS_PAGE: ListPageConfig = {
     entityKey: "call_sheet",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "published", label: "Published", value: "published" },
+            { id: "distributed", label: "Distributed", value: "distributed" },
+        ],
+    },
     description: "Generate and distribute daily call sheets for crew and production teams",
     icon: Calendar,
     createConfig: CREATE_CALL_SHEET_CONFIG,
@@ -1169,6 +1394,14 @@ export const CALL_SHEETS_PAGE: ListPageConfig = {
 
 export const CHECKLISTS_PAGE: ListPageConfig = {
     entityKey: "checklist",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description:
         "Template-based checklists for work orders, quality assurance, and safety compliance",
     icon: CheckCircle2,
@@ -1214,6 +1447,14 @@ export const CHECKLISTS_PAGE: ListPageConfig = {
 
 export const COMPLIANCE_CHECKLISTS_PAGE: ListPageConfig = {
     entityKey: "compliance_checklist",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "ADA, OSHA, fire safety, and other compliance inspections",
     icon: ShieldAlert,
     createConfig: CREATE_COMPLIANCE_CHECKLIST_CONFIG,
@@ -1259,6 +1500,15 @@ export const COMPLIANCE_CHECKLISTS_PAGE: ListPageConfig = {
 
 export const DISPATCH_PAGE: ListPageConfig = {
     entityKey: "dispatch_entry",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "dispatched", label: "Dispatched", value: "dispatched" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Dispatch records for logistics and fleet management",
     icon: Truck,
     createConfig: CREATE_DISPATCH_CONFIG,
@@ -1294,6 +1544,15 @@ export const DISPATCH_PAGE: ListPageConfig = {
 
 export const FLEET_PAGE: ListPageConfig = {
     entityKey: "vehicle",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "available", label: "Available", value: "available" },
+            { id: "in_use", label: "In Use", value: "in_use" },
+            { id: "maintenance", label: "Maintenance", value: "maintenance" },
+        ],
+    },
     description: "Fleet vehicles, maintenance schedules, and utilization tracking",
     icon: Car,
     createConfig: CREATE_VEHICLE_CONFIG,
@@ -1374,6 +1633,15 @@ export const WAREHOUSES_PAGE: ListPageConfig = {
 
 export const INVENTORY_PAGE: ListPageConfig = {
     entityKey: "catalog_item",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "in_stock", label: "In Stock", value: "in_stock" },
+            { id: "low_stock", label: "Low Stock", value: "low_stock" },
+            { id: "out_of_stock", label: "Out of Stock", value: "out_of_stock" },
+        ],
+    },
     description: "Inventory items, stock levels, and reorder management",
     icon: Box,
     createConfig: CREATE_INVENTORY_ITEM_CONFIG,
@@ -1451,6 +1719,15 @@ export const LOCATIONS_PAGE: ListPageConfig = {
 
 export const SERVICE_REQUESTS_PAGE: ListPageConfig = {
     entityKey: "service_request",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "open", label: "Open", value: "open" },
+            { id: "in_progress", label: "In Progress", value: "in_progress" },
+            { id: "resolved", label: "Resolved", value: "resolved" },
+        ],
+    },
     description: "Internal and external service requests with SLA tracking",
     icon: Wrench,
     createConfig: CREATE_SERVICE_REQUEST_CONFIG,
@@ -1485,6 +1762,15 @@ export const SERVICE_REQUESTS_PAGE: ListPageConfig = {
 
 export const WORK_ORDERS_PAGE: ListPageConfig = {
     entityKey: "work_order",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "open", label: "Open", value: "open" },
+            { id: "in_progress", label: "In Progress", value: "in_progress" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Maintenance and service work orders",
     icon: HardHat,
     createConfig: CREATE_WORK_ORDER_CONFIG,
@@ -1530,6 +1816,15 @@ export const WORK_ORDERS_PAGE: ListPageConfig = {
 
 export const INCIDENTS_PAGE: ListPageConfig = {
     entityKey: "incident",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "open", label: "Open", value: "open" },
+            { id: "investigating", label: "Investigating", value: "investigating" },
+            { id: "resolved", label: "Resolved", value: "resolved" },
+        ],
+    },
     description: "Track and resolve safety, operational, and guest incidents",
     icon: ShieldAlert,
     createConfig: CREATE_INCIDENT_CONFIG,
@@ -1570,6 +1865,26 @@ export const INCIDENTS_PAGE: ListPageConfig = {
 
 export const INSURANCE_POLICIES_PAGE: ListPageConfig = {
     entityKey: "insurance_policy",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            {
+                id: "expiring",
+                label: "Expiring Soon",
+                filter: (r) => {
+                    const d = r.end_date;
+                    if (!d) return false;
+                    const exp = new Date(String(d));
+                    const now = new Date();
+                    const days30 = 30 * 86400000;
+                    return exp.getTime() - now.getTime() < days30 && exp.getTime() > now.getTime();
+                },
+            },
+            { id: "expired", label: "Expired", value: "expired" },
+        ],
+    },
     description: "Active insurance policies and coverage tracking",
     icon: Shield,
     createConfig: CREATE_INSURANCE_POLICY_CONFIG,
@@ -1609,6 +1924,15 @@ export const INSURANCE_POLICIES_PAGE: ListPageConfig = {
 
 export const PERMITS_PAGE: ListPageConfig = {
     entityKey: "permit",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "expired", label: "Expired", value: "expired" },
+        ],
+    },
     description: "Permits, licenses, and regulatory approvals",
     icon: ClipboardCheck,
     createConfig: CREATE_PERMIT_CONFIG,
@@ -1641,6 +1965,16 @@ export const PERMITS_PAGE: ListPageConfig = {
 
 export const PURCHASE_ORDERS_PAGE: ListPageConfig = {
     entityKey: "purchase_order",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "approved", label: "Approved", value: "approved" },
+            { id: "received", label: "Received", value: "received" },
+        ],
+    },
     description: "Track purchase orders from creation to fulfillment",
     icon: FileText,
     createConfig: CREATE_PURCHASE_ORDER_CONFIG,
@@ -1697,6 +2031,15 @@ export const PURCHASE_ORDERS_PAGE: ListPageConfig = {
 
 export const PURCHASE_REQUISITIONS_PAGE: ListPageConfig = {
     entityKey: "purchase_requisition",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "approved", label: "Approved", value: "approved" },
+        ],
+    },
     description: "Internal purchase requests pending approval",
     icon: FileText,
     createConfig: CREATE_PURCHASE_REQUISITION_CONFIG,
@@ -1747,6 +2090,14 @@ export const PURCHASE_REQUISITIONS_PAGE: ListPageConfig = {
 
 export const PEOPLE_PAGE: ListPageConfig = {
     entityKey: "profile",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "inactive", label: "Inactive", value: "inactive" },
+        ],
+    },
     description: "Team members, contractors, and collaborators",
     icon: Users,
     createConfig: CREATE_PERSON_CONFIG,
@@ -1782,6 +2133,14 @@ export const PEOPLE_PAGE: ListPageConfig = {
 
 export const TEAMS_PAGE: ListPageConfig = {
     entityKey: "team",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "archived", label: "Archived", value: "archived" },
+        ],
+    },
     description: "Organizational teams and their members",
     icon: Users,
     createConfig: CREATE_TEAM_CONFIG,
@@ -1816,6 +2175,14 @@ export const TEAMS_PAGE: ListPageConfig = {
 
 export const WORKFORCE_PAGE: ListPageConfig = {
     entityKey: "worker_profile",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "inactive", label: "Inactive", value: "inactive" },
+        ],
+    },
     description: "Manage workers, contractors, and freelance profiles",
     icon: HardHat,
     createConfig: CREATE_WORKFORCE_CONFIG,
@@ -1855,6 +2222,15 @@ export const WORKFORCE_PAGE: ListPageConfig = {
 
 export const DOCUMENTS_PAGE: ListPageConfig = {
     entityKey: "document",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "published", label: "Published", value: "published" },
+            { id: "archived", label: "Archived", value: "archived" },
+        ],
+    },
     description: "Documents, files, and attachments across all entities",
     icon: FileText,
     createConfig: CREATE_DOCUMENT_CONFIG,
@@ -1887,6 +2263,15 @@ export const DOCUMENTS_PAGE: ListPageConfig = {
 
 export const KNOWLEDGE_BASE_PAGE: ListPageConfig = {
     entityKey: "knowledge_base_article",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "published", label: "Published", value: "published" },
+            { id: "archived", label: "Archived", value: "archived" },
+        ],
+    },
     description: "Internal knowledge base articles and documentation",
     icon: BookOpen,
     createConfig: CREATE_KB_ARTICLE_CONFIG,
@@ -1921,6 +2306,15 @@ export const KNOWLEDGE_BASE_PAGE: ListPageConfig = {
 
 export const SOPS_PAGE: ListPageConfig = {
     entityKey: "sop",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "published", label: "Published", value: "published" },
+            { id: "archived", label: "Archived", value: "archived" },
+        ],
+    },
     description: "Standard operating procedures and process documentation",
     icon: BookOpen,
     createConfig: CREATE_SOP_CONFIG,
@@ -1948,6 +2342,14 @@ export const SOPS_PAGE: ListPageConfig = {
 
 export const TEMPLATES_PAGE: ListPageConfig = {
     entityKey: "document_template",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "published", label: "Published", value: "published" },
+        ],
+    },
     description: "Reusable document templates and forms",
     icon: FileText,
     createConfig: CREATE_TEMPLATE_CONFIG,
@@ -2091,6 +2493,27 @@ export const SAVED_VIEWS_PAGE: ListPageConfig = {
 
 export const EVENTS_PAGE: ListPageConfig = {
     entityKey: "live_event",
+    scopingTabs: {
+        items: [
+            { id: "all", label: "All" },
+            {
+                id: "upcoming",
+                label: "Upcoming",
+                filter: (r) => {
+                    const d = r.start_date ?? r.event_date;
+                    return d ? new Date(String(d)).getTime() >= Date.now() : false;
+                },
+            },
+            {
+                id: "past",
+                label: "Past",
+                filter: (r) => {
+                    const d = r.start_date ?? r.event_date;
+                    return d ? new Date(String(d)).getTime() < Date.now() : false;
+                },
+            },
+        ],
+    },
     description: "Plan, manage, and execute live events and productions",
     icon: CalendarDays,
     createConfig: CREATE_EVENT_CONFIG,
@@ -2132,6 +2555,15 @@ export const EVENTS_PAGE: ListPageConfig = {
 
 export const IP_RIGHTS_PAGE: ListPageConfig = {
     entityKey: "ip_right",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "expired", label: "Expired", value: "expired" },
+        ],
+    },
     description: "Intellectual property rights and licensing agreements",
     icon: PenTool,
     createConfig: CREATE_IP_RIGHT_CONFIG,
@@ -2207,6 +2639,15 @@ export const INTEGRATIONS_PAGE: ListPageConfig = {
 
 export const ENGINEERING_APPROVALS_PAGE: ListPageConfig = {
     entityKey: "engineering_approval",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "approved", label: "Approved", value: "approved" },
+            { id: "rejected", label: "Rejected", value: "rejected" },
+        ],
+    },
     description: "Engineering review and approval workflow",
     icon: CheckCircle2,
     createConfig: CREATE_ENGINEERING_APPROVAL_CONFIG,
@@ -2246,6 +2687,15 @@ export const ENGINEERING_APPROVALS_PAGE: ListPageConfig = {
 
 export const QUALITY_CHECKS_PAGE: ListPageConfig = {
     entityKey: "quality_check",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "passed", label: "Passed", value: "passed" },
+            { id: "failed", label: "Failed", value: "failed" },
+        ],
+    },
     description: "Quality assurance inspections and checks",
     icon: ClipboardCheck,
     createConfig: CREATE_QUALITY_CHECK_CONFIG,
@@ -2282,6 +2732,14 @@ export const QUALITY_CHECKS_PAGE: ListPageConfig = {
 
 export const VENDOR_REVIEWS_PAGE: ListPageConfig = {
     entityKey: "worker_review",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Vendor performance reviews and ratings",
     icon: Star,
     createConfig: CREATE_VENDOR_REVIEW_CONFIG,
@@ -2309,6 +2767,14 @@ export const VENDOR_REVIEWS_PAGE: ListPageConfig = {
 
 export const ACCOUNTS_PAGE: ListPageConfig = {
     entityKey: "stakeholder",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "inactive", label: "Inactive", value: "inactive" },
+        ],
+    },
     description: "Client and stakeholder relationship management",
     icon: Users,
     createConfig: CREATE_ACCOUNT_CONFIG,
@@ -2345,6 +2811,15 @@ export const ACCOUNTS_PAGE: ListPageConfig = {
 
 export const PIPELINE_PAGE: ListPageConfig = {
     entityKey: "deal",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "won", label: "Won", value: "won" },
+            { id: "lost", label: "Lost", value: "lost" },
+        ],
+    },
     description: "Manage your sales pipeline and deal flow",
     icon: Calendar,
     createConfig: CREATE_DEAL_CONFIG,
@@ -2370,6 +2845,14 @@ export const PIPELINE_PAGE: ListPageConfig = {
 
 export const FEATURE_FLAGS_PAGE: ListPageConfig = {
     entityKey: "feature_flag",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "enabled", label: "Enabled", value: "enabled" },
+            { id: "disabled", label: "Disabled", value: "disabled" },
+        ],
+    },
     description: "Control feature rollout across organizations, roles, and users",
     icon: Flag,
     searchKeys: ["name"],
@@ -2392,6 +2875,16 @@ export const FEATURE_FLAGS_PAGE: ListPageConfig = {
 
 export const VENDOR_RISK_PAGE: ListPageConfig = {
     entityKey: "risk_assessment",
+    scopingTabs: {
+        groupByKey: "risk_level",
+        items: [
+            { id: "all", label: "All" },
+            { id: "critical", label: "Critical", value: "critical" },
+            { id: "high", label: "High", value: "high" },
+            { id: "medium", label: "Medium", value: "medium" },
+            { id: "low", label: "Low", value: "low" },
+        ],
+    },
     description:
         "Composite risk scoring across financial, compliance, performance, and operational dimensions",
     icon: AlertTriangle,
@@ -2415,6 +2908,14 @@ export const VENDOR_RISK_PAGE: ListPageConfig = {
 
 export const VENDOR_ONBOARDING_PAGE: ListPageConfig = {
     entityKey: "vendor_onboarding",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "in_progress", label: "In Progress", value: "in_progress" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description:
         "Pipeline view of vendor/subcontractor onboarding with compliance document tracking",
     icon: CheckCircle2,
@@ -2449,6 +2950,15 @@ export const VENDOR_ONBOARDING_PAGE: ListPageConfig = {
 
 export const ACTIVATIONS_PAGE: ListPageConfig = {
     entityKey: "activation",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Manage brand activations, installations, and experiences",
     icon: Sparkles,
     createConfig: CREATE_ACTIVATION_CONFIG,
@@ -2479,6 +2989,15 @@ export const ACTIVATIONS_PAGE: ListPageConfig = {
 
 export const ASSETS_PAGE: ListPageConfig = {
     entityKey: "asset",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "available", label: "Available", value: "available" },
+            { id: "in_use", label: "In Use", value: "in_use" },
+            { id: "maintenance", label: "Maintenance", value: "maintenance" },
+        ],
+    },
     description: "Physical and digital asset inventory with tracking and maintenance",
     icon: Package,
     createConfig: CREATE_ASSET_CONFIG,
@@ -2520,6 +3039,15 @@ export const ASSETS_PAGE: ListPageConfig = {
 
 export const CREDENTIALS_PAGE: ListPageConfig = {
     entityKey: "credential",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "expired", label: "Expired", value: "expired" },
+            { id: "revoked", label: "Revoked", value: "revoked" },
+        ],
+    },
     description: "Credential types, inventory pools, and assignment tracking",
     icon: Ticket,
     createConfig: CREATE_CREDENTIAL_CONFIG,
@@ -2549,6 +3077,14 @@ export const CREDENTIALS_PAGE: ListPageConfig = {
 
 export const CREW_PAGE: ListPageConfig = {
     entityKey: "crew_member",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "inactive", label: "Inactive", value: "inactive" },
+        ],
+    },
     description: "Crew roster with roles, certifications, and availability",
     icon: HardHat,
     searchKeys: ["name", "role", "department", "email"],
@@ -2579,6 +3115,15 @@ export const CREW_PAGE: ListPageConfig = {
 
 export const LEADS_PAGE: ListPageConfig = {
     entityKey: "lead",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "new", label: "New", value: "new" },
+            { id: "qualified", label: "Qualified", value: "qualified" },
+            { id: "converted", label: "Converted", value: "converted" },
+        ],
+    },
     description: "Manage incoming leads and opportunities",
     icon: Users,
     createConfig: CREATE_LEAD_CONFIG,
@@ -2611,6 +3156,15 @@ export const LEADS_PAGE: ListPageConfig = {
 
 export const PROJECTS_PAGE: ListPageConfig = {
     entityKey: "project",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "on_hold", label: "On Hold", value: "on_hold" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "All projects with phase tracking, budgets, and team assignments",
     icon: FolderOpen,
     createConfig: CREATE_PROJECT_CONFIG,
@@ -2679,6 +3233,15 @@ export const PROCUREMENT_PAGE: ListPageConfig = {
 
 export const SHIPMENTS_PAGE: ListPageConfig = {
     entityKey: "shipment",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "in_transit", label: "In Transit", value: "in_transit" },
+            { id: "delivered", label: "Delivered", value: "delivered" },
+            { id: "pending", label: "Pending", value: "pending" },
+        ],
+    },
     description: "Track and manage logistics and freight",
     icon: Truck,
     createConfig: CREATE_SHIPMENT_CONFIG,
@@ -2711,6 +3274,15 @@ export const SHIPMENTS_PAGE: ListPageConfig = {
 
 export const SURVEYS_PAGE: ListPageConfig = {
     entityKey: "survey",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "closed", label: "Closed", value: "closed" },
+        ],
+    },
     description: "Create and manage surveys with response tracking and analytics",
     icon: ClipboardCheck,
     createConfig: CREATE_SURVEY_CONFIG,
@@ -2741,6 +3313,16 @@ export const SURVEYS_PAGE: ListPageConfig = {
 
 export const TASKS_PAGE: ListPageConfig = {
     entityKey: "task",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "todo", label: "To Do", value: "todo" },
+            { id: "in_progress", label: "In Progress", value: "in_progress" },
+            { id: "done", label: "Done", value: "done" },
+            { id: "blocked", label: "Blocked", value: "blocked" },
+        ],
+    },
     description: "Task management with priority, status, and project assignments",
     icon: CheckCircle2,
     createConfig: CREATE_TASK_CONFIG,
@@ -2782,6 +3364,14 @@ export const TASKS_PAGE: ListPageConfig = {
 
 export const VENDORS_PAGE: ListPageConfig = {
     entityKey: "vendor",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "inactive", label: "Inactive", value: "inactive" },
+        ],
+    },
     description: "Vendor and subcontractor management with compliance and rating tracking",
     icon: Building2,
     createConfig: CREATE_VENDOR_CONFIG,
@@ -2853,6 +3443,15 @@ export const ROLES_PAGE: ListPageConfig = {
 
 export const APPROVALS_PAGE: ListPageConfig = {
     entityKey: "approval",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "approved", label: "Approved", value: "approved" },
+            { id: "rejected", label: "Rejected", value: "rejected" },
+        ],
+    },
     description: "Pending approvals, budget requests, and authorization workflows",
     icon: CheckCircle2,
     searchKeys: ["title", "requester_name"],

@@ -66,7 +66,7 @@ import {
     Trash2,
     Upload,
 } from "lucide-react";
-import type { ListPageConfig, ListRowActionDef } from "@/types/list-page-config";
+import type { ListPageConfig, ListRowActionDef, ScopingTabItem } from "@/types/list-page-config";
 import {
     getResolvedConfig,
     type ListPageConfigKey,
@@ -267,6 +267,18 @@ function ListPageShellInner({
         }));
     }, [config.tabs]);
 
+    // ─── Scoping tab state (URL-synced via ?scope=) ──────────
+    const hasScopingTabs = Boolean(config.scopingTabs && config.scopingTabs.items.length > 1);
+    const scopingTabIds = useMemo(
+        () => (config.scopingTabs?.items ?? []).map((t) => t.id),
+        [config.scopingTabs]
+    );
+    const [activeScopeTab, setActiveScopeTab] = useQueryTabState({
+        key: "scope",
+        defaultValue: config.scopingTabs?.items[0]?.id ?? "all",
+        validValues: scopingTabIds,
+    });
+
     // Dashboard-style: is this page using cardRenderer or children instead of DataTable?
     const isDashboardMode = Boolean(config.cardRenderer || children || config.contentSlot);
 
@@ -314,13 +326,64 @@ function ListPageShellInner({
         [externalData, rawData]
     );
 
+    // ─── Scoping tab filter (applied before search/filters) ──
+    const scopingFilter = useMemo(() => {
+        if (!config.scopingTabs) return undefined;
+        const activeItem = config.scopingTabs.items.find((t) => t.id === activeScopeTab);
+        if (!activeItem) return undefined;
+        // No filter/value = "All" tab — show everything
+        if (!activeItem.filter && activeItem.value === undefined) return undefined;
+        if (activeItem.filter) return activeItem.filter;
+        // Simple equality match against groupByKey
+        const key = config.scopingTabs.groupByKey;
+        if (key && activeItem.value !== undefined) {
+            const matchVal = activeItem.value;
+            return (r: Record<string, unknown>) => String(r[key] ?? "") === matchVal;
+        }
+        return undefined;
+    }, [config.scopingTabs, activeScopeTab]);
+
+    // Records after scoping filter (used for counts, search, and filter)
+    const scopedRecords = useMemo(
+        () => (scopingFilter ? records.filter(scopingFilter) : records),
+        [records, scopingFilter]
+    );
+
+    // Scoping tab items with counts (computed from full unscoped records)
+    const scopingTabItems = useMemo(() => {
+        if (!config.scopingTabs) return [];
+        const showCounts = config.scopingTabs.showCounts !== false;
+        const groupKey = config.scopingTabs.groupByKey;
+        return config.scopingTabs.items.map((item: ScopingTabItem) => {
+            let count: number | undefined;
+            if (showCounts) {
+                if (item.filter) {
+                    count = records.filter(item.filter).length;
+                } else if (item.value !== undefined && groupKey) {
+                    count = records.filter((r) => String(r[groupKey] ?? "") === item.value).length;
+                } else {
+                    // "All" tab
+                    count = records.length;
+                }
+            }
+            return {
+                id: item.id,
+                label: item.label,
+                count,
+                icon: item.icon
+                    ? React.createElement(item.icon, { className: "h-4 w-4" })
+                    : undefined,
+            };
+        });
+    }, [config.scopingTabs, records]);
+
     // Auto-generate status filter when none configured
     const resolvedFilters = useMemo(() => {
         if (config.filters && config.filters.length > 0) return config.filters;
         // Derive a status filter from the data if records have a 'status' field
-        if (records.length > 0 && records[0]?.status != null) {
+        if (scopedRecords.length > 0 && scopedRecords[0]?.status != null) {
             const uniqueStatuses = Array.from(
-                new Set(records.map((r) => String(r.status ?? "")).filter(Boolean))
+                new Set(scopedRecords.map((r) => String(r.status ?? "")).filter(Boolean))
             ).sort();
             if (uniqueStatuses.length > 1 && uniqueStatuses.length <= 20) {
                 return [
@@ -337,11 +400,11 @@ function ListPageShellInner({
             }
         }
         return undefined;
-    }, [config.filters, records]);
+    }, [config.filters, scopedRecords]);
 
-    // Apply search + filters
+    // Apply search + filters (against scoped records)
     const filtered = useMemo(() => {
-        return records.filter((r) => {
+        return scopedRecords.filter((r) => {
             if (!matchesSearch(r, search, searchKeys)) return false;
             for (const [filterId, filterValue] of Object.entries(filterValues)) {
                 if (filterValue === "all") continue;
@@ -353,7 +416,7 @@ function ListPageShellInner({
             }
             return true;
         });
-    }, [records, search, searchKeys, filterValues, resolvedFilters]);
+    }, [scopedRecords, search, searchKeys, filterValues, resolvedFilters]);
 
     // Compute stats — uses shared computeStatValue() for consistency with
     // DetailPageShell and the former dashboard shell.
@@ -795,6 +858,17 @@ function ListPageShellInner({
 
                 {/* After-stats slot */}
                 {config.afterStatsSlot}
+
+                {/* Scoping tabs — primary entity scoping dimension */}
+                {hasScopingTabs && (
+                    <TabBar
+                        items={scopingTabItems}
+                        value={activeScopeTab}
+                        onValueChange={setActiveScopeTab}
+                        size="sm"
+                        ariaLabel={`${title} scoping tabs`}
+                    />
+                )}
 
                 {/* Toolbar — show search/filters/actions unless completely overridden */}
                 {config.toolbarSlot ?? (

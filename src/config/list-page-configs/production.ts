@@ -167,6 +167,14 @@ export const PRODUCTION_ADVANCES_PAGE: ListPageConfig = {
 
 export const PRODUCTION_CHECKLISTS_PAGE: ListPageConfig = {
     entityKey: "production_checklist",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Day-of production checklists for events and shows",
     icon: ClipboardList,
     createConfig: CREATE_PRODUCTION_CHECKLIST_CONFIG,
@@ -204,6 +212,15 @@ export const PRODUCTION_CHECKLISTS_PAGE: ListPageConfig = {
 
 export const PRODUCTION_EXPENSES_PAGE: ListPageConfig = {
     entityKey: "production_expense",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "approved", label: "Approved", value: "approved" },
+            { id: "rejected", label: "Rejected", value: "rejected" },
+        ],
+    },
     description: "Track expenses incurred during production runs",
     icon: DollarSign,
     createConfig: CREATE_PRODUCTION_EXPENSE_CONFIG,
@@ -240,6 +257,15 @@ export const PRODUCTION_EXPENSES_PAGE: ListPageConfig = {
 
 export const PRODUCTION_RUNS_PAGE: ListPageConfig = {
     entityKey: "production_run",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "planned", label: "Planned", value: "planned" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Active production runs and event execution timelines",
     icon: Play,
     createConfig: CREATE_PRODUCTION_RUN_CONFIG,
@@ -752,6 +778,15 @@ export const PRODUCTION_MILESTONES_PAGE: ListPageConfig = {
 
 export const PRODUCTION_TASKS_PAGE: ListPageConfig = {
     entityKey: "production_task",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "todo", label: "To Do", value: "todo" },
+            { id: "in_progress", label: "In Progress", value: "in_progress" },
+            { id: "done", label: "Done", value: "done" },
+        ],
+    },
     description: "Individual tasks within production runs and event preparations",
     icon: ListChecks,
     createConfig: CREATE_PRODUCTION_TASK_CONFIG,
@@ -827,6 +862,15 @@ export const PRODUCTION_TIME_ENTRIES_PAGE: ListPageConfig = {
 
 export const READINESS_GATES_PAGE: ListPageConfig = {
     entityKey: "readiness_gate",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "passed", label: "Passed", value: "passed" },
+            { id: "failed", label: "Failed", value: "failed" },
+        ],
+    },
     description: "Go/no-go readiness gates for production launches",
     icon: ShieldAlert,
     createConfig: CREATE_READINESS_GATE_CONFIG,

@@ -138,6 +138,15 @@ export const CONSUMABLES_PAGE: ListPageConfig = {
 
 export const INVENTORY_AUDITS_PAGE: ListPageConfig = {
     entityKey: "inventory_audit",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "planned", label: "Planned", value: "planned" },
+            { id: "in_progress", label: "In Progress", value: "in_progress" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Physical inventory counts and reconciliation audits",
     icon: ClipboardList,
     createConfig: CREATE_INVENTORY_AUDIT_CONFIG,
@@ -246,6 +255,15 @@ export const LOAD_PLANS_PAGE: ListPageConfig = {
 
 export const MAINTENANCE_RECORDS_PAGE: ListPageConfig = {
     entityKey: "maintenance_record",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "open", label: "Open", value: "open" },
+            { id: "in_progress", label: "In Progress", value: "in_progress" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Equipment maintenance history and scheduled service records",
     icon: Wrench,
     createConfig: CREATE_MAINTENANCE_RECORD_CONFIG,
@@ -359,6 +377,15 @@ export const QUALITY_CHECK_TEMPLATES_PAGE: ListPageConfig = {
 
 export const RENTAL_AGREEMENTS_PAGE: ListPageConfig = {
     entityKey: "rental_agreement",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "draft", label: "Draft", value: "draft" },
+            { id: "expired", label: "Expired", value: "expired" },
+        ],
+    },
     description: "Equipment and venue rental agreements and lease tracking",
     icon: HandCoins,
     createConfig: CREATE_RENTAL_AGREEMENT_CONFIG,
@@ -401,6 +428,15 @@ export const RENTAL_AGREEMENTS_PAGE: ListPageConfig = {
 
 export const RESOURCE_BOOKINGS_PAGE: ListPageConfig = {
     entityKey: "resource_booking",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "confirmed", label: "Confirmed", value: "confirmed" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "cancelled", label: "Cancelled", value: "cancelled" },
+        ],
+    },
     description: "Book and schedule shared resources across projects and events",
     icon: CalendarClock,
     createConfig: CREATE_RESOURCE_BOOKING_CONFIG,
@@ -559,6 +595,14 @@ export const LOGISTICS_EVENTS_PAGE: ListPageConfig = {
 
 export const MAINTENANCE_SCHEDULES_PAGE: ListPageConfig = {
     entityKey: "maintenance_schedule",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "active", label: "Active", value: "active" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Preventive maintenance schedules for equipment and assets",
     icon: Wrench,
     createConfig: CREATE_MAINTENANCE_SCHEDULE_CONFIG,
@@ -587,6 +631,15 @@ export const MAINTENANCE_SCHEDULES_PAGE: ListPageConfig = {
 
 export const TRANSFER_ORDERS_PAGE: ListPageConfig = {
     entityKey: "transfer_order",
+    scopingTabs: {
+        groupByKey: "status",
+        items: [
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending", value: "pending" },
+            { id: "in_transit", label: "In Transit", value: "in_transit" },
+            { id: "completed", label: "Completed", value: "completed" },
+        ],
+    },
     description: "Inter-location asset and inventory transfer orders",
     icon: ArrowRightLeft,
     searchKeys: ["transfer_number", "notes"],

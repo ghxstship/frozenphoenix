@@ -3,7 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 import { ChevronRight, Filter, Package, Search } from "lucide-react";
 import {
     useCatalogCategories,
@@ -28,6 +28,7 @@ interface CatalogBrowserProps {
 }
 
 export function CatalogBrowser({ onAddItem, className }: CatalogBrowserProps) {
+    const { t } = useTranslation("common");
     const [searchQuery, setSearchQuery] = React.useState("");
     const [selectedCategoryId, setSelectedCategoryId] = React.useState<string | null>(null);
     const [breadcrumb, setBreadcrumb] = React.useState<{ id: string; name: string }[]>([]);
@@ -238,8 +239,8 @@ export function CatalogBrowser({ onAddItem, className }: CatalogBrowserProps) {
                         <Package className="h-10 w-10" />
                         <p className="text-sm">
                             {isSearching
-                                ? COMMON_STRINGS.empty_search_no_match
-                                : COMMON_STRINGS.empty_no_items_in.replace("{entity}", "category")}
+                                ? t("empty_search_no_match")
+                                : t("empty_no_items_in").replace("{entity}", "category")}
                         </p>
                     </div>
                 )}

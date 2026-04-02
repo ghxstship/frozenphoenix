@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useFocusTrap, useId } from "@/hooks/use-accessibility";
 import { Check, Loader2, Plus, Search, X } from "lucide-react";
-import { CONTEXT_SWITCHER_STRINGS } from "@/lib/i18n/context-switcher-strings";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 import type { SwitcherItem } from "@/types/workspace-context";
 
 // ─── Props ───────────────────────────────────────────────────
@@ -53,6 +53,7 @@ export function ContextSwitcherPopover({
     width = 260,
     label = "Switcher",
 }: ContextSwitcherPopoverProps) {
+    const { t } = useTranslation("contextSwitcher");
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
     const [focusIndex, setFocusIndex] = useState(-1);
@@ -220,7 +221,7 @@ export function ContextSwitcherPopover({
                                     searchRef.current?.focus();
                                 }}
                                 className="h-4 w-4"
-                                aria-label={CONTEXT_SWITCHER_STRINGS.shared.close}
+                                aria-label={t("shared.close")}
                             >
                                 <X className="h-3 w-3" />
                             </Button>
@@ -242,17 +243,14 @@ export function ContextSwitcherPopover({
                             <div className="flex items-center justify-center py-6">
                                 <Loader2 className="h-4 w-4 motion-safe:animate-spin text-muted-foreground" />
                                 <span className="ml-2 text-xs text-muted-foreground">
-                                    {CONTEXT_SWITCHER_STRINGS.shared.loading}
+                                    {t("shared.loading")}
                                 </span>
                             </div>
                         ) : selectableItems.length === 0 ? (
                             <div className="px-3 py-6 text-center">
                                 <p className="text-xs text-muted-foreground/60">
                                     {query
-                                        ? CONTEXT_SWITCHER_STRINGS.shared.noResults.replace(
-                                              "{query}",
-                                              query
-                                          )
+                                        ? t("shared.noResults").replace("{query}", query)
                                         : emptyMessage}
                                 </p>
                             </div>

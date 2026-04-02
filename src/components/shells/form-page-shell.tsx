@@ -14,8 +14,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { SHELLS_STRINGS } from "@/lib/i18n/shells-strings";
-import { COMMON_STRINGS } from "@/lib/i18n/common-strings";
+import { useTranslation } from "@/lib/i18n/locale-provider";
 import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -336,9 +335,7 @@ function RepeaterFieldRenderer({
                 <p className="text-xs text-muted-foreground">{field.description}</p>
             )}
             {rows.length === 0 && (
-                <p className="text-sm text-muted-foreground italic py-3">
-                    {COMMON_STRINGS.empty_no_items_added}
-                </p>
+                <p className="text-sm text-muted-foreground italic py-3">No items added yet.</p>
             )}
             {rows.map((row, rowIndex) => (
                 <Card key={rowIndex}>
@@ -488,6 +485,7 @@ function FormPageShellInner({
 }) {
     const router = useRouter();
     const formRef = useRef<HTMLFormElement>(null);
+    const { t } = useTranslation("shells");
 
     // ─── Form state ───
     const initialData = useMemo(() => {
@@ -626,14 +624,14 @@ function FormPageShellInner({
             });
     }, [currentWizardStep, formData]);
 
-    const defaultSubmitLabel = config.mode === "edit" ? "Save Changes" : "Create";
+    const defaultSubmitLabel = config.mode === "edit" ? t("form_save_changes") : t("form_create");
 
     // ─── Sections Layout ───
     if (config.layout !== "wizard") {
         return (
             <div className="motion-safe:animate-fade-in max-w-3xl">
                 {/* Back Link */}
-                <BackLink href={config.backHref} label={config.backLabel ?? "Back"} />
+                <BackLink href={config.backHref} label={config.backLabel ?? t("form_back")} />
 
                 {/* Header */}
                 <div className="mb-6">
@@ -677,12 +675,14 @@ function FormPageShellInner({
                             aria-hidden="true"
                         >
                             <kbd className="bg-muted px-1 py-0.5 rounded density-caption">⌘S</kbd>{" "}
-                            to save
+                            {t("form_save_shortcut")}
                         </div>
-                        <span className="sr-only">Press Command+S or Control+S to save</span>
+                        <span className="sr-only">{t("form_save_shortcut_sr")}</span>
                         <div className="flex items-center gap-3 ml-auto">
                             <Button type="button" variant="ghost" asChild disabled={isSubmitting}>
-                                <Link href={config.backHref}>{config.cancelLabel ?? "Cancel"}</Link>
+                                <Link href={config.backHref}>
+                                    {config.cancelLabel ?? t("form_cancel")}
+                                </Link>
                             </Button>
                             <Button type="submit" disabled={isSubmitting}>
                                 {isSubmitting && (
@@ -701,7 +701,11 @@ function FormPageShellInner({
     return (
         <div className="density-gap-page motion-safe:animate-fade-in max-w-3xl mx-auto">
             {/* Back Link */}
-            <BackLink href={config.backHref} label={config.backLabel ?? "Back"} className="mb-0" />
+            <BackLink
+                href={config.backHref}
+                label={config.backLabel ?? t("form_back")}
+                className="mb-0"
+            />
 
             {/* Header */}
             <div>
@@ -750,7 +754,7 @@ function FormPageShellInner({
                     disabled={wizardStep === 0}
                 >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
+                    {t("form_wizard_back")}
                 </Button>
                 {isLastStep ? (
                     <Button
@@ -763,7 +767,7 @@ function FormPageShellInner({
                             <CheckCircle2 className="mr-2 h-4 w-4" />
                         )}
                         {isSubmitting
-                            ? SHELLS_STRINGS.form_saving
+                            ? t("form_saving")
                             : (config.submitLabel ?? defaultSubmitLabel)}
                     </Button>
                 ) : (
@@ -771,7 +775,7 @@ function FormPageShellInner({
                         onClick={() => setWizardStep(wizardStep + 1)}
                         disabled={!canAdvanceWizard}
                     >
-                        Next
+                        {t("form_next")}
                         <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                 )}

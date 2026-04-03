@@ -4,28 +4,34 @@ import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
 
+const startedAt = Date.now();
+
 export async function GET() {
-    const checks: Record<string, { status: "ok" | "degraded" | "error" }> = {};
+    const checks: Record<string, { status: "ok" | "degraded" | "error"; latencyMs?: number }> = {};
     const start = performance.now();
 
     // Supabase connectivity check — lightweight query
     try {
+        const dbStart = performance.now();
         const supabase = await createClient();
         if (!supabase) {
-            checks.supabase = { status: "error" };
+            checks.database = { status: "error" };
         } else {
             const { error } = await supabase
                 .from("organizations")
                 .select("id", { count: "exact", head: true })
                 .limit(1);
-            checks.supabase = { status: error ? "degraded" : "ok" };
+            checks.database = {
+                status: error ? "degraded" : "ok",
+                latencyMs: Math.round(performance.now() - dbStart),
+            };
         }
     } catch {
-        checks.supabase = { status: "error" };
+        checks.database = { status: "error" };
     }
 
-    // Environment check (status only — do not leak NODE_ENV or infra details)
-    checks.environment = { status: "ok" };
+    // Application process check
+    checks.application = { status: "ok" };
 
     const overallStatus = Object.values(checks).every((c) => c.status === "ok")
         ? "healthy"
@@ -37,6 +43,7 @@ export async function GET() {
 
     if (overallStatus !== "healthy") {
         logger.warn("Health check returned non-healthy status", {
+            service: "health",
             status: overallStatus,
             checks,
             responseTimeMs,
@@ -47,7 +54,9 @@ export async function GET() {
         {
             status: overallStatus,
             timestamp: new Date().toISOString(),
+            uptime: Math.round((Date.now() - startedAt) / 1000),
             responseTimeMs,
+            checks,
         },
         { status: overallStatus === "unhealthy" ? 503 : 200 }
     );

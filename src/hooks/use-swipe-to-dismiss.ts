@@ -101,7 +101,7 @@ export function useSwipeToDismiss({
                         "[data-swipe-dismiss]"
                     ) as HTMLElement | null;
                     if (el) {
-                        el.style.transition = "transform 200ms ease-out, opacity 200ms ease-out";
+                        el.style.transition = `transform var(--duration-normal) var(--ease-decelerate), opacity var(--duration-normal) var(--ease-decelerate)`;
                         el.style.transform = "translateY(100%)";
                         el.style.opacity = "0";
                         setTimeout(() => {
@@ -117,8 +117,7 @@ export function useSwipeToDismiss({
                         "[data-swipe-dismiss]"
                     ) as HTMLElement | null;
                     if (el) {
-                        el.style.transition =
-                            "transform 300ms cubic-bezier(0.25, 1, 0.5, 1), opacity 300ms cubic-bezier(0.25, 1, 0.5, 1)";
+                        el.style.transition = `transform var(--duration-slow) var(--ease-spring-gentle), opacity var(--duration-slow) var(--ease-spring-gentle)`;
                         el.style.transform = "translateY(0)";
                         el.style.opacity = "1";
                         setTimeout(() => {

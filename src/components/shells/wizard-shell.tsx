@@ -139,7 +139,7 @@ export function WizardShell({
                     aria-valuemax={100}
                 >
                     <div
-                        className="bg-primary h-1.5 rounded-full transition-all duration-300"
+                        className="bg-primary h-1.5 rounded-full transition-[width] duration-slow"
                         style={{ width: `${progressPercent}%` }}
                     />
                 </div>

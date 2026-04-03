@@ -128,7 +128,7 @@ export function PullToRefresh({
             {/* Pull indicator */}
             <div
                 className={cn(
-                    "absolute left-0 right-0 top-0 flex items-center justify-center overflow-hidden transition-[height,opacity] duration-200",
+                    "absolute left-0 right-0 top-0 flex items-center justify-center overflow-hidden transition-[height,opacity] duration-normal",
                     showing ? "opacity-100" : "opacity-0"
                 )}
                 style={{
@@ -140,7 +140,9 @@ export function PullToRefresh({
                     className="flex items-center justify-center gap-2 text-muted-foreground"
                     style={{
                         transform: `rotate(${pullProgress * 360}deg)`,
-                        transition: isRefreshing ? "none" : "transform 100ms",
+                        transition: isRefreshing
+                            ? "none"
+                            : `transform var(--duration-micro) var(--ease-out-expo)`,
                     }}
                 >
                     <Loader2
@@ -161,7 +163,7 @@ export function PullToRefresh({
                     transform: `translateY(${isRefreshing || isFetching ? 48 : pullOffset}px)`,
                     transition:
                         !pullOffset || isRefreshing
-                            ? "transform 300ms cubic-bezier(0.25, 1, 0.5, 1)"
+                            ? `transform var(--duration-slow) var(--ease-spring-gentle)`
                             : "none",
                 }}
             >

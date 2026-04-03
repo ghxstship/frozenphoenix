@@ -29,28 +29,43 @@ export interface BadgeProps
     animate?: boolean | undefined;
 }
 
-function Badge({ className, variant, animate, ...props }: BadgeProps) {
-    const [bumpKey, setBumpKey] = React.useState(0);
-    const prevChildren = React.useRef(props.children);
+/**
+ * A badge/status indicator component with semantic variants and optional
+ * content-change animation.
+ *
+ * @example
+ * ```tsx
+ * <Badge variant="success">Active</Badge>
+ * <Badge variant="destructive">Overdue</Badge>
+ * <Badge variant="info" animate>{count}</Badge>
+ * ```
+ */
+const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
+    ({ className, variant, animate, ...props }, ref) => {
+        const [bumpKey, setBumpKey] = React.useState(0);
+        const prevChildren = React.useRef(props.children);
 
-    React.useEffect(() => {
-        if (animate && prevChildren.current !== props.children) {
-            setBumpKey((k) => k + 1);
-        }
-        prevChildren.current = props.children;
-    }, [animate, props.children]);
+        React.useEffect(() => {
+            if (animate && prevChildren.current !== props.children) {
+                setBumpKey((k) => k + 1);
+            }
+            prevChildren.current = props.children;
+        }, [animate, props.children]);
 
-    return (
-        <div
-            key={animate ? bumpKey : undefined}
-            className={cn(
-                badgeVariants({ variant }),
-                animate && bumpKey > 0 && "motion-safe:animate-badge-bump",
-                className
-            )}
-            {...props}
-        />
-    );
-}
+        return (
+            <div
+                key={animate ? bumpKey : undefined}
+                ref={ref}
+                className={cn(
+                    badgeVariants({ variant }),
+                    animate && bumpKey > 0 && "motion-safe:animate-badge-bump",
+                    className
+                )}
+                {...props}
+            />
+        );
+    }
+);
+Badge.displayName = "Badge";
 
 export { Badge, badgeVariants };

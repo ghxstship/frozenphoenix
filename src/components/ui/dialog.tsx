@@ -128,7 +128,7 @@ const DialogContent = React.forwardRef<
                     "sm:inset-0 sm:flex sm:items-center sm:justify-center sm:p-4",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
                     "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-                    "duration-200",
+                    "duration-normal",
                     "overscroll-contain"
                 )}
                 {...props}

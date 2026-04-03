@@ -1,10 +1,11 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 cursor-pointer",
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-colors duration-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 cursor-pointer",
     {
         variants: {
             variant: {
@@ -32,20 +33,58 @@ const buttonVariants = cva(
     }
 );
 
+/**
+ * A button component with multiple variants, sizes, and loading state.
+ *
+ * @example
+ * ```tsx
+ * <Button variant="default" size="sm" onClick={handleClick}>
+ *   Save Changes
+ * </Button>
+ *
+ * <Button variant="destructive" loading={isDeleting}>
+ *   Delete Project
+ * </Button>
+ *
+ * <Button asChild>
+ *   <Link href="/dashboard">Go to Dashboard</Link>
+ * </Button>
+ * ```
+ */
 export interface ButtonProps
     extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+    /** Merge behavior onto child element instead of rendering a wrapper. */
     asChild?: boolean | undefined;
+    /** Show a loading spinner, disable interaction, and preserve button width. */
+    loading?: boolean | undefined;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, asChild = false, ...props }, ref) => {
+    (
+        {
+            className,
+            variant,
+            size,
+            asChild = false,
+            loading = false,
+            disabled,
+            children,
+            ...props
+        },
+        ref
+    ) => {
         const Comp = asChild ? Slot : "button";
         return (
             <Comp
                 className={cn(buttonVariants({ variant, size, className }))}
                 ref={ref}
+                disabled={disabled || loading}
+                aria-busy={loading || undefined}
                 {...props}
-            />
+            >
+                {loading && <Loader2 className="motion-safe:animate-spin" aria-hidden="true" />}
+                {children}
+            </Comp>
         );
     }
 );

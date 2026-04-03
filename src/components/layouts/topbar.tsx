@@ -1135,7 +1135,7 @@ export function Topbar() {
         <header
             ref={headerRef}
             className={cn(
-                "sticky top-0 z-30 flex items-center justify-between border-b bg-background/80 backdrop-blur-xl px-4 lg:px-6 transition-[height,border-color,box-shadow] duration-200 motion-reduce:transition-none",
+                "sticky top-0 z-30 flex items-center justify-between border-b bg-background/80 backdrop-blur-xl px-4 lg:px-6 transition-[height,border-color,box-shadow] duration-normal motion-reduce:transition-none",
                 isScrolled ? "border-border shadow-sm" : "border-border/60"
             )}
             style={{ height: shrunkHeight ?? LAYOUT.topbar.height }}

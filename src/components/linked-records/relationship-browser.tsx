@@ -100,13 +100,13 @@ export function RelationshipBrowser({
                             aria-expanded={expandedGroups.has("children")}
                         >
                             <ChevronRight
-                                className={`h-3 w-3 transition-transform duration-200 ${expandedGroups.has("children") ? "rotate-90" : ""}`}
+                                className={`h-3 w-3 transition-transform duration-normal ${expandedGroups.has("children") ? "rotate-90" : ""}`}
                             />
                             Child Records
                         </Button>
 
                         <div
-                            className={`grid transition-all duration-200 ease-out ${expandedGroups.has("children") ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+                            className={`grid transition-[grid-template-rows,opacity] duration-normal ease-out ${expandedGroups.has("children") ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
                         >
                             <div className="overflow-hidden">
                                 <div className="space-y-3 pl-4 pt-1">
@@ -131,13 +131,13 @@ export function RelationshipBrowser({
                             aria-expanded={expandedGroups.has("related")}
                         >
                             <ChevronRight
-                                className={`h-3 w-3 transition-transform duration-200 ${expandedGroups.has("related") ? "rotate-90" : ""}`}
+                                className={`h-3 w-3 transition-transform duration-normal ${expandedGroups.has("related") ? "rotate-90" : ""}`}
                             />
                             Related Records
                         </Button>
 
                         <div
-                            className={`grid transition-all duration-200 ease-out ${expandedGroups.has("related") ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+                            className={`grid transition-[grid-template-rows,opacity] duration-normal ease-out ${expandedGroups.has("related") ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
                         >
                             <div className="overflow-hidden">
                                 <div className="space-y-3 pl-4 pt-1">

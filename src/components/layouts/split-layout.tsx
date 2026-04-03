@@ -27,7 +27,7 @@ export function SplitLayout({
             {/* List Panel — hidden on mobile when detail is shown */}
             <div
                 className={cn(
-                    "shrink-0 overflow-y-auto border-r border-border transition-all duration-300",
+                    "shrink-0 overflow-y-auto border-r border-border transition-[width,opacity] duration-slow",
                     showDetail ? "hidden lg:block" : "w-full lg:w-auto border-r-0 lg:border-r"
                 )}
                 style={{ width: showDetail ? listWidth : undefined }}

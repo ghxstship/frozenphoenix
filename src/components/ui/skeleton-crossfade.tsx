@@ -31,7 +31,7 @@ export function SkeletonCrossfade({
             {/* Skeleton layer */}
             <div
                 className={cn(
-                    "motion-safe:transition-opacity motion-safe:duration-200",
+                    "motion-safe:transition-opacity motion-safe:duration-normal",
                     showContent ? "opacity-0 pointer-events-none absolute inset-0" : "opacity-100"
                 )}
                 aria-hidden={showContent}

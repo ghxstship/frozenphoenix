@@ -8,7 +8,7 @@ import { INTERACTION_TIMING } from "@/config/design-tokens";
 import { AnimatePresence, motion, MOTION_TOKENS } from "@/lib/motion";
 
 const toastVariants = cva(
-    "pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-lg border p-4 shadow-lg transition-all",
+    "pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-lg border p-4 shadow-lg transition-[opacity,box-shadow]",
     {
         variants: {
             variant: {

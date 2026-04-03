@@ -72,7 +72,7 @@ export function AnimatedCheckbox({
                             className={cn(
                                 !reducedMotion &&
                                     checked &&
-                                    "animate-[checkmarkDraw_250ms_ease-out_forwards]"
+                                    "animate-[checkmarkDraw_var(--duration-normal)_ease-out_forwards]"
                             )}
                             style={{
                                 strokeDasharray: 1,

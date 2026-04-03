@@ -122,8 +122,8 @@
     --duration-instant: 0ms;
     --duration-micro: 100ms;
     --duration-fast: 150ms;
-    --duration-normal: 250ms;
-    --duration-slow: 400ms;
+    --duration-normal: 200ms;
+    --duration-slow: 300ms;
     --duration-exit-fast: 100ms;
     --duration-exit-normal: 150ms;
     --duration-decorative: 500ms;

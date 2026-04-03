@@ -214,14 +214,14 @@ export function CommandPalette() {
         <>
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] motion-safe:animate-fade-in"
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[var(--z-overlay)] motion-safe:animate-fade-in"
                 onClick={() => setIsOpen(false)}
                 aria-hidden="true"
             />
 
             {/* Dialog */}
             <div
-                className="fixed top-[20%] left-1/2 -translate-x-1/2 w-full max-w-xl z-[61] motion-safe:animate-slide-up"
+                className="fixed top-[20%] left-1/2 -translate-x-1/2 w-full max-w-xl z-[var(--z-panel)] motion-safe:animate-slide-up"
                 role="dialog"
                 aria-label="Command palette"
                 aria-modal="true"

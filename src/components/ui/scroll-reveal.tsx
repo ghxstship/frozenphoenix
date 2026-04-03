@@ -63,7 +63,7 @@ export function ScrollReveal({
         <div
             ref={ref}
             className={cn(
-                "motion-safe:transition-[opacity,transform] motion-safe:duration-500 motion-safe:ease-out",
+                "motion-safe:transition-[opacity,transform] motion-safe:duration-decorative motion-safe:ease-out",
                 animationClasses[animation],
                 className
             )}

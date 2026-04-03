@@ -24,7 +24,7 @@ const progressBarVariants = cva("relative w-full overflow-hidden rounded-full bg
     defaultVariants: { size: "md", variant: "default" },
 });
 
-const progressFillVariants = cva("h-full rounded-full transition-all duration-300 ease-out", {
+const progressFillVariants = cva("h-full rounded-full transition-[width] duration-slow ease-out", {
     variants: {
         variant: {
             default: "bg-primary",

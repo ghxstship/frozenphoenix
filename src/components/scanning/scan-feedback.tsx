@@ -129,7 +129,7 @@ export function ScanFeedback({
             <div
                 ref={flashRef}
                 className={cn(
-                    "fixed inset-0 z-[var(--z-overlay)] pointer-events-none transition-opacity duration-300",
+                    "fixed inset-0 z-[var(--z-overlay)] pointer-events-none transition-opacity duration-slow",
                     config.flash
                 )}
                 style={{ opacity: 0 }}
@@ -142,7 +142,7 @@ export function ScanFeedback({
                     className={cn(
                         "flex items-center gap-3 rounded-lg border p-3",
                         "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-top-2",
-                        "motion-safe:duration-200",
+                        "motion-safe:duration-normal",
                         config.bg,
                         config.border,
                         className

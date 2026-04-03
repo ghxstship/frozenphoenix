@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/lib/supabase/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -281,17 +282,12 @@ export default function InviteCodesPage() {
                                             Redeemers join as pending until an admin approves.
                                         </p>
                                     </div>
-                                    <input
+                                    <Checkbox
                                         id="gen-requires-approval"
-                                        type="checkbox"
                                         checked={genRequiresApproval}
-                                        onChange={(e) => setGenRequiresApproval(e.target.checked)}
-                                        style={{
-                                            width: "1rem",
-                                            height: "1rem",
-                                            cursor: "pointer",
-                                            accentColor: "var(--color-accent, #a78bfa)",
-                                        }}
+                                        onCheckedChange={(checked) =>
+                                            setGenRequiresApproval(checked === true)
+                                        }
                                     />
                                 </div>
                             </div>
@@ -374,26 +370,30 @@ export default function InviteCodesPage() {
                                         </div>
                                     </div>
                                     <div className="harbor-code-controls">
-                                        <button
+                                        <Button
                                             id={`toggle-code-${code.id}`}
+                                            variant="ghost"
+                                            size="icon"
                                             className="harbor-icon-btn"
                                             title={code.is_active ? "Deactivate" : "Activate"}
                                             onClick={() => void toggleCode(code.id, code.is_active)}
                                         >
                                             {code.is_active ? (
-                                                <Power className="harbor-control-icon harbor-control-icon--active" />
+                                                <Power className="harbor-control-icon text-success" />
                                             ) : (
                                                 <PowerOff className="harbor-control-icon" />
                                             )}
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button
                                             id={`copy-code-${code.id}`}
+                                            variant="ghost"
+                                            size="icon"
                                             className="harbor-icon-btn"
                                             title="Copy invite link"
                                             onClick={() => copyToClipboard(codeUrl, code.code)}
                                         >
                                             <Copy className="harbor-control-icon" />
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
 
@@ -630,7 +630,7 @@ export default function InviteCodesPage() {
                     height: 0.875rem;
                 }
                 .harbor-control-icon--active {
-                    color: #34d399;
+                    color: hsl(var(--success));
                 }
                 .harbor-code-meta {
                     display: flex;

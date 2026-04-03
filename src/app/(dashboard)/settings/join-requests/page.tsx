@@ -129,11 +129,12 @@ export default function JoinRequestsPage() {
             {/* Status filter tabs */}
             <div className="harbor-jr-tabs" role="tablist">
                 {STATUS_TABS.map((tab) => (
-                    <button
+                    <Button
                         key={tab.key}
                         id={`join-requests-tab-${tab.key}`}
                         role="tab"
                         aria-selected={statusFilter === tab.key}
+                        variant="ghost"
                         className={`harbor-jr-tab${statusFilter === tab.key ? " harbor-jr-tab--active" : ""}`}
                         onClick={() => setStatusFilter(tab.key)}
                     >
@@ -143,7 +144,7 @@ export default function JoinRequestsPage() {
                             statusFilter === "pending" && (
                                 <span className="harbor-jr-count">{requests.length}</span>
                             )}
-                    </button>
+                    </Button>
                 ))}
             </div>
 
@@ -510,12 +511,12 @@ export default function JoinRequestsPage() {
                     flex-shrink: 0;
                 }
                 .harbor-btn-icon { width: 0.875rem; height: 0.875rem; margin-right: 0.3rem; }
-                .harbor-approve-btn { background: #059669 !important; border-color: #059669 !important; }
-                .harbor-approve-btn:hover { background: #047857 !important; border-color: #047857 !important; }
-                .harbor-deny-btn { color: #f87171 !important; border-color: rgba(248,113,113,0.3) !important; }
-                .harbor-deny-btn:hover { background: rgba(248,113,113,0.08) !important; }
-                .harbor-badge--approved { background: rgba(5,150,105,0.15) !important; color: #34d399 !important; border: none !important; }
-                .harbor-badge--denied { background: rgba(239,68,68,0.12) !important; color: #f87171 !important; border: none !important; }
+                .harbor-approve-btn { background: hsl(var(--success)) !important; border-color: hsl(var(--success)) !important; }
+                .harbor-approve-btn:hover { background: hsl(var(--success) / 0.85) !important; border-color: hsl(var(--success) / 0.85) !important; }
+                .harbor-deny-btn { color: hsl(var(--destructive)) !important; border-color: hsl(var(--destructive) / 0.3) !important; }
+                .harbor-deny-btn:hover { background: hsl(var(--destructive) / 0.08) !important; }
+                .harbor-badge--approved { background: hsl(var(--success) / 0.15) !important; color: hsl(var(--success)) !important; border: none !important; }
+                .harbor-badge--denied { background: hsl(var(--destructive) / 0.12) !important; color: hsl(var(--destructive)) !important; border: none !important; }
                 .harbor-review-dialog { max-width: 440px; }
                 .harbor-deny-reason { display: flex; flex-direction: column; gap: 0.5rem; }
                 .harbor-deny-reason-label { font-size: 0.875rem; font-weight: 500; margin: 0; }

@@ -36,7 +36,7 @@ export function LinkedRecordCard({
         <Card
             className={cn(
                 "group flex items-center gap-3 p-3 rounded-lg border border-border",
-                "hover:bg-secondary/50 hover:border-border/80 hover:shadow-sm transition-all duration-200",
+                "hover:bg-secondary/50 hover:border-border/80 hover:shadow-sm transition-[background-color,border-color,box-shadow] duration-normal",
                 onClick &&
                     "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 className

@@ -34,7 +34,7 @@ export function CopilotToolActivity({ name, status, className }: CopilotToolActi
             className={cn(
                 "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs",
                 "bg-secondary/40 text-muted-foreground",
-                "animate-in fade-in slide-in-from-bottom-1 duration-200",
+                "animate-in fade-in slide-in-from-bottom-1 duration-normal",
                 className
             )}
             role="status"

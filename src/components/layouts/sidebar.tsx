@@ -80,7 +80,7 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
                 <Link
                     href={item.path}
                     className={cn(
-                        "group relative flex flex-1 items-center gap-2.5 rounded-lg text-[length:inherit] font-medium transition-all duration-200",
+                        "group relative flex flex-1 items-center gap-2.5 rounded-lg text-[length:inherit] font-medium transition-colors duration-normal",
                         collapsed && !isMobile && "justify-center px-2 py-2.5",
                         isActive
                             ? "bg-sidebar-primary/12 text-sidebar-primary"
@@ -103,7 +103,7 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
                 >
                     {isActive && (
                         <span
-                            className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary transition-all duration-300"
+                            className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary transition-[opacity,transform] duration-slow"
                             aria-hidden="true"
                         />
                     )}
@@ -117,11 +117,11 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
                     />
                     {(!collapsed || isMobile) && (
                         <>
-                            <span className="truncate flex-1 transition-[opacity,transform] duration-200 motion-reduce:transition-none">
+                            <span className="truncate flex-1 transition-[opacity,transform] duration-normal motion-reduce:transition-none">
                                 {item.title}
                             </span>
                             {item.badge && (
-                                <span className="density-caption font-bold bg-sidebar-primary/20 text-sidebar-primary px-1.5 py-0.5 rounded-full transition-[opacity,transform] duration-200 motion-reduce:transition-none">
+                                <span className="density-caption font-bold bg-sidebar-primary/20 text-sidebar-primary px-1.5 py-0.5 rounded-full transition-[opacity,transform] duration-normal motion-reduce:transition-none">
                                     {item.badge}
                                 </span>
                             )}
@@ -182,7 +182,7 @@ const SidebarNavItem = React.memo(function SidebarNavItem({
             {hasChildren && (!collapsed || isMobile) && (
                 <div
                     className={cn(
-                        "overflow-hidden transition-all duration-200",
+                        "overflow-hidden transition-[max-height,opacity] duration-normal",
                         childrenOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
                     )}
                 >
@@ -450,7 +450,7 @@ export function Sidebar() {
                 role={isMobile && isOpen ? "dialog" : "navigation"}
                 aria-label="Main navigation"
                 className={cn(
-                    "fixed left-0 top-0 z-50 h-screen flex flex-col border-r border-sidebar-border bg-sidebar-background text-sidebar-foreground motion-safe:transition-[width,transform] motion-safe:duration-300 motion-safe:[transition-timing-function:var(--ease-spring)] motion-reduce:transition-none",
+                    "fixed left-0 top-0 z-50 h-screen flex flex-col border-r border-sidebar-border bg-sidebar-background text-sidebar-foreground motion-safe:transition-[width,transform] motion-safe:duration-slow motion-safe:[transition-timing-function:var(--ease-spring)] motion-reduce:transition-none",
                     isMobile && (isOpen ? "translate-x-0" : "-translate-x-full")
                 )}
                 style={{ width: isMobile ? mobileSidebarWidth : sidebarWidth }}
@@ -496,7 +496,7 @@ export function Sidebar() {
                 {/* Inline Search */}
                 <div
                     className={cn(
-                        "border-b border-sidebar-border shrink-0 overflow-hidden transition-[max-height,opacity,padding] duration-200 motion-reduce:transition-none",
+                        "border-b border-sidebar-border shrink-0 overflow-hidden transition-[max-height,opacity,padding] duration-normal motion-reduce:transition-none",
                         collapsed && !isMobile
                             ? "max-h-0 opacity-0 py-0 border-b-0"
                             : "max-h-20 opacity-100 px-3 py-2"
@@ -628,7 +628,7 @@ export function Sidebar() {
                                     <span>{section.title}</span>
                                     <ChevronDown
                                         className={cn(
-                                            "h-3 w-3 transition-transform duration-200",
+                                            "h-3 w-3 transition-transform duration-normal",
                                             !isSectionExpanded(section.title) && "-rotate-90"
                                         )}
                                     />
@@ -640,7 +640,7 @@ export function Sidebar() {
                             {/* Section Items — animated collapse */}
                             <div
                                 className={cn(
-                                    "overflow-hidden transition-all duration-200",
+                                    "overflow-hidden transition-[max-height,opacity] duration-normal",
                                     (collapsed && !isMobile) || isSectionExpanded(section.title)
                                         ? "max-h-[2000px] opacity-100"
                                         : "max-h-0 opacity-0"
@@ -748,7 +748,7 @@ export function Sidebar() {
                                         "??"
                                     )}
                                 </div>
-                                <div className="flex-1 min-w-0 transition-[opacity,transform] duration-200 motion-reduce:transition-none">
+                                <div className="flex-1 min-w-0 transition-[opacity,transform] duration-normal motion-reduce:transition-none">
                                     {profileLoading ? (
                                         <>
                                             <div className="h-3.5 w-24 bg-muted animate-shimmer rounded mb-1" />
